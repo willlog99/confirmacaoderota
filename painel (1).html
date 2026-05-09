@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel — Biocondutor na Rota</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:2rem 1rem}
+    .container{width:100%;max-width:640px;margin:0 auto}
+    .card{background:#fff;border-radius:18px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:1rem}
+    .logo{width:52px;height:52px;background:linear-gradient(135deg,#1D9E75,#0d7a5a);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem}
+    .logo svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    h1{font-size:21px;font-weight:700;color:#111;margin-bottom:4px}
+    .subtitle{font-size:14px;color:#777;margin-bottom:1.5rem}
+    label{font-size:13px;color:#555;font-weight:500;display:block;margin-bottom:6px}
+    input[type="password"]{width:100%;height:44px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:10px;transition:border-color .2s}
+    input[type="password"]:focus{outline:none;border-color:#1D9E75}
+    input[type="text"]{width:100%;height:40px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:12px;transition:border-color .2s}
+    input[type="text"]:focus{outline:none;border-color:#1D9E75}
+    .btn-login{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff;transition:opacity .2s}
+    .btn-login:hover{opacity:.9}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
+    .stat{background:#f0f4f8;border-radius:12px;padding:14px;text-align:center}
+    .stat-val{font-size:30px;font-weight:700;color:#111}
+    .stat-val.green{color:#0F6E56}
+    .stat-val.red{color:#A32D2D}
+    .stat-label{font-size:12px;color:#888;margin-top:2px}
+    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
+    .tab{padding:7px 16px;font-size:13px;border-radius:8px;border:1.5px solid #e2e8f0;cursor:pointer;color:#666;background:#fff;font-weight:500;transition:all .15s}
+    .tab.active{background:#f0f4f8;color:#111;border-color:#ccc}
+    .tab:hover:not(.active){background:#f8f9fb}
+    .list-item{display:flex;align-items:flex-start;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f2f5;gap:12px}
+    .list-item:last-child{border-bottom:none}
+    .item-name{font-weight:600;font-size:14px;color:#111}
+    .item-ts{font-size:12px;color:#bbb;margin-top:2px}
+    .item-obs{margin-top:7px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:8px;padding:8px 11px;font-size:13px;color:#6B4E00}
+    .badge{font-size:11px;padding:4px 12px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0;margin-top:2px}
+    .badge.sim{background:#E1F5EE;color:#085041}
+    .badge.nao{background:#FCEBEB;color:#791F1F}
+    .pending-item{padding:11px 0;border-bottom:1px solid #f0f2f5;font-size:14px;color:#999;display:flex;justify-content:space-between;align-items:center}
+    .pending-item:last-child{border-bottom:none}
+    .empty{text-align:center;padding:2.5rem;color:#ccc;font-size:14px}
+    .error-msg{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:8px}
+    .header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+    .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#1D9E75;margin-right:5px;animation:pulse 2s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    #login-view,#painel-view{display:none}
+    #login-view.visible,#painel-view.visible{display:block}
+    .sair-btn{font-size:12px;color:#bbb;background:none;border:none;cursor:pointer;text-decoration:underline}
+    .sair-btn:hover{color:#333}
+    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 5px;border-radius:6px;transition:color .15s}
+    .del-btn:hover{color:#e55}
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- LOGIN -->
+  <div id="login-view" class="visible">
+    <div class="card">
+      <div class="logo">
+        <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <h1>Painel do Organizador</h1>
+      <p class="subtitle">Biocondutor na Rota &mdash; acesso restrito</p>
+      <label for="senha">Senha</label>
+      <input type="password" id="senha" placeholder="••••••••••••" />
+      <button class="btn-login" id="btn-login">Entrar</button>
+      <div id="login-error"></div>
+    </div>
+  </div>
+
+  <!-- PAINEL -->
+  <div id="painel-view">
+    <div class="card">
+      <div class="header-row">
+        <h1>Painel do Organizador</h1>
+        <button class="sair-btn" id="btn-sair">Sair</button>
+      </div>
+      <p class="subtitle"><span class="live-dot"></span>Atualizando em tempo real</p>
+
+      <div class="stats">
+        <div class="stat"><div class="stat-val green" id="cnt-sim">—</div><div class="stat-label">confirmadas</div></div>
+        <div class="stat"><div class="stat-val red"   id="cnt-nao">—</div><div class="stat-label">não confirmadas</div></div>
+        <div class="stat"><div class="stat-val"       id="cnt-pend">—</div><div class="stat-label">pendentes</div></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" data-tab="todos">Todos</button>
+        <button class="tab" data-tab="sim">Confirmadas</button>
+        <button class="tab" data-tab="nao">Não confirmadas</button>
+        <button class="tab" data-tab="pendentes">Pendentes</button>
+      </div>
+
+      <input type="text" id="busca" placeholder="Buscar por unidade..." />
+      <div id="lista"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyB5dcZ80acOycXOGLzwaFh5ToLKJe--qQ0",
+    authDomain: "rotas-motoboy.firebaseapp.com",
+    projectId: "rotas-motoboy",
+    storageBucket: "rotas-motoboy.firebasestorage.app",
+    messagingSenderId: "811828900156",
+    appId: "1:811828900156:web:dc5e54af1e83df0af1ee39"
+  };
+
+  const SENHA = "biocondutor2025";
+  const TODAS_ROTAS = [
+    "SAO PAULO 01","SAO PAULO 03","SAO PAULO 04","SAO PAULO 05","SAO PAULO 07",
+    "SAO PAULO 08","SAO PAULO 09","SAO PAULO 10","SAO PAULO 13","SAO PAULO 14",
+    "SAO PAULO 15","SAO PAULO 17","SAO PAULO 18","SAO PAULO 20","SAO PAULO 22",
+    "SAO PAULO 23","SAO PAULO 24","SAO PAULO 25","SAO PAULO 30","SAO PAULO 31",
+    "SAO PAULO 32","SAO PAULO 34","SAO PAULO 35","SAO PAULO 37","SAO PAULO 38",
+    "SAO PAULO 39","SAO PAULO 40","SAO PAULO 41","SAO PAULO 42","SAO PAULO 43",
+    "SAO PAULO 44","SAO PAULO 45","SAO PAULO 46","SAO PAULO 47","SAO PAULO 48",
+    "SAO PAULO 49","SAO PAULO 50","SAO PAULO 51",
+    "NTHCC","PSC3","PSC4","PSC5","PSC6","PSC7","PSC8"
+  ];
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+  const COL = "confirmacoes";
+
+  let dados = [];
+  let tabAtual = "todos";
+  let unsubscribe = null;
+
+  // LOGIN
+  document.getElementById("btn-login").addEventListener("click", login);
+  document.getElementById("senha").addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+
+  function login() {
+    const val = document.getElementById("senha").value;
+    if (val === SENHA) {
+      document.getElementById("login-view").classList.remove("visible");
+      document.getElementById("painel-view").classList.add("visible");
+      iniciarListener();
+    } else {
+      document.getElementById("login-error").innerHTML = `<div class="error-msg">Senha incorreta.</div>`;
+    }
+  }
+
+  // SAIR
+  document.getElementById("btn-sair").addEventListener("click", () => {
+    if (unsubscribe) unsubscribe();
+    dados = [];
+    document.getElementById("painel-view").classList.remove("visible");
+    document.getElementById("login-view").classList.add("visible");
+    document.getElementById("senha").value = "";
+  });
+
+  // TABS
+  document.querySelectorAll(".tab").forEach(t => {
+    t.addEventListener("click", () => {
+      tabAtual = t.dataset.tab;
+      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+      t.classList.add("active");
+      document.getElementById("busca").value = "";
+      renderizar();
+    });
+  });
+
+  // BUSCA
+  document.getElementById("busca").addEventListener("input", renderizar);
+
+  // LISTENER TEMPO REAL
+  function iniciarListener() {
+    unsubscribe = onSnapshot(collection(db, COL), snap => {
+      dados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderizar();
+    }, err => {
+      document.getElementById("lista").innerHTML = `<p class="empty">Erro ao carregar dados.<br>Verifique as regras do Firestore.</p>`;
+    });
+  }
+
+  // REMOVER
+  async function remover(id) {
+    if (!confirm("Remover esta entrada?")) return;
+    await deleteDoc(doc(db, COL, id));
+  }
+
+  // RENDERIZAR
+  function renderizar() {
+    const sim       = dados.filter(d => d.resposta === "sim");
+    const nao       = dados.filter(d => d.resposta === "nao");
+    const respondidas = dados.map(d => d.unidade);
+    const pendentes   = TODAS_ROTAS.filter(r => !respondidas.includes(r));
+
+    document.getElementById("cnt-sim").textContent  = sim.length;
+    document.getElementById("cnt-nao").textContent  = nao.length;
+    document.getElementById("cnt-pend").textContent = pendentes.length;
+
+    // atualiza label das tabs
+    document.querySelectorAll(".tab").forEach(t => {
+      const counts = { todos: dados.length, sim: sim.length, nao: nao.length, pendentes: pendentes.length };
+      const labels = { todos: "Todos", sim: "Confirmadas", nao: "Não confirmadas", pendentes: "Pendentes" };
+      t.textContent = `${labels[t.dataset.tab]} (${counts[t.dataset.tab]})`;
+    });
+
+    const busca = (document.getElementById("busca").value || "").toLowerCase();
+    const lista = document.getElementById("lista");
+
+    if (tabAtual === "pendentes") {
+      const filtrados = pendentes.filter(r => r.toLowerCase().includes(busca));
+      lista.innerHTML = filtrados.length === 0
+        ? `<p class="empty">✅ Todas as unidades responderam!</p>`
+        : filtrados.map(r => `
+            <div class="pending-item">
+              <span>${r}</span>
+              <span style="font-size:11px;color:#ccc">aguardando</span>
+            </div>`).join("");
+      return;
+    }
+
+    let fonte = tabAtual === "sim" ? sim : tabAtual === "nao" ? nao : dados;
+    if (busca) fonte = fonte.filter(d => d.unidade.toLowerCase().includes(busca));
+
+    lista.innerHTML = fonte.length === 0
+      ? `<p class="empty">Nenhuma resposta ainda.</p>`
+      : fonte.map(d => `
+          <div class="list-item">
+            <div style="flex:1;min-width:0">
+              <div class="item-name">${d.unidade}</div>
+              <div class="item-ts">${d.data || ""}</div>
+              ${d.obs ? `<div class="item-obs">📝 ${d.obs}</div>` : ""}
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-top:2px">
+              <span class="badge ${d.resposta}">${d.resposta === "sim" ? "Confirmada" : "Não confirmada"}</span>
+              <button class="del-btn" data-id="${d.id}" title="Remover">✕</button>
+            </div>
+          </div>`).join("");
+
+    // eventos de remoção
+    lista.querySelectorAll(".del-btn").forEach(btn => {
+      btn.addEventListener("click", () => remover(btn.dataset.id));
+    });
+  }
+</script>
+</body>
+</html>
