@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Biocondutor na Rota</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f4f6f8;
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .container { width: 100%; max-width: 480px; }
+
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.75rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 1rem;
+    }
+
+    .logo {
+      width: 48px; height: 48px;
+      background: #1D9E75;
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1rem;
+    }
+    .logo svg { width: 26px; height: 26px; stroke: #fff; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    h1 { font-size: 20px; font-weight: 600; color: #111; margin-bottom: 4px; }
+    .subtitle { font-size: 14px; color: #666; margin-bottom: 1.5rem; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 1.5rem;
+    }
+    .stat {
+      background: #f4f6f8;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+    .stat-val { font-size: 22px; font-weight: 600; color: #111; }
+    .stat-val.green { color: #0F6E56; }
+    .stat-val.red { color: #A32D2D; }
+    .stat-label { font-size: 11px; color: #888; margin-top: 2px; }
+
+    label { font-size: 13px; color: #555; display: block; margin-bottom: 6px; }
+
+    select {
+      width: 100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid #dde1e7;
+      background: #fff;
+      color: #111;
+      font-size: 14px;
+      padding: 0 12px;
+      cursor: pointer;
+      margin-bottom: 1.25rem;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    select:focus { outline: none; border-color: #1D9E75; }
+
+    .btn-group { display: flex; flex-direction: column; gap: 10px; }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.15s;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn:active { opacity: 0.85; }
+
+    .btn-sim { background: #E1F5EE; color: #085041; border: 1px solid #5DCAA5; }
+    .btn-sim:hover:not(:disabled) { background: #9FE1CB; }
+    .btn-nao { background: #FCEBEB; color: #791F1F; border: 1px solid #F09595; }
+    .btn-nao:hover:not(:disabled) { background: #F7C1C1; }
+    .btn-send { background: #FCEBEB; color: #791F1F; border: 1px solid #F09595; margin-top: 4px; }
+    .btn-send:hover:not(:disabled) { background: #F7C1C1; }
+
+    .obs-area {
+      display: none;
+      margin-top: 14px;
+      animation: fadeIn 0.2s ease;
+    }
+    .obs-area.visible { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; } }
+
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #dde1e7;
+      font-size: 14px;
+      font-family: inherit;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 80px;
+      color: #111;
+      margin-bottom: 10px;
+    }
+    textarea:focus { outline: none; border-color: #1D9E75; }
+
+    .msg {
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 12px;
+      display: none;
+    }
+    .msg.success { background: #E1F5EE; color: #085041; border: 1px solid #5DCAA5; display: block; }
+    .msg.error { background: #FCEBEB; color: #791F1F; border: 1px solid #F09595; display: block; }
+    .msg.loading { background: #f4f6f8; color: #555; border: 1px solid #dde1e7; display: block; }
+
+    .footer { text-align: center; font-size: 12px; color: #aaa; margin-top: 1rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <div class="logo">
+      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+    </div>
+    <h1>Biocondutor na Rota</h1>
+    <p class="subtitle">Confirme a presença da sua unidade</p>
+
+    <div class="stats">
+      <div class="stat"><div class="stat-val green" id="cnt-sim">—</div><div class="stat-label">confirmadas</div></div>
+      <div class="stat"><div class="stat-val red" id="cnt-nao">—</div><div class="stat-label">não confirmadas</div></div>
+      <div class="stat"><div class="stat-val" id="cnt-pend">—</div><div class="stat-label">pendentes</div></div>
+    </div>
+
+    <label for="sel-unidade">Selecione sua unidade</label>
+    <select id="sel-unidade">
+      <option value="">Selecione...</option>
+      <optgroup label="São Paulo">
+        <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option>
+        <option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option>
+        <option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option>
+        <option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option>
+        <option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option>
+        <option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option>
+        <option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option>
+        <option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option>
+        <option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option>
+        <option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option>
+        <option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option>
+        <option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option>
+        <option>SAO PAULO 50</option><option>SAO PAULO 51</option>
+      </optgroup>
+      <optgroup label="Outros">
+        <option>NTHCC</option>
+        <option>PSC3</option><option>PSC4</option><option>PSC5</option>
+        <option>PSC6</option><option>PSC7</option><option>PSC8</option>
+      </optgroup>
+    </select>
+
+    <div class="btn-group">
+      <button class="btn btn-sim" id="btn-sim" onclick="confirmar('sim')">
+        ✓ Presença confirmada
+      </button>
+      <button class="btn btn-nao" id="btn-nao" onclick="abrirObs()">
+        ✗ Presença não confirmada
+      </button>
+    </div>
+
+    <div class="obs-area" id="obs-area">
+      <label for="obs-text">Motivo da não confirmação <span style="color:#aaa;font-size:12px;">(opcional)</span></label>
+      <textarea id="obs-text" placeholder="Ex: condutor de férias, veículo em manutenção..."></textarea>
+      <button class="btn btn-send" onclick="confirmar('nao')">
+        Confirmar não presença
+      </button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="footer">Biocondutor na Rota &mdash; Confirmação de presença</div>
+</div>
+
+<script>
+  // =============================================
+  // COLE AQUI A URL DO SEU GOOGLE APPS SCRIPT
+  // =============================================
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzqZKBApTwrhA_3jTRewJmdAaOXkCqwH4AIb6bpnaz-XhUO8WV8JVUcs9qKTpEAe2uLhQ/exec";
+  // =============================================
+
+  const TOTAL_ROTAS = 45;
+
+  async function carregarStats() {
+    try {
+      const r = await fetch(SCRIPT_URL + "?action=stats");
+      const d = await r.json();
+      document.getElementById("cnt-sim").textContent = d.sim ?? 0;
+      document.getElementById("cnt-nao").textContent = d.nao ?? 0;
+      document.getElementById("cnt-pend").textContent = TOTAL_ROTAS - (d.sim ?? 0) - (d.nao ?? 0);
+    } catch(e) {
+      document.getElementById("cnt-sim").textContent = "—";
+      document.getElementById("cnt-nao").textContent = "—";
+      document.getElementById("cnt-pend").textContent = "—";
+    }
+  }
+
+  function abrirObs() {
+    const unidade = document.getElementById("sel-unidade").value;
+    if (!unidade) { showMsg("Por favor, selecione sua unidade.", "error"); return; }
+    document.getElementById("obs-area").classList.add("visible");
+    document.getElementById("msg").className = "msg";
+  }
+
+  async function confirmar(resp) {
+    const unidade = document.getElementById("sel-unidade").value;
+    if (!unidade) { showMsg("Por favor, selecione sua unidade.", "error"); return; }
+    const obs = resp === "nao" ? document.getElementById("obs-text").value.trim() : "";
+
+    setBtns(true);
+    showMsg("Enviando...", "loading");
+
+    try {
+      const body = new FormData();
+      body.append("action", "registrar");
+      body.append("unidade", unidade);
+      body.append("resposta", resp);
+      body.append("obs", obs);
+
+      const r = await fetch(SCRIPT_URL, { method: "POST", body });
+      const d = await r.json();
+
+      if (d.status === "ok") {
+        showMsg(resp === "sim"
+          ? "✓ Presença confirmada para " + unidade + "!"
+          : "✗ Não confirmação registrada para " + unidade + ".", "success");
+        document.getElementById("sel-unidade").value = "";
+        document.getElementById("obs-text").value = "";
+        document.getElementById("obs-area").classList.remove("visible");
+        carregarStats();
+      } else if (d.status === "duplicado") {
+        showMsg("Esta unidade já foi registrada. Fale com o organizador para corrigir.", "error");
+      } else {
+        showMsg("Erro ao enviar. Tente novamente.", "error");
+      }
+    } catch(e) {
+      showMsg("Erro de conexão. Verifique sua internet.", "error");
+    }
+
+    setBtns(false);
+  }
+
+  function setBtns(disabled) {
+    document.getElementById("btn-sim").disabled = disabled;
+    document.getElementById("btn-nao").disabled = disabled;
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById("msg");
+    el.textContent = text;
+    el.className = "msg " + type;
+  }
+
+  carregarStats();
+  setInterval(carregarStats, 30000);
+</script>
+</body>
+</html>
