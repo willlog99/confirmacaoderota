@@ -14,11 +14,11 @@
     h1{font-size:21px;font-weight:700;color:#111;margin-bottom:4px}
     .subtitle{font-size:14px;color:#777;margin-bottom:1.5rem}
     label{font-size:13px;color:#555;font-weight:500;display:block;margin-bottom:6px}
-    input[type="password"]{width:100%;height:44px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:10px;transition:border-color .2s}
+    input[type="password"]{width:100%;height:44px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:10px}
     input[type="password"]:focus{outline:none;border-color:#1D9E75}
-    input[type="text"]{width:100%;height:40px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:12px;transition:border-color .2s}
+    input[type="text"]{width:100%;height:40px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:12px}
     input[type="text"]:focus{outline:none;border-color:#1D9E75}
-    .btn-login{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff;transition:opacity .2s}
+    .btn-login{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff}
     .btn-login:hover{opacity:.9}
     .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
     .stat{background:#f0f4f8;border-radius:12px;padding:14px;text-align:center}
@@ -27,7 +27,7 @@
     .stat-val.red{color:#A32D2D}
     .stat-label{font-size:12px;color:#888;margin-top:2px}
     .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
-    .tab{padding:7px 16px;font-size:13px;border-radius:8px;border:1.5px solid #e2e8f0;cursor:pointer;color:#666;background:#fff;font-weight:500;transition:all .15s}
+    .tab{padding:7px 16px;font-size:13px;border-radius:8px;border:1.5px solid #e2e8f0;cursor:pointer;color:#666;background:#fff;font-weight:500}
     .tab.active{background:#f0f4f8;color:#111;border-color:#ccc}
     .tab:hover:not(.active){background:#f8f9fb}
     .list-item{display:flex;align-items:flex-start;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f2f5;gap:12px}
@@ -38,7 +38,7 @@
     .badge{font-size:11px;padding:4px 12px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0;margin-top:2px}
     .badge.sim{background:#E1F5EE;color:#085041}
     .badge.nao{background:#FCEBEB;color:#791F1F}
-    .pending-item{padding:11px 0;border-bottom:1px solid #f0f2f5;font-size:14px;color:#999;display:flex;justify-content:space-between;align-items:center}
+    .pending-item{padding:11px 0;border-bottom:1px solid #f0f2f5;font-size:14px;color:#999;display:flex;justify-content:space-between}
     .pending-item:last-child{border-bottom:none}
     .empty{text-align:center;padding:2.5rem;color:#ccc;font-size:14px}
     .error-msg{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:8px}
@@ -49,8 +49,9 @@
     #login-view.visible,#painel-view.visible{display:block}
     .sair-btn{font-size:12px;color:#bbb;background:none;border:none;cursor:pointer;text-decoration:underline}
     .sair-btn:hover{color:#333}
-    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 5px;border-radius:6px;transition:color .15s}
+    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 5px;border-radius:6px}
     .del-btn:hover{color:#e55}
+    .refresh-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;text-decoration:underline;margin-left:10px}
   </style>
 </head>
 <body>
@@ -76,9 +77,12 @@
     <div class="card">
       <div class="header-row">
         <h1>Painel do Organizador</h1>
-        <button class="sair-btn" id="btn-sair">Sair</button>
+        <div>
+          <button class="refresh-btn" id="btn-refresh">↻ Atualizar</button>
+          <button class="sair-btn" id="btn-sair">Sair</button>
+        </div>
       </div>
-      <p class="subtitle"><span class="live-dot"></span>Atualizando em tempo real</p>
+      <p class="subtitle"><span class="live-dot"></span><span id="update-label">Carregando...</span></p>
 
       <div class="stats">
         <div class="stat"><div class="stat-val green" id="cnt-sim">—</div><div class="stat-label">confirmadas</div></div>
@@ -86,7 +90,7 @@
         <div class="stat"><div class="stat-val"       id="cnt-pend">—</div><div class="stat-label">pendentes</div></div>
       </div>
 
-      <div class="tabs">
+      <div class="tabs" id="tabs">
         <button class="tab active" data-tab="todos">Todos</button>
         <button class="tab" data-tab="sim">Confirmadas</button>
         <button class="tab" data-tab="nao">Não confirmadas</button>
@@ -100,18 +104,11 @@
 
 </div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyB5dcZ80acOycXOGLzwaFh5ToLKJe--qQ0",
-    authDomain: "rotas-motoboy.firebaseapp.com",
-    projectId: "rotas-motoboy",
-    storageBucket: "rotas-motoboy.firebasestorage.app",
-    messagingSenderId: "811828900156",
-    appId: "1:811828900156:web:dc5e54af1e83df0af1ee39"
-  };
+<script>
+  const BIN_ID  = "69ff8708c0954111d8fd7f25";
+  const API_KEY = "$2a$10$Si6jDnYHXDazpQIFog2acOGgAhByywIsPeCkF7CYkm0XextB/yGii";
+  const BASE    = "https://api.jsonbin.io/v3/b/" + BIN_ID;
+  const HEADERS = { "Content-Type": "application/json", "X-Master-Key": API_KEY };
 
   const SENHA = "biocondutor2025";
   const TODAS_ROTAS = [
@@ -126,13 +123,23 @@
     "NTHCC","PSC3","PSC4","PSC5","PSC6","PSC7","PSC8"
   ];
 
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-  const COL = "confirmacoes";
-
   let dados = [];
   let tabAtual = "todos";
-  let unsubscribe = null;
+  let intervalo = null;
+
+  async function lerDados() {
+    const r = await fetch(BASE + "/latest", { headers: { "X-Master-Key": API_KEY } });
+    const d = await r.json();
+    return d.record.confirmacoes || [];
+  }
+
+  async function salvarDados(lista) {
+    await fetch(BASE, {
+      method: "PUT",
+      headers: HEADERS,
+      body: JSON.stringify({ confirmacoes: lista })
+    });
+  }
 
   // LOGIN
   document.getElementById("btn-login").addEventListener("click", login);
@@ -143,7 +150,8 @@
     if (val === SENHA) {
       document.getElementById("login-view").classList.remove("visible");
       document.getElementById("painel-view").classList.add("visible");
-      iniciarListener();
+      carregar();
+      intervalo = setInterval(carregar, 30000);
     } else {
       document.getElementById("login-error").innerHTML = `<div class="error-msg">Senha incorreta.</div>`;
     }
@@ -151,44 +159,49 @@
 
   // SAIR
   document.getElementById("btn-sair").addEventListener("click", () => {
-    if (unsubscribe) unsubscribe();
+    clearInterval(intervalo);
     dados = [];
     document.getElementById("painel-view").classList.remove("visible");
     document.getElementById("login-view").classList.add("visible");
     document.getElementById("senha").value = "";
   });
 
+  // ATUALIZAR
+  document.getElementById("btn-refresh").addEventListener("click", carregar);
+
   // TABS
-  document.querySelectorAll(".tab").forEach(t => {
-    t.addEventListener("click", () => {
-      tabAtual = t.dataset.tab;
-      document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
-      t.classList.add("active");
-      document.getElementById("busca").value = "";
-      renderizar();
-    });
+  document.getElementById("tabs").addEventListener("click", e => {
+    const tab = e.target.closest(".tab");
+    if (!tab) return;
+    tabAtual = tab.dataset.tab;
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById("busca").value = "";
+    renderizar();
   });
 
   // BUSCA
   document.getElementById("busca").addEventListener("input", renderizar);
 
-  // LISTENER TEMPO REAL
-  function iniciarListener() {
-    unsubscribe = onSnapshot(collection(db, COL), snap => {
-      dados = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  async function carregar() {
+    try {
+      dados = await lerDados();
       renderizar();
-    }, err => {
-      document.getElementById("lista").innerHTML = `<p class="empty">Erro ao carregar dados.<br>Verifique as regras do Firestore.</p>`;
-    });
+      const agora = new Date().toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+      document.getElementById("update-label").textContent = "Atualizado às " + agora;
+    } catch(e) {
+      document.getElementById("lista").innerHTML = `<p class="empty">Erro ao carregar. Tente atualizar.</p>`;
+    }
   }
 
-  // REMOVER
-  async function remover(id) {
+  async function remover(idx) {
     if (!confirm("Remover esta entrada?")) return;
-    await deleteDoc(doc(db, COL, id));
+    const lista = await lerDados();
+    lista.splice(idx, 1);
+    await salvarDados(lista);
+    await carregar();
   }
 
-  // RENDERIZAR
   function renderizar() {
     const sim       = dados.filter(d => d.resposta === "sim");
     const nao       = dados.filter(d => d.resposta === "nao");
@@ -199,7 +212,6 @@
     document.getElementById("cnt-nao").textContent  = nao.length;
     document.getElementById("cnt-pend").textContent = pendentes.length;
 
-    // atualiza label das tabs
     document.querySelectorAll(".tab").forEach(t => {
       const counts = { todos: dados.length, sim: sim.length, nao: nao.length, pendentes: pendentes.length };
       const labels = { todos: "Todos", sim: "Confirmadas", nao: "Não confirmadas", pendentes: "Pendentes" };
@@ -226,7 +238,9 @@
 
     lista.innerHTML = fonte.length === 0
       ? `<p class="empty">Nenhuma resposta ainda.</p>`
-      : fonte.map(d => `
+      : fonte.map((d, i) => {
+          const realIdx = dados.indexOf(d);
+          return `
           <div class="list-item">
             <div style="flex:1;min-width:0">
               <div class="item-name">${d.unidade}</div>
@@ -235,14 +249,10 @@
             </div>
             <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-top:2px">
               <span class="badge ${d.resposta}">${d.resposta === "sim" ? "Confirmada" : "Não confirmada"}</span>
-              <button class="del-btn" data-id="${d.id}" title="Remover">✕</button>
+              <button class="del-btn" onclick="remover(${realIdx})" title="Remover">✕</button>
             </div>
-          </div>`).join("");
-
-    // eventos de remoção
-    lista.querySelectorAll(".del-btn").forEach(btn => {
-      btn.addEventListener("click", () => remover(btn.dataset.id));
-    });
+          </div>`;
+        }).join("");
   }
 </script>
 </body>
