@@ -43,24 +43,26 @@
 
     .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
     .check-btn:hover{border-color:#1D9E75}
-    .check-btn.checked{background:#1D9E75;border-color:#1D9E75;color:#fff;cursor:not-allowed;}
+    .check-btn.checked{background:#1D9E75;border-color:#1D9E75;color:#fff;cursor:not-allowed}
     .check-btn.loading{opacity:.5;cursor:not-allowed;pointer-events:none}
 
     .cliente-info{flex:1;min-width:0}
     .cliente-nome{font-size:15px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cliente-meta{font-size:12px;color:#aaa;margin-top:2px}
-    .horario-badge{background:#f0f4f8;color:#555;font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
-    .horario-badge.entregue{background:#E1F5EE;color:#085041}
+    .cliente-meta{font-size:12px;color:#aaa;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
     .entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:3px}
 
-    /* BOTÃO FINALIZAR */
+    .horario-badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+    .horario-badge.normal{background:#f0f4f8;color:#555}
+    .horario-badge.entregue{background:#E1F5EE;color:#085041}
+    .horario-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
+    .horario-badge.sob-demanda{background:#FEF3C7;color:#92400E}
+
     .footer-bar{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem;background:#fff;box-shadow:0 -2px 12px rgba(0,0,0,0.08);z-index:100}
     .btn-finalizar{width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
     .btn-finalizar:hover{opacity:.9}
     .btn-finalizar:disabled{opacity:.5;cursor:not-allowed}
     .btn-finalizar.concluida{background:linear-gradient(135deg,#6366f1,#4f46e5)}
 
-    /* MODAL */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
     .modal-overlay.hidden{display:none}
     .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px;animation:slideUp .25s ease}
@@ -72,7 +74,6 @@
     .modal-btn-sim{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff}
     .modal-btn-nao{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555}
 
-    /* CELEBRAÇÃO */
     .celebration{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s}
     .celebration.hidden{display:none}
     .celebration-box{background:#fff;border-radius:20px;padding:2rem 1.75rem;text-align:center;max-width:300px;margin:1rem;animation:slideUp .3s ease}
@@ -119,14 +120,12 @@
   <div class="loading-msg">Carregando...</div>
 </div>
 
-<!-- BOTÃO FIXO -->
 <div class="footer-bar">
   <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModal()">
     🏁 Finalizar Rota
   </button>
 </div>
 
-<!-- MODAL CONFIRMAÇÃO -->
 <div class="modal-overlay hidden" id="modal-overlay">
   <div class="modal">
     <h2>Finalizar a rota?</h2>
@@ -138,13 +137,12 @@
   </div>
 </div>
 
-<!-- CELEBRAÇÃO -->
 <div class="celebration hidden" id="celebration">
   <div class="celebration-box">
     <div class="celebration-icon">🎉</div>
     <h2>Rota finalizada!</h2>
     <p id="celebration-msg">Parabéns! Todas as entregas foram concluídas.</p>
-    <button class="celebration-btn" onclick="fecharCelebracao()">Voltar ao início</button>
+    <button class="celebration-btn" onclick="fecharCelebracao()">Continuar</button>
   </div>
 </div>
 
@@ -154,7 +152,7 @@
   const rota = localStorage.getItem('motoboy_rota');
   const tel  = localStorage.getItem('motoboy_tel');
 
-  if (!rota || !tel) { window.location.href = 'index.html'; }
+  if (!rota || !tel) window.location.href = 'index.html';
 
   document.getElementById('header-nome').textContent = nome || 'Minha Rota';
   document.getElementById('header-rota').textContent = rota || '—';
@@ -183,12 +181,9 @@
   }
 
   async function ticar(id, jaEntregue) {
-    // Bloqueia destique — só permite ticar uma vez
     if (jaEntregue) return;
-
     const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
     if (btn) btn.classList.add('loading');
-
     try {
       const r = await fetch(API + '/ticar', {
         method: 'POST',
@@ -198,43 +193,58 @@
       const d = await r.json();
       if (d.status === 'ok') {
         const c = clientes.find(c => c.id === id);
-        if (c) {
-          c.status = 'entregue';
-          c.horario_entrega = d.horario_entrega;
-        }
+        if (c) { c.status = 'entregue'; c.horario_entrega = d.horario_entrega; }
         renderizar();
       }
-    } catch(e) {
-      if (btn) btn.classList.remove('loading');
+    } catch(e) { if (btn) btn.classList.remove('loading'); }
+  }
+
+  function getTipoBadge(c) {
+    const entregue = c.status === 'entregue';
+    const tipo = (c.tipo || 'normal').toLowerCase();
+    if (tipo === 'contra pedido' || tipo === 'contra_pedido') {
+      return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
     }
+    if (tipo === 'sob demanda' || tipo === 'sob_demanda') {
+      return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
+    }
+    return `<span class="horario-badge ${entregue ? 'entregue' : 'normal'}">${c.horario || '—'}</span>`;
+  }
+
+  function cardHTML(c) {
+    const entregue = c.status === 'entregue';
+    return `
+      <div class="cliente-card ${entregue ? 'entregue' : ''}">
+        <button class="check-btn ${entregue ? 'checked' : ''}" data-id="${c.id}">
+          ${entregue ? '✓' : ''}
+        </button>
+        <div class="cliente-info">
+          <div class="cliente-nome">${c.nome}</div>
+          <div class="cliente-meta"><span>Nº ${c.numero_cliente}</span></div>
+          ${entregue && c.horario_entrega ? `<div class="entrega-ts">✓ Entregue às ${c.horario_entrega}</div>` : ''}
+        </div>
+        ${getTipoBadge(c)}
+      </div>`;
   }
 
   function abrirModal() {
     const pendentes = clientes.filter(c => c.status !== 'entregue').length;
     const total = clientes.length;
-    const entregues = total - pendentes;
-
     if (total === 0) return;
-
     const msg = pendentes === 0
       ? `Todas as ${total} entregas foram concluídas. Deseja finalizar a rota?`
-      : `${entregues} de ${total} entregues. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Deseja finalizar mesmo assim?`;
-
+      : `${total - pendentes} de ${total} entregues. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Deseja finalizar mesmo assim?`;
     document.getElementById('modal-msg').textContent = msg;
     document.getElementById('modal-overlay').classList.remove('hidden');
   }
 
-  function fecharModal() {
-    document.getElementById('modal-overlay').classList.add('hidden');
-  }
+  function fecharModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
 
   async function finalizarRota() {
     fecharModal();
     const btn = document.getElementById('btn-finalizar');
     btn.disabled = true;
     btn.textContent = 'Finalizando...';
-
-    // Ticar todos os pendentes
     const pendentes = clientes.filter(c => c.status !== 'entregue');
     for (const c of pendentes) {
       try {
@@ -244,27 +254,16 @@
           body: JSON.stringify({ id: c.id, telefone_motoboy: tel })
         });
         c.status = 'entregue';
-        c.horario_entrega = new Date().toLocaleString('pt-BR', {
-          timeZone: 'America/Sao_Paulo',
-          day:'2-digit', month:'2-digit', year:'numeric',
-          hour:'2-digit', minute:'2-digit'
-        });
+        c.horario_entrega = new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
       } catch(e) {}
     }
-
     renderizar();
-
-    // Mostrar celebração
     const total = clientes.length;
-    document.getElementById('celebration-msg').textContent =
-      `${total} entrega${total>1?'s':''} concluída${total>1?'s':''}. Bom trabalho!`;
+    document.getElementById('celebration-msg').textContent = `${total} entrega${total>1?'s':''} concluída${total>1?'s':''}. Bom trabalho!`;
     document.getElementById('celebration').classList.remove('hidden');
   }
 
-  function fecharCelebracao() {
-    document.getElementById('celebration').classList.add('hidden');
-    // Não sai da página — apenas esconde a celebração
-  }
+  function fecharCelebracao() { document.getElementById('celebration').classList.add('hidden'); }
 
   function renderizar() {
     const busca = (document.getElementById('busca').value || '').toLowerCase();
@@ -279,7 +278,6 @@
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-label').textContent = pct + '% concluído';
 
-    // Botão finalizar
     const btnFin = document.getElementById('btn-finalizar');
     if (pct === 100) {
       btnFin.classList.add('concluida');
@@ -292,8 +290,7 @@
 
     let fonte = somentePendentes ? pendentes : clientes;
     if (busca) fonte = fonte.filter(c =>
-      c.nome.toLowerCase().includes(busca) ||
-      c.numero_cliente.toLowerCase().includes(busca)
+      c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca)
     );
 
     if (fonte.length === 0) {
@@ -303,7 +300,6 @@
 
     const pendFiltrados = fonte.filter(c => c.status !== 'entregue');
     const entrFiltrados = fonte.filter(c => c.status === 'entregue');
-
     let html = '';
     if (pendFiltrados.length > 0) {
       if (!somentePendentes && entrFiltrados.length > 0) html += `<div class="section-title">Pendentes (${pendFiltrados.length})</div>`;
@@ -322,22 +318,6 @@
         ticar(id, jaEntregue);
       });
     });
-  }
-
-  function cardHTML(c) {
-    const entregue = c.status === 'entregue';
-    return `
-      <div class="cliente-card ${entregue ? 'entregue' : ''}">
-        <button class="check-btn ${entregue ? 'checked' : ''}" data-id="${c.id}">
-          ${entregue ? '✓' : ''}
-        </button>
-        <div class="cliente-info">
-          <div class="cliente-nome">${c.nome}</div>
-          <div class="cliente-meta">Nº ${c.numero_cliente}</div>
-          ${entregue && c.horario_entrega ? `<div class="entrega-ts">✓ Entregue às ${c.horario_entrega}</div>` : ''}
-        </div>
-        <div class="horario-badge ${entregue ? 'entregue' : ''}">${c.horario}</div>
-      </div>`;
   }
 
   function sair() {
