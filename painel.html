@@ -7,34 +7,47 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:0 0 3rem}
-
-    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.5rem 1.25rem;color:#fff;margin-bottom:0}
+    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.5rem 1.25rem;color:#fff}
     .header h1{font-size:20px;font-weight:700;margin-bottom:2px}
     .header .sub{font-size:13px;opacity:.8}
-
-    .tabs{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;overflow-x:auto;margin-bottom:1.25rem}
+    .tabs{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;overflow-x:auto}
     .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#888;border-bottom:2px solid transparent;white-space:nowrap}
     .tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
-
-    .container{padding:0 1.25rem}
+    .container{padding:1rem 1.25rem 0}
     .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem}
-    .card-title{font-size:15px;font-weight:700;color:#111;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
-    .card-title .refresh-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:500}
-
+    .card-title{font-size:15px;font-weight:700;color:#111;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .refresh-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:500}
     .form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-    .form-row input,.form-row select{flex:1;min-width:120px;height:40px;border-radius:9px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 10px;color:#111}
+    .form-row input,.form-row select{flex:1;min-width:110px;height:40px;border-radius:9px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 10px;color:#111}
     .form-row input:focus,.form-row select:focus{outline:none;border-color:#1D9E75}
     .btn-add{height:40px;padding:0 16px;border-radius:9px;border:none;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
     .btn-add:hover{opacity:.9}
-    .btn-add:disabled{opacity:.5;cursor:not-allowed}
 
-    .item-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
-    .item-row:last-child{border-bottom:none}
-    .item-info{flex:1;min-width:0}
-    .item-name{font-size:14px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .item-sub{font-size:12px;color:#aaa;margin-top:2px}
-    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:18px;padding:3px 6px;border-radius:6px;flex-shrink:0}
+    .cl-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .cl-item:last-child{border-bottom:none}
+    .cl-item.entregue .cl-nome{color:#aaa;text-decoration:line-through}
+    .cl-info{flex:1;min-width:0}
+    .cl-nome{font-size:14px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cl-sub{font-size:12px;color:#aaa;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .cl-entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:2px}
+    .cl-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
+    .btn-desfazer{background:#FEF9EC;border:1px solid #F2CC70;color:#92400E;font-size:11px;padding:4px 8px;border-radius:7px;cursor:pointer;font-weight:500;white-space:nowrap}
+    .btn-desfazer:hover{background:#FEF3C7}
+    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:17px;padding:3px 5px;border-radius:6px}
     .del-btn:hover{color:#e55;background:#fff0f0}
+
+    .tipo-badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .tipo-badge.normal{background:#f0f4f8;color:#555}
+    .tipo-badge.entregue{background:#E1F5EE;color:#085041}
+    .tipo-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
+    .tipo-badge.sob-demanda{background:#FEF3C7;color:#92400E}
+    .tipo-badge.pendente{background:#f0f4f8;color:#888}
+
+    .mb-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .mb-item:last-child{border-bottom:none}
+    .mb-info{flex:1;min-width:0}
+    .mb-nome{font-size:14px;font-weight:600;color:#111}
+    .mb-sub{font-size:12px;color:#aaa;margin-top:2px}
 
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem}
     .stat-card{background:#f0f4f8;border-radius:12px;padding:14px;text-align:center}
@@ -51,7 +64,7 @@
     .rota-pct{font-size:13px;font-weight:700;color:#1D9E75}
     .rota-pct.done{color:#0F6E56}
     .prog-bar{background:#f0f4f8;border-radius:99px;height:5px;overflow:hidden}
-    .prog-fill{background:linear-gradient(90deg,#1D9E75,#0d7a5a);height:100%;border-radius:99px;transition:width .4s}
+    .prog-fill{background:linear-gradient(90deg,#1D9E75,#0d7a5a);height:100%;border-radius:99px}
     .rota-sub{font-size:11px;color:#aaa;margin-top:4px}
 
     .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
@@ -61,26 +74,27 @@
     .conf-obs{margin-top:5px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:7px;padding:6px 10px;font-size:12px;color:#6B4E00}
     .badge-sim{background:#E1F5EE;color:#085041;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
     .badge-nao{background:#FCEBEB;color:#791F1F;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
-    .del-conf{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 5px;border-radius:6px;flex-shrink:0}
-    .del-conf:hover{color:#e55}
 
-    /* RESET */
-    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem;border:1.5px solid #FEE2E2}
-    .reset-title{font-size:15px;font-weight:700;color:#991B1B;margin-bottom:6px}
+    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem}
+    .reset-card.danger{border:1.5px solid #FEE2E2}
+    .reset-card.warning{border:1.5px solid #FEF3C7}
+    .reset-title{font-size:15px;font-weight:700;margin-bottom:6px}
+    .reset-title.danger{color:#991B1B}
+    .reset-title.warning{color:#92400E}
     .reset-desc{font-size:13px;color:#777;margin-bottom:1rem;line-height:1.5}
-    .btn-reset{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5}
-    .btn-reset:hover{background:#FECACA}
+    .btn-reset-danger{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5}
+    .btn-reset-danger:hover{background:#FECACA}
+    .btn-reset-warn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEF9EC;color:#92400E;border:1.5px solid #FCD34D}
+    .btn-reset-warn:hover{background:#FEF3C7}
 
+    .filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+    .filter-row select,.filter-row input{height:36px;border-radius:9px;border:1.5px solid #e2e8f0;font-size:13px;padding:0 10px;color:#111;background:#fff}
+    .filter-row input{flex:1}
+
+    .badge-rota{font-size:11px;background:#f0f4f8;color:#555;padding:2px 7px;border-radius:5px}
     .empty{text-align:center;padding:2rem;color:#ccc;font-size:14px}
     .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
     .toast.show{opacity:1}
-
-    #view-motoboys,#view-clientes,#view-entregas,#view-confirmacoes,#view-reset{display:none}
-    #view-motoboys.active,#view-clientes.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
-
-    .badge-rota{font-size:11px;background:#f0f4f8;color:#555;padding:2px 8px;border-radius:6px}
-
-    /* MODAL */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
     .modal-overlay.hidden{display:none}
     .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
@@ -89,6 +103,12 @@
     .modal-btns{display:flex;flex-direction:column;gap:10px}
     .modal-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#DC2626;color:#fff}
     .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555}
+    #view-motoboys,#view-clientes,#view-entregas,#view-confirmacoes,#view-reset{display:none}
+    #view-motoboys.active,#view-clientes.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
+
+    /* horario condicional */
+    .horario-field{transition:all .2s}
+    .horario-field.hidden{display:none}
   </style>
 </head>
 <body>
@@ -114,13 +134,11 @@
       <div class="card-title">Cadastrar motoboy</div>
       <div class="form-row">
         <input type="text" id="mb-nome" placeholder="Nome completo"/>
-        <input type="tel" id="mb-tel" placeholder="Telefone (ex: 11999999999)"/>
+        <input type="tel" id="mb-tel" placeholder="Telefone (11999999999)"/>
       </div>
       <div class="form-row">
         <select id="mb-rota"><option value="">Selecione a rota...</option>
-          <optgroup label="São Paulo">
-            <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
-          </optgroup>
+          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
           <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
         </select>
         <button class="btn-add" onclick="addMotoboy()">+ Adicionar</button>
@@ -141,28 +159,32 @@
         <input type="text" id="cl-nome" placeholder="Nome do cliente"/>
       </div>
       <div class="form-row">
-        <input type="time" id="cl-horario"/>
+        <select id="cl-tipo" onchange="toggleHorario()">
+          <option value="normal">Normal</option>
+          <option value="contra pedido">Contra Pedido</option>
+          <option value="sob demanda">Sob Demanda</option>
+        </select>
+        <input type="time" id="cl-horario" class="horario-field"/>
+      </div>
+      <div class="form-row">
         <select id="cl-rota"><option value="">Rota...</option>
-          <optgroup label="São Paulo">
-            <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
-          </optgroup>
+          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
           <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
         </select>
         <button class="btn-add" onclick="addCliente()">+ Adicionar</button>
       </div>
     </div>
     <div class="card">
-      <div class="card-title">
-        Clientes por rota
-        <select id="filtro-rota-cl" onchange="carregarClientes()" style="height:32px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:13px;padding:0 8px">
+      <div class="card-title">Clientes <button class="refresh-btn" onclick="carregarClientes()">↻</button></div>
+      <div class="filter-row">
+        <select id="filtro-rota-cl" onchange="carregarClientes()">
           <option value="">Todas as rotas</option>
-          <optgroup label="São Paulo">
-            <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
-          </optgroup>
+          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
           <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
         </select>
+        <input type="text" id="busca-cl" placeholder="Buscar cliente..." oninput="filtrarClientes()"/>
       </div>
-      <div id="lista-clientes"><p class="empty">Carregando...</p></div>
+      <div id="lista-clientes"><p class="empty">Selecione uma rota ou busque acima.</p></div>
     </div>
   </div>
 
@@ -192,26 +214,24 @@
 
   <!-- RESET -->
   <div id="view-reset">
-    <div class="reset-card">
-      <div class="reset-title">🔄 Reset diário de entregas</div>
-      <div class="reset-desc">Zera o status de todas as entregas para "pendente". Use no início de cada dia antes dos motoboys começarem a rota. Esta ação não pode ser desfeita.</div>
-      <button class="btn-reset" onclick="abrirModalReset()">🔄 Resetar todas as entregas</button>
+    <div class="reset-card danger">
+      <div class="reset-title danger">🔄 Reset diário de entregas</div>
+      <div class="reset-desc">Zera o status de <strong>todas</strong> as entregas para "pendente". Use no início de cada dia.</div>
+      <button class="btn-reset-danger" onclick="abrirModal('modal-reset')">🔄 Resetar todas as entregas</button>
     </div>
-
-    <div class="reset-card" style="border-color:#FEF3C7">
-      <div class="reset-title" style="color:#92400E">🗑️ Limpar confirmações do Biocondutor</div>
-      <div class="reset-desc">Apaga todas as confirmações de presença do Biocondutor. Use quando quiser iniciar uma nova rodada de confirmações.</div>
-      <button class="btn-reset" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D" onclick="abrirModalResetConf()">🗑️ Limpar confirmações</button>
+    <div class="reset-card warning">
+      <div class="reset-title warning">🗑️ Limpar confirmações do Biocondutor</div>
+      <div class="reset-desc">Apaga todas as confirmações de presença. Use para iniciar uma nova rodada.</div>
+      <button class="btn-reset-warn" onclick="abrirModal('modal-reset-conf')">🗑️ Limpar confirmações</button>
     </div>
   </div>
 
 </div>
 
-<!-- MODAL RESET ENTREGAS -->
 <div class="modal-overlay hidden" id="modal-reset">
   <div class="modal">
     <h2>Resetar entregas?</h2>
-    <p>Todas as entregas voltarão para "pendente" e os horários de entrega serão apagados. Use no início de cada novo dia.</p>
+    <p>Todas as entregas voltarão para "pendente". Use no início de cada novo dia.</p>
     <div class="modal-btns">
       <button class="modal-sim" onclick="resetarEntregas()">Sim, resetar</button>
       <button class="modal-nao" onclick="fecharModal('modal-reset')">Cancelar</button>
@@ -219,11 +239,10 @@
   </div>
 </div>
 
-<!-- MODAL RESET CONFIRMAÇÕES -->
 <div class="modal-overlay hidden" id="modal-reset-conf">
   <div class="modal">
     <h2>Limpar confirmações?</h2>
-    <p>Todas as confirmações do Biocondutor serão apagadas. Esta ação não pode ser desfeita.</p>
+    <p>Todas as confirmações do Biocondutor serão apagadas.</p>
     <div class="modal-btns">
       <button class="modal-sim" onclick="resetarConfirmacoes()">Sim, limpar</button>
       <button class="modal-nao" onclick="fecharModal('modal-reset-conf')">Cancelar</button>
@@ -235,6 +254,20 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let todosClientes = [];
+
+  function toggleHorario() {
+    const tipo = document.getElementById('cl-tipo').value;
+    const horField = document.getElementById('cl-horario');
+    if (tipo === 'normal') {
+      horField.classList.remove('hidden');
+      horField.required = true;
+    } else {
+      horField.classList.add('hidden');
+      horField.required = false;
+      horField.value = '';
+    }
+  }
 
   function setTab(tab, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -255,9 +288,17 @@
     setTimeout(() => el.classList.remove('show'), 2500);
   }
 
-  function abrirModalReset() { document.getElementById('modal-reset').classList.remove('hidden'); }
-  function abrirModalResetConf() { document.getElementById('modal-reset-conf').classList.remove('hidden'); }
+  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
   function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+  function getTipoBadge(c) {
+    const entregue = c.status === 'entregue';
+    const tipo = (c.tipo || 'normal').toLowerCase();
+    if (tipo === 'contra pedido') return `<span class="tipo-badge contra-pedido">Contra Pedido</span>`;
+    if (tipo === 'sob demanda') return `<span class="tipo-badge sob-demanda">Sob Demanda</span>`;
+    if (entregue) return `<span class="tipo-badge entregue">${c.horario}</span>`;
+    return `<span class="tipo-badge normal">${c.horario}</span>`;
+  }
 
   // ── MOTOBOYS ──────────────────────────────────────
   async function carregarMotoboys() {
@@ -267,12 +308,12 @@
       const lista = document.getElementById('lista-motoboys');
       if (!d.motoboys?.length) { lista.innerHTML = '<p class="empty">Nenhum motoboy cadastrado.</p>'; return; }
       lista.innerHTML = d.motoboys.map(m => `
-        <div class="item-row">
-          <div class="item-info">
-            <div class="item-name">${m.nome}</div>
-            <div class="item-sub">${m.telefone} &middot; <span class="badge-rota">${m.rota}</span></div>
+        <div class="mb-item">
+          <div class="mb-info">
+            <div class="mb-nome">${m.nome}</div>
+            <div class="mb-sub">${m.telefone} &middot; <span class="badge-rota">${m.rota}</span></div>
           </div>
-          <button class="del-btn" onclick="delMotoboy(${m.id})">✕</button>
+          <button class="del-btn" onclick="delMotoboy(${m.id},'${m.nome.replace(/'/g,"\\'")}')">✕</button>
         </div>`).join('');
     } catch(e) { document.getElementById('lista-motoboys').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
@@ -282,7 +323,7 @@
     const tel  = document.getElementById('mb-tel').value.replace(/\D/g,'');
     const rota = document.getElementById('mb-rota').value;
     if (!nome || !tel || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
-    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone: tel, rota}) });
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota}) });
     document.getElementById('mb-nome').value = '';
     document.getElementById('mb-tel').value = '';
     document.getElementById('mb-rota').value = '';
@@ -290,8 +331,8 @@
     carregarMotoboys();
   }
 
-  async function delMotoboy(id) {
-    if (!confirm('Remover este motoboy?')) return;
+  async function delMotoboy(id, nome) {
+    if (!confirm(`Remover "${nome}"?`)) return;
     await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
     toast('Motoboy removido.', '#555');
     carregarMotoboys();
@@ -304,37 +345,71 @@
       const url = rota ? API + '/clientes?rota=' + encodeURIComponent(rota) : API + '/clientes';
       const r = await fetch(url);
       const d = await r.json();
-      const lista = document.getElementById('lista-clientes');
-      if (!d.clientes?.length) { lista.innerHTML = '<p class="empty">Nenhum cliente encontrado.</p>'; return; }
-      lista.innerHTML = d.clientes.map(c => `
-        <div class="item-row">
-          <div class="item-info">
-            <div class="item-name">${c.nome}</div>
-            <div class="item-sub">Nº ${c.numero_cliente} &middot; ${c.horario} &middot; <span class="badge-rota">${c.rota}</span></div>
-          </div>
-          <button class="del-btn" onclick="delCliente(${c.id})">✕</button>
-        </div>`).join('');
+      todosClientes = d.clientes || [];
+      filtrarClientes();
     } catch(e) { document.getElementById('lista-clientes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
 
+  function filtrarClientes() {
+    const busca = (document.getElementById('busca-cl').value || '').toLowerCase();
+    const lista = document.getElementById('lista-clientes');
+    const filtrados = busca ? todosClientes.filter(c =>
+      c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca)
+    ) : todosClientes;
+    if (!filtrados.length) { lista.innerHTML = '<p class="empty">Nenhum cliente encontrado.</p>'; return; }
+    lista.innerHTML = filtrados.map(c => {
+      const entregue = c.status === 'entregue';
+      const tipo = (c.tipo || 'normal').toLowerCase();
+      return `
+        <div class="cl-item ${entregue ? 'entregue' : ''}">
+          <div class="cl-info">
+            <div class="cl-nome">${c.nome}</div>
+            <div class="cl-sub">
+              <span>Nº ${c.numero_cliente}</span>
+              ${tipo === 'normal' ? `<span>${c.horario}</span>` : ''}
+              <span class="badge-rota">${c.rota}</span>
+            </div>
+            ${entregue && c.horario_entrega ? `<div class="cl-entrega-ts">✓ Entregue às ${c.horario_entrega}</div>` : ''}
+          </div>
+          <div class="cl-actions">
+            ${getTipoBadge(c)}
+            <span class="tipo-badge ${entregue ? 'entregue' : 'pendente'}">${entregue ? 'Entregue' : 'Pendente'}</span>
+            ${entregue ? `<button class="btn-desfazer" onclick="desfazerEntrega(${c.id})">↩ Voltar</button>` : ''}
+            <button class="del-btn" onclick="delCliente(${c.id},'${c.nome.replace(/'/g,"\\'")}')">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
   async function addCliente() {
-    const num     = document.getElementById('cl-num').value.trim();
-    const nome    = document.getElementById('cl-nome').value.trim();
-    const horario = document.getElementById('cl-horario').value;
-    const rota    = document.getElementById('cl-rota').value;
-    if (!num || !nome || !horario || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
-    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota}) });
+    const num   = document.getElementById('cl-num').value.trim();
+    const nome  = document.getElementById('cl-nome').value.trim();
+    const tipo  = document.getElementById('cl-tipo').value;
+    const horario = tipo === 'normal' ? document.getElementById('cl-horario').value : '00:00';
+    const rota  = document.getElementById('cl-rota').value;
+    if (!num || !nome || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
+    if (tipo === 'normal' && !horario) { toast('Informe o horário.', '#e55'); return; }
+    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota, tipo}) });
     document.getElementById('cl-num').value = '';
     document.getElementById('cl-nome').value = '';
     document.getElementById('cl-horario').value = '';
+    document.getElementById('cl-tipo').value = 'normal';
+    toggleHorario();
     toast('Cliente adicionado! ✓', '#1D9E75');
     carregarClientes();
   }
 
-  async function delCliente(id) {
-    if (!confirm('Remover este cliente?')) return;
+  async function delCliente(id, nome) {
+    if (!confirm(`Remover "${nome}"?`)) return;
     await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
     toast('Cliente removido.', '#555');
+    carregarClientes();
+  }
+
+  async function desfazerEntrega(id) {
+    if (!confirm('Voltar status para pendente?')) return;
+    await fetch(API + '/desticar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Status voltado para pendente. ↩', '#B45309');
     carregarClientes();
   }
 
@@ -344,39 +419,25 @@
       const r = await fetch(API + '/clientes');
       const d = await r.json();
       const clientes = d.clientes || [];
-
       const entregues = clientes.filter(c => c.status === 'entregue').length;
-      const pendentes = clientes.filter(c => c.status !== 'entregue').length;
       document.getElementById('e-total-ent').textContent  = entregues;
-      document.getElementById('e-total-pend').textContent = pendentes;
-
-      // Agrupar por rota
+      document.getElementById('e-total-pend').textContent = clientes.length - entregues;
       const rotas = {};
       clientes.forEach(c => {
         if (!rotas[c.rota]) rotas[c.rota] = { total:0, entregues:0 };
         rotas[c.rota].total++;
         if (c.status === 'entregue') rotas[c.rota].entregues++;
       });
-
-      const lista = document.getElementById('lista-entregas');
-      const rotasOrdenadas = Object.entries(rotas).sort((a,b) => {
-        const pa = a[1].entregues/a[1].total;
-        const pb = b[1].entregues/b[1].total;
-        return pb - pa;
-      });
-
-      lista.innerHTML = rotasOrdenadas.map(([rota, info]) => {
-        const pct = Math.round(info.entregues / info.total * 100);
-        return `
-          <div class="rota-row">
-            <div class="rota-header">
-              <div class="rota-nome">${rota}</div>
-              <div class="rota-pct ${pct===100?'done':''}">${pct}%</div>
-            </div>
+      document.getElementById('lista-entregas').innerHTML = Object.entries(rotas)
+        .sort((a,b) => (b[1].entregues/b[1].total) - (a[1].entregues/a[1].total))
+        .map(([rota, info]) => {
+          const pct = Math.round(info.entregues / info.total * 100);
+          return `<div class="rota-row">
+            <div class="rota-header"><div class="rota-nome">${rota}</div><div class="rota-pct ${pct===100?'done':''}">${pct}%</div></div>
             <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
             <div class="rota-sub">${info.entregues} de ${info.total} entregues</div>
           </div>`;
-      }).join('');
+        }).join('');
     } catch(e) { document.getElementById('lista-entregas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
 
@@ -386,11 +447,8 @@
       const r = await fetch(API + '?action=listar');
       const d = await r.json();
       const confs = d.confirmacoes || [];
-      const sim = confs.filter(c => c.resposta === 'sim').length;
-      const nao = confs.filter(c => c.resposta === 'nao').length;
-      document.getElementById('c-sim').textContent = sim;
-      document.getElementById('c-nao').textContent = nao;
-
+      document.getElementById('c-sim').textContent = confs.filter(c => c.resposta === 'sim').length;
+      document.getElementById('c-nao').textContent = confs.filter(c => c.resposta === 'nao').length;
       const lista = document.getElementById('lista-confirmacoes');
       if (!confs.length) { lista.innerHTML = '<p class="empty">Nenhuma confirmação ainda.</p>'; return; }
       lista.innerHTML = confs.map(c => `
@@ -402,7 +460,7 @@
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
             <span class="${c.resposta==='sim'?'badge-sim':'badge-nao'}">${c.resposta==='sim'?'Confirmada':'Não confirmada'}</span>
-            <button class="del-conf" onclick="delConf('${c.id}')">✕</button>
+            <button class="del-btn" onclick="delConf('${c.id}')">✕</button>
           </div>
         </div>`).join('');
     } catch(e) { document.getElementById('lista-confirmacoes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
@@ -414,38 +472,23 @@
     carregarConfirmacoes();
   }
 
-  // ── RESET ENTREGAS ────────────────────────────────
+  // ── RESETS ────────────────────────────────────────
   async function resetarEntregas() {
     fecharModal('modal-reset');
-    toast('Resetando...', '#555');
-    try {
-      const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'} });
-      const d = await r.json();
-      if (d.status === 'ok') {
-        toast(`✓ ${d.total} entregas resetadas!`, '#1D9E75');
-      } else {
-        toast('Erro ao resetar.', '#e55');
-      }
-    } catch(e) { toast('Erro de conexão.', '#e55'); }
+    const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'} });
+    const d = await r.json();
+    if (d.status === 'ok') toast(`✓ ${d.total} entregas resetadas!`, '#1D9E75');
+    else toast('Erro ao resetar.', '#e55');
   }
 
-  // ── RESET CONFIRMAÇÕES ────────────────────────────
   async function resetarConfirmacoes() {
     fecharModal('modal-reset-conf');
-    toast('Limpando...', '#555');
-    try {
-      const r = await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'} });
-      const d = await r.json();
-      if (d.status === 'ok') {
-        toast('✓ Confirmações limpas!', '#1D9E75');
-        carregarConfirmacoes();
-      } else {
-        toast('Erro ao limpar.', '#e55');
-      }
-    } catch(e) { toast('Erro de conexão.', '#e55'); }
+    const r = await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'} });
+    const d = await r.json();
+    if (d.status === 'ok') { toast('✓ Confirmações limpas!', '#1D9E75'); carregarConfirmacoes(); }
+    else toast('Erro ao limpar.', '#e55');
   }
 
-  // Carregar motoboys ao iniciar
   carregarMotoboys();
 </script>
 </body>
