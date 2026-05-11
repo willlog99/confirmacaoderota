@@ -88,9 +88,9 @@
       const d = await r.json();
 
       if (d.status === 'ok') {
-        sessionStorage.setItem('motoboy_nome', d.nome);
-        sessionStorage.setItem('motoboy_rota', d.rota);
-        sessionStorage.setItem('motoboy_tel', tel);
+        localStorage.setItem('motoboy_nome', d.nome);
+        localStorage.setItem('motoboy_rota', d.rota);
+        localStorage.setItem('motoboy_tel', tel);
         window.location.href = 'rota.html';
       } else if (d.status === 'nao_encontrado') {
         showMsg('Telefone não encontrado. Fale com o organizador.', 'error');
