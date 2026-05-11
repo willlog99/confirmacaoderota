@@ -150,11 +150,11 @@
 
 <script>
   const API  = 'https://confirmacaoderota.willlog99.workers.dev';
-  const nome = sessionStorage.getItem('motoboy_nome');
-  const rota = sessionStorage.getItem('motoboy_rota');
-  const tel  = sessionStorage.getItem('motoboy_tel');
+  const nome = localStorage.getItem('motoboy_nome');
+  const rota = localStorage.getItem('motoboy_rota');
+  const tel  = localStorage.getItem('motoboy_tel');
 
-  if (!rota || !tel) window.location.href = 'index.html';
+  if (!rota || !tel) { window.location.href = 'index.html'; }
 
   document.getElementById('header-nome').textContent = nome || 'Minha Rota';
   document.getElementById('header-rota').textContent = rota || '—';
@@ -261,7 +261,7 @@
 
   function fecharCelebracao() {
     document.getElementById('celebration').classList.add('hidden');
-    sair();
+    // Não sai da página — apenas esconde a celebração
   }
 
   function renderizar() {
@@ -339,7 +339,10 @@
   }
 
   function sair() {
-    sessionStorage.clear();
+    if (!confirm('Deseja sair da rota? Você precisará fazer login novamente.')) return;
+    localStorage.removeItem('motoboy_nome');
+    localStorage.removeItem('motoboy_rota');
+    localStorage.removeItem('motoboy_tel');
     window.location.href = 'index.html';
   }
 
