@@ -91,85 +91,61 @@
 </div>
 
 <script>
-  const BIN_ID = "69ff8708c0954111d8fd7f25";
-  const API_KEY = "$2a$10$Si6jDnYHXDazpQIFog2acOGgAhByywIsPeCkF7CYkm0XextB/yGii";
-  const BASE = "https://api.jsonbin.io/v3/b/" + BIN_ID;
-  const HEADERS = { "Content-Type": "application/json", "X-Master-Key": API_KEY };
-
-  async function lerDados() {
-    const r = await fetch(BASE + "/latest", { headers: { "X-Master-Key": API_KEY } });
-    const d = await r.json();
-    return d.record.confirmacoes || [];
-  }
-
-  async function salvarDados(lista) {
-    await fetch(BASE, {
-      method: "PUT",
-      headers: HEADERS,
-      body: JSON.stringify({ confirmacoes: lista })
-    });
-  }
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
 
   window.abrirObs = function() {
-    const unidade = document.getElementById("sel-unidade").value;
-    if (!unidade) { showMsg("Por favor, selecione sua unidade.", "error"); return; }
-    document.getElementById("obs-area").classList.add("visible");
-    document.getElementById("msg").className = "msg";
+    const unidade = document.getElementById('sel-unidade').value;
+    if (!unidade) { showMsg('Por favor, selecione sua unidade.', 'error'); return; }
+    document.getElementById('obs-area').classList.add('visible');
+    document.getElementById('msg').className = 'msg';
   };
 
   window.confirmar = async function(resp) {
-    const unidade = document.getElementById("sel-unidade").value;
-    if (!unidade) { showMsg("Por favor, selecione sua unidade.", "error"); return; }
-    const obs = resp === "nao" ? (document.getElementById("obs-text").value || "").trim() : "";
+    const unidade = document.getElementById('sel-unidade').value;
+    if (!unidade) { showMsg('Por favor, selecione sua unidade.', 'error'); return; }
+    const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
 
     setBtns(true);
-    showMsg("Enviando...", "loading");
+    showMsg('Enviando...', 'loading');
 
     try {
-      const lista = await lerDados();
-
-      const jaExiste = lista.find(c => c.unidade === unidade);
-      if (jaExiste) {
-        showMsg("Esta unidade já foi registrada. Fale com o organizador.", "error");
-        setBtns(false);
-        return;
-      }
-
-      lista.push({
-        unidade,
-        resposta: resp,
-        obs,
-        data: new Date().toLocaleString("pt-BR", { day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit" })
+      const r = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ unidade, resposta: resp, obs })
       });
+      const d = await r.json();
 
-      await salvarDados(lista);
-
-      showMsg(resp === "sim"
-        ? "✓ Presença confirmada para " + unidade + "!"
-        : "✗ Não confirmação registrada para " + unidade + ".", "success");
-
-      document.getElementById("sel-unidade").value = "";
-      document.getElementById("obs-text").value = "";
-      document.getElementById("obs-area").classList.remove("visible");
+      if (d.status === 'ok') {
+        showMsg(resp === 'sim'
+          ? '✓ Presença confirmada para ' + unidade + '!'
+          : '✗ Não confirmação registrada para ' + unidade + '.', 'success');
+        document.getElementById('sel-unidade').value = '';
+        document.getElementById('obs-text').value = '';
+        document.getElementById('obs-area').classList.remove('visible');
+      } else if (d.status === 'duplicado') {
+        showMsg('Esta unidade já foi registrada. Fale com o organizador.', 'error');
+      } else {
+        showMsg('Erro ao enviar. Tente novamente.', 'error');
+      }
     } catch(e) {
-      console.error(e);
-      showMsg("Erro ao enviar. Verifique sua conexão.", "error");
+      showMsg('Erro de conexão. Verifique sua internet.', 'error');
     }
 
     setBtns(false);
   };
 
   function setBtns(disabled) {
-    document.getElementById("btn-sim").disabled = disabled;
-    document.getElementById("btn-nao").disabled = disabled;
-    const s = document.getElementById("btn-send");
+    document.getElementById('btn-sim').disabled = disabled;
+    document.getElementById('btn-nao').disabled = disabled;
+    const s = document.getElementById('btn-send');
     if (s) s.disabled = disabled;
   }
 
   function showMsg(text, type) {
-    const el = document.getElementById("msg");
+    const el = document.getElementById('msg');
     el.textContent = text;
-    el.className = "msg " + type;
+    el.className = 'msg ' + type;
   }
 </script>
 </body>
