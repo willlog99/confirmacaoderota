@@ -7,75 +7,119 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:0 0 2rem}
-    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.5rem 1.25rem 1.25rem;color:#fff}
-    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+
+    /* HEADER */
+    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.25rem 1.25rem 1.5rem;color:#fff}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
     .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
     .back-btn:hover{background:rgba(255,255,255,0.3)}
-    .header h1{font-size:20px;font-weight:700}
-    .header .rota-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:3px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:4px}
-    .header .nome{font-size:14px;opacity:.85;margin-top:2px}
-    .container{padding:1.25rem}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
-    .stat{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-    .stat-val{font-size:24px;font-weight:700;color:#111}
+    .header-info h1{font-size:19px;font-weight:700;margin-bottom:2px}
+    .header-info .sub{font-size:13px;opacity:.8}
+    .rota-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:3px 12px;border-radius:99px;font-size:12px;font-weight:600}
+
+    /* STATS */
+    .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:1rem 1.25rem 0}
+    .stat{background:#fff;border-radius:12px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+    .stat-val{font-size:22px;font-weight:700;color:#111}
     .stat-val.green{color:#0F6E56}
-    .stat-label{font-size:11px;color:#888;margin-top:2px}
-    .search-bar{background:#fff;border-radius:11px;border:1.5px solid #e2e8f0;height:40px;width:100%;padding:0 12px;font-size:14px;color:#111;margin-bottom:1rem}
+    .stat-val.orange{color:#B45309}
+    .stat-label{font-size:11px;color:#888;margin-top:1px}
+
+    /* PROGRESSO */
+    .progress-wrap{padding:.75rem 1.25rem 0}
+    .progress-bar{background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden}
+    .progress-fill{background:linear-gradient(90deg,#1D9E75,#0d7a5a);height:100%;border-radius:99px;transition:width .4s ease}
+    .progress-label{font-size:12px;color:#888;text-align:right;margin-top:4px}
+
+    /* BUSCA E FILTRO */
+    .toolbar{padding:.75rem 1.25rem 0;display:flex;gap:8px}
+    .search-bar{flex:1;background:#fff;border-radius:10px;border:1.5px solid #e2e8f0;height:40px;padding:0 12px;font-size:14px;color:#111}
     .search-bar:focus{outline:none;border-color:#1D9E75}
-    .cliente-card{background:#fff;border-radius:14px;padding:1rem 1.1rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:transform .1s}
-    .cliente-card:active{transform:scale(.98)}
-    .num-badge{width:44px;height:44px;border-radius:12px;background:#f0f4f8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1D9E75;flex-shrink:0}
+    .filter-btn{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#666;cursor:pointer;white-space:nowrap}
+    .filter-btn.active{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+
+    /* LISTA */
+    .lista{padding:.75rem 1.25rem 0}
+    .section-title{font-size:12px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
+
+    /* CARD CLIENTE */
+    .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
+    .cliente-card.entregue{background:#f6fdf9;border:1.5px solid #b8edd6}
+    .cliente-card.entregue .cliente-nome{text-decoration:line-through;color:#aaa}
+
+    /* CHECKBOX */
+    .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
+    .check-btn:hover{border-color:#1D9E75}
+    .check-btn.checked{background:#1D9E75;border-color:#1D9E75;color:#fff}
+    .check-btn.loading{opacity:.5;cursor:not-allowed}
+
     .cliente-info{flex:1;min-width:0}
     .cliente-nome{font-size:15px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cliente-num{font-size:12px;color:#888;margin-top:2px}
-    .horario-badge{background:#E1F5EE;color:#085041;font-size:12px;font-weight:600;padding:4px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+    .cliente-meta{font-size:12px;color:#aaa;margin-top:2px;display:flex;gap:8px;align-items:center}
+    .horario-badge{background:#f0f4f8;color:#555;font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+    .horario-badge.entregue{background:#E1F5EE;color:#085041}
+    .entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:3px}
+
     .empty{text-align:center;padding:3rem;color:#ccc;font-size:14px}
-    .loading{text-align:center;padding:3rem;color:#aaa;font-size:14px}
-    .section-title{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+    .loading-msg{text-align:center;padding:3rem;color:#aaa;font-size:14px}
   </style>
 </head>
 <body>
 
 <div class="header">
   <div class="header-top">
-    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+    <button class="back-btn" onclick="sair()">←</button>
+    <div class="rota-badge" id="header-rota">—</div>
     <div style="width:36px"></div>
   </div>
-  <h1 id="header-nome">Minha Rota</h1>
-  <div class="rota-badge" id="header-rota">—</div>
-  <div class="nome" id="header-sub"></div>
+  <div class="header-info">
+    <h1 id="header-nome">Minha Rota</h1>
+    <div class="sub" id="header-sub"></div>
+  </div>
 </div>
 
-<div class="container">
-  <div class="stats">
-    <div class="stat"><div class="stat-val" id="cnt-total">—</div><div class="stat-label">clientes</div></div>
-    <div class="stat"><div class="stat-val green" id="cnt-manha">—</div><div class="stat-label">manhã</div></div>
-    <div class="stat"><div class="stat-val" id="cnt-tarde">—</div><div class="stat-label">tarde</div></div>
-  </div>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val" id="cnt-total">—</div><div class="stat-label">total</div></div>
+  <div class="stat"><div class="stat-val green" id="cnt-entregue">—</div><div class="stat-label">entregues</div></div>
+  <div class="stat"><div class="stat-val orange" id="cnt-pendente">—</div><div class="stat-label">pendentes</div></div>
+</div>
 
-  <input class="search-bar" type="text" id="busca" placeholder="Buscar cliente..." oninput="filtrar()"/>
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="progress-label" id="progress-label">0%</div>
+</div>
 
-  <div class="section-title">Clientes da rota</div>
-  <div id="lista"><div class="loading">Carregando...</div></div>
+<div class="toolbar">
+  <input class="search-bar" type="text" id="busca" placeholder="Buscar cliente..." oninput="renderizar()"/>
+  <button class="filter-btn" id="filter-btn" onclick="toggleFiltro()">Pendentes</button>
+</div>
+
+<div class="lista" id="lista">
+  <div class="loading-msg">Carregando...</div>
 </div>
 
 <script>
-  const API = 'https://confirmacaoderota.willlog99.workers.dev';
-
+  const API  = 'https://confirmacaoderota.willlog99.workers.dev';
   const nome = sessionStorage.getItem('motoboy_nome');
   const rota = sessionStorage.getItem('motoboy_rota');
   const tel  = sessionStorage.getItem('motoboy_tel');
 
-  // Redireciona se não estiver logado
-  if (!rota || !tel) {
-    window.location.href = 'index.html';
-  }
+  if (!rota || !tel) window.location.href = 'index.html';
 
   document.getElementById('header-nome').textContent = nome || 'Minha Rota';
   document.getElementById('header-rota').textContent = rota || '—';
-  document.getElementById('header-sub').textContent = 'Bem-vindo, ' + (nome || '') + '!';
+  document.getElementById('header-sub').textContent  = 'Olá, ' + (nome || '') + '!';
 
   let clientes = [];
+  let somentePendentes = false;
+
+  function toggleFiltro() {
+    somentePendentes = !somentePendentes;
+    const btn = document.getElementById('filter-btn');
+    btn.textContent = somentePendentes ? 'Todos' : 'Pendentes';
+    btn.classList.toggle('active', somentePendentes);
+    renderizar();
+  }
 
   async function carregar() {
     try {
@@ -88,44 +132,102 @@
     }
   }
 
-  function filtrar() {
-    renderizar();
+  async function ticar(id, jaEntregue) {
+    const btn = document.querySelector(`[data-id="${id}"]`);
+    if (btn) { btn.classList.add('loading'); btn.onclick = null; }
+
+    try {
+      const endpoint = jaEntregue ? '/desticar' : '/ticar';
+      const r = await fetch(API + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, telefone_motoboy: tel })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        const c = clientes.find(c => c.id === id);
+        if (c) {
+          c.status = jaEntregue ? 'pendente' : 'entregue';
+          c.horario_entrega = jaEntregue ? '' : d.horario_entrega;
+        }
+        renderizar();
+      }
+    } catch(e) {
+      if (btn) { btn.classList.remove('loading'); }
+    }
   }
 
   function renderizar() {
     const busca = (document.getElementById('busca').value || '').toLowerCase();
-    const filtrados = busca ? clientes.filter(c =>
+    const entregues = clientes.filter(c => c.status === 'entregue');
+    const pendentes = clientes.filter(c => c.status !== 'entregue');
+
+    document.getElementById('cnt-total').textContent    = clientes.length;
+    document.getElementById('cnt-entregue').textContent = entregues.length;
+    document.getElementById('cnt-pendente').textContent = pendentes.length;
+
+    const pct = clientes.length ? Math.round(entregues.length / clientes.length * 100) : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = pct + '% concluído';
+
+    let fonte = somentePendentes ? pendentes : clientes;
+    if (busca) fonte = fonte.filter(c =>
       c.nome.toLowerCase().includes(busca) ||
       c.numero_cliente.toLowerCase().includes(busca)
-    ) : clientes;
+    );
 
-    const manha = clientes.filter(c => {
-      const h = parseInt((c.horario || '00:00').split(':')[0]);
-      return h < 12;
-    }).length;
-    const tarde = clientes.length - manha;
-
-    document.getElementById('cnt-total').textContent = clientes.length;
-    document.getElementById('cnt-manha').textContent = manha;
-    document.getElementById('cnt-tarde').textContent = tarde;
-
-    const lista = document.getElementById('lista');
-
-    if (filtrados.length === 0) {
-      lista.innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : 'Nenhum cliente nesta rota.'}</p>`;
+    if (fonte.length === 0) {
+      document.getElementById('lista').innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : somentePendentes ? 'Todas as entregas concluídas! 🎉' : 'Nenhum cliente nesta rota.'}</p>`;
       return;
     }
 
-    lista.innerHTML = filtrados.map((c, i) => `
-      <div class="cliente-card">
-        <div class="num-badge">${String(i+1).padStart(2,'0')}</div>
+    const pendFiltrados = fonte.filter(c => c.status !== 'entregue');
+    const entrFiltrados = fonte.filter(c => c.status === 'entregue');
+
+    let html = '';
+
+    if (pendFiltrados.length > 0) {
+      if (!somentePendentes && entrFiltrados.length > 0) html += `<div class="section-title">Pendentes (${pendFiltrados.length})</div>`;
+      html += pendFiltrados.map(c => cardHTML(c)).join('');
+    }
+
+    if (entrFiltrados.length > 0) {
+      html += `<div class="section-title">Entregues (${entrFiltrados.length})</div>`;
+      html += entrFiltrados.map(c => cardHTML(c)).join('');
+    }
+
+    document.getElementById('lista').innerHTML = html;
+
+    document.querySelectorAll('.check-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = parseInt(btn.dataset.id);
+        const jaEntregue = btn.classList.contains('checked');
+        ticar(id, jaEntregue);
+      });
+    });
+  }
+
+  function cardHTML(c) {
+    const entregue = c.status === 'entregue';
+    return `
+      <div class="cliente-card ${entregue ? 'entregue' : ''}">
+        <button class="check-btn ${entregue ? 'checked' : ''}" data-id="${c.id}">
+          ${entregue ? '✓' : ''}
+        </button>
         <div class="cliente-info">
           <div class="cliente-nome">${c.nome}</div>
-          <div class="cliente-num">Nº ${c.numero_cliente}</div>
+          <div class="cliente-meta">
+            <span>Nº ${c.numero_cliente}</span>
+          </div>
+          ${entregue && c.horario_entrega ? `<div class="entrega-ts">✓ Entregue às ${c.horario_entrega}</div>` : ''}
         </div>
-        <div class="horario-badge">${c.horario}</div>
-      </div>
-    `).join('');
+        <div class="horario-badge ${entregue ? 'entregue' : ''}">${c.horario}</div>
+      </div>`;
+  }
+
+  function sair() {
+    sessionStorage.clear();
+    window.location.href = 'index.html';
   }
 
   carregar();
