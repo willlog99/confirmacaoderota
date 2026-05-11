@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Minha Rota</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:0 0 2rem}
+    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.5rem 1.25rem 1.25rem;color:#fff}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+    .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+    .back-btn:hover{background:rgba(255,255,255,0.3)}
+    .header h1{font-size:20px;font-weight:700}
+    .header .rota-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:3px 12px;border-radius:99px;font-size:12px;font-weight:600;margin-top:4px}
+    .header .nome{font-size:14px;opacity:.85;margin-top:2px}
+    .container{padding:1.25rem}
+    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+    .stat{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
+    .stat-val{font-size:24px;font-weight:700;color:#111}
+    .stat-val.green{color:#0F6E56}
+    .stat-label{font-size:11px;color:#888;margin-top:2px}
+    .search-bar{background:#fff;border-radius:11px;border:1.5px solid #e2e8f0;height:40px;width:100%;padding:0 12px;font-size:14px;color:#111;margin-bottom:1rem}
+    .search-bar:focus{outline:none;border-color:#1D9E75}
+    .cliente-card{background:#fff;border-radius:14px;padding:1rem 1.1rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:10px;display:flex;align-items:center;gap:12px;transition:transform .1s}
+    .cliente-card:active{transform:scale(.98)}
+    .num-badge{width:44px;height:44px;border-radius:12px;background:#f0f4f8;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#1D9E75;flex-shrink:0}
+    .cliente-info{flex:1;min-width:0}
+    .cliente-nome{font-size:15px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cliente-num{font-size:12px;color:#888;margin-top:2px}
+    .horario-badge{background:#E1F5EE;color:#085041;font-size:12px;font-weight:600;padding:4px 10px;border-radius:8px;white-space:nowrap;flex-shrink:0}
+    .empty{text-align:center;padding:3rem;color:#ccc;font-size:14px}
+    .loading{text-align:center;padding:3rem;color:#aaa;font-size:14px}
+    .section-title{font-size:13px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.75rem}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+    <div style="width:36px"></div>
+  </div>
+  <h1 id="header-nome">Minha Rota</h1>
+  <div class="rota-badge" id="header-rota">—</div>
+  <div class="nome" id="header-sub"></div>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat"><div class="stat-val" id="cnt-total">—</div><div class="stat-label">clientes</div></div>
+    <div class="stat"><div class="stat-val green" id="cnt-manha">—</div><div class="stat-label">manhã</div></div>
+    <div class="stat"><div class="stat-val" id="cnt-tarde">—</div><div class="stat-label">tarde</div></div>
+  </div>
+
+  <input class="search-bar" type="text" id="busca" placeholder="Buscar cliente..." oninput="filtrar()"/>
+
+  <div class="section-title">Clientes da rota</div>
+  <div id="lista"><div class="loading">Carregando...</div></div>
+</div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+
+  const nome = sessionStorage.getItem('motoboy_nome');
+  const rota = sessionStorage.getItem('motoboy_rota');
+  const tel  = sessionStorage.getItem('motoboy_tel');
+
+  // Redireciona se não estiver logado
+  if (!rota || !tel) {
+    window.location.href = 'index.html';
+  }
+
+  document.getElementById('header-nome').textContent = nome || 'Minha Rota';
+  document.getElementById('header-rota').textContent = rota || '—';
+  document.getElementById('header-sub').textContent = 'Bem-vindo, ' + (nome || '') + '!';
+
+  let clientes = [];
+
+  async function carregar() {
+    try {
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
+      const d = await r.json();
+      clientes = d.clientes || [];
+      renderizar();
+    } catch(e) {
+      document.getElementById('lista').innerHTML = `<p class="empty">Erro ao carregar. Verifique sua conexão.</p>`;
+    }
+  }
+
+  function filtrar() {
+    renderizar();
+  }
+
+  function renderizar() {
+    const busca = (document.getElementById('busca').value || '').toLowerCase();
+    const filtrados = busca ? clientes.filter(c =>
+      c.nome.toLowerCase().includes(busca) ||
+      c.numero_cliente.toLowerCase().includes(busca)
+    ) : clientes;
+
+    const manha = clientes.filter(c => {
+      const h = parseInt((c.horario || '00:00').split(':')[0]);
+      return h < 12;
+    }).length;
+    const tarde = clientes.length - manha;
+
+    document.getElementById('cnt-total').textContent = clientes.length;
+    document.getElementById('cnt-manha').textContent = manha;
+    document.getElementById('cnt-tarde').textContent = tarde;
+
+    const lista = document.getElementById('lista');
+
+    if (filtrados.length === 0) {
+      lista.innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : 'Nenhum cliente nesta rota.'}</p>`;
+      return;
+    }
+
+    lista.innerHTML = filtrados.map((c, i) => `
+      <div class="cliente-card">
+        <div class="num-badge">${String(i+1).padStart(2,'0')}</div>
+        <div class="cliente-info">
+          <div class="cliente-nome">${c.nome}</div>
+          <div class="cliente-num">Nº ${c.numero_cliente}</div>
+        </div>
+        <div class="horario-badge">${c.horario}</div>
+      </div>
+    `).join('');
+  }
+
+  carregar();
+</script>
+</body>
+</html>
