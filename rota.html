@@ -38,24 +38,51 @@
     .section-title{font-size:12px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
 
     .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
-    .cliente-card.entregue{background:#f6fdf9;border:1.5px solid #b8edd6}
-    .cliente-card.entregue .cliente-nome{text-decoration:line-through;color:#aaa}
+    .cliente-card.produtiva{background:#f6fdf9;border:1.5px solid #b8edd6}
+    .cliente-card.improdutiva{background:#fff8f8;border:1.5px solid #ffc5c5}
+    .cliente-card.produtiva .cliente-nome{text-decoration:line-through;color:#aaa}
+    .cliente-card.improdutiva .cliente-nome{text-decoration:line-through;color:#aaa}
 
     .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
-    .check-btn:hover{border-color:#1D9E75}
-    .check-btn.checked{background:#1D9E75;border-color:#1D9E75;color:#fff;cursor:not-allowed}
+    .check-btn:hover:not(.checked){border-color:#1D9E75}
+    .check-btn.produtiva{background:#1D9E75;border-color:#1D9E75;color:#fff;cursor:not-allowed}
+    .check-btn.improdutiva{background:#EF4444;border-color:#EF4444;color:#fff;cursor:not-allowed}
     .check-btn.loading{opacity:.5;cursor:not-allowed;pointer-events:none}
 
     .cliente-info{flex:1;min-width:0}
     .cliente-nome{font-size:15px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cliente-meta{font-size:12px;color:#aaa;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-    .entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:3px}
+    .cliente-meta{font-size:12px;color:#aaa;margin-top:2px}
+    .entrega-ts{font-size:11px;font-weight:500;margin-top:3px}
+    .entrega-ts.produtiva{color:#1D9E75}
+    .entrega-ts.improdutiva{color:#EF4444}
 
     .horario-badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
     .horario-badge.normal{background:#f0f4f8;color:#555}
-    .horario-badge.entregue{background:#E1F5EE;color:#085041}
+    .horario-badge.produtiva{background:#E1F5EE;color:#085041}
+    .horario-badge.improdutiva{background:#FCEBEB;color:#791F1F}
     .horario-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
     .horario-badge.sob-demanda{background:#FEF3C7;color:#92400E}
+
+    /* MODAL PRODUTIVIDADE */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px;animation:slideUp .25s ease}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    @keyframes slideUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
+    .modal-cliente{font-size:13px;color:#aaa;margin-bottom:4px}
+    .modal h2{font-size:18px;font-weight:700;color:#111;margin-bottom:1.25rem}
+    .modal-btns{display:flex;flex-direction:column;gap:10px}
+    .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-produtiva:hover{background:#c8f0e0}
+    .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-improdutiva:hover{background:#fad5d5}
+    .btn-cancelar{padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#888}
+
+    /* MODAL FINALIZAR */
+    .modal-fin h2{font-size:18px;font-weight:700;color:#111;margin-bottom:6px}
+    .modal-fin p{font-size:14px;color:#777;margin-bottom:1.5rem;line-height:1.5}
+    .btn-fin-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff}
+    .btn-fin-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555}
 
     .footer-bar{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem;background:#fff;box-shadow:0 -2px 12px rgba(0,0,0,0.08);z-index:100}
     .btn-finalizar{width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
@@ -63,20 +90,9 @@
     .btn-finalizar:disabled{opacity:.5;cursor:not-allowed}
     .btn-finalizar.concluida{background:linear-gradient(135deg,#6366f1,#4f46e5)}
 
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
-    .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px;animation:slideUp .25s ease}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes slideUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
-    .modal h2{font-size:18px;font-weight:700;color:#111;margin-bottom:6px}
-    .modal p{font-size:14px;color:#777;margin-bottom:1.5rem;line-height:1.5}
-    .modal-btns{display:flex;flex-direction:column;gap:10px}
-    .modal-btn-sim{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff}
-    .modal-btn-nao{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555}
-
-    .celebration{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center;animation:fadeIn .3s}
+    .celebration{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center}
     .celebration.hidden{display:none}
-    .celebration-box{background:#fff;border-radius:20px;padding:2rem 1.75rem;text-align:center;max-width:300px;margin:1rem;animation:slideUp .3s ease}
+    .celebration-box{background:#fff;border-radius:20px;padding:2rem 1.75rem;text-align:center;max-width:300px;margin:1rem}
     .celebration-icon{font-size:56px;margin-bottom:.75rem}
     .celebration h2{font-size:20px;font-weight:700;color:#111;margin-bottom:6px}
     .celebration p{font-size:14px;color:#777;margin-bottom:1.5rem}
@@ -102,7 +118,7 @@
 
 <div class="stats-bar">
   <div class="stat"><div class="stat-val" id="cnt-total">—</div><div class="stat-label">total</div></div>
-  <div class="stat"><div class="stat-val green" id="cnt-entregue">—</div><div class="stat-label">entregues</div></div>
+  <div class="stat"><div class="stat-val green" id="cnt-produtiva">—</div><div class="stat-label">produtivas</div></div>
   <div class="stat"><div class="stat-val orange" id="cnt-pendente">—</div><div class="stat-label">pendentes</div></div>
 </div>
 
@@ -121,28 +137,43 @@
 </div>
 
 <div class="footer-bar">
-  <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModal()">
+  <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModalFinalizar()">
     🏁 Finalizar Rota
   </button>
 </div>
 
-<div class="modal-overlay hidden" id="modal-overlay">
+<!-- MODAL PRODUTIVIDADE -->
+<div class="modal-overlay hidden" id="modal-prod">
   <div class="modal">
-    <h2>Finalizar a rota?</h2>
-    <p id="modal-msg">Ainda há entregas pendentes. Deseja finalizar mesmo assim?</p>
+    <div class="modal-cliente" id="modal-cliente-nome"></div>
+    <h2>A coleta foi produtiva?</h2>
     <div class="modal-btns">
-      <button class="modal-btn-sim" onclick="finalizarRota()">Sim, finalizar</button>
-      <button class="modal-btn-nao" onclick="fecharModal()">Cancelar</button>
+      <button class="btn-produtiva" onclick="confirmarTique('produtiva')">✅ Produtiva</button>
+      <button class="btn-improdutiva" onclick="confirmarTique('improdutiva')">❌ Improdutiva</button>
+      <button class="btn-cancelar" onclick="cancelarTique()">Cancelar</button>
     </div>
   </div>
 </div>
 
+<!-- MODAL FINALIZAR -->
+<div class="modal-overlay hidden" id="modal-fin">
+  <div class="modal modal-fin">
+    <h2>Finalizar a rota?</h2>
+    <p id="modal-fin-msg">Ainda há coletas pendentes. Deseja finalizar mesmo assim?</p>
+    <div class="modal-btns">
+      <button class="btn-fin-sim" onclick="finalizarRota()">Sim, finalizar</button>
+      <button class="btn-fin-nao" onclick="document.getElementById('modal-fin').classList.add('hidden')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- CELEBRAÇÃO -->
 <div class="celebration hidden" id="celebration">
   <div class="celebration-box">
     <div class="celebration-icon">🎉</div>
     <h2>Rota finalizada!</h2>
-    <p id="celebration-msg">Parabéns! Todas as entregas foram concluídas.</p>
-    <button class="celebration-btn" onclick="fecharCelebracao()">Continuar</button>
+    <p id="celebration-msg">Bom trabalho!</p>
+    <button class="celebration-btn" onclick="document.getElementById('celebration').classList.add('hidden')">Continuar</button>
   </div>
 </div>
 
@@ -160,6 +191,7 @@
 
   let clientes = [];
   let somentePendentes = false;
+  let clienteSelecionado = null;
 
   function toggleFiltro() {
     somentePendentes = !somentePendentes;
@@ -180,68 +212,90 @@
     }
   }
 
-  async function ticar(id, jaEntregue) {
-    if (jaEntregue) return;
+  // Abre modal de produtividade ao clicar no cliente
+  function abrirModalProd(id) {
+    const c = clientes.find(c => c.id === id);
+    if (!c || c.status === 'entregue') return;
+    clienteSelecionado = id;
+    document.getElementById('modal-cliente-nome').textContent = c.nome;
+    document.getElementById('modal-prod').classList.remove('hidden');
+  }
+
+  function cancelarTique() {
+    clienteSelecionado = null;
+    document.getElementById('modal-prod').classList.add('hidden');
+  }
+
+  async function confirmarTique(produtividade) {
+    const id = clienteSelecionado;
+    document.getElementById('modal-prod').classList.add('hidden');
+    clienteSelecionado = null;
+
     const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
     if (btn) btn.classList.add('loading');
+
     try {
       const r = await fetch(API + '/ticar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id, telefone_motoboy: tel })
+        body: JSON.stringify({ id, telefone_motoboy: tel, produtividade })
       });
       const d = await r.json();
       if (d.status === 'ok') {
         const c = clientes.find(c => c.id === id);
-        if (c) { c.status = 'entregue'; c.horario_entrega = d.horario_entrega; }
+        if (c) {
+          c.status = 'entregue';
+          c.produtividade = produtividade;
+          c.horario_entrega = d.horario_entrega;
+        }
         renderizar();
       }
     } catch(e) { if (btn) btn.classList.remove('loading'); }
   }
 
   function getTipoBadge(c) {
-    const entregue = c.status === 'entregue';
     const tipo = (c.tipo || 'normal').toLowerCase();
-    if (tipo === 'contra pedido' || tipo === 'contra_pedido') {
-      return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
+    const prod = c.produtividade || '';
+    if (c.status === 'entregue') {
+      if (prod === 'produtiva') return `<span class="horario-badge produtiva">✅ Produtiva</span>`;
+      if (prod === 'improdutiva') return `<span class="horario-badge improdutiva">❌ Improdutiva</span>`;
     }
-    if (tipo === 'sob demanda' || tipo === 'sob_demanda') {
-      return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
-    }
-    return `<span class="horario-badge ${entregue ? 'entregue' : 'normal'}">${c.horario || '—'}</span>`;
+    if (tipo === 'contra pedido') return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
+    if (tipo === 'sob demanda')   return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
+    return `<span class="horario-badge normal">${c.horario || '—'}</span>`;
   }
 
   function cardHTML(c) {
     const entregue = c.status === 'entregue';
+    const prod = c.produtividade || '';
+    const cardClass = entregue ? (prod === 'improdutiva' ? 'improdutiva' : 'produtiva') : '';
+    const btnClass = entregue ? (prod === 'improdutiva' ? 'improdutiva' : 'produtiva') : '';
+    const btnIcon = entregue ? (prod === 'improdutiva' ? '✕' : '✓') : '';
     return `
-      <div class="cliente-card ${entregue ? 'entregue' : ''}">
-        <button class="check-btn ${entregue ? 'checked' : ''}" data-id="${c.id}">
-          ${entregue ? '✓' : ''}
-        </button>
+      <div class="cliente-card ${cardClass}">
+        <button class="check-btn ${btnClass}" data-id="${c.id}">${btnIcon}</button>
         <div class="cliente-info">
           <div class="cliente-nome">${c.nome}</div>
-          <div class="cliente-meta"><span>Nº ${c.numero_cliente}</span></div>
-          ${entregue && c.horario_entrega ? `<div class="entrega-ts">✓ Entregue às ${c.horario_entrega}</div>` : ''}
+          <div class="cliente-meta">Nº ${c.numero_cliente}</div>
+          ${entregue && c.horario_entrega ? `<div class="entrega-ts ${prod}">${prod === 'improdutiva' ? '❌' : '✅'} ${prod === 'improdutiva' ? 'Improdutiva' : 'Produtiva'} às ${c.horario_entrega}</div>` : ''}
         </div>
         ${getTipoBadge(c)}
       </div>`;
   }
 
-  function abrirModal() {
+  function abrirModalFinalizar() {
     const pendentes = clientes.filter(c => c.status !== 'entregue').length;
     const total = clientes.length;
     if (total === 0) return;
     const msg = pendentes === 0
-      ? `Todas as ${total} entregas foram concluídas. Deseja finalizar a rota?`
-      : `${total - pendentes} de ${total} entregues. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Deseja finalizar mesmo assim?`;
-    document.getElementById('modal-msg').textContent = msg;
-    document.getElementById('modal-overlay').classList.remove('hidden');
+      ? `Todas as ${total} coletas foram registradas. Deseja finalizar a rota?`
+      : `${total - pendentes} de ${total} registradas. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Deseja finalizar mesmo assim?`;
+    document.getElementById('modal-fin-msg').textContent = msg;
+    document.getElementById('modal-fin').classList.remove('hidden');
   }
 
-  function fecharModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
-
   async function finalizarRota() {
-    fecharModal();
+    document.getElementById('modal-fin').classList.add('hidden');
     const btn = document.getElementById('btn-finalizar');
     btn.disabled = true;
     btn.textContent = 'Finalizando...';
@@ -251,28 +305,28 @@
         await fetch(API + '/ticar', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: c.id, telefone_motoboy: tel })
+          body: JSON.stringify({ id: c.id, telefone_motoboy: tel, produtividade: 'produtiva' })
         });
         c.status = 'entregue';
+        c.produtividade = 'produtiva';
         c.horario_entrega = new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
       } catch(e) {}
     }
     renderizar();
     const total = clientes.length;
-    document.getElementById('celebration-msg').textContent = `${total} entrega${total>1?'s':''} concluída${total>1?'s':''}. Bom trabalho!`;
+    document.getElementById('celebration-msg').textContent = `${total} coleta${total>1?'s':''} registrada${total>1?'s':''}. Bom trabalho!`;
     document.getElementById('celebration').classList.remove('hidden');
   }
-
-  function fecharCelebracao() { document.getElementById('celebration').classList.add('hidden'); }
 
   function renderizar() {
     const busca = (document.getElementById('busca').value || '').toLowerCase();
     const entregues = clientes.filter(c => c.status === 'entregue');
-    const pendentes = clientes.filter(c => c.status !== 'entregue');
+    const produtivas = clientes.filter(c => c.produtividade === 'produtiva');
+    const pendentes  = clientes.filter(c => c.status !== 'entregue');
 
     document.getElementById('cnt-total').textContent    = clientes.length;
-    document.getElementById('cnt-entregue').textContent = entregues.length;
-    document.getElementById('cnt-pendente').textContent = pendentes.length;
+    document.getElementById('cnt-produtiva').textContent = produtivas.length;
+    document.getElementById('cnt-pendente').textContent  = pendentes.length;
 
     const pct = clientes.length ? Math.round(entregues.length / clientes.length * 100) : 0;
     document.getElementById('progress-fill').style.width = pct + '%';
@@ -294,7 +348,7 @@
     );
 
     if (fonte.length === 0) {
-      document.getElementById('lista').innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : somentePendentes ? '🎉 Todas as entregas concluídas!' : 'Nenhum cliente nesta rota.'}</p>`;
+      document.getElementById('lista').innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : somentePendentes ? '🎉 Todas as coletas registradas!' : 'Nenhum cliente nesta rota.'}</p>`;
       return;
     }
 
@@ -306,16 +360,18 @@
       html += pendFiltrados.map(c => cardHTML(c)).join('');
     }
     if (entrFiltrados.length > 0) {
-      html += `<div class="section-title">Entregues (${entrFiltrados.length})</div>`;
+      html += `<div class="section-title">Registradas (${entrFiltrados.length})</div>`;
       html += entrFiltrados.map(c => cardHTML(c)).join('');
     }
 
     document.getElementById('lista').innerHTML = html;
+
+    // Clique abre modal de produtividade
     document.querySelectorAll('.check-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.id);
-        const jaEntregue = btn.classList.contains('checked');
-        ticar(id, jaEntregue);
+        const jaEntregue = btn.classList.contains('produtiva') || btn.classList.contains('improdutiva');
+        if (!jaEntregue) abrirModalProd(id);
       });
     });
   }
