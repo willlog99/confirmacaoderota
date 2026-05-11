@@ -6,35 +6,25 @@
   <title>Biocondutor na Rota</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
-    .container{width:100%;max-width:460px}
-    .card{background:#fff;border-radius:18px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:1rem}
-    .logo{width:52px;height:52px;background:linear-gradient(135deg,#1D9E75,#0d7a5a);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem}
-    .logo svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    h1{font-size:21px;font-weight:700;color:#111;margin-bottom:4px}
-    .subtitle{font-size:14px;color:#777;margin-bottom:1.5rem}
-    label{font-size:13px;color:#555;display:block;margin-bottom:6px;font-weight:500}
-    select{width:100%;height:44px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#111;font-size:14px;padding:0 12px;cursor:pointer;margin-bottom:1.25rem;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
-    select:focus{outline:none;border-color:#1D9E75}
-    .btn-group{display:flex;flex-direction:column;gap:10px}
-    .btn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s,opacity .2s}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn:active:not(:disabled){transform:scale(.98)}
-    .btn-sim{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
-    .btn-sim:hover:not(:disabled){background:#c8f0e0}
-    .btn-nao{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
-    .btn-nao:hover:not(:disabled){background:#fad5d5}
-    .btn-send{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;margin-top:4px}
-    .btn-send:hover:not(:disabled){background:#fad5d5}
-    .obs-area{display:none;margin-top:14px;animation:fadeIn .2s ease}
-    .obs-area.visible{display:block}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
-    .obs-label{font-size:13px;color:#555;font-weight:500;margin-bottom:6px}
-    .obs-optional{color:#aaa;font-size:12px;font-weight:400}
-    textarea{width:100%;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:10px}
-    textarea:focus{outline:none;border-color:#1D9E75}
-    .msg{border-radius:11px;padding:14px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
-    .msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:block}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem}
+    .container{width:100%;max-width:420px}
+    .card{background:#fff;border-radius:20px;padding:2rem;box-shadow:0 2px 16px rgba(0,0,0,0.08);margin-bottom:1rem}
+    .logo{width:60px;height:60px;background:linear-gradient(135deg,#1D9E75,#0d7a5a);border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem}
+    .logo svg{width:32px;height:32px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+    h1{font-size:22px;font-weight:700;color:#111;text-align:center;margin-bottom:6px}
+    .subtitle{font-size:14px;color:#888;text-align:center;margin-bottom:2rem}
+    label{font-size:13px;color:#555;font-weight:500;display:block;margin-bottom:6px}
+    input{width:100%;height:46px;border-radius:11px;border:1.5px solid #e2e8f0;font-size:15px;padding:0 14px;color:#111;margin-bottom:14px;transition:border-color .2s}
+    input:focus{outline:none;border-color:#1D9E75}
+    .btn-login{width:100%;padding:14px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff;transition:opacity .2s;margin-bottom:1rem}
+    .btn-login:hover{opacity:.9}
+    .btn-login:disabled{opacity:.5;cursor:not-allowed}
+    .divider{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:#e2e8f0}
+    .divider span{font-size:12px;color:#bbb}
+    .btn-confirmar{width:100%;padding:14px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555;transition:all .2s}
+    .btn-confirmar:hover{background:#f0f4f8;border-color:#ccc}
+    .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;display:none;font-weight:500;margin-top:4px}
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
     .msg.loading{background:#f0f4f8;color:#555;border:1.5px solid #e2e8f0;display:block}
     .footer{text-align:center;font-size:12px;color:#bbb;margin-top:.75rem}
@@ -47,99 +37,71 @@
       <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
     </div>
     <h1>Biocondutor na Rota</h1>
-    <p class="subtitle">Confirme a presença da sua unidade</p>
+    <p class="subtitle">Digite seu telefone para acessar sua rota</p>
 
-    <label for="sel-unidade">Selecione sua unidade</label>
-    <select id="sel-unidade">
-      <option value="">Selecione...</option>
-      <optgroup label="São Paulo">
-        <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option>
-        <option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option>
-        <option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option>
-        <option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option>
-        <option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option>
-        <option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option>
-        <option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option>
-        <option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option>
-        <option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option>
-        <option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option>
-        <option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option>
-        <option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option>
-        <option>SAO PAULO 50</option><option>SAO PAULO 51</option>
-      </optgroup>
-      <optgroup label="Outros">
-        <option>NTHCC</option>
-        <option>PSC3</option><option>PSC4</option><option>PSC5</option>
-        <option>PSC6</option><option>PSC7</option><option>PSC8</option>
-      </optgroup>
-    </select>
+    <label for="telefone">Número de telefone</label>
+    <input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15"/>
 
-    <div class="btn-group">
-      <button class="btn btn-sim" id="btn-sim" onclick="confirmar('sim')">✓ Presença confirmada</button>
-      <button class="btn btn-nao" id="btn-nao" onclick="abrirObs()">✗ Presença não confirmada</button>
-    </div>
-
-    <div class="obs-area" id="obs-area">
-      <p class="obs-label">Motivo da não confirmação <span class="obs-optional">(opcional)</span></p>
-      <textarea id="obs-text" placeholder="Ex: condutor de férias, veículo em manutenção..."></textarea>
-      <button class="btn btn-send" id="btn-send" onclick="confirmar('nao')">Confirmar não presença</button>
-    </div>
-
+    <button class="btn-login" id="btn-entrar">Acessar minha rota</button>
     <div class="msg" id="msg"></div>
+
+    <div class="divider"><span>ou</span></div>
+
+    <button class="btn-confirmar" onclick="window.location.href='confirmar.html'">
+      ✓ Confirmar presença do Biocondutor
+    </button>
   </div>
-  <div class="footer">Biocondutor na Rota &mdash; Confirmação de presença</div>
+  <div class="footer">Biocondutor na Rota</div>
 </div>
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
 
-  window.abrirObs = function() {
-    const unidade = document.getElementById('sel-unidade').value;
-    if (!unidade) { showMsg('Por favor, selecione sua unidade.', 'error'); return; }
-    document.getElementById('obs-area').classList.add('visible');
-    document.getElementById('msg').className = 'msg';
-  };
+  const input = document.getElementById('telefone');
+  const btn   = document.getElementById('btn-entrar');
 
-  window.confirmar = async function(resp) {
-    const unidade = document.getElementById('sel-unidade').value;
-    if (!unidade) { showMsg('Por favor, selecione sua unidade.', 'error'); return; }
-    const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
+  // Máscara de telefone
+  input.addEventListener('input', () => {
+    let v = input.value.replace(/\D/g,'').slice(0,11);
+    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d*)$/, '($1) $2-$3');
+    else if (v.length > 2) v = v.replace(/^(\d{2})(\d*)$/, '($1) $2');
+    input.value = v;
+  });
 
-    setBtns(true);
-    showMsg('Enviando...', 'loading');
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  btn.addEventListener('click', entrar);
+
+  async function entrar() {
+    const tel = input.value.replace(/\D/g,'');
+    if (tel.length < 10) { showMsg('Digite um telefone válido.', 'error'); return; }
+
+    btn.disabled = true;
+    showMsg('Buscando...', 'loading');
 
     try {
-      const r = await fetch(API, {
+      const r = await fetch(API + '/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ unidade, resposta: resp, obs })
+        body: JSON.stringify({ telefone: tel })
       });
       const d = await r.json();
 
       if (d.status === 'ok') {
-        showMsg(resp === 'sim'
-          ? '✓ Presença confirmada para ' + unidade + '!'
-          : '✗ Não confirmação registrada para ' + unidade + '.', 'success');
-        document.getElementById('sel-unidade').value = '';
-        document.getElementById('obs-text').value = '';
-        document.getElementById('obs-area').classList.remove('visible');
-      } else if (d.status === 'duplicado') {
-        showMsg('Esta unidade já foi registrada. Fale com o organizador.', 'error');
+        sessionStorage.setItem('motoboy_nome', d.nome);
+        sessionStorage.setItem('motoboy_rota', d.rota);
+        sessionStorage.setItem('motoboy_tel', tel);
+        window.location.href = 'rota.html';
+      } else if (d.status === 'nao_encontrado') {
+        showMsg('Telefone não encontrado. Fale com o organizador.', 'error');
       } else {
-        showMsg('Erro ao enviar. Tente novamente.', 'error');
+        showMsg('Erro ao buscar. Tente novamente.', 'error');
       }
     } catch(e) {
       showMsg('Erro de conexão. Verifique sua internet.', 'error');
     }
 
-    setBtns(false);
-  };
-
-  function setBtns(disabled) {
-    document.getElementById('btn-sim').disabled = disabled;
-    document.getElementById('btn-nao').disabled = disabled;
-    const s = document.getElementById('btn-send');
-    if (s) s.disabled = disabled;
+    btn.disabled = false;
   }
 
   function showMsg(text, type) {
