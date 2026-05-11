@@ -43,7 +43,7 @@
 
     .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
     .check-btn:hover{border-color:#1D9E75}
-    .check-btn.checked{background:#1D9E75;border-color:#1D9E75;color:#fff}
+    .check-btn.checked{background:#1D9E75;border-color:#1D9E75;color:#fff;cursor:not-allowed;}
     .check-btn.loading{opacity:.5;cursor:not-allowed;pointer-events:none}
 
     .cliente-info{flex:1;min-width:0}
@@ -183,12 +183,14 @@
   }
 
   async function ticar(id, jaEntregue) {
+    // Bloqueia destique — só permite ticar uma vez
+    if (jaEntregue) return;
+
     const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
     if (btn) btn.classList.add('loading');
 
     try {
-      const endpoint = jaEntregue ? '/desticar' : '/ticar';
-      const r = await fetch(API + endpoint, {
+      const r = await fetch(API + '/ticar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, telefone_motoboy: tel })
@@ -197,8 +199,8 @@
       if (d.status === 'ok') {
         const c = clientes.find(c => c.id === id);
         if (c) {
-          c.status = jaEntregue ? 'pendente' : 'entregue';
-          c.horario_entrega = jaEntregue ? '' : d.horario_entrega;
+          c.status = 'entregue';
+          c.horario_entrega = d.horario_entrega;
         }
         renderizar();
       }
