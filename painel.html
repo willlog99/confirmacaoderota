@@ -3,187 +3,450 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel — Biocondutor na Rota</title>
+  <title>Painel Gerencial — Biocondutor</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:2rem 1rem}
-    .container{width:100%;max-width:640px;margin:0 auto}
-    .card{background:#fff;border-radius:18px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:1rem}
-    .logo{width:52px;height:52px;background:linear-gradient(135deg,#1D9E75,#0d7a5a);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem}
-    .logo svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    h1{font-size:21px;font-weight:700;color:#111;margin-bottom:4px}
-    .subtitle{font-size:14px;color:#777;margin-bottom:1.5rem}
-    input[type="text"]{width:100%;height:40px;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 12px;color:#111;margin-bottom:12px}
-    input[type="text"]:focus{outline:none;border-color:#1D9E75}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem}
-    .stat{background:#f0f4f8;border-radius:12px;padding:14px;text-align:center}
-    .stat-val{font-size:30px;font-weight:700;color:#111}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:0 0 3rem}
+
+    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.5rem 1.25rem;color:#fff;margin-bottom:0}
+    .header h1{font-size:20px;font-weight:700;margin-bottom:2px}
+    .header .sub{font-size:13px;opacity:.8}
+
+    .tabs{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;overflow-x:auto;margin-bottom:1.25rem}
+    .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#888;border-bottom:2px solid transparent;white-space:nowrap}
+    .tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
+
+    .container{padding:0 1.25rem}
+    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem}
+    .card-title{font-size:15px;font-weight:700;color:#111;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+    .card-title .refresh-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:500}
+
+    .form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .form-row input,.form-row select{flex:1;min-width:120px;height:40px;border-radius:9px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 10px;color:#111}
+    .form-row input:focus,.form-row select:focus{outline:none;border-color:#1D9E75}
+    .btn-add{height:40px;padding:0 16px;border-radius:9px;border:none;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+    .btn-add:hover{opacity:.9}
+    .btn-add:disabled{opacity:.5;cursor:not-allowed}
+
+    .item-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .item-row:last-child{border-bottom:none}
+    .item-info{flex:1;min-width:0}
+    .item-name{font-size:14px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .item-sub{font-size:12px;color:#aaa;margin-top:2px}
+    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:18px;padding:3px 6px;border-radius:6px;flex-shrink:0}
+    .del-btn:hover{color:#e55;background:#fff0f0}
+
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem}
+    .stat-card{background:#f0f4f8;border-radius:12px;padding:14px;text-align:center}
+    .stat-val{font-size:28px;font-weight:700;color:#111}
     .stat-val.green{color:#0F6E56}
     .stat-val.red{color:#A32D2D}
+    .stat-val.orange{color:#B45309}
     .stat-label{font-size:12px;color:#888;margin-top:2px}
-    .tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem}
-    .tab{padding:7px 16px;font-size:13px;border-radius:8px;border:1.5px solid #e2e8f0;cursor:pointer;color:#666;background:#fff;font-weight:500}
-    .tab.active{background:#f0f4f8;color:#111;border-color:#ccc}
-    .tab:hover:not(.active){background:#f8f9fb}
-    .list-item{display:flex;align-items:flex-start;justify-content:space-between;padding:13px 0;border-bottom:1px solid #f0f2f5;gap:12px}
-    .list-item:last-child{border-bottom:none}
-    .item-name{font-weight:600;font-size:14px;color:#111}
-    .item-ts{font-size:12px;color:#bbb;margin-top:2px}
-    .item-obs{margin-top:7px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:8px;padding:8px 11px;font-size:13px;color:#6B4E00}
-    .badge{font-size:11px;padding:4px 12px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0;margin-top:2px}
-    .badge.sim{background:#E1F5EE;color:#085041}
-    .badge.nao{background:#FCEBEB;color:#791F1F}
-    .pending-item{padding:11px 0;border-bottom:1px solid #f0f2f5;font-size:14px;color:#999;display:flex;justify-content:space-between}
-    .pending-item:last-child{border-bottom:none}
-    .empty{text-align:center;padding:2.5rem;color:#ccc;font-size:14px}
-    .header-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
-    .live-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#1D9E75;margin-right:5px;animation:pulse 2s infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    .refresh-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;text-decoration:underline}
-    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 5px;border-radius:6px}
-    .del-btn:hover{color:#e55}
+
+    .rota-row{padding:12px 0;border-bottom:1px solid #f0f2f5}
+    .rota-row:last-child{border-bottom:none}
+    .rota-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .rota-nome{font-size:14px;font-weight:600;color:#111}
+    .rota-pct{font-size:13px;font-weight:700;color:#1D9E75}
+    .rota-pct.done{color:#0F6E56}
+    .prog-bar{background:#f0f4f8;border-radius:99px;height:5px;overflow:hidden}
+    .prog-fill{background:linear-gradient(90deg,#1D9E75,#0d7a5a);height:100%;border-radius:99px;transition:width .4s}
+    .rota-sub{font-size:11px;color:#aaa;margin-top:4px}
+
+    .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .conf-item:last-child{border-bottom:none}
+    .conf-nome{font-size:14px;font-weight:600;color:#111}
+    .conf-ts{font-size:11px;color:#aaa;margin-top:2px}
+    .conf-obs{margin-top:5px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:7px;padding:6px 10px;font-size:12px;color:#6B4E00}
+    .badge-sim{background:#E1F5EE;color:#085041;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .badge-nao{background:#FCEBEB;color:#791F1F;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .del-conf{background:none;border:none;cursor:pointer;color:#ddd;font-size:16px;padding:2px 5px;border-radius:6px;flex-shrink:0}
+    .del-conf:hover{color:#e55}
+
+    /* RESET */
+    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem;border:1.5px solid #FEE2E2}
+    .reset-title{font-size:15px;font-weight:700;color:#991B1B;margin-bottom:6px}
+    .reset-desc{font-size:13px;color:#777;margin-bottom:1rem;line-height:1.5}
+    .btn-reset{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5}
+    .btn-reset:hover{background:#FECACA}
+
+    .empty{text-align:center;padding:2rem;color:#ccc;font-size:14px}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+    .toast.show{opacity:1}
+
+    #view-motoboys,#view-clientes,#view-entregas,#view-confirmacoes,#view-reset{display:none}
+    #view-motoboys.active,#view-clientes.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
+
+    .badge-rota{font-size:11px;background:#f0f4f8;color:#555;padding:2px 8px;border-radius:6px}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
+    .modal h2{font-size:18px;font-weight:700;color:#111;margin-bottom:8px}
+    .modal p{font-size:14px;color:#777;margin-bottom:1.5rem;line-height:1.5}
+    .modal-btns{display:flex;flex-direction:column;gap:10px}
+    .modal-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#DC2626;color:#fff}
+    .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555}
   </style>
 </head>
 <body>
+
+<div class="header">
+  <h1>Painel Gerencial</h1>
+  <div class="sub">Biocondutor na Rota</div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="setTab('motoboys',this)">👤 Motoboys</button>
+  <button class="tab" onclick="setTab('clientes',this)">📋 Clientes</button>
+  <button class="tab" onclick="setTab('entregas',this)">📦 Entregas</button>
+  <button class="tab" onclick="setTab('confirmacoes',this)">✓ Confirmações</button>
+  <button class="tab" onclick="setTab('reset',this)">🔄 Reset</button>
+</div>
+
 <div class="container">
-  <div class="card">
-    <div class="logo">
-      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    </div>
-    <div class="header-row">
-      <h1>Painel do Organizador</h1>
-      <button class="refresh-btn" id="btn-refresh">↻ Atualizar</button>
-    </div>
-    <p class="subtitle"><span class="live-dot"></span><span id="update-label">Carregando...</span></p>
 
-    <div class="stats">
-      <div class="stat"><div class="stat-val green" id="cnt-sim">—</div><div class="stat-label">confirmadas</div></div>
-      <div class="stat"><div class="stat-val red"   id="cnt-nao">—</div><div class="stat-label">não confirmadas</div></div>
-      <div class="stat"><div class="stat-val"       id="cnt-pend">—</div><div class="stat-label">pendentes</div></div>
+  <!-- MOTOBOYS -->
+  <div id="view-motoboys" class="active">
+    <div class="card">
+      <div class="card-title">Cadastrar motoboy</div>
+      <div class="form-row">
+        <input type="text" id="mb-nome" placeholder="Nome completo"/>
+        <input type="tel" id="mb-tel" placeholder="Telefone (ex: 11999999999)"/>
+      </div>
+      <div class="form-row">
+        <select id="mb-rota"><option value="">Selecione a rota...</option>
+          <optgroup label="São Paulo">
+            <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
+          </optgroup>
+          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+        </select>
+        <button class="btn-add" onclick="addMotoboy()">+ Adicionar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Motoboys cadastrados <button class="refresh-btn" onclick="carregarMotoboys()">↻</button></div>
+      <div id="lista-motoboys"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div id="view-clientes">
+    <div class="card">
+      <div class="card-title">Adicionar cliente</div>
+      <div class="form-row">
+        <input type="text" id="cl-num" placeholder="Nº cliente" style="max-width:110px"/>
+        <input type="text" id="cl-nome" placeholder="Nome do cliente"/>
+      </div>
+      <div class="form-row">
+        <input type="time" id="cl-horario"/>
+        <select id="cl-rota"><option value="">Rota...</option>
+          <optgroup label="São Paulo">
+            <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
+          </optgroup>
+          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+        </select>
+        <button class="btn-add" onclick="addCliente()">+ Adicionar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">
+        Clientes por rota
+        <select id="filtro-rota-cl" onchange="carregarClientes()" style="height:32px;border-radius:8px;border:1.5px solid #e2e8f0;font-size:13px;padding:0 8px">
+          <option value="">Todas as rotas</option>
+          <optgroup label="São Paulo">
+            <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
+          </optgroup>
+          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+        </select>
+      </div>
+      <div id="lista-clientes"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+  <!-- ENTREGAS -->
+  <div id="view-entregas">
+    <div class="card">
+      <div class="card-title">Visão geral <button class="refresh-btn" onclick="carregarEntregas()">↻ Atualizar</button></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="e-total-ent">—</div><div class="stat-label">entregues</div></div>
+        <div class="stat-card"><div class="stat-val orange" id="e-total-pend">—</div><div class="stat-label">pendentes</div></div>
+      </div>
+      <div id="lista-entregas"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+  <!-- CONFIRMAÇÕES -->
+  <div id="view-confirmacoes">
+    <div class="card">
+      <div class="card-title">Confirmações do Biocondutor <button class="refresh-btn" onclick="carregarConfirmacoes()">↻</button></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="c-sim">—</div><div class="stat-label">confirmadas</div></div>
+        <div class="stat-card"><div class="stat-val red" id="c-nao">—</div><div class="stat-label">não confirmadas</div></div>
+      </div>
+      <div id="lista-confirmacoes"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+  <!-- RESET -->
+  <div id="view-reset">
+    <div class="reset-card">
+      <div class="reset-title">🔄 Reset diário de entregas</div>
+      <div class="reset-desc">Zera o status de todas as entregas para "pendente". Use no início de cada dia antes dos motoboys começarem a rota. Esta ação não pode ser desfeita.</div>
+      <button class="btn-reset" onclick="abrirModalReset()">🔄 Resetar todas as entregas</button>
     </div>
 
-    <div class="tabs" id="tabs">
-      <button class="tab active" data-tab="todos">Todos</button>
-      <button class="tab" data-tab="sim">Confirmadas</button>
-      <button class="tab" data-tab="nao">Não confirmadas</button>
-      <button class="tab" data-tab="pendentes">Pendentes</button>
+    <div class="reset-card" style="border-color:#FEF3C7">
+      <div class="reset-title" style="color:#92400E">🗑️ Limpar confirmações do Biocondutor</div>
+      <div class="reset-desc">Apaga todas as confirmações de presença do Biocondutor. Use quando quiser iniciar uma nova rodada de confirmações.</div>
+      <button class="btn-reset" style="background:#FEF3C7;color:#92400E;border-color:#FCD34D" onclick="abrirModalResetConf()">🗑️ Limpar confirmações</button>
     </div>
+  </div>
 
-    <input type="text" id="busca" placeholder="Buscar por unidade..." />
-    <div id="lista"><p class="empty">Carregando...</p></div>
+</div>
+
+<!-- MODAL RESET ENTREGAS -->
+<div class="modal-overlay hidden" id="modal-reset">
+  <div class="modal">
+    <h2>Resetar entregas?</h2>
+    <p>Todas as entregas voltarão para "pendente" e os horários de entrega serão apagados. Use no início de cada novo dia.</p>
+    <div class="modal-btns">
+      <button class="modal-sim" onclick="resetarEntregas()">Sim, resetar</button>
+      <button class="modal-nao" onclick="fecharModal('modal-reset')">Cancelar</button>
+    </div>
   </div>
 </div>
 
+<!-- MODAL RESET CONFIRMAÇÕES -->
+<div class="modal-overlay hidden" id="modal-reset-conf">
+  <div class="modal">
+    <h2>Limpar confirmações?</h2>
+    <p>Todas as confirmações do Biocondutor serão apagadas. Esta ação não pode ser desfeita.</p>
+    <div class="modal-btns">
+      <button class="modal-sim" onclick="resetarConfirmacoes()">Sim, limpar</button>
+      <button class="modal-nao" onclick="fecharModal('modal-reset-conf')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  const TODAS_ROTAS = [
-    'SAO PAULO 01','SAO PAULO 03','SAO PAULO 04','SAO PAULO 05','SAO PAULO 07',
-    'SAO PAULO 08','SAO PAULO 09','SAO PAULO 10','SAO PAULO 13','SAO PAULO 14',
-    'SAO PAULO 15','SAO PAULO 17','SAO PAULO 18','SAO PAULO 20','SAO PAULO 22',
-    'SAO PAULO 23','SAO PAULO 24','SAO PAULO 25','SAO PAULO 30','SAO PAULO 31',
-    'SAO PAULO 32','SAO PAULO 34','SAO PAULO 35','SAO PAULO 37','SAO PAULO 38',
-    'SAO PAULO 39','SAO PAULO 40','SAO PAULO 41','SAO PAULO 42','SAO PAULO 43',
-    'SAO PAULO 44','SAO PAULO 45','SAO PAULO 46','SAO PAULO 47','SAO PAULO 48',
-    'SAO PAULO 49','SAO PAULO 50','SAO PAULO 51',
-    'NTHCC','PSC3','PSC4','PSC5','PSC6','PSC7','PSC8'
-  ];
 
-  let dados = [];
-  let tabAtual = 'todos';
-
-  document.getElementById('btn-refresh').addEventListener('click', carregar);
-
-  document.getElementById('tabs').addEventListener('click', e => {
-    const tab = e.target.closest('.tab');
-    if (!tab) return;
-    tabAtual = tab.dataset.tab;
+  function setTab(tab, el) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('busca').value = '';
-    renderizar();
-  });
+    el.classList.add('active');
+    document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    if (tab === 'motoboys') carregarMotoboys();
+    if (tab === 'clientes') carregarClientes();
+    if (tab === 'entregas') carregarEntregas();
+    if (tab === 'confirmacoes') carregarConfirmacoes();
+  }
 
-  document.getElementById('busca').addEventListener('input', renderizar);
+  function toast(msg, cor) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = cor || '#111';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
 
-  async function carregar() {
+  function abrirModalReset() { document.getElementById('modal-reset').classList.remove('hidden'); }
+  function abrirModalResetConf() { document.getElementById('modal-reset-conf').classList.remove('hidden'); }
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+  // ── MOTOBOYS ──────────────────────────────────────
+  async function carregarMotoboys() {
+    try {
+      const r = await fetch(API + '/motoboys');
+      const d = await r.json();
+      const lista = document.getElementById('lista-motoboys');
+      if (!d.motoboys?.length) { lista.innerHTML = '<p class="empty">Nenhum motoboy cadastrado.</p>'; return; }
+      lista.innerHTML = d.motoboys.map(m => `
+        <div class="item-row">
+          <div class="item-info">
+            <div class="item-name">${m.nome}</div>
+            <div class="item-sub">${m.telefone} &middot; <span class="badge-rota">${m.rota}</span></div>
+          </div>
+          <button class="del-btn" onclick="delMotoboy(${m.id})">✕</button>
+        </div>`).join('');
+    } catch(e) { document.getElementById('lista-motoboys').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+  }
+
+  async function addMotoboy() {
+    const nome = document.getElementById('mb-nome').value.trim();
+    const tel  = document.getElementById('mb-tel').value.replace(/\D/g,'');
+    const rota = document.getElementById('mb-rota').value;
+    if (!nome || !tel || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone: tel, rota}) });
+    document.getElementById('mb-nome').value = '';
+    document.getElementById('mb-tel').value = '';
+    document.getElementById('mb-rota').value = '';
+    toast('Motoboy adicionado! ✓', '#1D9E75');
+    carregarMotoboys();
+  }
+
+  async function delMotoboy(id) {
+    if (!confirm('Remover este motoboy?')) return;
+    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Motoboy removido.', '#555');
+    carregarMotoboys();
+  }
+
+  // ── CLIENTES ──────────────────────────────────────
+  async function carregarClientes() {
+    const rota = document.getElementById('filtro-rota-cl').value;
+    try {
+      const url = rota ? API + '/clientes?rota=' + encodeURIComponent(rota) : API + '/clientes';
+      const r = await fetch(url);
+      const d = await r.json();
+      const lista = document.getElementById('lista-clientes');
+      if (!d.clientes?.length) { lista.innerHTML = '<p class="empty">Nenhum cliente encontrado.</p>'; return; }
+      lista.innerHTML = d.clientes.map(c => `
+        <div class="item-row">
+          <div class="item-info">
+            <div class="item-name">${c.nome}</div>
+            <div class="item-sub">Nº ${c.numero_cliente} &middot; ${c.horario} &middot; <span class="badge-rota">${c.rota}</span></div>
+          </div>
+          <button class="del-btn" onclick="delCliente(${c.id})">✕</button>
+        </div>`).join('');
+    } catch(e) { document.getElementById('lista-clientes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+  }
+
+  async function addCliente() {
+    const num     = document.getElementById('cl-num').value.trim();
+    const nome    = document.getElementById('cl-nome').value.trim();
+    const horario = document.getElementById('cl-horario').value;
+    const rota    = document.getElementById('cl-rota').value;
+    if (!num || !nome || !horario || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
+    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota}) });
+    document.getElementById('cl-num').value = '';
+    document.getElementById('cl-nome').value = '';
+    document.getElementById('cl-horario').value = '';
+    toast('Cliente adicionado! ✓', '#1D9E75');
+    carregarClientes();
+  }
+
+  async function delCliente(id) {
+    if (!confirm('Remover este cliente?')) return;
+    await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Cliente removido.', '#555');
+    carregarClientes();
+  }
+
+  // ── ENTREGAS ──────────────────────────────────────
+  async function carregarEntregas() {
+    try {
+      const r = await fetch(API + '/clientes');
+      const d = await r.json();
+      const clientes = d.clientes || [];
+
+      const entregues = clientes.filter(c => c.status === 'entregue').length;
+      const pendentes = clientes.filter(c => c.status !== 'entregue').length;
+      document.getElementById('e-total-ent').textContent  = entregues;
+      document.getElementById('e-total-pend').textContent = pendentes;
+
+      // Agrupar por rota
+      const rotas = {};
+      clientes.forEach(c => {
+        if (!rotas[c.rota]) rotas[c.rota] = { total:0, entregues:0 };
+        rotas[c.rota].total++;
+        if (c.status === 'entregue') rotas[c.rota].entregues++;
+      });
+
+      const lista = document.getElementById('lista-entregas');
+      const rotasOrdenadas = Object.entries(rotas).sort((a,b) => {
+        const pa = a[1].entregues/a[1].total;
+        const pb = b[1].entregues/b[1].total;
+        return pb - pa;
+      });
+
+      lista.innerHTML = rotasOrdenadas.map(([rota, info]) => {
+        const pct = Math.round(info.entregues / info.total * 100);
+        return `
+          <div class="rota-row">
+            <div class="rota-header">
+              <div class="rota-nome">${rota}</div>
+              <div class="rota-pct ${pct===100?'done':''}">${pct}%</div>
+            </div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+            <div class="rota-sub">${info.entregues} de ${info.total} entregues</div>
+          </div>`;
+      }).join('');
+    } catch(e) { document.getElementById('lista-entregas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+  }
+
+  // ── CONFIRMAÇÕES ─────────────────────────────────
+  async function carregarConfirmacoes() {
     try {
       const r = await fetch(API + '?action=listar');
       const d = await r.json();
-      dados = d.confirmacoes || [];
-      renderizar();
-      const agora = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      document.getElementById('update-label').textContent = 'Atualizado às ' + agora;
-    } catch(e) {
-      document.getElementById('lista').innerHTML = `<p class="empty">Erro ao carregar. Tente atualizar.</p>`;
-    }
+      const confs = d.confirmacoes || [];
+      const sim = confs.filter(c => c.resposta === 'sim').length;
+      const nao = confs.filter(c => c.resposta === 'nao').length;
+      document.getElementById('c-sim').textContent = sim;
+      document.getElementById('c-nao').textContent = nao;
+
+      const lista = document.getElementById('lista-confirmacoes');
+      if (!confs.length) { lista.innerHTML = '<p class="empty">Nenhuma confirmação ainda.</p>'; return; }
+      lista.innerHTML = confs.map(c => `
+        <div class="conf-item">
+          <div style="flex:1;min-width:0">
+            <div class="conf-nome">${c.unidade}</div>
+            <div class="conf-ts">${c.data || ''}</div>
+            ${c.obs ? `<div class="conf-obs">📝 ${c.obs}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span class="${c.resposta==='sim'?'badge-sim':'badge-nao'}">${c.resposta==='sim'?'Confirmada':'Não confirmada'}</span>
+            <button class="del-conf" onclick="delConf('${c.id}')">✕</button>
+          </div>
+        </div>`).join('');
+    } catch(e) { document.getElementById('lista-confirmacoes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
 
-  async function remover(id) {
-    if (!confirm('Remover esta entrada?')) return;
-    await fetch(API, {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id })
-    });
-    await carregar();
+  async function delConf(id) {
+    await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Confirmação removida.', '#555');
+    carregarConfirmacoes();
   }
 
-  function renderizar() {
-    const sim         = dados.filter(d => d.resposta === 'sim');
-    const nao         = dados.filter(d => d.resposta === 'nao');
-    const respondidas = dados.map(d => d.unidade);
-    const pendentes   = TODAS_ROTAS.filter(r => !respondidas.includes(r));
-
-    document.getElementById('cnt-sim').textContent  = sim.length;
-    document.getElementById('cnt-nao').textContent  = nao.length;
-    document.getElementById('cnt-pend').textContent = pendentes.length;
-
-    document.querySelectorAll('.tab').forEach(t => {
-      const counts = { todos: dados.length, sim: sim.length, nao: nao.length, pendentes: pendentes.length };
-      const labels = { todos: 'Todos', sim: 'Confirmadas', nao: 'Não confirmadas', pendentes: 'Pendentes' };
-      t.textContent = `${labels[t.dataset.tab]} (${counts[t.dataset.tab]})`;
-    });
-
-    const busca = (document.getElementById('busca').value || '').toLowerCase();
-    const lista = document.getElementById('lista');
-
-    if (tabAtual === 'pendentes') {
-      const filtrados = pendentes.filter(r => r.toLowerCase().includes(busca));
-      lista.innerHTML = filtrados.length === 0
-        ? `<p class="empty">✅ Todas as unidades responderam!</p>`
-        : filtrados.map(r => `
-            <div class="pending-item">
-              <span>${r}</span>
-              <span style="font-size:11px;color:#ccc">aguardando</span>
-            </div>`).join('');
-      return;
-    }
-
-    let fonte = tabAtual === 'sim' ? sim : tabAtual === 'nao' ? nao : dados;
-    if (busca) fonte = fonte.filter(d => d.unidade.toLowerCase().includes(busca));
-
-    lista.innerHTML = fonte.length === 0
-      ? `<p class="empty">Nenhuma resposta ainda.</p>`
-      : fonte.map(d => `
-          <div class="list-item">
-            <div style="flex:1;min-width:0">
-              <div class="item-name">${d.unidade}</div>
-              <div class="item-ts">${d.data || ''}</div>
-              ${d.obs ? `<div class="item-obs">📝 ${d.obs}</div>` : ''}
-            </div>
-            <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;margin-top:2px">
-              <span class="badge ${d.resposta}">${d.resposta === 'sim' ? 'Confirmada' : 'Não confirmada'}</span>
-              <button class="del-btn" data-id="${d.id}" title="Remover">✕</button>
-            </div>
-          </div>`).join('');
-
-    lista.querySelectorAll('.del-btn').forEach(btn => {
-      btn.addEventListener('click', () => remover(btn.dataset.id));
-    });
+  // ── RESET ENTREGAS ────────────────────────────────
+  async function resetarEntregas() {
+    fecharModal('modal-reset');
+    toast('Resetando...', '#555');
+    try {
+      const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'} });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        toast(`✓ ${d.total} entregas resetadas!`, '#1D9E75');
+      } else {
+        toast('Erro ao resetar.', '#e55');
+      }
+    } catch(e) { toast('Erro de conexão.', '#e55'); }
   }
 
-  carregar();
-  setInterval(carregar, 30000);
+  // ── RESET CONFIRMAÇÕES ────────────────────────────
+  async function resetarConfirmacoes() {
+    fecharModal('modal-reset-conf');
+    toast('Limpando...', '#555');
+    try {
+      const r = await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'} });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        toast('✓ Confirmações limpas!', '#1D9E75');
+        carregarConfirmacoes();
+      } else {
+        toast('Erro ao limpar.', '#e55');
+      }
+    } catch(e) { toast('Erro de conexão.', '#e55'); }
+  }
+
+  // Carregar motoboys ao iniciar
+  carregarMotoboys();
 </script>
 </body>
 </html>
