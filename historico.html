@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loglife — Histórico por Data</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
+    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
+    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    .header h1{font-size:18px;font-weight:700}
+    .header .sub{font-size:13px;opacity:.85}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
+
+    .container{padding:1rem 1.25rem 0;max-width:900px;margin:0 auto}
+    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+
+    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;align-items:flex-end}
+    .field{flex:1;min-width:140px}
+    label{font-size:12px;color:#5A7A8F;font-weight:600;display:block;margin-bottom:6px}
+    input,select{width:100%;height:40px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 10px;color:#111;background:#F7FBFD}
+    input:focus,select:focus{outline:none;border-color:#1E9FD9;background:#fff}
+    .btn-buscar{height:40px;padding:0 18px;border-radius:9px;border:none;background:#1E9FD9;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .btn-buscar:hover{opacity:.9}
+
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+    .stat{background:#F7FBFD;border-radius:10px;padding:10px;text-align:center;border:1px solid #D6E5EE}
+    .stat-val{font-size:20px;font-weight:700;color:#0F4C7A}
+    .stat-val.primary{color:#1E9FD9}
+    .stat-val.red{color:#A32D2D}
+    .stat-val.orange{color:#B45309}
+    .stat-label{font-size:10px;color:#5A7A8F;margin-top:2px;text-transform:uppercase;letter-spacing:.03em}
+
+    .tabela-wrap{overflow-x:auto;border:1px solid #D6E5EE;border-radius:11px}
+    table{width:100%;border-collapse:collapse;font-size:13px;background:#fff}
+    th{background:#0F4C7A;color:#fff;padding:10px 8px;text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+    td{padding:10px 8px;border-bottom:1px solid #EBF1F5;vertical-align:top}
+    tr:hover td{background:#F7FBFD}
+    tr:last-child td{border-bottom:none}
+    .td-nome{font-weight:600;color:#0F4C7A}
+    .td-rota{font-size:11px;background:#E8F4FB;color:#0F4C7A;padding:2px 6px;border-radius:5px;font-weight:600;white-space:nowrap;display:inline-block}
+    .td-prod{color:#0F6E56;font-weight:600}
+    .td-imp{color:#A32D2D;font-weight:600}
+    .td-motivo{font-size:11px;color:#A32D2D;font-style:italic;max-width:180px}
+
+    .empty{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
+    .loading{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
+
+    .quick-btns{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.75rem}
+    .quick-btn{padding:6px 12px;font-size:12px;font-weight:600;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;cursor:pointer}
+    .quick-btn.active{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
+
+    .resumo-titulo{font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:.75rem;display:flex;align-items:center;gap:8px}
+
+    .btn-csv{padding:8px 14px;font-size:13px;font-weight:600;border-radius:9px;border:1.5px solid #1E9FD9;background:#fff;color:#1E9FD9;cursor:pointer;margin-left:auto}
+    .btn-csv:hover{background:#E8F4FB}
+
+    @media (max-width: 600px) {
+      .stats-row{grid-template-columns:repeat(2,1fr)}
+      th, td{font-size:11px;padding:7px 4px}
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="painel.html" class="back-link">← Voltar ao painel</a>
+  <div class="header-row">
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div>
+      <h1>Histórico por Data</h1>
+      <div class="sub">Veja todas as coletas de um dia específico</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="quick-btns">
+      <button class="quick-btn active" data-q="hoje" onclick="setQuick(this,'hoje')">Hoje</button>
+      <button class="quick-btn" data-q="ontem" onclick="setQuick(this,'ontem')">Ontem</button>
+      <button class="quick-btn" data-q="custom" onclick="setQuick(this,'custom')">Personalizado</button>
+    </div>
+
+    <div class="filters">
+      <div class="field">
+        <label>Data inicial</label>
+        <input type="date" id="data-inicio"/>
+      </div>
+      <div class="field">
+        <label>Data final</label>
+        <input type="date" id="data-fim"/>
+      </div>
+      <div class="field" style="flex:0 0 auto">
+        <label>&nbsp;</label>
+        <button class="btn-buscar" onclick="buscar()">🔍 Buscar</button>
+      </div>
+    </div>
+
+    <div class="filters" style="margin-bottom:0">
+      <div class="field">
+        <label>Filtrar por rota</label>
+        <select id="filtro-rota" onchange="renderizar()">
+          <option value="">Todas as rotas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Filtrar por status</label>
+        <select id="filtro-status" onchange="renderizar()">
+          <option value="">Todos</option>
+          <option value="produtiva">Produtivas</option>
+          <option value="improdutiva">Improdutivas</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Buscar cliente</label>
+        <input type="text" id="busca" placeholder="Nome ou nº..." oninput="renderizar()"/>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="resumo-titulo">
+      📊 Resumo
+      <button class="btn-csv" onclick="exportarCSV()">⬇ Baixar CSV</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">Total</div></div>
+      <div class="stat"><div class="stat-val primary" id="s-prod">—</div><div class="stat-label">Produtivas</div></div>
+      <div class="stat"><div class="stat-val red" id="s-imp">—</div><div class="stat-label">Improdutivas</div></div>
+      <div class="stat"><div class="stat-val orange" id="s-rotas">—</div><div class="stat-label">Rotas ativas</div></div>
+    </div>
+
+    <div class="tabela-wrap">
+      <table id="tabela">
+        <thead>
+          <tr>
+            <th>Hora</th>
+            <th>Nº</th>
+            <th>Cliente</th>
+            <th>Rota</th>
+            <th>Motoboy</th>
+            <th>Status</th>
+            <th>Motivo</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <tr><td colspan="7" class="loading">Carregando...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let registros = [];
+  let modoPeriodo = 'hoje';
+
+  // Inicializar com hoje
+  const hojeStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+  document.getElementById('data-inicio').value = hojeStr;
+  document.getElementById('data-fim').value = hojeStr;
+
+  function setQuick(el, q) {
+    document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    modoPeriodo = q;
+    if (q === 'hoje') {
+      const d = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      document.getElementById('data-inicio').value = d;
+      document.getElementById('data-fim').value = d;
+      buscar();
+    } else if (q === 'ontem') {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const iso = d.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      document.getElementById('data-inicio').value = iso;
+      document.getElementById('data-fim').value = iso;
+      buscar();
+    }
+  }
+
+  async function buscar() {
+    const di = document.getElementById('data-inicio').value;
+    const df = document.getElementById('data-fim').value;
+    if (!di || !df) return;
+    document.getElementById('tbody').innerHTML = '<tr><td colspan="7" class="loading">Carregando...</td></tr>';
+    try {
+      const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
+      const d = await r.json();
+      registros = d.historico || [];
+
+      // Popular dropdown de rotas
+      const rotas = [...new Set(registros.map(r => r.rota))].sort();
+      const sel = document.getElementById('filtro-rota');
+      sel.innerHTML = '<option value="">Todas as rotas</option>' +
+        rotas.map(r => `<option value="${r}">${r}</option>`).join('');
+
+      renderizar();
+    } catch(e) {
+      document.getElementById('tbody').innerHTML = '<tr><td colspan="7" class="empty">Erro ao carregar.</td></tr>';
+    }
+  }
+
+  function renderizar() {
+    const rotaFiltro = document.getElementById('filtro-rota').value;
+    const statusFiltro = document.getElementById('filtro-status').value;
+    const busca = document.getElementById('busca').value.toLowerCase();
+
+    let filtrados = registros;
+    if (rotaFiltro) filtrados = filtrados.filter(r => r.rota === rotaFiltro);
+    if (statusFiltro) filtrados = filtrados.filter(r => r.produtividade === statusFiltro);
+    if (busca) filtrados = filtrados.filter(r =>
+      (r.nome_cliente || '').toLowerCase().includes(busca) ||
+      String(r.numero_cliente || '').includes(busca)
+    );
+
+    // Stats
+    document.getElementById('s-total').textContent = filtrados.length;
+    document.getElementById('s-prod').textContent = filtrados.filter(r => r.produtividade === 'produtiva').length;
+    document.getElementById('s-imp').textContent  = filtrados.filter(r => r.produtividade === 'improdutiva').length;
+    document.getElementById('s-rotas').textContent = new Set(filtrados.map(r => r.rota)).size;
+
+    // Tabela
+    const tbody = document.getElementById('tbody');
+    if (!filtrados.length) {
+      tbody.innerHTML = '<tr><td colspan="7" class="empty">Nenhum registro encontrado.</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = filtrados.map(r => {
+      const hora = r.timestamp ? new Date(r.timestamp).toLocaleTimeString('pt-BR', {timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}) : '';
+      const statusClass = r.produtividade === 'produtiva' ? 'td-prod' : 'td-imp';
+      const statusTxt = r.produtividade === 'produtiva' ? '✓ Produtiva' : '✕ Improdutiva';
+      return `<tr>
+        <td>${hora}</td>
+        <td>${r.numero_cliente || '—'}</td>
+        <td class="td-nome">${r.nome_cliente || '—'}</td>
+        <td><span class="td-rota">${r.rota}</span></td>
+        <td>${r.nome_motoboy || '—'}</td>
+        <td class="${statusClass}">${statusTxt}</td>
+        <td class="td-motivo">${r.motivo_improdutiva || ''}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function exportarCSV() {
+    if (!registros.length) { alert('Nada para exportar.'); return; }
+    const rotaFiltro = document.getElementById('filtro-rota').value;
+    const statusFiltro = document.getElementById('filtro-status').value;
+    const busca = document.getElementById('busca').value.toLowerCase();
+
+    let filtrados = registros;
+    if (rotaFiltro) filtrados = filtrados.filter(r => r.rota === rotaFiltro);
+    if (statusFiltro) filtrados = filtrados.filter(r => r.produtividade === statusFiltro);
+    if (busca) filtrados = filtrados.filter(r =>
+      (r.nome_cliente || '').toLowerCase().includes(busca) ||
+      String(r.numero_cliente || '').includes(busca)
+    );
+
+    const linhas = [['Hora','Codigo','Cliente','Rota','Motoboy','Status','Motivo']];
+    filtrados.forEach(r => {
+      const hora = r.timestamp ? new Date(r.timestamp).toLocaleTimeString('pt-BR', {timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}) : '';
+      linhas.push([
+        hora,
+        r.numero_cliente || '',
+        r.nome_cliente || '',
+        r.rota || '',
+        r.nome_motoboy || '',
+        r.produtividade === 'produtiva' ? 'PRODUTIVO' : r.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : '',
+        (r.motivo_improdutiva || '').replace(/[\r\n]+/g,' ')
+      ]);
+    });
+
+    const csv = '\ufeff' + linhas.map(l => l.map(c => `"${String(c).replace(/"/g,'""')}"`).join(';')).join('\r\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const di = document.getElementById('data-inicio').value;
+    const df = document.getElementById('data-fim').value;
+    a.href = url;
+    a.download = di === df ? `historico_${di}.csv` : `historico_${di}_${df}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  buscar();
+</script>
+</body>
+</html>
