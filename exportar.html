@@ -112,6 +112,8 @@
     </button>
 
     <div class="msg" id="msg"></div>
+
+    <div id="debug-log" style="margin-top:1rem;background:#0F4C7A;color:#9FE0FF;padding:14px;border-radius:10px;font-family:monospace;font-size:12px;line-height:1.6;display:none;white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -176,7 +178,21 @@
     el.className = 'msg ' + type;
   }
 
+  function debugLog(msg) {
+    const el = document.getElementById('debug-log');
+    el.style.display = 'block';
+    el.textContent += msg + '\n';
+    console.log(msg);
+  }
+
+  function clearDebug() {
+    const el = document.getElementById('debug-log');
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+
   async function exportar() {
+    clearDebug();
     const btn = document.getElementById('btn-baixar');
     btn.disabled = true;
     showMsg('Buscando dados...', 'loading');
@@ -185,15 +201,20 @@
       const { di, df } = getDatas();
       if (!di || !df) { showMsg('Selecione as datas.', 'error'); btn.disabled = false; return; }
 
-      // Carregar histórico do período
+      debugLog(`📅 Período: ${di} até ${df}`);
+
       const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
       const d = await r.json();
       const historico = d.historico || [];
+
+      debugLog(`📦 Histórico do D1: ${historico.length} coletas recebidas`);
+      debugLog(`   Total D1: ${d.total}, Produtivas: ${d.produtivas}, Improdutivas: ${d.improdutivas}`);
 
       showMsg('Carregando planilha base...', 'loading');
       const respTpl = await fetch(TEMPLATE_URL);
       if (!respTpl.ok) throw new Error('Template não encontrado');
       const buffer = await respTpl.arrayBuffer();
+      debugLog(`📄 Template carregado: ${(buffer.byteLength / 1024).toFixed(1)} KB`);
 
       showMsg('Preenchendo dados das coletas...', 'loading');
 
@@ -202,7 +223,8 @@
       const sheet = workbook.getWorksheet('PLANILHA IHP');
       if (!sheet) throw new Error('Aba PLANILHA IHP não encontrada');
 
-      // Indexar histórico por código (normalizado: trim + remove zeros à esquerda)
+      debugLog(`📊 Aba aberta: rowCount=${sheet.rowCount}, actualRowCount=${sheet.actualRowCount}`);
+
       const normalizar = (v) => String(v || '').trim().replace(/^0+/, '') || '0';
       const porCodigo = {};
       historico.forEach(h => {
@@ -210,11 +232,11 @@
         if (cod) porCodigo[cod] = h;
       });
 
+      debugLog(`🔑 Mapa de códigos do histórico: ${Object.keys(porCodigo).length} códigos únicos`);
+
       const agora = new Date();
-      const horaAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       const dataAtual = agora.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
 
-      // Estilo VERIFICAR em vermelho
       const estiloVerificar = {
         font: { color: { argb: 'FFC00000' }, bold: true },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE6E6' } }
@@ -222,15 +244,20 @@
 
       let preenchidasOk = 0;
       let preenchidasVerificar = 0;
+      let linhasVazias = 0;
 
-      // Loop manual em vez de eachRow (que pula linhas "vazias")
-      const totalLinhas = sheet.rowCount || sheet.actualRowCount || 400;
-      console.log(`Sheet rowCount: ${sheet.rowCount}, actualRowCount: ${sheet.actualRowCount}`);
+      const totalLinhas = Math.max(sheet.rowCount || 0, sheet.actualRowCount || 0, 400);
+      debugLog(`🔄 Vai percorrer linhas 2 até ${totalLinhas}`);
 
       for (let rowNum = 2; rowNum <= totalLinhas; rowNum++) {
         const row = sheet.getRow(rowNum);
-        const codigo = normalizar(row.getCell(1).value);
-        if (!codigo || codigo === '0') continue;
+        const valorCodigo = row.getCell(1).value;
+        const codigo = normalizar(valorCodigo);
+
+        if (!codigo || codigo === '0') {
+          linhasVazias++;
+          continue;
+        }
 
         const reg = porCodigo[codigo];
 
@@ -262,8 +289,11 @@
         }
       }
 
-      console.log(`Total linhas processadas: ${preenchidasOk + preenchidasVerificar}`);
-      console.log(`Com coleta (OK): ${preenchidasOk}, Sem coleta (VERIFICAR): ${preenchidasVerificar}`);
+      debugLog(`✅ Processamento concluído:`);
+      debugLog(`   ${preenchidasOk} linhas com coleta (PRODUTIVO/IMPRODUTIVO)`);
+      debugLog(`   ${preenchidasVerificar} linhas marcadas como VERIFICAR`);
+      debugLog(`   ${linhasVazias} linhas vazias puladas`);
+      debugLog(`   Total preenchido: ${preenchidasOk + preenchidasVerificar}`);
 
       showMsg('Gerando arquivo...', 'loading');
 
@@ -279,9 +309,10 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
+      debugLog(`💾 Arquivo gerado: ${(out.byteLength / 1024).toFixed(1)} KB`);
       showMsg(`✓ Planilha baixada! ${preenchidasOk} com coleta, ${preenchidasVerificar} para verificar.`, 'success');
     } catch(e) {
-      console.error(e);
+      debugLog(`❌ ERRO: ${e.message}`);
       showMsg('Erro: ' + e.message, 'error');
     }
 
