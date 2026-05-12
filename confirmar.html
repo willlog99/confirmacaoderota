@@ -1,27 +1,27 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Confirmar Presença — Biocondutor</title>
+  <title>Loglife — Confirmar Presença</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
     .container{width:100%;max-width:460px}
-    .card{background:#fff;border-radius:18px;padding:1.75rem;box-shadow:0 2px 12px rgba(0,0,0,0.07);margin-bottom:1rem}
-    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#888;cursor:pointer;margin-bottom:1.25rem;text-decoration:none}
-    .back-link:hover{color:#333}
-    .logo{width:52px;height:52px;background:linear-gradient(135deg,#1D9E75,#0d7a5a);border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:1.1rem}
-    .logo svg{width:28px;height:28px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-    h1{font-size:21px;font-weight:700;color:#111;margin-bottom:4px}
-    .subtitle{font-size:14px;color:#777;margin-bottom:1.5rem}
-    label{font-size:13px;color:#555;display:block;margin-bottom:6px;font-weight:500}
-    select{width:100%;height:44px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;color:#111;font-size:14px;padding:0 12px;cursor:pointer;margin-bottom:1.25rem;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
-    select:focus{outline:none;border-color:#1D9E75}
+    .card{background:#fff;border-radius:24px;padding:1.75rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1rem}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.25rem;text-decoration:none;font-weight:500}
+    .back-link:hover{color:#0F4C7A}
+    .logo-area{text-align:center;margin-bottom:1.25rem}
+    .logo-img{height:52px;width:auto}
+    h1{font-size:20px;font-weight:700;color:#0F4C7A;margin-bottom:4px;text-align:center}
+    .subtitle{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;text-align:center}
+    label{font-size:13px;color:#0F4C7A;display:block;margin-bottom:6px;font-weight:600}
+    select{width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;background:#F7FBFD;color:#111;font-size:14px;padding:0 12px;cursor:pointer;margin-bottom:1.25rem;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%231E9FD9' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center}
+    select:focus{outline:none;border-color:#1E9FD9;background:#fff}
     .btn-group{display:flex;flex-direction:column;gap:10px}
-    .btn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .1s}
+    .btn{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px}
     .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn:active:not(:disabled){transform:scale(.98)}
     .btn-sim{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
     .btn-sim:hover:not(:disabled){background:#c8f0e0}
     .btn-nao{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
@@ -30,64 +30,49 @@
     .obs-area{display:none;margin-top:14px;animation:fadeIn .2s ease}
     .obs-area.visible{display:block}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
-    textarea{width:100%;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:10px}
-    textarea:focus{outline:none;border-color:#1D9E75}
+    textarea{width:100%;border-radius:11px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:10px;background:#F7FBFD}
+    textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
     .msg{border-radius:11px;padding:14px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
     .msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:block}
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
-    .msg.loading{background:#f0f4f8;color:#555;border:1.5px solid #e2e8f0;display:block}
-    .footer{text-align:center;font-size:12px;color:#bbb;margin-top:.75rem}
+    .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
+    .footer{text-align:center;font-size:11px;color:#94A8B8;margin-top:.75rem}
   </style>
 </head>
 <body>
 <div class="container">
   <a class="back-link" href="index.html">← Voltar</a>
   <div class="card">
-    <div class="logo">
-      <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-    </div>
-    <h1>Biocondutor na Rota</h1>
+    <div class="logo-area"><img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="logo-img"/></div>
+    <h1>Operação Loglife/Pardini</h1>
     <p class="subtitle">Confirme a presença da sua unidade</p>
 
-    <label for="sel-unidade">Selecione sua unidade</label>
-    <select id="sel-unidade">
-      <option value="">Selecione...</option>
-      <optgroup label="São Paulo">
-        <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option>
-        <option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option>
-        <option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option>
-        <option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option>
-        <option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option>
-        <option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option>
-        <option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option>
-        <option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option>
-        <option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option>
-        <option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option>
-        <option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option>
-        <option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option>
-        <option>SAO PAULO 50</option><option>SAO PAULO 51</option>
-      </optgroup>
-      <optgroup label="Outros">
-        <option>NTHCC</option>
-        <option>PSC3</option><option>PSC4</option><option>PSC5</option>
-        <option>PSC6</option><option>PSC7</option><option>PSC8</option>
-      </optgroup>
-    </select>
+```
+<label for="sel-unidade">Selecione sua unidade</label>
+<select id="sel-unidade">
+  <option value="">Selecione...</option>
+  <optgroup label="São Paulo">
+    <option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option>
+  </optgroup>
+  <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+</select>
 
-    <div class="btn-group">
-      <button class="btn btn-sim" id="btn-sim" onclick="confirmar('sim')">✓ Presença confirmada</button>
-      <button class="btn btn-nao" id="btn-nao" onclick="abrirObs()">✗ Presença não confirmada</button>
-    </div>
+<div class="btn-group">
+  <button class="btn btn-sim" id="btn-sim" onclick="confirmar('sim')">✓ Presença confirmada</button>
+  <button class="btn btn-nao" id="btn-nao" onclick="abrirObs()">✗ Presença não confirmada</button>
+</div>
 
-    <div class="obs-area" id="obs-area">
-      <label>Motivo <span style="color:#aaa;font-size:12px;font-weight:400">(opcional)</span></label>
-      <textarea id="obs-text" placeholder="Ex: condutor de férias, veículo em manutenção..."></textarea>
-      <button class="btn btn-send" id="btn-send" onclick="confirmar('nao')">Confirmar não presença</button>
-    </div>
+<div class="obs-area" id="obs-area">
+  <label>Motivo <span style="color:#94A8B8;font-size:12px;font-weight:400">(opcional)</span></label>
+  <textarea id="obs-text" placeholder="Ex: condutor de férias, veículo em manutenção..."></textarea>
+  <button class="btn btn-send" id="btn-send" onclick="confirmar('nao')">Confirmar não presença</button>
+</div>
 
-    <div class="msg" id="msg"></div>
+<div class="msg" id="msg"></div>
+```
+
   </div>
-  <div class="footer">Biocondutor na Rota &mdash; Confirmação de presença</div>
+  <div class="footer">Loglife &mdash; Confirmação de presença</div>
 </div>
 
 <script>
@@ -108,8 +93,7 @@
     showMsg('Enviando...', 'loading');
     try {
       const r = await fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ unidade, resposta: resp, obs })
       });
       const d = await r.json();
@@ -121,11 +105,9 @@
       } else if (d.status === 'duplicado') {
         showMsg('Esta unidade já foi registrada. Fale com o organizador.', 'error');
       } else {
-        showMsg('Erro ao enviar. Tente novamente.', 'error');
+        showMsg('Erro ao enviar.', 'error');
       }
-    } catch(e) {
-      showMsg('Erro de conexão.', 'error');
-    }
+    } catch(e) { showMsg('Erro de conexão.', 'error'); }
     setBtns(false);
   };
 
@@ -142,5 +124,6 @@
     el.className = 'msg ' + type;
   }
 </script>
+
 </body>
 </html>
