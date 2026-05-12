@@ -19,16 +19,31 @@
     .card-icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#E8F4FB,#BFE0F0);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1rem}
     .card-title{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
     .card-desc{font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5}
+
+    label{font-size:13px;color:#0F4C7A;font-weight:600;display:block;margin-bottom:6px}
+    .date-row{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
+    .date-row > div{flex:1;min-width:140px}
+    input[type=date]{width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 12px;color:#111;background:#F7FBFD}
+    input[type=date]:focus{outline:none;border-color:#1E9FD9;background:#fff}
+
     .info-box{background:#E8F4FB;border:1.5px solid #BFE0F0;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-size:13px;color:#0F4C7A;line-height:1.6}
     .info-box ul{margin-left:1.2rem;margin-top:6px}
+
     .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
     .stat{background:#F7FBFD;border-radius:10px;padding:12px;text-align:center;border:1px solid #D6E5EE}
     .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
     .stat-val.primary{color:#1E9FD9}
+    .stat-val.red{color:#A32D2D}
     .stat-label{font-size:11px;color:#5A7A8F;margin-top:2px}
+
     .btn-baixar{width:100%;padding:16px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 12px rgba(30,159,217,0.25)}
     .btn-baixar:hover{opacity:.95}
     .btn-baixar:disabled{opacity:.5;cursor:not-allowed}
+
+    .quick-btn{padding:8px 14px;font-size:13px;font-weight:600;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;cursor:pointer;margin-right:6px;margin-bottom:6px}
+    .quick-btn:hover{border-color:#1E9FD9;color:#0F4C7A}
+    .quick-btn.active{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
+
     .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
     .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
@@ -54,22 +69,43 @@
   <div class="card">
     <div class="card-icon">📊</div>
     <div class="card-title">Planilha IHP — Preenchida automaticamente</div>
-    <div class="card-desc">Baixe a planilha IHP com os dados das coletas do dia. As colunas <strong>HORÁRIO REAL</strong>, <strong>STATUS</strong>, <strong>JUSTIFICATIVA</strong> e <strong>Data</strong> serão preenchidas automaticamente. O resto da formatação e dados originais permanecem intactos.</div>
+    <div class="card-desc">Escolha a data e baixe a planilha com os dados das coletas. Clientes sem coleta registrada virão marcados como <strong style="color:#A32D2D">VERIFICAR</strong> em vermelho.</div>
+
+    <label>Período rápido</label>
+    <div style="margin-bottom:1rem">
+      <button class="quick-btn active" data-q="hoje" onclick="setQuick(this,'hoje')">Hoje</button>
+      <button class="quick-btn" data-q="ontem" onclick="setQuick(this,'ontem')">Ontem</button>
+      <button class="quick-btn" data-q="custom" onclick="setQuick(this,'custom')">Personalizado</button>
+    </div>
+
+    <div id="custom-dates" style="display:none">
+      <div class="date-row">
+        <div>
+          <label for="data-inicio">Data inicial</label>
+          <input type="date" id="data-inicio"/>
+        </div>
+        <div>
+          <label for="data-fim">Data final</label>
+          <input type="date" id="data-fim"/>
+        </div>
+      </div>
+    </div>
 
     <div class="info-box">
-      <strong>📋 O que será preenchido:</strong>
+      <strong>📋 Será preenchido:</strong>
       <ul>
-        <li><strong>HORÁRIO REAL</strong> — horário em que a coleta foi marcada</li>
-        <li><strong>STATUS</strong> — "PRODUTIVO" ou "IMPRODUTIVO"</li>
+        <li><strong>HORÁRIO ATUAL</strong> — hora em que você baixou</li>
+        <li><strong>HORARIO REAL</strong> — hora da coleta</li>
+        <li><strong>STATUS</strong> — PRODUTIVO / IMPRODUTIVO / <strong style="color:#A32D2D">VERIFICAR</strong></li>
         <li><strong>JUSTIFICATIVA</strong> — motivo das improdutivas</li>
         <li><strong>Data</strong> — data do registro</li>
       </ul>
     </div>
 
     <div class="stat-row" id="stats">
-      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">coletas hoje</div></div>
+      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">total coletas</div></div>
       <div class="stat"><div class="stat-val primary" id="s-prod">—</div><div class="stat-label">produtivas</div></div>
-      <div class="stat"><div class="stat-val" id="s-imp">—</div><div class="stat-label">improdutivas</div></div>
+      <div class="stat"><div class="stat-val red" id="s-imp">—</div><div class="stat-label">improdutivas</div></div>
     </div>
 
     <button class="btn-baixar" id="btn-baixar" onclick="exportar()">
@@ -84,13 +120,49 @@
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   const TEMPLATE_URL = 'template_ihp.xlsx';
 
-  let historicoHoje = [];
+  let modoPeriodo = 'hoje';
+  let historicoFiltrado = [];
+
+  function setQuick(el, q) {
+    document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    modoPeriodo = q;
+
+    const customDiv = document.getElementById('custom-dates');
+    if (q === 'custom') {
+      customDiv.style.display = 'block';
+      const hoje = new Date().toISOString().slice(0,10);
+      if (!document.getElementById('data-inicio').value) document.getElementById('data-inicio').value = hoje;
+      if (!document.getElementById('data-fim').value)    document.getElementById('data-fim').value    = hoje;
+    } else {
+      customDiv.style.display = 'none';
+      carregarStats();
+    }
+  }
+
+  function getDatas() {
+    if (modoPeriodo === 'hoje') {
+      const d = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      return { di: d, df: d };
+    }
+    if (modoPeriodo === 'ontem') {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const iso = d.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      return { di: iso, df: iso };
+    }
+    const di = document.getElementById('data-inicio').value;
+    const df = document.getElementById('data-fim').value;
+    return { di, df };
+  }
 
   async function carregarStats() {
     try {
-      const r = await fetch(API + '/dashboard?periodo=hoje');
+      const { di, df } = getDatas();
+      if (!di || !df) return;
+      const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
       const d = await r.json();
-      historicoHoje = d.historico || [];
+      historicoFiltrado = d.historico || [];
       document.getElementById('s-total').textContent = d.total || 0;
       document.getElementById('s-prod').textContent  = d.produtivas || 0;
       document.getElementById('s-imp').textContent   = d.improdutivas || 0;
@@ -108,84 +180,105 @@
   async function exportar() {
     const btn = document.getElementById('btn-baixar');
     btn.disabled = true;
-    showMsg('Carregando planilha base...', 'loading');
+    showMsg('Buscando dados...', 'loading');
 
     try {
-      // 1. Carregar template
+      const { di, df } = getDatas();
+      if (!di || !df) { showMsg('Selecione as datas.', 'error'); btn.disabled = false; return; }
+
+      // Carregar histórico do período
+      const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
+      const d = await r.json();
+      const historico = d.historico || [];
+
+      showMsg('Carregando planilha base...', 'loading');
       const respTpl = await fetch(TEMPLATE_URL);
       if (!respTpl.ok) throw new Error('Template não encontrado');
       const buffer = await respTpl.arrayBuffer();
 
       showMsg('Preenchendo dados das coletas...', 'loading');
 
-      // 2. Abrir com ExcelJS
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.load(buffer);
-
       const sheet = workbook.getWorksheet('PLANILHA IHP');
       if (!sheet) throw new Error('Aba PLANILHA IHP não encontrada');
 
-      // 3. Indexar histórico por código
+      // Indexar histórico por código (normalizado: trim + remove zeros à esquerda)
+      const normalizar = (v) => String(v || '').trim().replace(/^0+/, '') || '0';
       const porCodigo = {};
-      historicoHoje.forEach(h => {
-        const cod = String(h.numero_cliente || '').trim();
+      historico.forEach(h => {
+        const cod = normalizar(h.numero_cliente);
         if (cod) porCodigo[cod] = h;
       });
 
-      // 4. Iterar linhas da PLANILHA IHP e preencher
-      // Colunas:
-      //  H (8)  = HORÁRIO ATUAL
-      //  K (11) = HORARIO REAL
-      //  L (12) = STATUS
-      //  M (13) = JUSTIFICATIVA
-      //  O (15) = Data
       const agora = new Date();
       const horaAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       const dataAtual = agora.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
 
-      let preenchidas = 0;
+      // Estilo VERIFICAR em vermelho
+      const estiloVerificar = {
+        font: { color: { argb: 'FFC00000' }, bold: true },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE6E6' } }
+      };
+
+      let preenchidasOk = 0;
+      let preenchidasVerificar = 0;
 
       sheet.eachRow((row, rowNum) => {
-        if (rowNum === 1) return; // pula cabeçalho
-        const codigo = String(row.getCell(1).value || '').trim();
-        if (!codigo) return;
+        if (rowNum === 1) return;
+        const codigo = normalizar(row.getCell(1).value);
+        if (!codigo || codigo === '0') return;
+
         const reg = porCodigo[codigo];
-        if (!reg) return;
 
-        // Extrair só a hora HH:MM do horario_entrega (formato "DD/MM/YYYY HH:MM")
-        let horaReal = '';
-        if (reg.horario_entrega) {
-          const partes = String(reg.horario_entrega).split(' ');
-          horaReal = partes[partes.length - 1]; // pega último segmento (HH:MM)
+        // Preenche HORÁRIO ATUAL e Data em todas as linhas
+        row.getCell(8).value  = horaAtual;
+        row.getCell(15).value = dataAtual;
+
+        if (reg) {
+          // Tem coleta - preenche normalmente
+          let horaReal = '';
+          if (reg.horario_entrega) {
+            const partes = String(reg.horario_entrega).split(' ');
+            horaReal = partes[partes.length - 1];
+          }
+          row.getCell(11).value = horaReal;
+          row.getCell(12).value = reg.produtividade === 'produtiva' ? 'PRODUTIVO' :
+                                   reg.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : 'VERIFICAR';
+          row.getCell(13).value = reg.motivo_improdutiva || '';
+
+          // Se status for VERIFICAR (sem produtividade), pinta vermelho
+          if (row.getCell(12).value === 'VERIFICAR') {
+            row.getCell(12).font = estiloVerificar.font;
+            row.getCell(12).fill = estiloVerificar.fill;
+            preenchidasVerificar++;
+          } else {
+            preenchidasOk++;
+          }
+        } else {
+          // Sem coleta - marca VERIFICAR em vermelho
+          row.getCell(12).value = 'VERIFICAR';
+          row.getCell(12).font = estiloVerificar.font;
+          row.getCell(12).fill = estiloVerificar.fill;
+          preenchidasVerificar++;
         }
-
-        // Preencher
-        row.getCell(8).value  = horaAtual; // HORÁRIO ATUAL
-        row.getCell(11).value = horaReal;  // HORARIO REAL
-        row.getCell(12).value = reg.produtividade === 'produtiva' ? 'PRODUTIVO' :
-                                 reg.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : '';
-        row.getCell(13).value = reg.motivo_improdutiva || '';
-        row.getCell(15).value = dataAtual; // Data
-
-        preenchidas++;
       });
 
       showMsg('Gerando arquivo...', 'loading');
 
-      // 5. Salvar e baixar
       const out = await workbook.xlsx.writeBuffer();
       const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      const nomeArquivo = `IHP_${dataAtual.replace(/\//g,'-')}.xlsx`;
+      const sufixo = di === df ? di.replace(/-/g,'') : `${di.replace(/-/g,'')}_${df.replace(/-/g,'')}`;
       a.href = url;
-      a.download = nomeArquivo;
+      a.download = `IHP_${sufixo}.xlsx`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showMsg(`✓ Planilha baixada com ${preenchidas} coleta${preenchidas!==1?'s':''} preenchida${preenchidas!==1?'s':''}!`, 'success');
+      showMsg(`✓ Planilha baixada! ${preenchidasOk} com coleta, ${preenchidasVerificar} para verificar.`, 'success');
     } catch(e) {
       console.error(e);
       showMsg('Erro: ' + e.message, 'error');
