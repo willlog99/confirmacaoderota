@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loglife — Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
+
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
+    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
+    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    .header h1{font-size:18px;font-weight:700}
+    .header .sub{font-size:13px;opacity:.85}
+
+    .filters{padding:1rem 1.25rem 0;display:flex;gap:8px;flex-wrap:wrap;overflow-x:auto}
+    .filter-btn{padding:8px 16px;font-size:13px;font-weight:600;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;cursor:pointer;white-space:nowrap}
+    .filter-btn.active{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
+    .filter-btn:hover:not(.active){background:#F7FBFD}
+
+    .container{padding:1rem 1.25rem 0}
+
+    /* KPI Cards */
+    .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1.25rem}
+    .kpi-card{background:#fff;border-radius:14px;padding:1rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);position:relative;overflow:hidden}
+    .kpi-card.full{grid-column:1 / -1}
+    .kpi-label{font-size:12px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+    .kpi-val{font-size:30px;font-weight:700;color:#0F4C7A;line-height:1}
+    .kpi-val.green{color:#0F6E56}
+    .kpi-val.red{color:#A32D2D}
+    .kpi-val.orange{color:#B45309}
+    .kpi-val.purple{color:#5B21B6}
+    .kpi-val.cyan{color:#0E7490}
+    .kpi-sub{font-size:11px;color:#94A8B8;margin-top:4px}
+    .kpi-icon{position:absolute;top:14px;right:14px;font-size:22px;opacity:.4}
+
+    /* Cards de gráfico */
+    .chart-card{background:#fff;border-radius:14px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .chart-title{font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+    .chart-wrap{position:relative;height:220px}
+    .chart-wrap.tall{height:280px}
+
+    /* Lista */
+    .list-item{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
+    .list-item:last-child{border-bottom:none}
+    .list-name{font-size:14px;font-weight:600;color:#0F4C7A;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .list-count{font-size:13px;font-weight:700;color:#1E9FD9;background:#E8F4FB;padding:2px 10px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+    .list-bar{flex:1;height:6px;background:#F0F4F8;border-radius:99px;overflow:hidden;margin:0 10px}
+    .list-bar-fill{height:100%;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);border-radius:99px}
+    .list-bar-fill.red{background:linear-gradient(90deg,#EF4444,#B91C1C)}
+
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
+
+    .date-range{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+    .date-range input{height:36px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:13px;padding:0 10px;color:#111;background:#fff}
+    .date-range input:focus{outline:none;border-color:#1E9FD9}
+    .btn-apply{padding:0 14px;height:36px;border-radius:9px;border:none;background:#1E9FD9;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
+    .back-link:hover{opacity:1}
+
+    .loading-overlay{position:fixed;inset:0;background:rgba(240,244,248,0.7);z-index:200;display:flex;align-items:center;justify-content:center}
+    .loading-overlay.hidden{display:none}
+    .spinner{width:40px;height:40px;border:4px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="painel.html" class="back-link">← Voltar ao painel</a>
+  <div class="header-row">
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div>
+      <h1>Dashboard</h1>
+      <div class="sub" id="periodo-label">Carregando...</div>
+    </div>
+  </div>
+</div>
+
+<div class="filters">
+  <button class="filter-btn active" data-periodo="hoje" onclick="setPeriodo(this)">Hoje</button>
+  <button class="filter-btn" data-periodo="semana" onclick="setPeriodo(this)">7 dias</button>
+  <button class="filter-btn" data-periodo="mes" onclick="setPeriodo(this)">30 dias</button>
+  <button class="filter-btn" data-periodo="custom" onclick="setPeriodo(this)">Período</button>
+</div>
+
+<div class="date-range" id="date-range" style="display:none;padding:0 1.25rem;margin-top:10px">
+  <input type="date" id="data-inicio"/>
+  <input type="date" id="data-fim"/>
+  <button class="btn-apply" onclick="aplicarPeriodo()">Aplicar</button>
+</div>
+
+<div class="container">
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Total de coletas</div>
+      <div class="kpi-val" id="kpi-total">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">⏳</div>
+      <div class="kpi-label">Faltas / Pendentes</div>
+      <div class="kpi-val orange" id="kpi-faltas">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-label">Produtivas</div>
+      <div class="kpi-val green" id="kpi-produtivas">—</div>
+      <div class="kpi-sub" id="kpi-prod-pct">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">❌</div>
+      <div class="kpi-label">Improdutivas</div>
+      <div class="kpi-val red" id="kpi-improdutivas">—</div>
+      <div class="kpi-sub" id="kpi-imp-pct">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📋</div>
+      <div class="kpi-label">Contra pedido</div>
+      <div class="kpi-val purple" id="kpi-contra">—</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-icon">📞</div>
+      <div class="kpi-label">Sob demanda</div>
+      <div class="kpi-val cyan" id="kpi-sob">—</div>
+    </div>
+  </div>
+
+  <!-- Gráfico Pizza -->
+  <div class="chart-card">
+    <div class="chart-title">Status das coletas</div>
+    <div class="chart-wrap"><canvas id="chart-pizza"></canvas></div>
+  </div>
+
+  <!-- Gráfico Linha (dias) -->
+  <div class="chart-card">
+    <div class="chart-title">Coletas por dia</div>
+    <div class="chart-wrap tall"><canvas id="chart-linha"></canvas></div>
+  </div>
+
+  <!-- Gráfico Barras (rotas) -->
+  <div class="chart-card">
+    <div class="chart-title">Coletas por rota</div>
+    <div class="chart-wrap tall"><canvas id="chart-rotas"></canvas></div>
+  </div>
+
+  <!-- Ranking Motoboys -->
+  <div class="chart-card">
+    <div class="chart-title">Ranking de motoboys</div>
+    <div id="ranking-motoboys"><p class="empty">Carregando...</p></div>
+  </div>
+
+  <!-- Top motivos -->
+  <div class="chart-card">
+    <div class="chart-title">Top motivos de improdutividade</div>
+    <div id="lista-motivos"><p class="empty">Sem improdutivas no período.</p></div>
+  </div>
+
+</div>
+
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let periodoAtual = 'hoje';
+  let charts = {};
+
+  function setPeriodo(el) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    periodoAtual = el.dataset.periodo;
+    if (periodoAtual === 'custom') {
+      document.getElementById('date-range').style.display = 'flex';
+    } else {
+      document.getElementById('date-range').style.display = 'none';
+      carregar();
+    }
+  }
+
+  function aplicarPeriodo() {
+    const di = document.getElementById('data-inicio').value;
+    const df = document.getElementById('data-fim').value;
+    if (!di || !df) { alert('Selecione as datas.'); return; }
+    carregar(di, df);
+  }
+
+  async function carregar(di, df) {
+    document.getElementById('loading').classList.remove('hidden');
+    try {
+      let url = API + '/dashboard?periodo=' + periodoAtual;
+      if (di && df) url += '&data_inicio=' + di + '&data_fim=' + df;
+      const r = await fetch(url);
+      const d = await r.json();
+      renderizar(d, di, df);
+    } catch(e) {
+      console.error(e);
+      alert('Erro ao carregar dashboard.');
+    }
+    document.getElementById('loading').classList.add('hidden');
+  }
+
+  function renderizar(d, di, df) {
+    // Label do período
+    const labels = { hoje:'Dados de hoje', semana:'Últimos 7 dias', mes:'Últimos 30 dias' };
+    document.getElementById('periodo-label').textContent = di ? `${di} até ${df}` : (labels[periodoAtual] || '');
+
+    // KPIs
+    document.getElementById('kpi-total').textContent = d.total || 0;
+    document.getElementById('kpi-faltas').textContent = d.faltas || 0;
+    document.getElementById('kpi-produtivas').textContent = d.produtivas || 0;
+    document.getElementById('kpi-improdutivas').textContent = d.improdutivas || 0;
+    document.getElementById('kpi-contra').textContent = d.contraPedido || 0;
+    document.getElementById('kpi-sob').textContent = d.sobDemanda || 0;
+
+    const pctProd = d.total ? Math.round((d.produtivas/d.total)*100) : 0;
+    const pctImp  = d.total ? Math.round((d.improdutivas/d.total)*100) : 0;
+    document.getElementById('kpi-prod-pct').textContent = pctProd + '% do total';
+    document.getElementById('kpi-imp-pct').textContent  = pctImp + '% do total';
+
+    // Pizza
+    renderPizza(d);
+    // Linha
+    renderLinha(d);
+    // Barras
+    renderRotas(d);
+    // Ranking
+    renderRanking(d);
+    // Motivos
+    renderMotivos(d);
+  }
+
+  function destroyChart(name) {
+    if (charts[name]) { charts[name].destroy(); delete charts[name]; }
+  }
+
+  function renderPizza(d) {
+    destroyChart('pizza');
+    const ctx = document.getElementById('chart-pizza').getContext('2d');
+    charts.pizza = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Produtivas', 'Improdutivas', 'Pendentes'],
+        datasets: [{
+          data: [d.produtivas || 0, d.improdutivas || 0, d.faltas || 0],
+          backgroundColor: ['#1D9E75', '#EF4444', '#F2A536'],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, cutout: '60%',
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 12 } } }
+      }
+    });
+  }
+
+  function renderLinha(d) {
+    destroyChart('linha');
+    const dias = Object.keys(d.porDia || {}).sort();
+    const labels = dias.map(dia => {
+      const [a,m,di] = dia.split('-');
+      return `${di}/${m}`;
+    });
+    const ctx = document.getElementById('chart-linha').getContext('2d');
+    charts.linha = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [
+          { label: 'Produtivas', data: dias.map(dia => d.porDia[dia].produtivas), borderColor:'#1D9E75', backgroundColor:'rgba(29,158,117,0.1)', tension:0.3, fill:true },
+          { label: 'Improdutivas', data: dias.map(dia => d.porDia[dia].improdutivas), borderColor:'#EF4444', backgroundColor:'rgba(239,68,68,0.1)', tension:0.3, fill:true }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 12 } } } },
+        scales: {
+          y: { beginAtZero: true, ticks: { precision: 0 } }
+        }
+      }
+    });
+  }
+
+  function renderRotas(d) {
+    destroyChart('rotas');
+    const rotas = Object.entries(d.porRota || {})
+      .sort((a,b) => b[1].total - a[1].total)
+      .slice(0, 15);
+    const ctx = document.getElementById('chart-rotas').getContext('2d');
+    charts.rotas = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: rotas.map(r => r[0].replace('SAO PAULO ', 'SP ')),
+        datasets: [
+          { label: 'Produtivas',   data: rotas.map(r => r[1].produtivas),   backgroundColor: '#1D9E75' },
+          { label: 'Improdutivas', data: rotas.map(r => r[1].improdutivas), backgroundColor: '#EF4444' }
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+        plugins: { legend: { position: 'bottom' } },
+        scales: { x: { stacked: true, beginAtZero: true, ticks: { precision: 0 } }, y: { stacked: true } }
+      }
+    });
+  }
+
+  function renderRanking(d) {
+    const lista = document.getElementById('ranking-motoboys');
+    const motoboys = Object.entries(d.porMotoboy || {})
+      .sort((a,b) => b[1].produtivas - a[1].produtivas)
+      .slice(0, 10);
+    if (motoboys.length === 0) { lista.innerHTML = '<p class="empty">Nenhum motoboy ativo no período.</p>'; return; }
+    const maxTotal = Math.max(...motoboys.map(m => m[1].total));
+    lista.innerHTML = motoboys.map(([nome, info], i) => {
+      const pct = maxTotal ? (info.total / maxTotal * 100) : 0;
+      return `
+        <div class="list-item">
+          <div style="font-size:13px;font-weight:700;color:#94A8B8;min-width:24px">${i+1}º</div>
+          <div style="flex:1;min-width:0">
+            <div class="list-name">${nome}</div>
+            <div style="font-size:11px;color:#94A8B8;margin-top:2px">✅ ${info.produtivas} produtivas · ❌ ${info.improdutivas} improdutivas</div>
+          </div>
+          <div class="list-count">${info.total}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderMotivos(d) {
+    const lista = document.getElementById('lista-motivos');
+    if (!d.topMotivos || d.topMotivos.length === 0) {
+      lista.innerHTML = '<p class="empty">Sem improdutivas no período.</p>';
+      return;
+    }
+    const maxCount = Math.max(...d.topMotivos.map(m => m[1]));
+    lista.innerHTML = d.topMotivos.map(([motivo, count]) => {
+      const pct = (count / maxCount * 100);
+      return `
+        <div class="list-item">
+          <div class="list-name" title="${motivo}">${motivo}</div>
+          <div class="list-bar"><div class="list-bar-fill red" style="width:${pct}%"></div></div>
+          <div class="list-count" style="background:#FCEBEB;color:#791F1F">${count}</div>
+        </div>`;
+    }).join('');
+  }
+
+  carregar();
+</script>
+</body>
+</html>
