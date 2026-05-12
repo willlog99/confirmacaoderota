@@ -3,101 +3,113 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Minha Rota</title>
+  <title>Loglife — Minha Rota</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:0 0 6rem}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 6rem}
 
-    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.25rem 1.25rem 1.5rem;color:#fff}
+    /* HEADER */
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 1.25rem 1.5rem;color:#fff}
     .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
     .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
-    .header-info h1{font-size:19px;font-weight:700;margin-bottom:2px}
-    .header-info .sub{font-size:13px;opacity:.8}
-    .rota-badge{display:inline-block;background:rgba(255,255,255,0.2);padding:3px 12px;border-radius:99px;font-size:12px;font-weight:600}
+    .back-btn:hover{background:rgba(255,255,255,0.3)}
+    .header-logo{height:32px;width:auto;filter:brightness(0) invert(1)}
+    .header-info{display:flex;align-items:center;gap:14px}
+    .header-mascote{width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);object-fit:cover;flex-shrink:0}
+    .header-text h1{font-size:18px;font-weight:700;margin-bottom:2px}
+    .header-text .sub{font-size:12px;opacity:.85}
+    .rota-badge{display:inline-block;background:rgba(255,255,255,0.25);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-top:4px}
 
+    /* STATS — todos em azul Loglife */
     .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:1rem 1.25rem 0}
-    .stat{background:#fff;border-radius:12px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-    .stat-val{font-size:22px;font-weight:700;color:#111}
-    .stat-val.green{color:#0F6E56}
-    .stat-val.orange{color:#B45309}
-    .stat-label{font-size:11px;color:#888;margin-top:1px}
+    .stat{background:#fff;border-radius:12px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(30,159,217,0.08)}
+    .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
+    .stat-val.primary{color:#1E9FD9}
+    .stat-val.muted{color:#94A8B8}
+    .stat-label{font-size:11px;color:#5A7A8F;margin-top:1px}
 
+    /* PROGRESS */
     .progress-wrap{padding:.75rem 1.25rem 0}
-    .progress-bar{background:#e2e8f0;border-radius:99px;height:6px;overflow:hidden}
-    .progress-fill{background:linear-gradient(90deg,#1D9E75,#0d7a5a);height:100%;border-radius:99px;transition:width .4s ease}
-    .progress-label{font-size:12px;color:#888;text-align:right;margin-top:4px}
+    .progress-bar{background:#D6E5EE;border-radius:99px;height:6px;overflow:hidden}
+    .progress-fill{background:linear-gradient(90deg,#1E9FD9,#0F7BB0);height:100%;border-radius:99px;transition:width .4s ease}
+    .progress-label{font-size:12px;color:#5A7A8F;text-align:right;margin-top:4px;font-weight:500}
 
+    /* TOOLBAR */
     .toolbar{padding:.75rem 1.25rem 0;display:flex;gap:8px}
-    .search-bar{flex:1;background:#fff;border-radius:10px;border:1.5px solid #e2e8f0;height:40px;padding:0 12px;font-size:14px;color:#111}
-    .search-bar:focus{outline:none;border-color:#1D9E75}
-    .filter-btn{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;font-size:13px;font-weight:500;color:#666;cursor:pointer;white-space:nowrap}
-    .filter-btn.active{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+    .search-bar{flex:1;background:#fff;border-radius:10px;border:1.5px solid #D6E5EE;height:40px;padding:0 12px;font-size:14px;color:#111}
+    .search-bar:focus{outline:none;border-color:#1E9FD9}
+    .filter-btn{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:500;color:#5A7A8F;cursor:pointer;white-space:nowrap}
+    .filter-btn.active{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
 
     .lista{padding:.75rem 1.25rem 0}
-    .section-title{font-size:12px;font-weight:600;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
+    .section-title{font-size:12px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
 
-    .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(0,0,0,0.06);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
-    .cliente-card.produtiva{background:#f6fdf9;border:1.5px solid #b8edd6}
-    .cliente-card.improdutiva{background:#fff8f8;border:1.5px solid #ffc5c5}
-    .cliente-card.produtiva .cliente-nome,.cliente-card.improdutiva .cliente-nome{text-decoration:line-through;color:#aaa}
+    /* CARDS — produtiva azul, improdutiva cinza-azulado, pendente branco */
+    .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
+    .cliente-card.produtiva{background:#E8F4FB;border:1.5px solid #1E9FD9}
+    .cliente-card.improdutiva{background:#F0F4F8;border:1.5px solid #94A8B8}
+    .cliente-card.produtiva .cliente-nome{color:#0F4C7A;text-decoration:line-through;opacity:.7}
+    .cliente-card.improdutiva .cliente-nome{color:#5A7A8F;text-decoration:line-through;opacity:.6}
 
-    .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #e2e8f0;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
-    .check-btn:hover:not(.produtiva):not(.improdutiva){border-color:#1D9E75}
-    .check-btn.produtiva{background:#1D9E75;border-color:#1D9E75;color:#fff;cursor:not-allowed}
-    .check-btn.improdutiva{background:#EF4444;border-color:#EF4444;color:#fff;cursor:not-allowed}
+    /* CHECK BTN */
+    .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
+    .check-btn:hover:not(.produtiva):not(.improdutiva){border-color:#1E9FD9}
+    .check-btn.produtiva{background:#1E9FD9;border-color:#1E9FD9;color:#fff;cursor:not-allowed}
+    .check-btn.improdutiva{background:#5A7A8F;border-color:#5A7A8F;color:#fff;cursor:not-allowed}
     .check-btn.loading{opacity:.5;cursor:not-allowed;pointer-events:none}
 
     .cliente-info{flex:1;min-width:0}
-    .cliente-nome{font-size:15px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cliente-meta{font-size:12px;color:#aaa;margin-top:2px}
-    .entrega-ts{font-size:11px;font-weight:500;margin-top:3px}
-    .entrega-ts.produtiva{color:#1D9E75}
-    .entrega-ts.improdutiva{color:#EF4444}
-    .motivo-txt{font-size:11px;color:#EF4444;margin-top:2px;font-style:italic}
+    .cliente-nome{font-size:15px;font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cliente-meta{font-size:12px;color:#94A8B8;margin-top:2px}
+    .entrega-ts{font-size:11px;font-weight:500;margin-top:3px;color:#1E9FD9}
+    .entrega-ts.improdutiva{color:#5A7A8F}
+    .motivo-txt{font-size:11px;color:#5A7A8F;margin-top:2px;font-style:italic;font-weight:500}
 
-    .horario-badge{font-size:12px;font-weight:600;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
-    .horario-badge.normal{background:#f0f4f8;color:#555}
-    .horario-badge.produtiva{background:#E1F5EE;color:#085041}
-    .horario-badge.improdutiva{background:#FCEBEB;color:#791F1F}
-    .horario-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
-    .horario-badge.sob-demanda{background:#FEF3C7;color:#92400E}
+    .horario-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+    .horario-badge.normal{background:#F0F4F8;color:#0F4C7A}
+    .horario-badge.produtiva{background:#1E9FD9;color:#fff}
+    .horario-badge.improdutiva{background:#5A7A8F;color:#fff}
+    .horario-badge.contra-pedido{background:#0F4C7A;color:#fff}
+    .horario-badge.sob-demanda{background:#5A7A8F;color:#fff}
 
     /* MODAIS */
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
     .modal-overlay.hidden{display:none}
     .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px;animation:slideUp .25s ease}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
     @keyframes slideUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
-    .modal-cliente{font-size:13px;color:#aaa;margin-bottom:4px}
-    .modal h2{font-size:18px;font-weight:700;color:#111;margin-bottom:1.25rem}
+    .modal-cliente{font-size:13px;color:#94A8B8;margin-bottom:4px}
+    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1.25rem}
     .modal-btns{display:flex;flex-direction:column;gap:10px}
-    .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #5DCAA5;background:#E1F5EE;color:#085041;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-produtiva:hover{background:#c8f0e0}
-    .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #F09595;background:#FCEBEB;color:#791F1F;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-improdutiva:hover{background:#fad5d5}
-    .btn-cancelar{padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#888}
-    .btn-confirmar-imp{padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#EF4444;color:#fff}
-    .btn-confirmar-imp:disabled{opacity:.5;cursor:not-allowed}
 
-    textarea{width:100%;border-radius:10px;border:1.5px solid #e2e8f0;font-size:14px;font-family:inherit;padding:10px 12px;resize:none;height:90px;color:#111;margin-bottom:10px}
-    textarea:focus{outline:none;border-color:#EF4444}
+    .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(30,159,217,0.25)}
+    .btn-produtiva:hover{opacity:.95}
+    .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #94A8B8;background:#F0F4F8;color:#5A7A8F;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-improdutiva:hover{background:#E2E8F0}
+    .btn-cancelar{padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
+    .btn-confirmar-imp{padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#0F4C7A;color:#fff}
 
-    .footer-bar{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem;background:#fff;box-shadow:0 -2px 12px rgba(0,0,0,0.08);z-index:100}
-    .btn-finalizar{width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;transition:opacity .2s}
-    .btn-finalizar:hover{opacity:.9}
+    textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:none;height:90px;color:#111;margin-bottom:10px;background:#F7FBFD}
+    textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
+
+    /* BOTÃO FINALIZAR */
+    .footer-bar{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem;background:#fff;box-shadow:0 -2px 12px rgba(30,159,217,0.12);z-index:100}
+    .btn-finalizar{width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(30,159,217,0.3)}
+    .btn-finalizar:hover{opacity:.95}
     .btn-finalizar:disabled{opacity:.5;cursor:not-allowed}
-    .btn-finalizar.concluida{background:linear-gradient(135deg,#6366f1,#4f46e5)}
+    .btn-finalizar.concluida{background:linear-gradient(135deg,#0F7BB0,#0F4C7A)}
 
-    .celebration{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:300;display:flex;align-items:center;justify-content:center}
+    /* CELEBRAÇÃO */
+    .celebration{position:fixed;inset:0;background:rgba(15,75,122,0.7);z-index:300;display:flex;align-items:center;justify-content:center}
     .celebration.hidden{display:none}
     .celebration-box{background:#fff;border-radius:20px;padding:2rem 1.75rem;text-align:center;max-width:300px;margin:1rem}
-    .celebration-icon{font-size:56px;margin-bottom:.75rem}
-    .celebration h2{font-size:20px;font-weight:700;color:#111;margin-bottom:6px}
-    .celebration p{font-size:14px;color:#777;margin-bottom:1.5rem}
-    .celebration-btn{width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1D9E75,#0d7a5a);color:#fff}
+    .celebration-mascote{width:110px;height:110px;border-radius:50%;margin:0 auto 1rem;object-fit:cover;box-shadow:0 4px 16px rgba(30,159,217,0.25)}
+    .celebration h2{font-size:20px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
+    .celebration p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem}
+    .celebration-btn{width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
 
-    .empty{text-align:center;padding:3rem;color:#ccc;font-size:14px}
-    .loading-msg{text-align:center;padding:3rem;color:#aaa;font-size:14px}
+    .empty{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
+    .loading-msg{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
   </style>
 </head>
 <body>
@@ -105,19 +117,23 @@
 <div class="header">
   <div class="header-top">
     <button class="back-btn" onclick="sair()">←</button>
-    <div class="rota-badge" id="header-rota">—</div>
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
     <div style="width:36px"></div>
   </div>
   <div class="header-info">
-    <h1 id="header-nome">Minha Rota</h1>
-    <div class="sub" id="header-sub"></div>
+    <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="" class="header-mascote"/>
+    <div class="header-text">
+      <h1 id="header-nome">Minha Rota</h1>
+      <div class="sub" id="header-sub"></div>
+      <div class="rota-badge" id="header-rota">—</div>
+    </div>
   </div>
 </div>
 
 <div class="stats-bar">
   <div class="stat"><div class="stat-val" id="cnt-total">—</div><div class="stat-label">total</div></div>
-  <div class="stat"><div class="stat-val green" id="cnt-produtiva">—</div><div class="stat-label">produtivas</div></div>
-  <div class="stat"><div class="stat-val orange" id="cnt-pendente">—</div><div class="stat-label">pendentes</div></div>
+  <div class="stat"><div class="stat-val primary" id="cnt-produtiva">—</div><div class="stat-label">produtivas</div></div>
+  <div class="stat"><div class="stat-val muted" id="cnt-pendente">—</div><div class="stat-label">pendentes</div></div>
 </div>
 
 <div class="progress-wrap">
@@ -144,21 +160,21 @@
     <div class="modal-cliente" id="modal-cliente-nome"></div>
     <h2>A coleta foi produtiva?</h2>
     <div class="modal-btns">
-      <button class="btn-produtiva" onclick="confirmarTique('produtiva')">✅ Produtiva</button>
-      <button class="btn-improdutiva" onclick="abrirModalMotivo()">❌ Improdutiva</button>
+      <button class="btn-produtiva" onclick="confirmarTique('produtiva')">✓ Produtiva</button>
+      <button class="btn-improdutiva" onclick="abrirModalMotivo()">✗ Improdutiva</button>
       <button class="btn-cancelar" onclick="cancelarTique()">Cancelar</button>
     </div>
   </div>
 </div>
 
-<!-- MODAL MOTIVO IMPRODUTIVA -->
+<!-- MODAL MOTIVO -->
 <div class="modal-overlay hidden" id="modal-motivo">
   <div class="modal">
     <div class="modal-cliente" id="modal-motivo-cliente"></div>
     <h2>Qual o motivo?</h2>
     <textarea id="motivo-texto" placeholder="Ex: Cliente fechado, sem material, endereço errado..."></textarea>
     <div class="modal-btns">
-      <button class="btn-confirmar-imp" id="btn-confirmar-imp" onclick="confirmarImprodutiva()">Confirmar improdutiva</button>
+      <button class="btn-confirmar-imp" onclick="confirmarImprodutiva()">Confirmar improdutiva</button>
       <button class="btn-cancelar" onclick="voltarParaProd()">← Voltar</button>
     </div>
   </div>
@@ -168,8 +184,8 @@
 <div class="modal-overlay hidden" id="modal-fin">
   <div class="modal">
     <h2>Finalizar a rota?</h2>
-    <p id="modal-fin-msg"></p>
-    <div class="modal-btns" style="margin-top:1.25rem">
+    <p id="modal-fin-msg" style="font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5"></p>
+    <div class="modal-btns">
       <button class="btn-produtiva" onclick="finalizarRota()">Sim, finalizar</button>
       <button class="btn-cancelar" onclick="document.getElementById('modal-fin').classList.add('hidden')">Cancelar</button>
     </div>
@@ -179,8 +195,8 @@
 <!-- CELEBRAÇÃO -->
 <div class="celebration hidden" id="celebration">
   <div class="celebration-box">
-    <div class="celebration-icon">🎉</div>
-    <h2>Rota finalizada!</h2>
+    <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="" class="celebration-mascote"/>
+    <h2>Rota finalizada! 🎉</h2>
     <p id="celebration-msg">Bom trabalho!</p>
     <button class="celebration-btn" onclick="document.getElementById('celebration').classList.add('hidden')">Continuar</button>
   </div>
@@ -196,7 +212,7 @@
 
   document.getElementById('header-nome').textContent = nome || 'Minha Rota';
   document.getElementById('header-rota').textContent = rota || '—';
-  document.getElementById('header-sub').textContent  = 'Olá, ' + (nome || '') + '!';
+  document.getElementById('header-sub').textContent  = 'Olá, ' + (nome || '').split(' ')[0] + '!';
 
   let clientes = [];
   let somentePendentes = false;
@@ -253,10 +269,8 @@
     document.getElementById('modal-prod').classList.add('hidden');
     document.getElementById('modal-motivo').classList.add('hidden');
     clienteSelecionado = null;
-
     const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
     if (btn) btn.classList.add('loading');
-
     try {
       const r = await fetch(API + '/ticar', {
         method: 'POST',
@@ -280,7 +294,7 @@
   async function confirmarImprodutiva() {
     const motivo = document.getElementById('motivo-texto').value.trim();
     if (!motivo) {
-      document.getElementById('motivo-texto').style.borderColor = '#EF4444';
+      document.getElementById('motivo-texto').style.borderColor = '#0F4C7A';
       document.getElementById('motivo-texto').placeholder = 'Por favor, informe o motivo!';
       return;
     }
@@ -290,8 +304,8 @@
   function getTipoBadge(c) {
     const tipo = (c.tipo || 'normal').toLowerCase();
     if (c.status === 'entregue') {
-      if (c.produtividade === 'produtiva')   return `<span class="horario-badge produtiva">✅ Produtiva</span>`;
-      if (c.produtividade === 'improdutiva') return `<span class="horario-badge improdutiva">❌ Improdutiva</span>`;
+      if (c.produtividade === 'produtiva')   return `<span class="horario-badge produtiva">✓ Produtiva</span>`;
+      if (c.produtividade === 'improdutiva') return `<span class="horario-badge improdutiva">✗ Improdutiva</span>`;
     }
     if (tipo === 'contra pedido') return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
     if (tipo === 'sob demanda')   return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
@@ -310,7 +324,7 @@
         <div class="cliente-info">
           <div class="cliente-nome">${c.nome}</div>
           <div class="cliente-meta">Nº ${c.numero_cliente}</div>
-          ${entregue && c.horario_entrega ? `<div class="entrega-ts ${prod}">${prod === 'improdutiva' ? '❌ Improdutiva' : '✅ Produtiva'} às ${c.horario_entrega}</div>` : ''}
+          ${entregue && c.horario_entrega ? `<div class="entrega-ts ${prod}">${prod === 'improdutiva' ? '✗ Improdutiva' : '✓ Produtiva'} às ${c.horario_entrega}</div>` : ''}
           ${entregue && prod === 'improdutiva' && c.motivo_improdutiva ? `<div class="motivo-txt">↳ ${c.motivo_improdutiva}</div>` : ''}
         </div>
         ${getTipoBadge(c)}
@@ -369,7 +383,7 @@
     const btnFin = document.getElementById('btn-finalizar');
     if (pct === 100) {
       btnFin.classList.add('concluida');
-      btnFin.innerHTML = '✅ Rota 100% — Finalizar';
+      btnFin.innerHTML = '✓ Rota 100% — Finalizar';
     } else {
       btnFin.classList.remove('concluida');
       btnFin.innerHTML = `🏁 Finalizar Rota (${pendentes.length} pendente${pendentes.length!==1?'s':''})`;
