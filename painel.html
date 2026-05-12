@@ -96,8 +96,8 @@
     .modal-btns{display:flex;flex-direction:column;gap:10px}
     .modal-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#DC2626;color:#fff}
     .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
-    #view-motoboys,#view-clientes,#view-entregas,#view-confirmacoes,#view-reset{display:none}
-    #view-motoboys.active,#view-clientes.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
+    #view-motoboys,#view-clientes,#view-gerenciar,#view-entregas,#view-confirmacoes,#view-reset{display:none}
+    #view-motoboys.active,#view-clientes.active,#view-gerenciar.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
     .horario-field.hidden{display:none}
   </style>
 </head>
@@ -116,6 +116,7 @@
 <div class="tabs">
   <button class="tab active" onclick="setTab('motoboys',this)">👤 Motoboys</button>
   <button class="tab" onclick="setTab('clientes',this)">📋 Clientes</button>
+  <button class="tab" onclick="setTab('gerenciar',this)">🔎 Buscar/Mover</button>
   <button class="tab" onclick="setTab('entregas',this)">📦 Entregas</button>
   <button class="tab" onclick="setTab('confirmacoes',this)">✓ Confirmações</button>
   <button class="tab" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
@@ -143,6 +144,17 @@
     <div class="card">
       <div class="card-title">Motoboys cadastrados <button class="refresh-btn" onclick="carregarMotoboys()">↻</button></div>
       <div id="lista-motoboys"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+  <div id="view-gerenciar">
+    <div class="card">
+      <div class="card-title">🔎 Buscar cliente por número</div>
+      <div class="form-row">
+        <input type="text" id="busca-num" placeholder="Digite o número do cliente (ex: 22088)"/>
+        <button class="btn-add" onclick="buscarCliente()">🔍 Buscar</button>
+      </div>
+      <div id="resultado-busca" style="margin-top:1rem"></div>
     </div>
   </div>
 
@@ -253,6 +265,75 @@
     const horField = document.getElementById('cl-horario');
     if (tipo === 'normal') horField.classList.remove('hidden');
     else { horField.classList.add('hidden'); horField.value = ''; }
+  }
+
+  // ── BUSCAR / MOVER / EXCLUIR CLIENTE ─────────────
+  async function buscarCliente() {
+    const num = document.getElementById('busca-num').value.trim();
+    if (!num) { toast('Digite o número do cliente.', '#e55'); return; }
+    const res = document.getElementById('resultado-busca');
+    res.innerHTML = '<p class="empty">Buscando...</p>';
+    try {
+      const r = await fetch(API + '/clientes');
+      const d = await r.json();
+      const encontrados = (d.clientes || []).filter(c => String(c.numero_cliente).trim() === num);
+      if (!encontrados.length) {
+        res.innerHTML = `<p class="empty">Cliente "${num}" não encontrado em nenhuma rota.</p>`;
+        return;
+      }
+      res.innerHTML = `
+        <div style="background:#E8F4FB;border:1.5px solid #BFE0F0;border-radius:11px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#0F4C7A">
+          Cliente <strong>${num}</strong> encontrado em <strong>${encontrados.length}</strong> rota${encontrados.length>1?'s':''}.
+        </div>
+      ` + encontrados.map(c => `
+        <div class="cl-item" style="flex-direction:column;align-items:stretch;padding:14px 0;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div class="cl-info">
+              <div class="cl-nome">${c.nome}</div>
+              <div class="cl-sub">
+                <span>Nº ${c.numero_cliente}</span>
+                ${(c.tipo||'normal') === 'normal' ? `<span>${c.horario}</span>` : ''}
+                <span class="badge-rota">${c.rota}</span>
+                <span class="tipo-badge ${c.status === 'entregue' ? 'entregue' : 'pendente'}">${c.status === 'entregue' ? 'Entregue' : 'Pendente'}</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#0F4C7A" onclick="abrirMover(${c.id}, '${c.nome.replace(/'/g,"\\'")}', '${c.rota}')">➡ Mover de rota</button>
+            <button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#A32D2D" onclick="excluirEspecifico(${c.id}, '${c.nome.replace(/'/g,"\\'")}', '${c.rota}')">🗑 Excluir desta rota</button>
+          </div>
+        </div>`).join('');
+    } catch(e) { res.innerHTML = '<p class="empty">Erro ao buscar.</p>'; }
+  }
+
+  async function excluirEspecifico(id, nome, rota) {
+    if (!confirm(`Excluir "${nome}" da rota ${rota}?`)) return;
+    await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast(`Cliente removido de ${rota}.`, '#1D9E75');
+    buscarCliente();
+  }
+
+  let clienteParaMover = null;
+  function abrirMover(id, nome, rotaAtual) {
+    const rotas = ['SAO PAULO 01','SAO PAULO 03','SAO PAULO 04','SAO PAULO 05','SAO PAULO 07','SAO PAULO 08','SAO PAULO 09','SAO PAULO 10','SAO PAULO 13','SAO PAULO 14','SAO PAULO 15','SAO PAULO 17','SAO PAULO 18','SAO PAULO 20','SAO PAULO 22','SAO PAULO 23','SAO PAULO 24','SAO PAULO 25','SAO PAULO 30','SAO PAULO 31','SAO PAULO 32','SAO PAULO 34','SAO PAULO 35','SAO PAULO 37','SAO PAULO 38','SAO PAULO 39','SAO PAULO 40','SAO PAULO 41','SAO PAULO 42','SAO PAULO 43','SAO PAULO 44','SAO PAULO 45','SAO PAULO 46','SAO PAULO 47','SAO PAULO 48','SAO PAULO 49','SAO PAULO 50','SAO PAULO 51','NTHCC','PSC3','PSC4','PSC5','PSC6','PSC7','PSC8'];
+    const opcoes = rotas.filter(r => r !== rotaAtual).map(r => `<option value="${r}">${r}</option>`).join('');
+    const novaRota = prompt(`Mover "${nome}" de ${rotaAtual} para qual rota? Digite o nome exato (ex: SAO PAULO 22):`);
+    if (!novaRota) return;
+    if (!rotas.includes(novaRota.trim().toUpperCase())) {
+      alert('Rota inválida! Use exatamente como o cadastro (ex: "SAO PAULO 22").');
+      return;
+    }
+    moverCliente(id, novaRota.trim().toUpperCase());
+  }
+
+  async function moverCliente(id, novaRota) {
+    await fetch(API + '/mover-cliente', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({id, rota: novaRota})
+    });
+    toast(`Cliente movido para ${novaRota}!`, '#1D9E75');
+    buscarCliente();
   }
 
   function setTab(tab, el) {
