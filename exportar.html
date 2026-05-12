@@ -295,6 +295,20 @@
       debugLog(`   ${linhasVazias} linhas vazias puladas`);
       debugLog(`   Total preenchido: ${preenchidasOk + preenchidasVerificar}`);
 
+      // REMOVER AUTOFILTRO para evitar que linhas fiquem escondidas no Excel
+      sheet.autoFilter = null;
+      // Limpar também filtros de visualização
+      if (sheet.views && sheet.views[0]) {
+        sheet.views[0].showRowColHeaders = true;
+      }
+      // Garantir que nenhuma linha esteja oculta
+      for (let rowNum = 1; rowNum <= (sheet.rowCount || 400); rowNum++) {
+        const row = sheet.getRow(rowNum);
+        row.hidden = false;
+        row.outlineLevel = 0;
+      }
+      debugLog(`🧹 AutoFiltro removido e linhas desocultadas`);
+
       showMsg('Gerando arquivo...', 'loading');
 
       const out = await workbook.xlsx.writeBuffer();
