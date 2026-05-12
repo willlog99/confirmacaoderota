@@ -94,11 +94,10 @@
     <div class="info-box">
       <strong>📋 Será preenchido:</strong>
       <ul>
-        <li><strong>HORÁRIO ATUAL</strong> — hora em que você baixou</li>
-        <li><strong>HORARIO REAL</strong> — hora da coleta</li>
-        <li><strong>STATUS</strong> — PRODUTIVO / IMPRODUTIVO / <strong style="color:#A32D2D">VERIFICAR</strong></li>
-        <li><strong>JUSTIFICATIVA</strong> — motivo das improdutivas</li>
-        <li><strong>Data</strong> — data do registro</li>
+        <li><strong>HORÁRIO ATUAL (H)</strong> — hora da baixa da coleta</li>
+        <li><strong>STATUS (L)</strong> — PRODUTIVO / IMPRODUTIVO / <strong style="color:#A32D2D">VERIFICAR</strong></li>
+        <li><strong>JUSTIFICATIVA (M)</strong> — motivo se for improdutiva</li>
+        <li><strong>Data (O)</strong> — data do registro</li>
       </ul>
     </div>
 
@@ -224,30 +223,29 @@
       let preenchidasOk = 0;
       let preenchidasVerificar = 0;
 
-      sheet.eachRow((row, rowNum) => {
-        if (rowNum === 1) return;
+      // Loop manual em vez de eachRow (que pula linhas "vazias")
+      const totalLinhas = sheet.rowCount || sheet.actualRowCount || 400;
+      console.log(`Sheet rowCount: ${sheet.rowCount}, actualRowCount: ${sheet.actualRowCount}`);
+
+      for (let rowNum = 2; rowNum <= totalLinhas; rowNum++) {
+        const row = sheet.getRow(rowNum);
         const codigo = normalizar(row.getCell(1).value);
-        if (!codigo || codigo === '0') return;
+        if (!codigo || codigo === '0') continue;
 
         const reg = porCodigo[codigo];
 
-        // Preenche HORÁRIO ATUAL e Data em todas as linhas
-        row.getCell(8).value  = horaAtual;
-        row.getCell(15).value = dataAtual;
-
         if (reg) {
-          // Tem coleta - preenche normalmente
           let horaReal = '';
           if (reg.horario_entrega) {
             const partes = String(reg.horario_entrega).split(' ');
             horaReal = partes[partes.length - 1];
           }
-          row.getCell(11).value = horaReal;
+          row.getCell(8).value  = horaReal;
+          row.getCell(15).value = dataAtual;
           row.getCell(12).value = reg.produtividade === 'produtiva' ? 'PRODUTIVO' :
                                    reg.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : 'VERIFICAR';
           row.getCell(13).value = reg.motivo_improdutiva || '';
 
-          // Se status for VERIFICAR (sem produtividade), pinta vermelho
           if (row.getCell(12).value === 'VERIFICAR') {
             row.getCell(12).font = estiloVerificar.font;
             row.getCell(12).fill = estiloVerificar.fill;
@@ -256,13 +254,16 @@
             preenchidasOk++;
           }
         } else {
-          // Sem coleta - marca VERIFICAR em vermelho
+          row.getCell(15).value = dataAtual;
           row.getCell(12).value = 'VERIFICAR';
           row.getCell(12).font = estiloVerificar.font;
           row.getCell(12).fill = estiloVerificar.fill;
           preenchidasVerificar++;
         }
-      });
+      }
+
+      console.log(`Total linhas processadas: ${preenchidasOk + preenchidasVerificar}`);
+      console.log(`Com coleta (OK): ${preenchidasOk}, Sem coleta (VERIFICAR): ${preenchidasVerificar}`);
 
       showMsg('Gerando arquivo...', 'loading');
 
