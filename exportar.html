@@ -262,10 +262,11 @@
         const reg = porCodigo[codigo];
 
         if (reg) {
+          // Converte timestamp em hora HH:MM (fuso SP)
           let horaReal = '';
-          if (reg.horario_entrega) {
-            const partes = String(reg.horario_entrega).split(' ');
-            horaReal = partes[partes.length - 1];
+          if (reg.timestamp) {
+            const dt = new Date(reg.timestamp);
+            horaReal = dt.toLocaleTimeString('pt-BR', { timeZone:'America/Sao_Paulo', hour:'2-digit', minute:'2-digit' });
           }
           row.getCell(8).value  = horaReal;
           row.getCell(15).value = dataAtual;
@@ -295,19 +296,30 @@
       debugLog(`   ${linhasVazias} linhas vazias puladas`);
       debugLog(`   Total preenchido: ${preenchidasOk + preenchidasVerificar}`);
 
-      // REMOVER AUTOFILTRO para evitar que linhas fiquem escondidas no Excel
-      sheet.autoFilter = null;
-      // Limpar também filtros de visualização
-      if (sheet.views && sheet.views[0]) {
-        sheet.views[0].showRowColHeaders = true;
-      }
-      // Garantir que nenhuma linha esteja oculta
+      // REMOVER AUTOFILTRO completamente
+      sheet.autoFilter = undefined;
+
+      // Forçar todas as linhas a ficarem VISÍVEIS (não ocultas)
+      // O ExcelJS usa _rows internamente
       for (let rowNum = 1; rowNum <= (sheet.rowCount || 400); rowNum++) {
         const row = sheet.getRow(rowNum);
         row.hidden = false;
         row.outlineLevel = 0;
+        // Forçar altura padrão (algumas linhas podem ter altura 0)
+        if (row.height === 0 || row.height === null) {
+          row.height = undefined; // default
+        }
       }
-      debugLog(`🧹 AutoFiltro removido e linhas desocultadas`);
+
+      // Também limpar sheet views/filters
+      if (sheet.views && sheet.views.length > 0) {
+        sheet.views.forEach(v => {
+          if (v.state === 'frozen') v.state = 'normal';
+          delete v.activeCell;
+        });
+      }
+
+      debugLog(`🧹 AutoFiltro removido, ${(sheet.rowCount || 400)} linhas desocultadas`);
 
       showMsg('Gerando arquivo...', 'loading');
 
