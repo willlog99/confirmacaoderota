@@ -1,121 +1,117 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel Gerencial — Biocondutor</title>
+  <title>Loglife — Painel Gerencial</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;min-height:100vh;padding:0 0 3rem}
-    .header{background:linear-gradient(135deg,#1D9E75,#0d7a5a);padding:1.5rem 1.25rem;color:#fff}
-    .header h1{font-size:20px;font-weight:700;margin-bottom:2px}
-    .header .sub{font-size:13px;opacity:.8}
-    .tabs{display:flex;background:#fff;border-bottom:1px solid #e2e8f0;overflow-x:auto}
-    .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#888;border-bottom:2px solid transparent;white-space:nowrap}
-    .tab.active{color:#1D9E75;border-bottom-color:#1D9E75}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
+    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
+    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    .header h1{font-size:18px;font-weight:700}
+    .header .sub{font-size:13px;opacity:.85}
+    .tabs{display:flex;background:#fff;border-bottom:1px solid #D6E5EE;overflow-x:auto}
+    .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#5A7A8F;border-bottom:2px solid transparent;white-space:nowrap}
+    .tab.active{color:#1E9FD9;border-bottom-color:#1E9FD9}
     .container{padding:1rem 1.25rem 0}
-    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem}
-    .card-title{font-size:15px;font-weight:700;color:#111;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-    .refresh-btn{font-size:12px;color:#1D9E75;background:none;border:none;cursor:pointer;font-weight:500}
+    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .card-title{font-size:15px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .refresh-btn{font-size:12px;color:#1E9FD9;background:none;border:none;cursor:pointer;font-weight:600}
     .form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-    .form-row input,.form-row select{flex:1;min-width:110px;height:40px;border-radius:9px;border:1.5px solid #e2e8f0;font-size:14px;padding:0 10px;color:#111}
-    .form-row input:focus,.form-row select:focus{outline:none;border-color:#1D9E75}
-    .btn-add{height:40px;padding:0 16px;border-radius:9px;border:none;background:#1D9E75;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
-    .btn-add:hover{opacity:.9}
-
-    .cl-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .form-row input,.form-row select{flex:1;min-width:110px;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 10px;color:#111;background:#F7FBFD}
+    .form-row input:focus,.form-row select:focus{outline:none;border-color:#1E9FD9;background:#fff}
+    .btn-add{height:40px;padding:0 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+    .btn-add:hover{opacity:.95}
+    .cl-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
     .cl-item:last-child{border-bottom:none}
     .cl-item.entregue .cl-nome{color:#aaa;text-decoration:line-through}
     .cl-info{flex:1;min-width:0}
-    .cl-nome{font-size:14px;font-weight:600;color:#111;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cl-sub{font-size:12px;color:#aaa;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .cl-nome{font-size:14px;font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cl-sub{font-size:12px;color:#94A8B8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
     .cl-entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:2px}
-    .cl-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
-    .btn-desfazer{background:#FEF9EC;border:1px solid #F2CC70;color:#92400E;font-size:11px;padding:4px 8px;border-radius:7px;cursor:pointer;font-weight:500;white-space:nowrap}
+    .cl-motivo{font-size:11px;color:#EF4444;font-style:italic;margin-top:2px}
+    .cl-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .btn-desfazer{background:#FEF9EC;border:1px solid #F2CC70;color:#92400E;font-size:11px;padding:4px 8px;border-radius:7px;cursor:pointer;font-weight:600;white-space:nowrap}
     .btn-desfazer:hover{background:#FEF3C7}
-    .del-btn{background:none;border:none;cursor:pointer;color:#ddd;font-size:17px;padding:3px 5px;border-radius:6px}
+    .del-btn{background:none;border:none;cursor:pointer;color:#D6E5EE;font-size:17px;padding:3px 5px;border-radius:6px}
     .del-btn:hover{color:#e55;background:#fff0f0}
-
     .tipo-badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap;flex-shrink:0}
-    .tipo-badge.normal{background:#f0f4f8;color:#555}
+    .tipo-badge.normal{background:#E8F4FB;color:#0F4C7A}
     .tipo-badge.entregue{background:#E1F5EE;color:#085041}
+    .tipo-badge.improdutiva{background:#FCEBEB;color:#791F1F}
     .tipo-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
     .tipo-badge.sob-demanda{background:#FEF3C7;color:#92400E}
-    .tipo-badge.pendente{background:#f0f4f8;color:#888}
-
-    .mb-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .tipo-badge.pendente{background:#F0F4F8;color:#5A7A8F}
+    .mb-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
     .mb-item:last-child{border-bottom:none}
     .mb-info{flex:1;min-width:0}
-    .mb-nome{font-size:14px;font-weight:600;color:#111}
-    .mb-sub{font-size:12px;color:#aaa;margin-top:2px}
-
+    .mb-nome{font-size:14px;font-weight:600;color:#0F4C7A}
+    .mb-sub{font-size:12px;color:#94A8B8;margin-top:2px}
     .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem}
-    .stat-card{background:#f0f4f8;border-radius:12px;padding:14px;text-align:center}
-    .stat-val{font-size:28px;font-weight:700;color:#111}
+    .stat-card{background:#E8F4FB;border-radius:12px;padding:14px;text-align:center}
+    .stat-val{font-size:28px;font-weight:700;color:#0F4C7A}
     .stat-val.green{color:#0F6E56}
     .stat-val.red{color:#A32D2D}
     .stat-val.orange{color:#B45309}
-    .stat-label{font-size:12px;color:#888;margin-top:2px}
-
-    .rota-row{padding:12px 0;border-bottom:1px solid #f0f2f5}
+    .stat-label{font-size:12px;color:#5A7A8F;margin-top:2px}
+    .rota-row{padding:12px 0;border-bottom:1px solid #EBF1F5}
     .rota-row:last-child{border-bottom:none}
     .rota-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .rota-nome{font-size:14px;font-weight:600;color:#111}
-    .rota-pct{font-size:13px;font-weight:700;color:#1D9E75}
+    .rota-nome{font-size:14px;font-weight:600;color:#0F4C7A}
+    .rota-pct{font-size:13px;font-weight:700;color:#1E9FD9}
     .rota-pct.done{color:#0F6E56}
-    .prog-bar{background:#f0f4f8;border-radius:99px;height:5px;overflow:hidden}
-    .prog-fill{background:linear-gradient(90deg,#1D9E75,#0d7a5a);height:100%;border-radius:99px}
-    .rota-sub{font-size:11px;color:#aaa;margin-top:4px}
-
-    .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f2f5;gap:10px}
+    .prog-bar{background:#E8F4FB;border-radius:99px;height:5px;overflow:hidden}
+    .prog-fill{background:linear-gradient(90deg,#1E9FD9,#0F7BB0);height:100%;border-radius:99px}
+    .rota-sub{font-size:11px;color:#94A8B8;margin-top:4px}
+    .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
     .conf-item:last-child{border-bottom:none}
-    .conf-nome{font-size:14px;font-weight:600;color:#111}
-    .conf-ts{font-size:11px;color:#aaa;margin-top:2px}
+    .conf-nome{font-size:14px;font-weight:600;color:#0F4C7A}
+    .conf-ts{font-size:11px;color:#94A8B8;margin-top:2px}
     .conf-obs{margin-top:5px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:7px;padding:6px 10px;font-size:12px;color:#6B4E00}
     .badge-sim{background:#E1F5EE;color:#085041;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
     .badge-nao{background:#FCEBEB;color:#791F1F;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
-
-    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(0,0,0,0.07);margin-bottom:1rem}
+    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
     .reset-card.danger{border:1.5px solid #FEE2E2}
     .reset-card.warning{border:1.5px solid #FEF3C7}
     .reset-title{font-size:15px;font-weight:700;margin-bottom:6px}
     .reset-title.danger{color:#991B1B}
     .reset-title.warning{color:#92400E}
-    .reset-desc{font-size:13px;color:#777;margin-bottom:1rem;line-height:1.5}
+    .reset-desc{font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5}
     .btn-reset-danger{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5}
-    .btn-reset-danger:hover{background:#FECACA}
     .btn-reset-warn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEF9EC;color:#92400E;border:1.5px solid #FCD34D}
-    .btn-reset-warn:hover{background:#FEF3C7}
-
     .filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-    .filter-row select,.filter-row input{height:36px;border-radius:9px;border:1.5px solid #e2e8f0;font-size:13px;padding:0 10px;color:#111;background:#fff}
+    .filter-row select,.filter-row input{height:36px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:13px;padding:0 10px;color:#111;background:#fff}
     .filter-row input{flex:1}
-
-    .badge-rota{font-size:11px;background:#f0f4f8;color:#555;padding:2px 7px;border-radius:5px}
-    .empty{text-align:center;padding:2rem;color:#ccc;font-size:14px}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+    .badge-rota{font-size:11px;background:#E8F4FB;color:#0F4C7A;padding:2px 7px;border-radius:5px;font-weight:600}
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
     .toast.show{opacity:1}
-    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
     .modal-overlay.hidden{display:none}
     .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
-    .modal h2{font-size:18px;font-weight:700;color:#111;margin-bottom:8px}
-    .modal p{font-size:14px;color:#777;margin-bottom:1.5rem;line-height:1.5}
+    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:8px}
+    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
     .modal-btns{display:flex;flex-direction:column;gap:10px}
     .modal-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#DC2626;color:#fff}
-    .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #e2e8f0;background:#fff;color:#555}
+    .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
     #view-motoboys,#view-clientes,#view-entregas,#view-confirmacoes,#view-reset{display:none}
     #view-motoboys.active,#view-clientes.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
-
-    /* horario condicional */
-    .horario-field{transition:all .2s}
     .horario-field.hidden{display:none}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>Painel Gerencial</h1>
-  <div class="sub">Biocondutor na Rota</div>
+  <div class="header-row">
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div>
+      <h1>Painel Gerencial</h1>
+      <div class="sub">Operação Loglife/Pardini</div>
+    </div>
+  </div>
 </div>
 
 <div class="tabs">
@@ -128,7 +124,6 @@
 
 <div class="container">
 
-  <!-- MOTOBOYS -->
   <div id="view-motoboys" class="active">
     <div class="card">
       <div class="card-title">Cadastrar motoboy</div>
@@ -150,7 +145,6 @@
     </div>
   </div>
 
-  <!-- CLIENTES -->
   <div id="view-clientes">
     <div class="card">
       <div class="card-title">Adicionar cliente</div>
@@ -188,7 +182,6 @@
     </div>
   </div>
 
-  <!-- ENTREGAS -->
   <div id="view-entregas">
     <div class="card">
       <div class="card-title">Visão geral <button class="refresh-btn" onclick="carregarEntregas()">↻ Atualizar</button></div>
@@ -200,10 +193,9 @@
     </div>
   </div>
 
-  <!-- CONFIRMAÇÕES -->
   <div id="view-confirmacoes">
     <div class="card">
-      <div class="card-title">Confirmações do Biocondutor <button class="refresh-btn" onclick="carregarConfirmacoes()">↻</button></div>
+      <div class="card-title">Confirmações de Rota <button class="refresh-btn" onclick="carregarConfirmacoes()">↻</button></div>
       <div class="stats-grid">
         <div class="stat-card"><div class="stat-val green" id="c-sim">—</div><div class="stat-label">confirmadas</div></div>
         <div class="stat-card"><div class="stat-val red" id="c-nao">—</div><div class="stat-label">não confirmadas</div></div>
@@ -212,7 +204,6 @@
     </div>
   </div>
 
-  <!-- RESET -->
   <div id="view-reset">
     <div class="reset-card danger">
       <div class="reset-title danger">🔄 Reset diário de entregas</div>
@@ -220,8 +211,8 @@
       <button class="btn-reset-danger" onclick="abrirModal('modal-reset')">🔄 Resetar todas as entregas</button>
     </div>
     <div class="reset-card warning">
-      <div class="reset-title warning">🗑️ Limpar confirmações do Biocondutor</div>
-      <div class="reset-desc">Apaga todas as confirmações de presença. Use para iniciar uma nova rodada.</div>
+      <div class="reset-title warning">🗑️ Limpar confirmações de rota</div>
+      <div class="reset-desc">Apaga todas as confirmações de presença.</div>
       <button class="btn-reset-warn" onclick="abrirModal('modal-reset-conf')">🗑️ Limpar confirmações</button>
     </div>
   </div>
@@ -231,7 +222,7 @@
 <div class="modal-overlay hidden" id="modal-reset">
   <div class="modal">
     <h2>Resetar entregas?</h2>
-    <p>Todas as entregas voltarão para "pendente". Use no início de cada novo dia.</p>
+    <p>Todas as entregas voltarão para "pendente".</p>
     <div class="modal-btns">
       <button class="modal-sim" onclick="resetarEntregas()">Sim, resetar</button>
       <button class="modal-nao" onclick="fecharModal('modal-reset')">Cancelar</button>
@@ -242,7 +233,7 @@
 <div class="modal-overlay hidden" id="modal-reset-conf">
   <div class="modal">
     <h2>Limpar confirmações?</h2>
-    <p>Todas as confirmações do Biocondutor serão apagadas.</p>
+    <p>Todas as confirmações de rota serão apagadas.</p>
     <div class="modal-btns">
       <button class="modal-sim" onclick="resetarConfirmacoes()">Sim, limpar</button>
       <button class="modal-nao" onclick="fecharModal('modal-reset-conf')">Cancelar</button>
@@ -259,14 +250,8 @@
   function toggleHorario() {
     const tipo = document.getElementById('cl-tipo').value;
     const horField = document.getElementById('cl-horario');
-    if (tipo === 'normal') {
-      horField.classList.remove('hidden');
-      horField.required = true;
-    } else {
-      horField.classList.add('hidden');
-      horField.required = false;
-      horField.value = '';
-    }
+    if (tipo === 'normal') horField.classList.remove('hidden');
+    else { horField.classList.add('hidden'); horField.value = ''; }
   }
 
   function setTab(tab, el) {
@@ -283,7 +268,7 @@
   function toast(msg, cor) {
     const el = document.getElementById('toast');
     el.textContent = msg;
-    el.style.background = cor || '#111';
+    el.style.background = cor || '#0F4C7A';
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 2500);
   }
@@ -294,13 +279,14 @@
   function getTipoBadge(c) {
     const entregue = c.status === 'entregue';
     const tipo = (c.tipo || 'normal').toLowerCase();
+    if (entregue && c.produtividade === 'improdutiva') return `<span class="tipo-badge improdutiva">❌ Improdutiva</span>`;
+    if (entregue && c.produtividade === 'produtiva')   return `<span class="tipo-badge entregue">✅ Produtiva</span>`;
     if (tipo === 'contra pedido') return `<span class="tipo-badge contra-pedido">Contra Pedido</span>`;
-    if (tipo === 'sob demanda') return `<span class="tipo-badge sob-demanda">Sob Demanda</span>`;
+    if (tipo === 'sob demanda')   return `<span class="tipo-badge sob-demanda">Sob Demanda</span>`;
     if (entregue) return `<span class="tipo-badge entregue">${c.horario}</span>`;
     return `<span class="tipo-badge normal">${c.horario}</span>`;
   }
 
-  // ── MOTOBOYS ──────────────────────────────────────
   async function carregarMotoboys() {
     try {
       const r = await fetch(API + '/motoboys');
@@ -334,11 +320,10 @@
   async function delMotoboy(id, nome) {
     if (!confirm(`Remover "${nome}"?`)) return;
     await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Motoboy removido.', '#555');
+    toast('Motoboy removido.', '#5A7A8F');
     carregarMotoboys();
   }
 
-  // ── CLIENTES ──────────────────────────────────────
   async function carregarClientes() {
     const rota = document.getElementById('filtro-rota-cl').value;
     try {
@@ -369,11 +354,12 @@
               ${tipo === 'normal' ? `<span>${c.horario}</span>` : ''}
               <span class="badge-rota">${c.rota}</span>
             </div>
-            ${entregue && c.horario_entrega ? `<div class="cl-entrega-ts">✓ Entregue às ${c.horario_entrega}</div>` : ''}
+            ${entregue && c.horario_entrega ? `<div class="cl-entrega-ts">✓ ${c.produtividade === 'improdutiva' ? 'Improdutiva' : 'Produtiva'} às ${c.horario_entrega}</div>` : ''}
+            ${entregue && c.produtividade === 'improdutiva' && c.motivo_improdutiva ? `<div class="cl-motivo">↳ ${c.motivo_improdutiva}</div>` : ''}
           </div>
           <div class="cl-actions">
             ${getTipoBadge(c)}
-            <span class="tipo-badge ${entregue ? 'entregue' : 'pendente'}">${entregue ? 'Entregue' : 'Pendente'}</span>
+            <span class="tipo-badge ${entregue ? 'entregue' : 'pendente'}">${entregue ? 'Registrada' : 'Pendente'}</span>
             ${entregue ? `<button class="btn-desfazer" onclick="desfazerEntrega(${c.id})">↩ Voltar</button>` : ''}
             <button class="del-btn" onclick="delCliente(${c.id},'${c.nome.replace(/'/g,"\\'")}')">✕</button>
           </div>
@@ -402,7 +388,7 @@
   async function delCliente(id, nome) {
     if (!confirm(`Remover "${nome}"?`)) return;
     await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Cliente removido.', '#555');
+    toast('Cliente removido.', '#5A7A8F');
     carregarClientes();
   }
 
@@ -413,7 +399,6 @@
     carregarClientes();
   }
 
-  // ── ENTREGAS ──────────────────────────────────────
   async function carregarEntregas() {
     try {
       const r = await fetch(API + '/clientes');
@@ -441,7 +426,6 @@
     } catch(e) { document.getElementById('lista-entregas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
 
-  // ── CONFIRMAÇÕES ─────────────────────────────────
   async function carregarConfirmacoes() {
     try {
       const r = await fetch(API + '?action=listar');
@@ -468,17 +452,15 @@
 
   async function delConf(id) {
     await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Confirmação removida.', '#555');
+    toast('Confirmação removida.', '#5A7A8F');
     carregarConfirmacoes();
   }
 
-  // ── RESETS ────────────────────────────────────────
   async function resetarEntregas() {
     fecharModal('modal-reset');
     const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'} });
     const d = await r.json();
     if (d.status === 'ok') toast(`✓ ${d.total} entregas resetadas!`, '#1D9E75');
-    else toast('Erro ao resetar.', '#e55');
   }
 
   async function resetarConfirmacoes() {
@@ -486,10 +468,10 @@
     const r = await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'} });
     const d = await r.json();
     if (d.status === 'ok') { toast('✓ Confirmações limpas!', '#1D9E75'); carregarConfirmacoes(); }
-    else toast('Erro ao limpar.', '#e55');
   }
 
   carregarMotoboys();
 </script>
+
 </body>
 </html>
