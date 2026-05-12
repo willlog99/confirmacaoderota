@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loglife — Exportar Planilha IHP</title>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
+    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
+    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    .header h1{font-size:18px;font-weight:700}
+    .header .sub{font-size:13px;opacity:.85}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
+    .container{padding:1.25rem;max-width:600px;margin:0 auto}
+    .card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .card-icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#E8F4FB,#BFE0F0);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1rem}
+    .card-title{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
+    .card-desc{font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5}
+    .info-box{background:#E8F4FB;border:1.5px solid #BFE0F0;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-size:13px;color:#0F4C7A;line-height:1.6}
+    .info-box ul{margin-left:1.2rem;margin-top:6px}
+    .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
+    .stat{background:#F7FBFD;border-radius:10px;padding:12px;text-align:center;border:1px solid #D6E5EE}
+    .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
+    .stat-val.primary{color:#1E9FD9}
+    .stat-label{font-size:11px;color:#5A7A8F;margin-top:2px}
+    .btn-baixar{width:100%;padding:16px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 12px rgba(30,159,217,0.25)}
+    .btn-baixar:hover{opacity:.95}
+    .btn-baixar:disabled{opacity:.5;cursor:not-allowed}
+    .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
+    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
+    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="painel.html" class="back-link">← Voltar ao painel</a>
+  <div class="header-row">
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div>
+      <h1>Exportar Planilha IHP</h1>
+      <div class="sub">Geração da planilha com dados das coletas</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="card">
+    <div class="card-icon">📊</div>
+    <div class="card-title">Planilha IHP — Preenchida automaticamente</div>
+    <div class="card-desc">Baixe a planilha IHP com os dados das coletas do dia. As colunas <strong>HORÁRIO REAL</strong>, <strong>STATUS</strong>, <strong>JUSTIFICATIVA</strong> e <strong>Data</strong> serão preenchidas automaticamente. O resto da formatação e dados originais permanecem intactos.</div>
+
+    <div class="info-box">
+      <strong>📋 O que será preenchido:</strong>
+      <ul>
+        <li><strong>HORÁRIO REAL</strong> — horário em que a coleta foi marcada</li>
+        <li><strong>STATUS</strong> — "PRODUTIVO" ou "IMPRODUTIVO"</li>
+        <li><strong>JUSTIFICATIVA</strong> — motivo das improdutivas</li>
+        <li><strong>Data</strong> — data do registro</li>
+      </ul>
+    </div>
+
+    <div class="stat-row" id="stats">
+      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">coletas hoje</div></div>
+      <div class="stat"><div class="stat-val primary" id="s-prod">—</div><div class="stat-label">produtivas</div></div>
+      <div class="stat"><div class="stat-val" id="s-imp">—</div><div class="stat-label">improdutivas</div></div>
+    </div>
+
+    <button class="btn-baixar" id="btn-baixar" onclick="exportar()">
+      📥 Baixar Planilha IHP
+    </button>
+
+    <div class="msg" id="msg"></div>
+  </div>
+</div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  const TEMPLATE_URL = 'template_ihp.xlsx';
+
+  let historicoHoje = [];
+
+  async function carregarStats() {
+    try {
+      const r = await fetch(API + '/dashboard?periodo=hoje');
+      const d = await r.json();
+      historicoHoje = d.historico || [];
+      document.getElementById('s-total').textContent = d.total || 0;
+      document.getElementById('s-prod').textContent  = d.produtivas || 0;
+      document.getElementById('s-imp').textContent   = d.improdutivas || 0;
+    } catch(e) {
+      console.error(e);
+    }
+  }
+
+  function showMsg(text, type) {
+    const el = document.getElementById('msg');
+    el.innerHTML = (type === 'loading' ? '<span class="spinner"></span>' : '') + text;
+    el.className = 'msg ' + type;
+  }
+
+  async function exportar() {
+    const btn = document.getElementById('btn-baixar');
+    btn.disabled = true;
+    showMsg('Carregando planilha base...', 'loading');
+
+    try {
+      // 1. Carregar template
+      const respTpl = await fetch(TEMPLATE_URL);
+      if (!respTpl.ok) throw new Error('Template não encontrado');
+      const buffer = await respTpl.arrayBuffer();
+
+      showMsg('Preenchendo dados das coletas...', 'loading');
+
+      // 2. Abrir com ExcelJS
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+
+      const sheet = workbook.getWorksheet('PLANILHA IHP');
+      if (!sheet) throw new Error('Aba PLANILHA IHP não encontrada');
+
+      // 3. Indexar histórico por código
+      const porCodigo = {};
+      historicoHoje.forEach(h => {
+        const cod = String(h.numero_cliente || '').trim();
+        if (cod) porCodigo[cod] = h;
+      });
+
+      // 4. Iterar linhas da PLANILHA IHP e preencher
+      // Colunas:
+      //  H (8)  = HORÁRIO ATUAL
+      //  K (11) = HORARIO REAL
+      //  L (12) = STATUS
+      //  M (13) = JUSTIFICATIVA
+      //  O (15) = Data
+      const agora = new Date();
+      const horaAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const dataAtual = agora.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+      let preenchidas = 0;
+
+      sheet.eachRow((row, rowNum) => {
+        if (rowNum === 1) return; // pula cabeçalho
+        const codigo = String(row.getCell(1).value || '').trim();
+        if (!codigo) return;
+        const reg = porCodigo[codigo];
+        if (!reg) return;
+
+        // Extrair só a hora HH:MM do horario_entrega (formato "DD/MM/YYYY HH:MM")
+        let horaReal = '';
+        if (reg.horario_entrega) {
+          const partes = String(reg.horario_entrega).split(' ');
+          horaReal = partes[partes.length - 1]; // pega último segmento (HH:MM)
+        }
+
+        // Preencher
+        row.getCell(8).value  = horaAtual; // HORÁRIO ATUAL
+        row.getCell(11).value = horaReal;  // HORARIO REAL
+        row.getCell(12).value = reg.produtividade === 'produtiva' ? 'PRODUTIVO' :
+                                 reg.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : '';
+        row.getCell(13).value = reg.motivo_improdutiva || '';
+        row.getCell(15).value = dataAtual; // Data
+
+        preenchidas++;
+      });
+
+      showMsg('Gerando arquivo...', 'loading');
+
+      // 5. Salvar e baixar
+      const out = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const nomeArquivo = `IHP_${dataAtual.replace(/\//g,'-')}.xlsx`;
+      a.href = url;
+      a.download = nomeArquivo;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showMsg(`✓ Planilha baixada com ${preenchidas} coleta${preenchidas!==1?'s':''} preenchida${preenchidas!==1?'s':''}!`, 'success');
+    } catch(e) {
+      console.error(e);
+      showMsg('Erro: ' + e.message, 'error');
+    }
+
+    btn.disabled = false;
+  }
+
+  carregarStats();
+</script>
+</body>
+</html>
