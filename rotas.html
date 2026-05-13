@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loglife — Gerenciar Rotas</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
+    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
+    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    .header h1{font-size:18px;font-weight:700}
+    .header .sub{font-size:13px;opacity:.85}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
+
+    .container{padding:1rem 1.25rem 0;max-width:800px;margin:0 auto}
+    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .card-title{font-size:15px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+    .refresh-btn{font-size:12px;color:#1E9FD9;background:none;border:none;cursor:pointer;font-weight:600}
+
+    .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+    .form-row input{flex:1;min-width:140px;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#111;background:#F7FBFD}
+    .btn{height:40px;padding:0 16px;border-radius:10px;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0)}
+    .btn-danger{background:#DC2626}
+    .btn-warning{background:#B45309}
+    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
+
+    .rota-item{padding:14px;border-radius:12px;border:1.5px solid #D6E5EE;margin-bottom:10px;background:#fff}
+    .rota-item.ativa{border-color:#F2A536;background:#FFF8E6}
+    .rota-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+    .rota-titulo{font-size:15px;font-weight:700;color:#0F4C7A}
+    .rota-status{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600}
+    .rota-status.livre{background:#E1F5EE;color:#085041}
+    .rota-status.ativa{background:#FEF3C7;color:#92400E}
+    .rota-motoboy{font-size:13px;color:#5A7A8F;margin-bottom:10px}
+    .rota-motoboy strong{color:#0F4C7A}
+    .rota-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .rota-actions .btn{height:32px;padding:0 12px;font-size:12px}
+
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
+    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:8px}
+    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5}
+    .modal input,.modal select{width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 12px;color:#111;background:#F7FBFD;margin-bottom:14px}
+    .modal-btns{display:flex;flex-direction:column;gap:10px}
+
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="painel.html" class="back-link">← Voltar ao painel</a>
+  <div class="header-row">
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div>
+      <h1>Gerenciar Rotas</h1>
+      <div class="sub">Criar, renomear, excluir e atribuir motoristas</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="card">
+    <div class="card-title">➕ Criar nova rota</div>
+    <div class="form-row">
+      <input type="text" id="nova-rota" placeholder="Nome da rota (ex: SAO PAULO 52)" style="text-transform:uppercase"/>
+      <button class="btn btn-primary" onclick="criarRota()">+ Criar</button>
+    </div>
+    <p style="font-size:12px;color:#94A8B8;margin-top:4px">A rota aparece na lista assim que tiver um motoboy atribuído.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 Rotas existentes <button class="refresh-btn" onclick="carregar()">↻ Atualizar</button></div>
+    <div id="lista-rotas"><p class="empty">Carregando...</p></div>
+  </div>
+</div>
+
+<!-- Modal renomear -->
+<div class="modal-overlay hidden" id="modal-renomear">
+  <div class="modal">
+    <h2>Renomear rota</h2>
+    <p>Rota atual: <strong id="ren-atual"></strong></p>
+    <input type="text" id="ren-nova" placeholder="Novo nome" style="text-transform:uppercase"/>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="confirmarRenomear()">Renomear</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modal-renomear')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal atribuir motorista -->
+<div class="modal-overlay hidden" id="modal-atribuir">
+  <div class="modal">
+    <h2>Atribuir motorista à rota</h2>
+    <p>Rota: <strong id="atr-rota"></strong></p>
+    <input type="text" id="atr-nome" placeholder="Nome completo"/>
+    <input type="tel" id="atr-tel" placeholder="Telefone (11999999999)"/>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="confirmarAtribuir()">Atribuir</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modal-atribuir')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal trocar motorista -->
+<div class="modal-overlay hidden" id="modal-trocar">
+  <div class="modal">
+    <h2>Trocar motorista</h2>
+    <p>Rota: <strong id="trc-rota"></strong> · Motorista atual: <strong id="trc-atual"></strong></p>
+    <select id="trc-novo"><option value="">Selecione novo motorista...</option></select>
+    <div class="modal-btns">
+      <button class="btn btn-primary" onclick="confirmarTrocar()">Trocar</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modal-trocar')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let rotas = [];
+  let motoboys = [];
+
+  function toast(msg, cor) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = cor || '#0F4C7A';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+  async function carregar() {
+    try {
+      const [r1, r2] = await Promise.all([
+        fetch(API + '/rotas-disponiveis').then(r=>r.json()),
+        fetch(API + '/motoboys').then(r=>r.json())
+      ]);
+      rotas = r1.rotas || [];
+      motoboys = r2.motoboys || [];
+      renderizar();
+    } catch(e) { document.getElementById('lista-rotas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+  }
+
+  function renderizar() {
+    const lista = document.getElementById('lista-rotas');
+    if (!rotas.length) { lista.innerHTML = '<p class="empty">Nenhuma rota cadastrada ainda.</p>'; return; }
+
+    // Agrupar motoboys por rota
+    const motoboysPorRota = {};
+    motoboys.forEach(m => {
+      if (!motoboysPorRota[m.rota]) motoboysPorRota[m.rota] = [];
+      motoboysPorRota[m.rota].push(m);
+    });
+
+    lista.innerHTML = rotas.map(r => {
+      const motos = motoboysPorRota[r.rota] || [];
+      const motoStr = motos.length ? motos.map(m => `<strong>${m.nome}</strong> (${m.telefone})`).join(', ') : '<em style="color:#94A8B8">Sem motorista atribuído</em>';
+      const statusBadge = r.ativa
+        ? `<span class="rota-status ativa">🔒 Em uso por ${r.motoboy_aberto || 'motorista'}</span>`
+        : `<span class="rota-status livre">Livre</span>`;
+
+      let actions = '';
+      if (motos.length === 0) {
+        actions += `<button class="btn btn-primary" onclick="abrirAtribuir('${r.rota}')">+ Atribuir motorista</button>`;
+      } else {
+        actions += `<button class="btn btn-primary" onclick="abrirTrocar('${r.rota}', '${motos[0].nome.replace(/'/g,"\\'")}', ${motos[0].id})">↔ Trocar motorista</button>`;
+      }
+      actions += `<button class="btn btn-secondary" onclick="abrirRenomear('${r.rota}')">✎ Renomear</button>`;
+      if (r.ativa) actions += `<button class="btn btn-warning" onclick="destravarRota('${r.rota}')">🔓 Destravar</button>`;
+      actions += `<button class="btn btn-danger" onclick="excluirRota('${r.rota}')">🗑 Excluir</button>`;
+
+      return `
+        <div class="rota-item ${r.ativa ? 'ativa' : ''}">
+          <div class="rota-header">
+            <div class="rota-titulo">${r.rota}</div>
+            ${statusBadge}
+          </div>
+          <div class="rota-motoboy">👤 ${motoStr}</div>
+          <div class="rota-actions">${actions}</div>
+        </div>`;
+    }).join('');
+  }
+
+  async function criarRota() {
+    const rota = document.getElementById('nova-rota').value.trim().toUpperCase();
+    if (!rota) { toast('Digite o nome da rota.', '#A32D2D'); return; }
+    document.getElementById('nova-rota').value = '';
+    abrirAtribuirPara(rota);
+  }
+
+  function abrirAtribuirPara(rota) {
+    document.getElementById('atr-rota').textContent = rota;
+    document.getElementById('atr-nome').value = '';
+    document.getElementById('atr-tel').value = '';
+    document.getElementById('modal-atribuir').dataset.rota = rota;
+    document.getElementById('modal-atribuir').dataset.modo = 'novo';
+    abrirModal('modal-atribuir');
+  }
+
+  function abrirAtribuir(rota) { abrirAtribuirPara(rota); }
+
+  async function confirmarAtribuir() {
+    const rota = document.getElementById('modal-atribuir').dataset.rota;
+    const nome = document.getElementById('atr-nome').value.trim();
+    const tel = document.getElementById('atr-tel').value.replace(/\D/g,'');
+    if (!nome || !tel) { toast('Preencha nome e telefone.', '#A32D2D'); return; }
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nome, telefone: tel, rota }) });
+    fecharModal('modal-atribuir');
+    toast('Motorista atribuído!', '#1E9FD9');
+    carregar();
+  }
+
+  function abrirTrocar(rota, atualNome, atualId) {
+    document.getElementById('trc-rota').textContent = rota;
+    document.getElementById('trc-atual').textContent = atualNome;
+    const sel = document.getElementById('trc-novo');
+    // Lista todos os motoboys, indicando rota atual
+    sel.innerHTML = '<option value="">Selecione novo motorista...</option>' +
+      motoboys.filter(m => m.id !== atualId).map(m => `<option value="${m.id}">${m.nome} (${m.rota})</option>`).join('') +
+      '<option value="__novo__">+ Cadastrar novo motorista</option>';
+    document.getElementById('modal-trocar').dataset.rota = rota;
+    document.getElementById('modal-trocar').dataset.atualId = atualId;
+    abrirModal('modal-trocar');
+  }
+
+  async function confirmarTrocar() {
+    const rota = document.getElementById('modal-trocar').dataset.rota;
+    const atualId = parseInt(document.getElementById('modal-trocar').dataset.atualId);
+    const escolhido = document.getElementById('trc-novo').value;
+    if (!escolhido) { toast('Selecione um motorista.', '#A32D2D'); return; }
+
+    if (escolhido === '__novo__') {
+      fecharModal('modal-trocar');
+      // Remove o atual e abre tela para cadastrar novo
+      await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: atualId }) });
+      abrirAtribuirPara(rota);
+      return;
+    }
+
+    const novoId = parseInt(escolhido);
+    const novo = motoboys.find(m => m.id === novoId);
+    if (!novo) return;
+    // Remove o atual e atualiza o novo para essa rota
+    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: atualId }) });
+    await fetch(API + '/motoboys', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: novoId, telefone: novo.telefone, nome: novo.nome, rota }) });
+    fecharModal('modal-trocar');
+    toast('Motorista trocado!', '#1E9FD9');
+    carregar();
+  }
+
+  function abrirRenomear(rota) {
+    document.getElementById('ren-atual').textContent = rota;
+    document.getElementById('ren-nova').value = rota;
+    document.getElementById('modal-renomear').dataset.rota = rota;
+    abrirModal('modal-renomear');
+  }
+
+  async function confirmarRenomear() {
+    const rotaAntiga = document.getElementById('modal-renomear').dataset.rota;
+    const rotaNova = document.getElementById('ren-nova').value.trim().toUpperCase();
+    if (!rotaNova || rotaNova === rotaAntiga) { fecharModal('modal-renomear'); return; }
+    await fetch(API + '/renomear-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota_antiga: rotaAntiga, rota_nova: rotaNova }) });
+    fecharModal('modal-renomear');
+    toast('Rota renomeada!', '#1E9FD9');
+    carregar();
+  }
+
+  async function destravarRota(rota) {
+    if (!confirm(`Destravar a rota "${rota}"? Isso desloga o motorista atual.`)) return;
+    await fetch(API + '/destravar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
+    toast('Rota destravada.', '#B45309');
+    carregar();
+  }
+
+  async function excluirRota(rota) {
+    if (!confirm(`Excluir a rota "${rota}"? Os clientes ficam no histórico mas saem da lista ativa.`)) return;
+    await fetch(API + '/excluir-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
+    toast('Rota excluída.', '#A32D2D');
+    carregar();
+  }
+
+  carregar();
+</script>
+</body>
+</html>
