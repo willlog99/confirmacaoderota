@@ -38,19 +38,18 @@
     .lista{padding:.75rem 1.25rem 0}
     .section-title{font-size:12px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
 
-    .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
+    .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer}
     .cliente-card.chegou{background:#FEF9EC;border:1.5px solid #F2CC70}
     .cliente-card.produtiva{background:#E8F4FB;border:1.5px solid #1E9FD9}
     .cliente-card.improdutiva{background:#F0F4F8;border:1.5px solid #94A8B8}
-    .cliente-card.produtiva .cliente-nome{color:#0F4C7A;text-decoration:line-through;opacity:.7}
-    .cliente-card.improdutiva .cliente-nome{color:#5A7A8F;text-decoration:line-through;opacity:.6}
+    .cliente-card.produtiva .cliente-nome,.cliente-card.improdutiva .cliente-nome{text-decoration:line-through;opacity:.7}
+    .cliente-card.produtiva{cursor:default}
+    .cliente-card.improdutiva{cursor:default}
 
-    .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
-    .check-btn:hover:not(.produtiva):not(.improdutiva){border-color:#1E9FD9}
+    .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;pointer-events:none}
     .check-btn.chegou{background:#F2CC70;border-color:#F2CC70;color:#5A4400}
-    .check-btn.produtiva{background:#1E9FD9;border-color:#1E9FD9;color:#fff;cursor:not-allowed}
-    .check-btn.improdutiva{background:#5A7A8F;border-color:#5A7A8F;color:#fff;cursor:not-allowed}
-    .check-btn.loading{opacity:.5;cursor:not-allowed;pointer-events:none}
+    .check-btn.produtiva{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
+    .check-btn.improdutiva{background:#5A7A8F;border-color:#5A7A8F;color:#fff}
 
     .cliente-info{flex:1;min-width:0}
     .cliente-nome{font-size:17px;font-weight:700;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -75,6 +74,7 @@
     .modal-cliente{font-size:13px;color:#94A8B8;margin-bottom:4px}
     .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1.25rem}
     .modal-btns{display:flex;flex-direction:column;gap:10px}
+    .btn-cheguei{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#F2A536,#B45309);color:#fff}
     .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
     .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #94A8B8;background:#F0F4F8;color:#5A7A8F}
     .btn-cancelar{padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
@@ -96,8 +96,6 @@
 
     .empty{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
     .loading-msg{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
-
-    .hint{padding:8px 12px;background:#FEF9EC;border:1px solid #F2CC70;color:#5A4400;border-radius:9px;font-size:12px;margin:.5rem 1.25rem 0;text-align:center}
   </style>
 </head>
 <body>
@@ -129,8 +127,6 @@
   <div class="progress-label" id="progress-label">0%</div>
 </div>
 
-<div class="hint">💡 1º clique = registra chegada · 2º clique = registra saída (produtiva ou improdutiva)</div>
-
 <div class="toolbar">
   <input class="search-bar" type="text" id="busca" placeholder="Buscar cliente..." oninput="renderizar()"/>
   <button class="filter-btn" id="filter-btn" onclick="toggleFiltro()">Pendentes</button>
@@ -142,6 +138,20 @@
   <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModalFinalizar()">🏁 Finalizar Rota</button>
 </div>
 
+<!-- MODAL CHEGUEI -->
+<div class="modal-overlay hidden" id="modal-chegada">
+  <div class="modal">
+    <div class="modal-cliente" id="modal-chegada-cliente"></div>
+    <h2>Você chegou no cliente?</h2>
+    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem">Ao confirmar, será registrado o horário de chegada.</p>
+    <div class="modal-btns">
+      <button class="btn-cheguei" onclick="confirmarChegada()">📍 Sim, cheguei</button>
+      <button class="btn-cancelar" onclick="fecharModal('modal-chegada')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUTIVA / IMPRODUTIVA -->
 <div class="modal-overlay hidden" id="modal-prod">
   <div class="modal">
     <div class="modal-cliente" id="modal-cliente-nome"></div>
@@ -155,6 +165,7 @@
   </div>
 </div>
 
+<!-- MODAL MOTIVO -->
 <div class="modal-overlay hidden" id="modal-motivo">
   <div class="modal">
     <div class="modal-cliente" id="modal-motivo-cliente"></div>
@@ -167,6 +178,7 @@
   </div>
 </div>
 
+<!-- MODAL FINALIZAR -->
 <div class="modal-overlay hidden" id="modal-fin">
   <div class="modal">
     <h2>Finalizar a rota?</h2>
@@ -211,6 +223,8 @@
     renderizar();
   }
 
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); clienteSelecionado = null; }
+
   async function carregar() {
     try {
       const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
@@ -222,27 +236,35 @@
     }
   }
 
-  // 1º clique: registra chegada
-  async function registrarChegada(id) {
+  // 1º clique no card: abre modal Cheguei
+  function abrirModalChegada(id) {
     const c = clientes.find(c => c.id === id);
     if (!c || c.status === 'entregue' || c.horario_chegada) return;
-    const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
-    if (btn) btn.classList.add('loading');
+    clienteSelecionado = id;
+    document.getElementById('modal-chegada-cliente').textContent = c.nome;
+    document.getElementById('modal-chegada').classList.remove('hidden');
+  }
+
+  async function confirmarChegada() {
+    const id = clienteSelecionado;
+    document.getElementById('modal-chegada').classList.add('hidden');
+    if (!id) return;
     try {
       const r = await fetch(API + '/chegada', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id })
       });
       const d = await r.json();
       if (d.status === 'ok') {
-        c.horario_chegada = d.horario_chegada;
+        const c = clientes.find(c => c.id === id);
+        if (c) c.horario_chegada = d.horario_chegada;
         renderizar();
       }
-    } catch(e) { if (btn) btn.classList.remove('loading'); }
+    } catch(e) {}
+    clienteSelecionado = null;
   }
 
-  // 2º clique: abre modal de produtividade
+  // 2º clique (já tem chegada): abre modal produtividade
   function abrirModalProd(id) {
     const c = clientes.find(c => c.id === id);
     if (!c || c.status === 'entregue') return;
@@ -268,8 +290,6 @@
     document.getElementById('modal-prod').classList.add('hidden');
     document.getElementById('modal-motivo').classList.add('hidden');
     clienteSelecionado = null;
-    const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
-    if (btn) btn.classList.add('loading');
     try {
       const r = await fetch(API + '/ticar', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -281,7 +301,7 @@
         if (c) { c.status = 'entregue'; c.produtividade = produtividade; c.motivo_improdutiva = motivo || ''; c.horario_entrega = d.horario_entrega; }
         renderizar();
       }
-    } catch(e) { if (btn) btn.classList.remove('loading'); }
+    } catch(e) {}
   }
 
   async function confirmarImprodutiva() {
@@ -302,7 +322,6 @@
     return `<span class="horario-badge normal">${c.horario || '—'}</span>`;
   }
 
-  // Extrai só HH:MM do horario_entrega (formato "DD/MM/YYYY HH:MM")
   function extrairHoraSaida(c) {
     if (!c.horario_entrega) return '';
     const partes = String(c.horario_entrega).split(' ');
@@ -314,10 +333,7 @@
     const chegou = !!c.horario_chegada;
     const prod = c.produtividade || '';
 
-    let cardClass = '';
-    let btnClass = '';
-    let btnIcon = '';
-
+    let cardClass = '', btnClass = '', btnIcon = '';
     if (entregue) {
       cardClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
       btnClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
@@ -331,8 +347,8 @@
     const horaSaida = extrairHoraSaida(c);
 
     return `
-      <div class="cliente-card ${cardClass}">
-        <button class="check-btn ${btnClass}" data-id="${c.id}">${btnIcon}</button>
+      <div class="cliente-card ${cardClass}" data-id="${c.id}">
+        <div class="check-btn ${btnClass}">${btnIcon}</div>
         <div class="cliente-info">
           <div class="cliente-nome">${c.nome}</div>
           <div class="cliente-meta">Nº ${c.numero_cliente}</div>
@@ -409,18 +425,15 @@
     if (pendFiltrados.length > 0) { if (!somentePendentes && entrFiltrados.length > 0) html += `<div class="section-title">Pendentes (${pendFiltrados.length})</div>`; html += pendFiltrados.map(c => cardHTML(c)).join(''); }
     if (entrFiltrados.length > 0) { html += `<div class="section-title">Registradas (${entrFiltrados.length})</div>`; html += entrFiltrados.map(c => cardHTML(c)).join(''); }
     document.getElementById('lista').innerHTML = html;
-    document.querySelectorAll('.check-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const id = parseInt(btn.dataset.id);
+
+    // Clique no card decide qual modal abrir
+    document.querySelectorAll('.cliente-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = parseInt(card.dataset.id);
         const c = clientes.find(c => c.id === id);
         if (!c || c.status === 'entregue') return;
-        // 1º clique: registra chegada
-        // 2º clique (já chegou): abre modal de produtividade
-        if (!c.horario_chegada) {
-          registrarChegada(id);
-        } else {
-          abrirModalProd(id);
-        }
+        if (!c.horario_chegada) abrirModalChegada(id);
+        else abrirModalProd(id);
       });
     });
   }
