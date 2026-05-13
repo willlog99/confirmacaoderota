@@ -8,11 +8,9 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 6rem}
 
-    /* HEADER */
     .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 1.25rem 1.5rem;color:#fff}
     .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
     .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
-    .back-btn:hover{background:rgba(255,255,255,0.3)}
     .header-logo{height:32px;width:auto;filter:brightness(0) invert(1)}
     .header-info{display:flex;align-items:center;gap:14px}
     .header-mascote{width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);object-fit:cover;flex-shrink:0}
@@ -20,7 +18,6 @@
     .header-text .sub{font-size:12px;opacity:.85}
     .rota-badge{display:inline-block;background:rgba(255,255,255,0.25);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-top:4px}
 
-    /* STATS — todos em azul Loglife */
     .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:1rem 1.25rem 0}
     .stat{background:#fff;border-radius:12px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(30,159,217,0.08)}
     .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
@@ -28,30 +25,25 @@
     .stat-val.muted{color:#94A8B8}
     .stat-label{font-size:11px;color:#5A7A8F;margin-top:1px}
 
-    /* PROGRESS */
     .progress-wrap{padding:.75rem 1.25rem 0}
     .progress-bar{background:#D6E5EE;border-radius:99px;height:6px;overflow:hidden}
     .progress-fill{background:linear-gradient(90deg,#1E9FD9,#0F7BB0);height:100%;border-radius:99px;transition:width .4s ease}
     .progress-label{font-size:12px;color:#5A7A8F;text-align:right;margin-top:4px;font-weight:500}
 
-    /* TOOLBAR */
     .toolbar{padding:.75rem 1.25rem 0;display:flex;gap:8px}
     .search-bar{flex:1;background:#fff;border-radius:10px;border:1.5px solid #D6E5EE;height:40px;padding:0 12px;font-size:14px;color:#111}
-    .search-bar:focus{outline:none;border-color:#1E9FD9}
     .filter-btn{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:500;color:#5A7A8F;cursor:pointer;white-space:nowrap}
     .filter-btn.active{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
 
     .lista{padding:.75rem 1.25rem 0}
     .section-title{font-size:12px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
 
-    /* CARDS — produtiva azul, improdutiva cinza-azulado, pendente branco */
     .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
     .cliente-card.produtiva{background:#E8F4FB;border:1.5px solid #1E9FD9}
     .cliente-card.improdutiva{background:#F0F4F8;border:1.5px solid #94A8B8}
     .cliente-card.produtiva .cliente-nome{color:#0F4C7A;text-decoration:line-through;opacity:.7}
     .cliente-card.improdutiva .cliente-nome{color:#5A7A8F;text-decoration:line-through;opacity:.6}
 
-    /* CHECK BTN */
     .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
     .check-btn:hover:not(.produtiva):not(.improdutiva){border-color:#1E9FD9}
     .check-btn.produtiva{background:#1E9FD9;border-color:#1E9FD9;color:#fff;cursor:not-allowed}
@@ -72,38 +64,27 @@
     .horario-badge.contra-pedido{background:#0F4C7A;color:#fff}
     .horario-badge.sob-demanda{background:#5A7A8F;color:#fff}
 
-    /* MODAIS */
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center;animation:fadeIn .2s}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
     .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px;animation:slideUp .25s ease}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes slideUp{from{transform:translateY(40px)}to{transform:translateY(0)}}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px}
     .modal-cliente{font-size:13px;color:#94A8B8;margin-bottom:4px}
     .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1.25rem}
     .modal-btns{display:flex;flex-direction:column;gap:10px}
-
-    .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(30,159,217,0.25)}
-    .btn-produtiva:hover{opacity:.95}
-    .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #94A8B8;background:#F0F4F8;color:#5A7A8F;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn-improdutiva:hover{background:#E2E8F0}
+    .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #94A8B8;background:#F0F4F8;color:#5A7A8F}
     .btn-cancelar{padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
     .btn-confirmar-imp{padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#0F4C7A;color:#fff}
 
     textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:none;height:90px;color:#111;margin-bottom:10px;background:#F7FBFD}
-    textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
 
-    /* BOTÃO FINALIZAR */
     .footer-bar{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem;background:#fff;box-shadow:0 -2px 12px rgba(30,159,217,0.12);z-index:100}
     .btn-finalizar{width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(30,159,217,0.3)}
-    .btn-finalizar:hover{opacity:.95}
     .btn-finalizar:disabled{opacity:.5;cursor:not-allowed}
-    .btn-finalizar.concluida{background:linear-gradient(135deg,#0F7BB0,#0F4C7A)}
 
-    /* CELEBRAÇÃO */
     .celebration{position:fixed;inset:0;background:rgba(15,75,122,0.7);z-index:300;display:flex;align-items:center;justify-content:center}
     .celebration.hidden{display:none}
     .celebration-box{background:#fff;border-radius:20px;padding:2rem 1.75rem;text-align:center;max-width:300px;margin:1rem}
-    .celebration-mascote{width:110px;height:110px;border-radius:50%;margin:0 auto 1rem;object-fit:cover;box-shadow:0 4px 16px rgba(30,159,217,0.25)}
+    .celebration-mascote{width:110px;height:110px;border-radius:50%;margin:0 auto 1rem;object-fit:cover}
     .celebration h2{font-size:20px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
     .celebration p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem}
     .celebration-btn{width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
@@ -146,15 +127,12 @@
   <button class="filter-btn" id="filter-btn" onclick="toggleFiltro()">Pendentes</button>
 </div>
 
-<div class="lista" id="lista">
-  <div class="loading-msg">Carregando...</div>
-</div>
+<div class="lista" id="lista"><div class="loading-msg">Carregando...</div></div>
 
 <div class="footer-bar">
   <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModalFinalizar()">🏁 Finalizar Rota</button>
 </div>
 
-<!-- MODAL PRODUTIVIDADE -->
 <div class="modal-overlay hidden" id="modal-prod">
   <div class="modal">
     <div class="modal-cliente" id="modal-cliente-nome"></div>
@@ -167,7 +145,6 @@
   </div>
 </div>
 
-<!-- MODAL MOTIVO -->
 <div class="modal-overlay hidden" id="modal-motivo">
   <div class="modal">
     <div class="modal-cliente" id="modal-motivo-cliente"></div>
@@ -180,7 +157,6 @@
   </div>
 </div>
 
-<!-- MODAL FINALIZAR -->
 <div class="modal-overlay hidden" id="modal-fin">
   <div class="modal">
     <h2>Finalizar a rota?</h2>
@@ -192,13 +168,12 @@
   </div>
 </div>
 
-<!-- CELEBRAÇÃO -->
 <div class="celebration hidden" id="celebration">
   <div class="celebration-box">
     <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="" class="celebration-mascote"/>
     <h2>Rota finalizada! 🎉</h2>
     <p id="celebration-msg">Bom trabalho!</p>
-    <button class="celebration-btn" onclick="document.getElementById('celebration').classList.add('hidden')">Continuar</button>
+    <button class="celebration-btn" onclick="aoFecharCelebracao()">Continuar</button>
   </div>
 </div>
 
@@ -233,7 +208,7 @@
       clientes = d.clientes || [];
       renderizar();
     } catch(e) {
-      document.getElementById('lista').innerHTML = `<p class="empty">Erro ao carregar. Verifique sua conexão.</p>`;
+      document.getElementById('lista').innerHTML = `<p class="empty">Erro ao carregar.</p>`;
     }
   }
 
@@ -244,11 +219,7 @@
     document.getElementById('modal-cliente-nome').textContent = c.nome;
     document.getElementById('modal-prod').classList.remove('hidden');
   }
-
-  function cancelarTique() {
-    clienteSelecionado = null;
-    document.getElementById('modal-prod').classList.add('hidden');
-  }
+  function cancelarTique() { clienteSelecionado = null; document.getElementById('modal-prod').classList.add('hidden'); }
 
   function abrirModalMotivo() {
     const c = clientes.find(c => c.id === clienteSelecionado);
@@ -258,11 +229,7 @@
     document.getElementById('modal-motivo').classList.remove('hidden');
     document.getElementById('motivo-texto').focus();
   }
-
-  function voltarParaProd() {
-    document.getElementById('modal-motivo').classList.add('hidden');
-    document.getElementById('modal-prod').classList.remove('hidden');
-  }
+  function voltarParaProd() { document.getElementById('modal-motivo').classList.add('hidden'); document.getElementById('modal-prod').classList.remove('hidden'); }
 
   async function confirmarTique(produtividade, motivo) {
     const id = clienteSelecionado;
@@ -273,19 +240,13 @@
     if (btn) btn.classList.add('loading');
     try {
       const r = await fetch(API + '/ticar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id, telefone_motoboy: tel, produtividade, motivo_improdutiva: motivo || '' })
       });
       const d = await r.json();
       if (d.status === 'ok') {
         const c = clientes.find(c => c.id === id);
-        if (c) {
-          c.status = 'entregue';
-          c.produtividade = produtividade;
-          c.motivo_improdutiva = motivo || '';
-          c.horario_entrega = d.horario_entrega;
-        }
+        if (c) { c.status = 'entregue'; c.produtividade = produtividade; c.motivo_improdutiva = motivo || ''; c.horario_entrega = d.horario_entrega; }
         renderizar();
       }
     } catch(e) { if (btn) btn.classList.remove('loading'); }
@@ -293,22 +254,18 @@
 
   async function confirmarImprodutiva() {
     const motivo = document.getElementById('motivo-texto').value.trim();
-    if (!motivo) {
-      document.getElementById('motivo-texto').style.borderColor = '#0F4C7A';
-      document.getElementById('motivo-texto').placeholder = 'Por favor, informe o motivo!';
-      return;
-    }
+    if (!motivo) { document.getElementById('motivo-texto').style.borderColor = '#0F4C7A'; document.getElementById('motivo-texto').placeholder = 'Por favor, informe o motivo!'; return; }
     await confirmarTique('improdutiva', motivo);
   }
 
   function getTipoBadge(c) {
     const tipo = (c.tipo || 'normal').toLowerCase();
     if (c.status === 'entregue') {
-      if (c.produtividade === 'produtiva')   return `<span class="horario-badge produtiva">✓ Produtiva</span>`;
+      if (c.produtividade === 'produtiva') return `<span class="horario-badge produtiva">✓ Produtiva</span>`;
       if (c.produtividade === 'improdutiva') return `<span class="horario-badge improdutiva">✗ Improdutiva</span>`;
     }
     if (tipo === 'contra pedido') return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
-    if (tipo === 'sob demanda')   return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
+    if (tipo === 'sob demanda') return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
     return `<span class="horario-badge normal">${c.horario || '—'}</span>`;
   }
 
@@ -337,7 +294,7 @@
     if (total === 0) return;
     const msg = pendentes === 0
       ? `Todas as ${total} coletas foram registradas. Deseja finalizar a rota?`
-      : `${total - pendentes} de ${total} registradas. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Deseja finalizar mesmo assim?`;
+      : `${total - pendentes} de ${total} registradas. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Ao finalizar a rota fica liberada novamente.`;
     document.getElementById('modal-fin-msg').textContent = msg;
     document.getElementById('modal-fin').classList.remove('hidden');
   }
@@ -350,20 +307,27 @@
     const pendentes = clientes.filter(c => c.status !== 'entregue');
     for (const c of pendentes) {
       try {
-        await fetch(API + '/ticar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: c.id, telefone_motoboy: tel, produtividade: 'produtiva', motivo_improdutiva: '' })
-        });
-        c.status = 'entregue';
-        c.produtividade = 'produtiva';
+        await fetch(API + '/ticar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: c.id, telefone_motoboy: tel, produtividade: 'produtiva', motivo_improdutiva: '' }) });
+        c.status = 'entregue'; c.produtividade = 'produtiva';
         c.horario_entrega = new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
       } catch(e) {}
     }
+    // DESTRAVAR ROTA
+    try {
+      await fetch(API + '/finalizar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telefone: tel, rota }) });
+    } catch(e) {}
     renderizar();
     const total = clientes.length;
-    document.getElementById('celebration-msg').textContent = `${total} coleta${total>1?'s':''} registrada${total>1?'s':''}. Bom trabalho!`;
+    document.getElementById('celebration-msg').textContent = `${total} coleta${total>1?'s':''} registrada${total>1?'s':''}. Rota liberada!`;
     document.getElementById('celebration').classList.remove('hidden');
+  }
+
+  function aoFecharCelebracao() {
+    // Após finalizar, volta para o login
+    localStorage.removeItem('motoboy_nome');
+    localStorage.removeItem('motoboy_rota');
+    localStorage.removeItem('motoboy_tel');
+    window.location.href = 'index.html';
   }
 
   function renderizar() {
@@ -371,49 +335,24 @@
     const entregues  = clientes.filter(c => c.status === 'entregue');
     const produtivas = clientes.filter(c => c.produtividade === 'produtiva');
     const pendentes  = clientes.filter(c => c.status !== 'entregue');
-
     document.getElementById('cnt-total').textContent     = clientes.length;
     document.getElementById('cnt-produtiva').textContent = produtivas.length;
     document.getElementById('cnt-pendente').textContent  = pendentes.length;
-
     const pct = clientes.length ? Math.round(entregues.length / clientes.length * 100) : 0;
     document.getElementById('progress-fill').style.width = pct + '%';
     document.getElementById('progress-label').textContent = pct + '% concluído';
-
     const btnFin = document.getElementById('btn-finalizar');
-    if (pct === 100) {
-      btnFin.classList.add('concluida');
-      btnFin.innerHTML = '✓ Rota 100% — Finalizar';
-    } else {
-      btnFin.classList.remove('concluida');
-      btnFin.innerHTML = `🏁 Finalizar Rota (${pendentes.length} pendente${pendentes.length!==1?'s':''})`;
-    }
+    btnFin.innerHTML = pct === 100 ? '✓ Rota 100% — Finalizar' : `🏁 Finalizar Rota (${pendentes.length} pendente${pendentes.length!==1?'s':''})`;
     btnFin.disabled = clientes.length === 0;
-
     let fonte = somentePendentes ? pendentes : clientes;
-    if (busca) fonte = fonte.filter(c =>
-      c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca)
-    );
-
-    if (fonte.length === 0) {
-      document.getElementById('lista').innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : somentePendentes ? '🎉 Todas as coletas registradas!' : 'Nenhum cliente nesta rota.'}</p>`;
-      return;
-    }
-
+    if (busca) fonte = fonte.filter(c => c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca));
+    if (fonte.length === 0) { document.getElementById('lista').innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : somentePendentes ? '🎉 Todas as coletas registradas!' : 'Nenhum cliente nesta rota.'}</p>`; return; }
     const pendFiltrados = fonte.filter(c => c.status !== 'entregue');
     const entrFiltrados = fonte.filter(c => c.status === 'entregue');
     let html = '';
-    if (pendFiltrados.length > 0) {
-      if (!somentePendentes && entrFiltrados.length > 0) html += `<div class="section-title">Pendentes (${pendFiltrados.length})</div>`;
-      html += pendFiltrados.map(c => cardHTML(c)).join('');
-    }
-    if (entrFiltrados.length > 0) {
-      html += `<div class="section-title">Registradas (${entrFiltrados.length})</div>`;
-      html += entrFiltrados.map(c => cardHTML(c)).join('');
-    }
-
+    if (pendFiltrados.length > 0) { if (!somentePendentes && entrFiltrados.length > 0) html += `<div class="section-title">Pendentes (${pendFiltrados.length})</div>`; html += pendFiltrados.map(c => cardHTML(c)).join(''); }
+    if (entrFiltrados.length > 0) { html += `<div class="section-title">Registradas (${entrFiltrados.length})</div>`; html += entrFiltrados.map(c => cardHTML(c)).join(''); }
     document.getElementById('lista').innerHTML = html;
-
     document.querySelectorAll('.check-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.id);
@@ -423,8 +362,8 @@
     });
   }
 
-  function sair() {
-    if (!confirm('Deseja sair da rota? Você precisará fazer login novamente.')) return;
+  async function sair() {
+    if (!confirm('Deseja sair? A rota continuará reservada para você até você finalizar.')) return;
     localStorage.removeItem('motoboy_nome');
     localStorage.removeItem('motoboy_rota');
     localStorage.removeItem('motoboy_tel');
