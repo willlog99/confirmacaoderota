@@ -95,7 +95,7 @@
       <strong>📋 Será preenchido:</strong>
       <ul>
         <li><strong>HORÁRIO ATUAL (H)</strong> — hora da baixa da coleta</li>
-        <li><strong>STATUS (L)</strong> — PRODUTIVO / IMPRODUTIVO / <strong style="color:#A32D2D">VERIFICAR</strong></li>
+        <li><strong>STATUS (L)</strong> — PRODUTIVO / IMPRODUTIVO / <strong style="color:#A32D2D">VERIFICAR</strong> / <strong style="color:#6B7280">INATIVO</strong></li>
         <li><strong>JUSTIFICATIVA (M)</strong> — motivo se for improdutiva</li>
         <li><strong>Data (O)</strong> — data do registro</li>
       </ul>
@@ -203,12 +203,21 @@
 
       debugLog(`📅 Período: ${di} até ${df}`);
 
+      const normalizar = (v) => String(v || '').trim().replace(/^0+/, '') || '0';
+
+      // Carregar histórico do D1
       const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
       const d = await r.json();
       const historico = d.historico || [];
 
+      // Carregar clientes ATIVOS para saber quais foram excluídos
+      const rAtivos = await fetch(`${API}/clientes`);
+      const dAtivos = await rAtivos.json();
+      const codigosAtivos = new Set((dAtivos.clientes || []).map(c => normalizar(c.numero_cliente)));
+
       debugLog(`📦 Histórico do D1: ${historico.length} coletas recebidas`);
       debugLog(`   Total D1: ${d.total}, Produtivas: ${d.produtivas}, Improdutivas: ${d.improdutivas}`);
+      debugLog(`👥 Clientes ativos: ${codigosAtivos.size}`);
 
       showMsg('Carregando planilha base...', 'loading');
       const respTpl = await fetch(TEMPLATE_URL);
@@ -225,7 +234,6 @@
 
       debugLog(`📊 Aba aberta: rowCount=${sheet.rowCount}, actualRowCount=${sheet.actualRowCount}`);
 
-      const normalizar = (v) => String(v || '').trim().replace(/^0+/, '') || '0';
       const porCodigo = {};
       historico.forEach(h => {
         const cod = normalizar(h.numero_cliente);
@@ -241,9 +249,14 @@
         font: { color: { argb: 'FFC00000' }, bold: true },
         fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE6E6' } }
       };
+      const estiloInativo = {
+        font: { color: { argb: 'FF6B7280' }, bold: true, italic: true },
+        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } }
+      };
 
       let preenchidasOk = 0;
       let preenchidasVerificar = 0;
+      let preenchidasInativo = 0;
       let linhasVazias = 0;
 
       const totalLinhas = Math.max(sheet.rowCount || 0, sheet.actualRowCount || 0, 400);
@@ -262,7 +275,7 @@
         const reg = porCodigo[codigo];
 
         if (reg) {
-          // Converte timestamp em hora HH:MM (fuso SP)
+          // Tem coleta no período
           let horaReal = '';
           if (reg.timestamp) {
             const dt = new Date(reg.timestamp);
@@ -281,7 +294,15 @@
           } else {
             preenchidasOk++;
           }
+        } else if (!codigosAtivos.has(codigo)) {
+          // Cliente inativo (excluído)
+          row.getCell(15).value = dataAtual;
+          row.getCell(12).value = 'INATIVO';
+          row.getCell(12).font = estiloInativo.font;
+          row.getCell(12).fill = estiloInativo.fill;
+          preenchidasInativo++;
         } else {
+          // Cliente ativo sem coleta no período
           row.getCell(15).value = dataAtual;
           row.getCell(12).value = 'VERIFICAR';
           row.getCell(12).font = estiloVerificar.font;
@@ -293,8 +314,9 @@
       debugLog(`✅ Processamento concluído:`);
       debugLog(`   ${preenchidasOk} linhas com coleta (PRODUTIVO/IMPRODUTIVO)`);
       debugLog(`   ${preenchidasVerificar} linhas marcadas como VERIFICAR`);
+      debugLog(`   ${preenchidasInativo} linhas marcadas como INATIVO`);
       debugLog(`   ${linhasVazias} linhas vazias puladas`);
-      debugLog(`   Total preenchido: ${preenchidasOk + preenchidasVerificar}`);
+      debugLog(`   Total preenchido: ${preenchidasOk + preenchidasVerificar + preenchidasInativo}`);
 
       // REMOVER AUTOFILTRO completamente
       sheet.autoFilter = undefined;
@@ -336,7 +358,7 @@
       URL.revokeObjectURL(url);
 
       debugLog(`💾 Arquivo gerado: ${(out.byteLength / 1024).toFixed(1)} KB`);
-      showMsg(`✓ Planilha baixada! ${preenchidasOk} com coleta, ${preenchidasVerificar} para verificar.`, 'success');
+      showMsg(`✓ Planilha baixada! ${preenchidasOk} com coleta, ${preenchidasVerificar} para verificar, ${preenchidasInativo} inativos.`, 'success');
     } catch(e) {
       debugLog(`❌ ERRO: ${e.message}`);
       showMsg('Erro: ' + e.message, 'error');
