@@ -104,7 +104,7 @@
   <div class="header-top">
     <button class="back-btn" onclick="sair()">←</button>
     <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
-    <div style="width:36px"></div>
+    <button class="back-btn" onclick="trocarUsuario()" title="Trocar de motoboy">👤</button>
   </div>
   <div class="header-info">
     <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="" class="header-mascote"/>
@@ -439,11 +439,17 @@
   }
 
   async function sair() {
-    if (!confirm('Deseja sair? A rota continuará reservada para você até finalizar.')) return;
+    if (!confirm('Sair desta rota? Ela continua reservada para você. Quando voltar, abre direto nela.')) return;
+    // NÃO limpa o localStorage - quando voltar, entra direto na mesma rota
+    window.location.href = 'index.html';
+  }
+
+  function trocarUsuario() {
+    if (!confirm('Trocar de motoboy? Você precisará digitar o telefone de novo.')) return;
     localStorage.removeItem('motoboy_nome');
     localStorage.removeItem('motoboy_rota');
     localStorage.removeItem('motoboy_tel');
-    window.location.href = 'index.html';
+    window.location.href = 'index.html#trocar';
   }
 
   carregar();
