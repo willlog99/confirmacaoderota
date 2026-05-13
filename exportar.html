@@ -3,371 +3,606 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Exportar Planilha IHP</title>
-  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <title>Loglife — Painel Gerencial</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem}
     .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
     .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
     .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
     .header h1{font-size:18px;font-weight:700}
     .header .sub{font-size:13px;opacity:.85}
-    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
-    .container{padding:1.25rem;max-width:600px;margin:0 auto}
-    .card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
-    .card-icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#E8F4FB,#BFE0F0);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1rem}
-    .card-title{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
-    .card-desc{font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5}
-
-    label{font-size:13px;color:#0F4C7A;font-weight:600;display:block;margin-bottom:6px}
-    .date-row{display:flex;gap:10px;margin-bottom:1.25rem;flex-wrap:wrap}
-    .date-row > div{flex:1;min-width:140px}
-    input[type=date]{width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 12px;color:#111;background:#F7FBFD}
-    input[type=date]:focus{outline:none;border-color:#1E9FD9;background:#fff}
-
-    .info-box{background:#E8F4FB;border:1.5px solid #BFE0F0;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-size:13px;color:#0F4C7A;line-height:1.6}
-    .info-box ul{margin-left:1.2rem;margin-top:6px}
-
-    .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1.25rem}
-    .stat{background:#F7FBFD;border-radius:10px;padding:12px;text-align:center;border:1px solid #D6E5EE}
-    .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
-    .stat-val.primary{color:#1E9FD9}
+    .tabs{display:flex;background:#fff;border-bottom:1px solid #D6E5EE;overflow-x:auto}
+    .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#5A7A8F;border-bottom:2px solid transparent;white-space:nowrap}
+    .tab.active{color:#1E9FD9;border-bottom-color:#1E9FD9}
+    .container{padding:1rem 1.25rem 0}
+    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .card-title{font-size:15px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+    .refresh-btn{font-size:12px;color:#1E9FD9;background:none;border:none;cursor:pointer;font-weight:600}
+    .form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+    .form-row input,.form-row select{flex:1;min-width:110px;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 10px;color:#111;background:#F7FBFD}
+    .form-row input:focus,.form-row select:focus{outline:none;border-color:#1E9FD9;background:#fff}
+    .btn-add{height:40px;padding:0 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
+    .btn-add:hover{opacity:.95}
+    .cl-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
+    .cl-item:last-child{border-bottom:none}
+    .cl-item.entregue .cl-nome{color:#aaa;text-decoration:line-through}
+    .cl-info{flex:1;min-width:0}
+    .cl-nome{font-size:14px;font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cl-sub{font-size:12px;color:#94A8B8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+    .cl-entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:2px}
+    .cl-motivo{font-size:11px;color:#EF4444;font-style:italic;margin-top:2px}
+    .cl-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+    .btn-desfazer{background:#FEF9EC;border:1px solid #F2CC70;color:#92400E;font-size:11px;padding:4px 8px;border-radius:7px;cursor:pointer;font-weight:600;white-space:nowrap}
+    .btn-desfazer:hover{background:#FEF3C7}
+    .del-btn{background:none;border:none;cursor:pointer;color:#D6E5EE;font-size:17px;padding:3px 5px;border-radius:6px}
+    .del-btn:hover{color:#e55;background:#fff0f0}
+    .tipo-badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .tipo-badge.normal{background:#E8F4FB;color:#0F4C7A}
+    .tipo-badge.entregue{background:#E1F5EE;color:#085041}
+    .tipo-badge.improdutiva{background:#FCEBEB;color:#791F1F}
+    .tipo-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
+    .tipo-badge.sob-demanda{background:#FEF3C7;color:#92400E}
+    .tipo-badge.pendente{background:#F0F4F8;color:#5A7A8F}
+    .mb-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
+    .mb-item:last-child{border-bottom:none}
+    .mb-info{flex:1;min-width:0}
+    .mb-nome{font-size:14px;font-weight:600;color:#0F4C7A}
+    .mb-sub{font-size:12px;color:#94A8B8;margin-top:2px}
+    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem}
+    .stat-card{background:#E8F4FB;border-radius:12px;padding:14px;text-align:center}
+    .stat-val{font-size:28px;font-weight:700;color:#0F4C7A}
+    .stat-val.green{color:#0F6E56}
     .stat-val.red{color:#A32D2D}
-    .stat-label{font-size:11px;color:#5A7A8F;margin-top:2px}
-
-    .btn-baixar{width:100%;padding:16px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 12px rgba(30,159,217,0.25)}
-    .btn-baixar:hover{opacity:.95}
-    .btn-baixar:disabled{opacity:.5;cursor:not-allowed}
-
-    .quick-btn{padding:8px 14px;font-size:13px;font-weight:600;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;cursor:pointer;margin-right:6px;margin-bottom:6px}
-    .quick-btn:hover{border-color:#1E9FD9;color:#0F4C7A}
-    .quick-btn.active{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
-
-    .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
-    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
-    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
-    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
-    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    .stat-val.orange{color:#B45309}
+    .stat-label{font-size:12px;color:#5A7A8F;margin-top:2px}
+    .rota-row{padding:12px 0;border-bottom:1px solid #EBF1F5}
+    .rota-row:last-child{border-bottom:none}
+    .rota-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .rota-nome{font-size:14px;font-weight:600;color:#0F4C7A}
+    .rota-pct{font-size:13px;font-weight:700;color:#1E9FD9}
+    .rota-pct.done{color:#0F6E56}
+    .prog-bar{background:#E8F4FB;border-radius:99px;height:5px;overflow:hidden}
+    .prog-fill{background:linear-gradient(90deg,#1E9FD9,#0F7BB0);height:100%;border-radius:99px}
+    .rota-sub{font-size:11px;color:#94A8B8;margin-top:4px}
+    .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
+    .conf-item:last-child{border-bottom:none}
+    .conf-nome{font-size:14px;font-weight:600;color:#0F4C7A}
+    .conf-ts{font-size:11px;color:#94A8B8;margin-top:2px}
+    .conf-obs{margin-top:5px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:7px;padding:6px 10px;font-size:12px;color:#6B4E00}
+    .badge-sim{background:#E1F5EE;color:#085041;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .badge-nao{background:#FCEBEB;color:#791F1F;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
+    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .reset-card.danger{border:1.5px solid #FEE2E2}
+    .reset-card.warning{border:1.5px solid #FEF3C7}
+    .reset-title{font-size:15px;font-weight:700;margin-bottom:6px}
+    .reset-title.danger{color:#991B1B}
+    .reset-title.warning{color:#92400E}
+    .reset-desc{font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5}
+    .btn-reset-danger{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5}
+    .btn-reset-warn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEF9EC;color:#92400E;border:1.5px solid #FCD34D}
+    .filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+    .filter-row select,.filter-row input{height:36px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:13px;padding:0 10px;color:#111;background:#fff}
+    .filter-row input{flex:1}
+    .badge-rota{font-size:11px;background:#E8F4FB;color:#0F4C7A;padding:2px 7px;border-radius:5px;font-weight:600}
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+    .toast.show{opacity:1}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
+    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:8px}
+    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
+    .modal-btns{display:flex;flex-direction:column;gap:10px}
+    .modal-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#DC2626;color:#fff}
+    .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
+    #view-motoboys,#view-clientes,#view-gerenciar,#view-entregas,#view-confirmacoes,#view-reset{display:none}
+    #view-motoboys.active,#view-clientes.active,#view-gerenciar.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
+    .horario-field.hidden{display:none}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <a href="painel.html" class="back-link">← Voltar ao painel</a>
   <div class="header-row">
     <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
     <div>
-      <h1>Exportar Planilha IHP</h1>
-      <div class="sub">Geração da planilha com dados das coletas</div>
+      <h1>Painel Gerencial</h1>
+      <div class="sub">Operação Loglife/Pardini</div>
     </div>
   </div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="setTab('motoboys',this)">👤 Motoboys</button>
+  <button class="tab" onclick="window.location.href='rotas.html'">🛣 Rotas</button>
+  <button class="tab" onclick="setTab('clientes',this)">📋 Clientes</button>
+  <button class="tab" onclick="setTab('gerenciar',this)">🔎 Buscar/Mover</button>
+  <button class="tab" onclick="setTab('entregas',this)">📦 Entregas</button>
+  <button class="tab" onclick="setTab('confirmacoes',this)">✓ Confirmações</button>
+  <button class="tab" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+  <button class="tab" onclick="window.location.href='historico.html'">📅 Histórico</button>
+  <button class="tab" onclick="window.location.href='base.html'">📋 Base atual</button>
+  <button class="tab" onclick="window.location.href='exportar.html'">📥 Planilha IHP</button>
+  <button class="tab" onclick="setTab('reset',this)">🔄 Reset</button>
 </div>
 
 <div class="container">
-  <div class="card">
-    <div class="card-icon">📊</div>
-    <div class="card-title">Planilha IHP — Preenchida automaticamente</div>
-    <div class="card-desc">Escolha a data e baixe a planilha com os dados das coletas. Clientes sem coleta registrada virão marcados como <strong style="color:#A32D2D">VERIFICAR</strong> em vermelho.</div>
 
-    <label>Período rápido</label>
-    <div style="margin-bottom:1rem">
-      <button class="quick-btn active" data-q="hoje" onclick="setQuick(this,'hoje')">Hoje</button>
-      <button class="quick-btn" data-q="ontem" onclick="setQuick(this,'ontem')">Ontem</button>
-      <button class="quick-btn" data-q="custom" onclick="setQuick(this,'custom')">Personalizado</button>
-    </div>
-
-    <div id="custom-dates" style="display:none">
-      <div class="date-row">
-        <div>
-          <label for="data-inicio">Data inicial</label>
-          <input type="date" id="data-inicio"/>
-        </div>
-        <div>
-          <label for="data-fim">Data final</label>
-          <input type="date" id="data-fim"/>
-        </div>
+  <div id="view-motoboys" class="active">
+    <div class="card">
+      <div class="card-title">Cadastrar motoboy</div>
+      <div class="form-row">
+        <input type="text" id="mb-nome" placeholder="Nome completo"/>
+        <input type="tel" id="mb-tel" placeholder="Telefone (11999999999)"/>
+      </div>
+      <div class="form-row">
+        <select id="mb-rota"><option value="">Selecione a rota...</option>
+          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
+          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+        </select>
+        <button class="btn-add" onclick="addMotoboy()">+ Adicionar</button>
       </div>
     </div>
-
-    <div class="info-box">
-      <strong>📋 Será preenchido:</strong>
-      <ul>
-        <li><strong>HORÁRIO ATUAL (H)</strong> — hora da baixa da coleta</li>
-        <li><strong>STATUS (L)</strong> — PRODUTIVO / IMPRODUTIVO / <strong style="color:#A32D2D">VERIFICAR</strong> / <strong style="color:#6B7280">INATIVO</strong></li>
-        <li><strong>JUSTIFICATIVA (M)</strong> — motivo se for improdutiva</li>
-        <li><strong>Data (O)</strong> — data do registro</li>
-      </ul>
+    <div class="card">
+      <div class="card-title">Motoboys cadastrados <button class="refresh-btn" onclick="carregarMotoboys()">↻</button></div>
+      <div id="lista-motoboys"><p class="empty">Carregando...</p></div>
     </div>
+  </div>
 
-    <div class="stat-row" id="stats">
-      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">total coletas</div></div>
-      <div class="stat"><div class="stat-val primary" id="s-prod">—</div><div class="stat-label">produtivas</div></div>
-      <div class="stat"><div class="stat-val red" id="s-imp">—</div><div class="stat-label">improdutivas</div></div>
+  <div id="view-gerenciar">
+    <div class="card">
+      <div class="card-title">🔎 Buscar cliente por número</div>
+      <div class="form-row">
+        <input type="text" id="busca-num" placeholder="Digite o número do cliente (ex: 22088)"/>
+        <button class="btn-add" onclick="buscarCliente()">🔍 Buscar</button>
+      </div>
+      <div id="resultado-busca" style="margin-top:1rem"></div>
     </div>
+  </div>
 
-    <button class="btn-baixar" id="btn-baixar" onclick="exportar()">
-      📥 Baixar Planilha IHP
-    </button>
+  <div id="view-clientes">
+    <div class="card">
+      <div class="card-title">Adicionar cliente</div>
+      <div class="form-row">
+        <input type="text" id="cl-num" placeholder="Nº cliente" style="max-width:110px"/>
+        <input type="text" id="cl-nome" placeholder="Nome do cliente"/>
+      </div>
+      <div class="form-row">
+        <select id="cl-tipo" onchange="toggleHorario()">
+          <option value="normal">Normal</option>
+          <option value="contra pedido">Contra Pedido</option>
+          <option value="sob demanda">Sob Demanda</option>
+        </select>
+        <input type="time" id="cl-horario" class="horario-field"/>
+      </div>
+      <div class="form-row">
+        <select id="cl-rota"><option value="">Rota...</option>
+          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
+          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+        </select>
+        <button class="btn-add" onclick="addCliente()">+ Adicionar</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Clientes <button class="refresh-btn" onclick="carregarClientes()">↻</button></div>
+      <div class="filter-row">
+        <select id="filtro-rota-cl" onchange="carregarClientes()">
+          <option value="">Todas as rotas</option>
+          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
+          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
+        </select>
+        <input type="text" id="busca-cl" placeholder="Buscar cliente..." oninput="filtrarClientes()"/>
+      </div>
+      <div id="lista-clientes"><p class="empty">Selecione uma rota ou busque acima.</p></div>
+    </div>
+  </div>
 
-    <div class="msg" id="msg"></div>
+  <div id="view-entregas">
+    <div class="card">
+      <div class="card-title">Visão geral <button class="refresh-btn" onclick="carregarEntregas()">↻ Atualizar</button></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="e-total-ent">—</div><div class="stat-label">entregues</div></div>
+        <div class="stat-card"><div class="stat-val orange" id="e-total-pend">—</div><div class="stat-label">pendentes</div></div>
+      </div>
+      <div id="lista-entregas"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
 
-    <div id="debug-log" style="margin-top:1rem;background:#0F4C7A;color:#9FE0FF;padding:14px;border-radius:10px;font-family:monospace;font-size:12px;line-height:1.6;display:none;white-space:pre-wrap;max-height:300px;overflow-y:auto"></div>
+  <div id="view-confirmacoes">
+    <div class="card">
+      <div class="card-title">Confirmações de Rota <button class="refresh-btn" onclick="carregarConfirmacoes()">↻</button></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="c-sim">—</div><div class="stat-label">confirmadas</div></div>
+        <div class="stat-card"><div class="stat-val red" id="c-nao">—</div><div class="stat-label">não confirmadas</div></div>
+      </div>
+      <div id="lista-confirmacoes"><p class="empty">Carregando...</p></div>
+    </div>
+  </div>
+
+  <div id="view-reset">
+    <div class="reset-card danger">
+      <div class="reset-title danger">🔄 Reset diário de entregas</div>
+      <div class="reset-desc">Zera o status de <strong>todas</strong> as entregas para "pendente". Use no início de cada dia.</div>
+      <button class="btn-reset-danger" onclick="abrirModal('modal-reset')">🔄 Resetar todas as entregas</button>
+    </div>
+    <div class="reset-card warning">
+      <div class="reset-title warning">🗑️ Limpar confirmações de rota</div>
+      <div class="reset-desc">Apaga todas as confirmações de presença.</div>
+      <button class="btn-reset-warn" onclick="abrirModal('modal-reset-conf')">🗑️ Limpar confirmações</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay hidden" id="modal-reset">
+  <div class="modal">
+    <h2>Resetar entregas?</h2>
+    <p>Todas as entregas voltarão para "pendente".</p>
+    <div class="modal-btns">
+      <button class="modal-sim" onclick="resetarEntregas()">Sim, resetar</button>
+      <button class="modal-nao" onclick="fecharModal('modal-reset')">Cancelar</button>
+    </div>
   </div>
 </div>
 
+<div class="modal-overlay hidden" id="modal-reset-conf">
+  <div class="modal">
+    <h2>Limpar confirmações?</h2>
+    <p>Todas as confirmações de rota serão apagadas.</p>
+    <div class="modal-btns">
+      <button class="modal-sim" onclick="resetarConfirmacoes()">Sim, limpar</button>
+      <button class="modal-nao" onclick="fecharModal('modal-reset-conf')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MOVER CLIENTE -->
+<div class="modal-overlay hidden" id="modal-mover">
+  <div class="modal">
+    <h2>Mover cliente de rota</h2>
+    <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
+      Cliente: <strong id="mov-nome" style="color:#0F4C7A"></strong><br/>
+      Rota atual: <strong id="mov-atual" style="color:#0F4C7A"></strong>
+    </p>
+    <label style="font-size:13px;color:#0F4C7A;font-weight:600;display:block;margin-bottom:6px">Nova rota</label>
+    <select id="mov-rota-nova" style="width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 12px;color:#111;background:#F7FBFD;margin-bottom:14px">
+      <option value="">Selecione a nova rota...</option>
+    </select>
+    <div class="modal-btns">
+      <button class="modal-sim" style="background:#1E9FD9" onclick="confirmarMover()">Mover</button>
+      <button class="modal-nao" onclick="fecharModal('modal-mover')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  const TEMPLATE_URL = 'template_ihp.xlsx';
+  let todosClientes = [];
 
-  let modoPeriodo = 'hoje';
-  let historicoFiltrado = [];
+  function toggleHorario() {
+    const tipo = document.getElementById('cl-tipo').value;
+    const horField = document.getElementById('cl-horario');
+    if (tipo === 'normal') horField.classList.remove('hidden');
+    else { horField.classList.add('hidden'); horField.value = ''; }
+  }
 
-  function setQuick(el, q) {
-    document.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+  // ── BUSCAR / MOVER / EXCLUIR CLIENTE ─────────────
+  async function buscarCliente() {
+    const num = document.getElementById('busca-num').value.trim();
+    if (!num) { toast('Digite o número do cliente.', '#e55'); return; }
+    const res = document.getElementById('resultado-busca');
+    res.innerHTML = '<p class="empty">Buscando...</p>';
+    try {
+      // Busca incluindo inativos
+      const r = await fetch(API + '/clientes?todos=1');
+      const d = await r.json();
+      const encontrados = (d.clientes || []).filter(c => String(c.numero_cliente).trim() === num);
+      if (!encontrados.length) {
+        res.innerHTML = `<p class="empty">Cliente "${num}" não encontrado em nenhuma rota.</p>`;
+        return;
+      }
+      const ativos = encontrados.filter(c => c.ativo !== 0);
+      const inativos = encontrados.filter(c => c.ativo === 0);
+
+      res.innerHTML = `
+        <div style="background:#E8F4FB;border:1.5px solid #BFE0F0;border-radius:11px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#0F4C7A">
+          Cliente <strong>${num}</strong>: <strong>${ativos.length}</strong> ativo${ativos.length!==1?'s':''}, <strong>${inativos.length}</strong> inativo${inativos.length!==1?'s':''}.
+        </div>
+      ` + encontrados.map(c => {
+        const inativo = c.ativo === 0;
+        return `
+        <div class="cl-item" style="flex-direction:column;align-items:stretch;padding:14px 0;gap:10px${inativo?';opacity:.7':''}">
+          <div style="display:flex;gap:10px;align-items:flex-start">
+            <div class="cl-info">
+              <div class="cl-nome" style="${inativo?'text-decoration:line-through;color:#94A8B8':''}">${c.nome}</div>
+              <div class="cl-sub">
+                <span>Nº ${c.numero_cliente}</span>
+                ${(c.tipo||'normal') === 'normal' ? `<span>${c.horario}</span>` : ''}
+                <span class="badge-rota">${c.rota}</span>
+                <span class="tipo-badge ${inativo?'improdutiva':(c.status === 'entregue' ? 'entregue' : 'pendente')}">${inativo?'INATIVO':(c.status === 'entregue' ? 'Entregue' : 'Pendente')}</span>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${inativo
+              ? `<button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#1E9FD9" onclick="reativarCliente(${c.id}, '${c.nome.replace(/'/g,"\\'")}')">↻ Reativar</button>`
+              : `
+                <button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#0F4C7A" onclick="abrirMover(${c.id}, '${c.nome.replace(/'/g,"\\'")}', '${c.rota}')">➡ Mover de rota</button>
+                <button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#A32D2D" onclick="excluirEspecifico(${c.id}, '${c.nome.replace(/'/g,"\\'")}', '${c.rota}')">🗑 Desativar</button>
+              `
+            }
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) { res.innerHTML = '<p class="empty">Erro ao buscar.</p>'; }
+  }
+
+  async function reativarCliente(id, nome) {
+    if (!confirm(`Reativar "${nome}"?`)) return;
+    await fetch(API + '/reativar-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Cliente reativado!', '#1D9E75');
+    buscarCliente();
+  }
+
+  async function excluirEspecifico(id, nome, rota) {
+    if (!confirm(`Excluir "${nome}" da rota ${rota}?`)) return;
+    await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast(`Cliente removido de ${rota}.`, '#1D9E75');
+    buscarCliente();
+  }
+
+  let clienteParaMover = null;
+  function abrirMover(id, nome, rotaAtual) {
+    clienteParaMover = { id, nome, rotaAtual };
+    document.getElementById('mov-nome').textContent = nome;
+    document.getElementById('mov-atual').textContent = rotaAtual;
+
+    // Preencher dropdown com as rotas (vindas do D1)
+    fetch(API + '/rotas-disponiveis').then(r => r.json()).then(d => {
+      const sel = document.getElementById('mov-rota-nova');
+      const rotas = (d.rotas || []).map(r => r.rota).filter(r => r !== rotaAtual);
+      sel.innerHTML = '<option value="">Selecione a nova rota...</option>' +
+        rotas.map(r => `<option value="${r}">${r}</option>`).join('');
+    });
+
+    abrirModal('modal-mover');
+  }
+
+  async function confirmarMover() {
+    if (!clienteParaMover) return;
+    const novaRota = document.getElementById('mov-rota-nova').value;
+    if (!novaRota) { toast('Selecione a rota.', '#A32D2D'); return; }
+    await fetch(API + '/mover-cliente', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ id: clienteParaMover.id, rota: novaRota })
+    });
+    toast(`✓ Movido para ${novaRota}!`, '#1E9FD9');
+    fecharModal('modal-mover');
+    buscarCliente();
+    clienteParaMover = null;
+  }
+
+  function setTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
-    modoPeriodo = q;
-
-    const customDiv = document.getElementById('custom-dates');
-    if (q === 'custom') {
-      customDiv.style.display = 'block';
-      const hoje = new Date().toISOString().slice(0,10);
-      if (!document.getElementById('data-inicio').value) document.getElementById('data-inicio').value = hoje;
-      if (!document.getElementById('data-fim').value)    document.getElementById('data-fim').value    = hoje;
-    } else {
-      customDiv.style.display = 'none';
-      carregarStats();
-    }
+    document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + tab).classList.add('active');
+    if (tab === 'motoboys') carregarMotoboys();
+    if (tab === 'clientes') carregarClientes();
+    if (tab === 'entregas') carregarEntregas();
+    if (tab === 'confirmacoes') carregarConfirmacoes();
   }
 
-  function getDatas() {
-    if (modoPeriodo === 'hoje') {
-      const d = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
-      return { di: d, df: d };
-    }
-    if (modoPeriodo === 'ontem') {
-      const d = new Date();
-      d.setDate(d.getDate() - 1);
-      const iso = d.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
-      return { di: iso, df: iso };
-    }
-    const di = document.getElementById('data-inicio').value;
-    const df = document.getElementById('data-fim').value;
-    return { di, df };
+  function toast(msg, cor) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.style.background = cor || '#0F4C7A';
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
   }
 
-  async function carregarStats() {
+  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+  function getTipoBadge(c) {
+    const entregue = c.status === 'entregue';
+    const tipo = (c.tipo || 'normal').toLowerCase();
+    if (entregue && c.produtividade === 'improdutiva') return `<span class="tipo-badge improdutiva">❌ Improdutiva</span>`;
+    if (entregue && c.produtividade === 'produtiva')   return `<span class="tipo-badge entregue">✅ Produtiva</span>`;
+    if (tipo === 'contra pedido') return `<span class="tipo-badge contra-pedido">Contra Pedido</span>`;
+    if (tipo === 'sob demanda')   return `<span class="tipo-badge sob-demanda">Sob Demanda</span>`;
+    if (entregue) return `<span class="tipo-badge entregue">${c.horario}</span>`;
+    return `<span class="tipo-badge normal">${c.horario}</span>`;
+  }
+
+  async function carregarMotoboys() {
     try {
-      const { di, df } = getDatas();
-      if (!di || !df) return;
-      const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
+      const r = await fetch(API + '/motoboys');
       const d = await r.json();
-      historicoFiltrado = d.historico || [];
-      document.getElementById('s-total').textContent = d.total || 0;
-      document.getElementById('s-prod').textContent  = d.produtivas || 0;
-      document.getElementById('s-imp').textContent   = d.improdutivas || 0;
-    } catch(e) {
-      console.error(e);
-    }
+      const lista = document.getElementById('lista-motoboys');
+      if (!d.motoboys?.length) { lista.innerHTML = '<p class="empty">Nenhum motoboy cadastrado.</p>'; return; }
+      lista.innerHTML = d.motoboys.map(m => `
+        <div class="mb-item">
+          <div class="mb-info">
+            <div class="mb-nome">${m.nome}</div>
+            <div class="mb-sub">${m.telefone} &middot; <span class="badge-rota">${m.rota}</span></div>
+          </div>
+          <button class="del-btn" onclick="delMotoboy(${m.id},'${m.nome.replace(/'/g,"\\'")}')">✕</button>
+        </div>`).join('');
+    } catch(e) { document.getElementById('lista-motoboys').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
 
-  function showMsg(text, type) {
-    const el = document.getElementById('msg');
-    el.innerHTML = (type === 'loading' ? '<span class="spinner"></span>' : '') + text;
-    el.className = 'msg ' + type;
+  async function addMotoboy() {
+    const nome = document.getElementById('mb-nome').value.trim();
+    const tel  = document.getElementById('mb-tel').value.replace(/\D/g,'');
+    const rota = document.getElementById('mb-rota').value;
+    if (!nome || !tel || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota}) });
+    document.getElementById('mb-nome').value = '';
+    document.getElementById('mb-tel').value = '';
+    document.getElementById('mb-rota').value = '';
+    toast('Motoboy adicionado! ✓', '#1D9E75');
+    carregarMotoboys();
   }
 
-  function debugLog(msg) {
-    const el = document.getElementById('debug-log');
-    el.style.display = 'block';
-    el.textContent += msg + '\n';
-    console.log(msg);
+  async function delMotoboy(id, nome) {
+    if (!confirm(`Remover "${nome}"?`)) return;
+    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Motoboy removido.', '#5A7A8F');
+    carregarMotoboys();
   }
 
-  function clearDebug() {
-    const el = document.getElementById('debug-log');
-    el.textContent = '';
-    el.style.display = 'none';
-  }
-
-  async function exportar() {
-    clearDebug();
-    const btn = document.getElementById('btn-baixar');
-    btn.disabled = true;
-    showMsg('Buscando dados...', 'loading');
-
+  async function carregarClientes() {
+    const rota = document.getElementById('filtro-rota-cl').value;
     try {
-      const { di, df } = getDatas();
-      if (!di || !df) { showMsg('Selecione as datas.', 'error'); btn.disabled = false; return; }
-
-      debugLog(`📅 Período: ${di} até ${df}`);
-
-      const normalizar = (v) => String(v || '').trim().replace(/^0+/, '') || '0';
-
-      // Carregar histórico do D1
-      const r = await fetch(`${API}/dashboard?data_inicio=${di}&data_fim=${df}`);
+      const url = rota ? API + '/clientes?rota=' + encodeURIComponent(rota) : API + '/clientes';
+      const r = await fetch(url);
       const d = await r.json();
-      const historico = d.historico || [];
+      todosClientes = d.clientes || [];
+      filtrarClientes();
+    } catch(e) { document.getElementById('lista-clientes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+  }
 
-      // Carregar clientes ATIVOS para saber quais foram excluídos
-      const rAtivos = await fetch(`${API}/clientes`);
-      const dAtivos = await rAtivos.json();
-      const codigosAtivos = new Set((dAtivos.clientes || []).map(c => normalizar(c.numero_cliente)));
+  function filtrarClientes() {
+    const busca = (document.getElementById('busca-cl').value || '').toLowerCase();
+    const lista = document.getElementById('lista-clientes');
+    const filtrados = busca ? todosClientes.filter(c =>
+      c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca)
+    ) : todosClientes;
+    if (!filtrados.length) { lista.innerHTML = '<p class="empty">Nenhum cliente encontrado.</p>'; return; }
+    lista.innerHTML = filtrados.map(c => {
+      const entregue = c.status === 'entregue';
+      const tipo = (c.tipo || 'normal').toLowerCase();
+      return `
+        <div class="cl-item ${entregue ? 'entregue' : ''}">
+          <div class="cl-info">
+            <div class="cl-nome">${c.nome}</div>
+            <div class="cl-sub">
+              <span>Nº ${c.numero_cliente}</span>
+              ${tipo === 'normal' ? `<span>${c.horario}</span>` : ''}
+              <span class="badge-rota">${c.rota}</span>
+            </div>
+            ${entregue && c.horario_entrega ? `<div class="cl-entrega-ts">✓ ${c.produtividade === 'improdutiva' ? 'Improdutiva' : 'Produtiva'} às ${c.horario_entrega}</div>` : ''}
+            ${entregue && c.produtividade === 'improdutiva' && c.motivo_improdutiva ? `<div class="cl-motivo">↳ ${c.motivo_improdutiva}</div>` : ''}
+          </div>
+          <div class="cl-actions">
+            ${getTipoBadge(c)}
+            <span class="tipo-badge ${entregue ? 'entregue' : 'pendente'}">${entregue ? 'Registrada' : 'Pendente'}</span>
+            ${entregue ? `<button class="btn-desfazer" onclick="desfazerEntrega(${c.id})">↩ Voltar</button>` : ''}
+            <button class="del-btn" onclick="delCliente(${c.id},'${c.nome.replace(/'/g,"\\'")}')">✕</button>
+          </div>
+        </div>`;
+    }).join('');
+  }
 
-      debugLog(`📦 Histórico do D1: ${historico.length} coletas recebidas`);
-      debugLog(`   Total D1: ${d.total}, Produtivas: ${d.produtivas}, Improdutivas: ${d.improdutivas}`);
-      debugLog(`👥 Clientes ativos: ${codigosAtivos.size}`);
+  async function addCliente() {
+    const num   = document.getElementById('cl-num').value.trim();
+    const nome  = document.getElementById('cl-nome').value.trim();
+    const tipo  = document.getElementById('cl-tipo').value;
+    const horario = tipo === 'normal' ? document.getElementById('cl-horario').value : '00:00';
+    const rota  = document.getElementById('cl-rota').value;
+    if (!num || !nome || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
+    if (tipo === 'normal' && !horario) { toast('Informe o horário.', '#e55'); return; }
+    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota, tipo}) });
+    document.getElementById('cl-num').value = '';
+    document.getElementById('cl-nome').value = '';
+    document.getElementById('cl-horario').value = '';
+    document.getElementById('cl-tipo').value = 'normal';
+    toggleHorario();
+    toast('Cliente adicionado! ✓', '#1D9E75');
+    carregarClientes();
+  }
 
-      showMsg('Carregando planilha base...', 'loading');
-      const respTpl = await fetch(TEMPLATE_URL);
-      if (!respTpl.ok) throw new Error('Template não encontrado');
-      const buffer = await respTpl.arrayBuffer();
-      debugLog(`📄 Template carregado: ${(buffer.byteLength / 1024).toFixed(1)} KB`);
+  async function delCliente(id, nome) {
+    if (!confirm(`Remover "${nome}"?`)) return;
+    await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Cliente removido.', '#5A7A8F');
+    carregarClientes();
+  }
 
-      showMsg('Preenchendo dados das coletas...', 'loading');
+  async function desfazerEntrega(id) {
+    if (!confirm('Voltar status para pendente?')) return;
+    await fetch(API + '/desticar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Status voltado para pendente. ↩', '#B45309');
+    carregarClientes();
+  }
 
-      const workbook = new ExcelJS.Workbook();
-      await workbook.xlsx.load(buffer);
-      const sheet = workbook.getWorksheet('PLANILHA IHP');
-      if (!sheet) throw new Error('Aba PLANILHA IHP não encontrada');
-
-      debugLog(`📊 Aba aberta: rowCount=${sheet.rowCount}, actualRowCount=${sheet.actualRowCount}`);
-
-      const porCodigo = {};
-      historico.forEach(h => {
-        const cod = normalizar(h.numero_cliente);
-        if (cod) porCodigo[cod] = h;
+  async function carregarEntregas() {
+    try {
+      const r = await fetch(API + '/clientes');
+      const d = await r.json();
+      const clientes = d.clientes || [];
+      const entregues = clientes.filter(c => c.status === 'entregue').length;
+      document.getElementById('e-total-ent').textContent  = entregues;
+      document.getElementById('e-total-pend').textContent = clientes.length - entregues;
+      const rotas = {};
+      clientes.forEach(c => {
+        if (!rotas[c.rota]) rotas[c.rota] = { total:0, entregues:0 };
+        rotas[c.rota].total++;
+        if (c.status === 'entregue') rotas[c.rota].entregues++;
       });
-
-      debugLog(`🔑 Mapa de códigos do histórico: ${Object.keys(porCodigo).length} códigos únicos`);
-
-      const agora = new Date();
-      const dataAtual = agora.toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit', year:'numeric' });
-
-      const estiloVerificar = {
-        font: { color: { argb: 'FFC00000' }, bold: true },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFE6E6' } }
-      };
-      const estiloInativo = {
-        font: { color: { argb: 'FF6B7280' }, bold: true, italic: true },
-        fill: { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE5E7EB' } }
-      };
-
-      let preenchidasOk = 0;
-      let preenchidasVerificar = 0;
-      let preenchidasInativo = 0;
-      let linhasVazias = 0;
-
-      const totalLinhas = Math.max(sheet.rowCount || 0, sheet.actualRowCount || 0, 400);
-      debugLog(`🔄 Vai percorrer linhas 2 até ${totalLinhas}`);
-
-      for (let rowNum = 2; rowNum <= totalLinhas; rowNum++) {
-        const row = sheet.getRow(rowNum);
-        const valorCodigo = row.getCell(1).value;
-        const codigo = normalizar(valorCodigo);
-
-        if (!codigo || codigo === '0') {
-          linhasVazias++;
-          continue;
-        }
-
-        const reg = porCodigo[codigo];
-
-        if (reg) {
-          // Tem coleta no período
-          let horaReal = '';
-          if (reg.timestamp) {
-            const dt = new Date(reg.timestamp);
-            horaReal = dt.toLocaleTimeString('pt-BR', { timeZone:'America/Sao_Paulo', hour:'2-digit', minute:'2-digit' });
-          }
-          row.getCell(8).value  = horaReal;
-          row.getCell(15).value = dataAtual;
-          row.getCell(12).value = reg.produtividade === 'produtiva' ? 'PRODUTIVO' :
-                                   reg.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : 'VERIFICAR';
-          row.getCell(13).value = reg.motivo_improdutiva || '';
-
-          if (row.getCell(12).value === 'VERIFICAR') {
-            row.getCell(12).font = estiloVerificar.font;
-            row.getCell(12).fill = estiloVerificar.fill;
-            preenchidasVerificar++;
-          } else {
-            preenchidasOk++;
-          }
-        } else if (!codigosAtivos.has(codigo)) {
-          // Cliente inativo (excluído)
-          row.getCell(15).value = dataAtual;
-          row.getCell(12).value = 'INATIVO';
-          row.getCell(12).font = estiloInativo.font;
-          row.getCell(12).fill = estiloInativo.fill;
-          preenchidasInativo++;
-        } else {
-          // Cliente ativo sem coleta no período
-          row.getCell(15).value = dataAtual;
-          row.getCell(12).value = 'VERIFICAR';
-          row.getCell(12).font = estiloVerificar.font;
-          row.getCell(12).fill = estiloVerificar.fill;
-          preenchidasVerificar++;
-        }
-      }
-
-      debugLog(`✅ Processamento concluído:`);
-      debugLog(`   ${preenchidasOk} linhas com coleta (PRODUTIVO/IMPRODUTIVO)`);
-      debugLog(`   ${preenchidasVerificar} linhas marcadas como VERIFICAR`);
-      debugLog(`   ${preenchidasInativo} linhas marcadas como INATIVO`);
-      debugLog(`   ${linhasVazias} linhas vazias puladas`);
-      debugLog(`   Total preenchido: ${preenchidasOk + preenchidasVerificar + preenchidasInativo}`);
-
-      // REMOVER AUTOFILTRO completamente
-      sheet.autoFilter = undefined;
-
-      // Forçar todas as linhas a ficarem VISÍVEIS (não ocultas)
-      // O ExcelJS usa _rows internamente
-      for (let rowNum = 1; rowNum <= (sheet.rowCount || 400); rowNum++) {
-        const row = sheet.getRow(rowNum);
-        row.hidden = false;
-        row.outlineLevel = 0;
-        // Forçar altura padrão (algumas linhas podem ter altura 0)
-        if (row.height === 0 || row.height === null) {
-          row.height = undefined; // default
-        }
-      }
-
-      // Também limpar sheet views/filters
-      if (sheet.views && sheet.views.length > 0) {
-        sheet.views.forEach(v => {
-          if (v.state === 'frozen') v.state = 'normal';
-          delete v.activeCell;
-        });
-      }
-
-      debugLog(`🧹 AutoFiltro removido, ${(sheet.rowCount || 400)} linhas desocultadas`);
-
-      showMsg('Gerando arquivo...', 'loading');
-
-      const out = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const sufixo = di === df ? di.replace(/-/g,'') : `${di.replace(/-/g,'')}_${df.replace(/-/g,'')}`;
-      a.href = url;
-      a.download = `IHP_${sufixo}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      debugLog(`💾 Arquivo gerado: ${(out.byteLength / 1024).toFixed(1)} KB`);
-      showMsg(`✓ Planilha baixada! ${preenchidasOk} com coleta, ${preenchidasVerificar} para verificar, ${preenchidasInativo} inativos.`, 'success');
-    } catch(e) {
-      debugLog(`❌ ERRO: ${e.message}`);
-      showMsg('Erro: ' + e.message, 'error');
-    }
-
-    btn.disabled = false;
+      document.getElementById('lista-entregas').innerHTML = Object.entries(rotas)
+        .sort((a,b) => (b[1].entregues/b[1].total) - (a[1].entregues/a[1].total))
+        .map(([rota, info]) => {
+          const pct = Math.round(info.entregues / info.total * 100);
+          return `<div class="rota-row">
+            <div class="rota-header"><div class="rota-nome">${rota}</div><div class="rota-pct ${pct===100?'done':''}">${pct}%</div></div>
+            <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+            <div class="rota-sub">${info.entregues} de ${info.total} entregues</div>
+          </div>`;
+        }).join('');
+    } catch(e) { document.getElementById('lista-entregas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
   }
 
-  carregarStats();
+  async function carregarConfirmacoes() {
+    try {
+      const r = await fetch(API + '?action=listar');
+      const d = await r.json();
+      const confs = d.confirmacoes || [];
+      document.getElementById('c-sim').textContent = confs.filter(c => c.resposta === 'sim').length;
+      document.getElementById('c-nao').textContent = confs.filter(c => c.resposta === 'nao').length;
+      const lista = document.getElementById('lista-confirmacoes');
+      if (!confs.length) { lista.innerHTML = '<p class="empty">Nenhuma confirmação ainda.</p>'; return; }
+      lista.innerHTML = confs.map(c => `
+        <div class="conf-item">
+          <div style="flex:1;min-width:0">
+            <div class="conf-nome">${c.unidade}</div>
+            <div class="conf-ts">${c.data || ''}</div>
+            ${c.obs ? `<div class="conf-obs">📝 ${c.obs}</div>` : ''}
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+            <span class="${c.resposta==='sim'?'badge-sim':'badge-nao'}">${c.resposta==='sim'?'Confirmada':'Não confirmada'}</span>
+            <button class="del-btn" onclick="delConf('${c.id}')">✕</button>
+          </div>
+        </div>`).join('');
+    } catch(e) { document.getElementById('lista-confirmacoes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
+  }
+
+  async function delConf(id) {
+    await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Confirmação removida.', '#5A7A8F');
+    carregarConfirmacoes();
+  }
+
+  async function resetarEntregas() {
+    fecharModal('modal-reset');
+    const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'} });
+    const d = await r.json();
+    if (d.status === 'ok') toast(`✓ ${d.total} entregas resetadas!`, '#1D9E75');
+  }
+
+  async function resetarConfirmacoes() {
+    fecharModal('modal-reset-conf');
+    const r = await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'} });
+    const d = await r.json();
+    if (d.status === 'ok') { toast('✓ Confirmações limpas!', '#1D9E75'); carregarConfirmacoes(); }
+  }
+
+  carregarMotoboys();
 </script>
 </body>
 </html>
