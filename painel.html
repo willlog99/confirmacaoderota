@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
@@ -68,7 +69,7 @@
     .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
     .conf-item:last-child{border-bottom:none}
     .conf-nome{font-size:14px;font-weight:600;color:#0F4C7A}
-    .conf-ts{font-size:11px;color:#94A8B8;margin-top:2px}
+    .conf-ts{font-size:12px;color:#1E9FD9;margin-top:4px;font-weight:600;background:#E8F4FB;padding:3px 8px;border-radius:6px;display:inline-block}
     .conf-obs{margin-top:5px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:7px;padding:6px 10px;font-size:12px;color:#6B4E00}
     .badge-sim{background:#E1F5EE;color:#085041;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
     .badge-nao{background:#FCEBEB;color:#791F1F;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
@@ -258,6 +259,7 @@
 </div>
 
 <!-- MODAL MOVER CLIENTE -->
+
 <div class="modal-overlay hidden" id="modal-mover">
   <div class="modal">
     <h2>Mover cliente de rota</h2>
@@ -571,7 +573,7 @@
         <div class="conf-item">
           <div style="flex:1;min-width:0">
             <div class="conf-nome">${c.unidade}</div>
-            <div class="conf-ts">${c.data || ''}</div>
+            <div class="conf-ts">🕐 ${c.data || '—'}</div>
             ${c.obs ? `<div class="conf-obs">📝 ${c.obs}</div>` : ''}
           </div>
           <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -604,5 +606,6 @@
 
   carregarMotoboys();
 </script>
+
 </body>
 </html>
