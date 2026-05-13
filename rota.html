@@ -39,6 +39,7 @@
     .section-title{font-size:12px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
 
     .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s}
+    .cliente-card.chegou{background:#FEF9EC;border:1.5px solid #F2CC70}
     .cliente-card.produtiva{background:#E8F4FB;border:1.5px solid #1E9FD9}
     .cliente-card.improdutiva{background:#F0F4F8;border:1.5px solid #94A8B8}
     .cliente-card.produtiva .cliente-nome{color:#0F4C7A;text-decoration:line-through;opacity:.7}
@@ -46,6 +47,7 @@
 
     .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;transition:all .2s;font-size:18px}
     .check-btn:hover:not(.produtiva):not(.improdutiva){border-color:#1E9FD9}
+    .check-btn.chegou{background:#F2CC70;border-color:#F2CC70;color:#5A4400}
     .check-btn.produtiva{background:#1E9FD9;border-color:#1E9FD9;color:#fff;cursor:not-allowed}
     .check-btn.improdutiva{background:#5A7A8F;border-color:#5A7A8F;color:#fff;cursor:not-allowed}
     .check-btn.loading{opacity:.5;cursor:not-allowed;pointer-events:none}
@@ -53,12 +55,15 @@
     .cliente-info{flex:1;min-width:0}
     .cliente-nome{font-size:17px;font-weight:700;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .cliente-meta{font-size:12px;color:#94A8B8;margin-top:2px}
-    .entrega-ts{font-size:11px;font-weight:500;margin-top:3px;color:#1E9FD9}
-    .entrega-ts.improdutiva{color:#5A7A8F}
+    .ts-info{font-size:11px;font-weight:500;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+    .ts-chegada{color:#92400E}
+    .ts-saida{color:#1E9FD9}
+    .ts-saida.improdutiva{color:#5A7A8F}
     .motivo-txt{font-size:11px;color:#5A7A8F;margin-top:2px;font-style:italic;font-weight:500}
 
     .horario-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
     .horario-badge.normal{background:#F0F4F8;color:#0F4C7A}
+    .horario-badge.chegou{background:#F2CC70;color:#5A4400}
     .horario-badge.produtiva{background:#1E9FD9;color:#fff}
     .horario-badge.improdutiva{background:#5A7A8F;color:#fff}
     .horario-badge.contra-pedido{background:#0F4C7A;color:#fff}
@@ -91,6 +96,8 @@
 
     .empty{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
     .loading-msg{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
+
+    .hint{padding:8px 12px;background:#FEF9EC;border:1px solid #F2CC70;color:#5A4400;border-radius:9px;font-size:12px;margin:.5rem 1.25rem 0;text-align:center}
   </style>
 </head>
 <body>
@@ -122,6 +129,8 @@
   <div class="progress-label" id="progress-label">0%</div>
 </div>
 
+<div class="hint">💡 1º clique = registra chegada · 2º clique = registra saída (produtiva ou improdutiva)</div>
+
 <div class="toolbar">
   <input class="search-bar" type="text" id="busca" placeholder="Buscar cliente..." oninput="renderizar()"/>
   <button class="filter-btn" id="filter-btn" onclick="toggleFiltro()">Pendentes</button>
@@ -137,6 +146,7 @@
   <div class="modal">
     <div class="modal-cliente" id="modal-cliente-nome"></div>
     <h2>A coleta foi produtiva?</h2>
+    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem" id="modal-chegada-info"></p>
     <div class="modal-btns">
       <button class="btn-produtiva" onclick="confirmarTique('produtiva')">✓ Produtiva</button>
       <button class="btn-improdutiva" onclick="abrirModalMotivo()">✗ Improdutiva</button>
@@ -212,11 +222,33 @@
     }
   }
 
+  // 1º clique: registra chegada
+  async function registrarChegada(id) {
+    const c = clientes.find(c => c.id === id);
+    if (!c || c.status === 'entregue' || c.horario_chegada) return;
+    const btn = document.querySelector(`.check-btn[data-id="${id}"]`);
+    if (btn) btn.classList.add('loading');
+    try {
+      const r = await fetch(API + '/chegada', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        c.horario_chegada = d.horario_chegada;
+        renderizar();
+      }
+    } catch(e) { if (btn) btn.classList.remove('loading'); }
+  }
+
+  // 2º clique: abre modal de produtividade
   function abrirModalProd(id) {
     const c = clientes.find(c => c.id === id);
     if (!c || c.status === 'entregue') return;
     clienteSelecionado = id;
     document.getElementById('modal-cliente-nome').textContent = c.nome;
+    document.getElementById('modal-chegada-info').textContent = c.horario_chegada ? `🟡 Chegada registrada às ${c.horario_chegada}` : '';
     document.getElementById('modal-prod').classList.remove('hidden');
   }
   function cancelarTique() { clienteSelecionado = null; document.getElementById('modal-prod').classList.add('hidden'); }
@@ -264,24 +296,52 @@
       if (c.produtividade === 'produtiva') return `<span class="horario-badge produtiva">✓ Produtiva</span>`;
       if (c.produtividade === 'improdutiva') return `<span class="horario-badge improdutiva">✗ Improdutiva</span>`;
     }
+    if (c.horario_chegada) return `<span class="horario-badge chegou">No local</span>`;
     if (tipo === 'contra pedido') return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
     if (tipo === 'sob demanda') return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
     return `<span class="horario-badge normal">${c.horario || '—'}</span>`;
   }
 
+  // Extrai só HH:MM do horario_entrega (formato "DD/MM/YYYY HH:MM")
+  function extrairHoraSaida(c) {
+    if (!c.horario_entrega) return '';
+    const partes = String(c.horario_entrega).split(' ');
+    return partes[partes.length - 1];
+  }
+
   function cardHTML(c) {
     const entregue = c.status === 'entregue';
+    const chegou = !!c.horario_chegada;
     const prod = c.produtividade || '';
-    const cardClass = entregue ? (prod === 'improdutiva' ? 'improdutiva' : 'produtiva') : '';
-    const btnClass  = entregue ? (prod === 'improdutiva' ? 'improdutiva' : 'produtiva') : '';
-    const btnIcon   = entregue ? (prod === 'improdutiva' ? '✕' : '✓') : '';
+
+    let cardClass = '';
+    let btnClass = '';
+    let btnIcon = '';
+
+    if (entregue) {
+      cardClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
+      btnClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
+      btnIcon = prod === 'improdutiva' ? '✕' : '✓';
+    } else if (chegou) {
+      cardClass = 'chegou';
+      btnClass = 'chegou';
+      btnIcon = '📍';
+    }
+
+    const horaSaida = extrairHoraSaida(c);
+
     return `
       <div class="cliente-card ${cardClass}">
         <button class="check-btn ${btnClass}" data-id="${c.id}">${btnIcon}</button>
         <div class="cliente-info">
           <div class="cliente-nome">${c.nome}</div>
           <div class="cliente-meta">Nº ${c.numero_cliente}</div>
-          ${entregue && c.horario_entrega ? `<div class="entrega-ts ${prod}">${prod === 'improdutiva' ? '✗ Improdutiva' : '✓ Produtiva'} às ${c.horario_entrega}</div>` : ''}
+          ${(chegou || entregue) ? `
+            <div class="ts-info">
+              ${chegou ? `<span class="ts-chegada">🟡 Chegada: ${c.horario_chegada}</span>` : ''}
+              ${entregue && horaSaida ? `<span class="ts-saida ${prod}">${prod === 'improdutiva' ? '🔘 Saída' : '🔵 Saída'}: ${horaSaida}</span>` : ''}
+            </div>
+          ` : ''}
           ${entregue && prod === 'improdutiva' && c.motivo_improdutiva ? `<div class="motivo-txt">↳ ${c.motivo_improdutiva}</div>` : ''}
         </div>
         ${getTipoBadge(c)}
@@ -294,7 +354,7 @@
     if (total === 0) return;
     const msg = pendentes === 0
       ? `Todas as ${total} coletas foram registradas. Deseja finalizar a rota?`
-      : `${total - pendentes} de ${total} registradas. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Ao finalizar a rota fica liberada novamente.`;
+      : `${total - pendentes} de ${total} registradas. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Ao finalizar a rota fica liberada.`;
     document.getElementById('modal-fin-msg').textContent = msg;
     document.getElementById('modal-fin').classList.remove('hidden');
   }
@@ -312,10 +372,7 @@
         c.horario_entrega = new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
       } catch(e) {}
     }
-    // DESTRAVAR ROTA
-    try {
-      await fetch(API + '/finalizar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telefone: tel, rota }) });
-    } catch(e) {}
+    try { await fetch(API + '/finalizar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telefone: tel, rota }) }); } catch(e) {}
     renderizar();
     const total = clientes.length;
     document.getElementById('celebration-msg').textContent = `${total} coleta${total>1?'s':''} registrada${total>1?'s':''}. Rota liberada!`;
@@ -323,7 +380,6 @@
   }
 
   function aoFecharCelebracao() {
-    // Após finalizar, volta para o login
     localStorage.removeItem('motoboy_nome');
     localStorage.removeItem('motoboy_rota');
     localStorage.removeItem('motoboy_tel');
@@ -356,14 +412,21 @@
     document.querySelectorAll('.check-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const id = parseInt(btn.dataset.id);
-        const jaEntregue = btn.classList.contains('produtiva') || btn.classList.contains('improdutiva');
-        if (!jaEntregue) abrirModalProd(id);
+        const c = clientes.find(c => c.id === id);
+        if (!c || c.status === 'entregue') return;
+        // 1º clique: registra chegada
+        // 2º clique (já chegou): abre modal de produtividade
+        if (!c.horario_chegada) {
+          registrarChegada(id);
+        } else {
+          abrirModalProd(id);
+        }
       });
     });
   }
 
   async function sair() {
-    if (!confirm('Deseja sair? A rota continuará reservada para você até você finalizar.')) return;
+    if (!confirm('Deseja sair? A rota continuará reservada para você até finalizar.')) return;
     localStorage.removeItem('motoboy_nome');
     localStorage.removeItem('motoboy_rota');
     localStorage.removeItem('motoboy_tel');
