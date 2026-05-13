@@ -19,29 +19,32 @@
     input{width:100%;height:48px;border-radius:12px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 14px;color:#111;margin-bottom:14px;background:#F7FBFD}
     input:focus{outline:none;border-color:#1E9FD9;background:#fff}
     .btn-login{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;margin-bottom:1rem;box-shadow:0 4px 12px rgba(30,159,217,0.3)}
-    .btn-login:hover{opacity:.95}
     .btn-login:disabled{opacity:.5;cursor:not-allowed}
     .divider{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
     .divider::before,.divider::after{content:'';flex:1;height:1px;background:#D6E5EE}
     .divider span{font-size:12px;color:#94A8B8}
     .btn-confirmar{width:100%;padding:14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A}
-    .btn-confirmar:hover{background:#F7FBFD;border-color:#1E9FD9}
     .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;display:none;font-weight:500;margin-top:4px}
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
     .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
     .footer{text-align:center;font-size:11px;color:#94A8B8;margin-top:.75rem}
 
-    /* Tela de seleção de rota */
     .greet{font-size:14px;color:#5A7A8F;text-align:center;margin-bottom:6px}
     .greet-nome{font-size:20px;font-weight:700;color:#0F4C7A;text-align:center;margin-bottom:1.25rem}
-    .rota-option{display:flex;align-items:center;justify-content:space-between;padding:18px 16px;border-radius:14px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:10px;cursor:pointer;transition:all .2s}
-    .rota-option:hover{border-color:#1E9FD9;background:#F7FBFD;transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,159,217,0.15)}
-    .rota-option-info{display:flex;align-items:center;gap:12px}
+    .rota-option{display:flex;align-items:center;justify-content:space-between;padding:18px 16px;border-radius:14px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:10px;cursor:pointer;transition:all .2s;text-align:left}
+    .rota-option:hover:not(.disabled){border-color:#1E9FD9;background:#F7FBFD;transform:translateY(-1px);box-shadow:0 4px 12px rgba(30,159,217,0.15)}
+    .rota-option.disabled{opacity:.55;cursor:not-allowed;background:#F0F4F8;border-color:#D6E5EE}
+    .rota-option.minha{border-color:#1E9FD9;background:#E8F4FB}
+    .rota-option-info{display:flex;align-items:center;gap:12px;flex:1;min-width:0}
     .rota-icon{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#E8F4FB,#BFE0F0);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .rota-icon.lock{background:#FCEBEB}
+    .rota-icon.mine{background:#1E9FD9;color:#fff}
     .rota-name{font-size:15px;font-weight:700;color:#0F4C7A}
-    .rota-arrow{color:#1E9FD9;font-size:20px;font-weight:bold}
+    .rota-status{font-size:11px;color:#94A8B8;margin-top:2px}
+    .rota-status.travada{color:#A32D2D;font-weight:600}
+    .rota-status.minha{color:#1E9FD9;font-weight:600}
+    .rota-arrow{color:#1E9FD9;font-size:20px;font-weight:bold;flex-shrink:0}
     .btn-voltar{width:100%;padding:12px;border-radius:11px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:14px;font-weight:500;cursor:pointer;margin-top:8px}
-    .btn-voltar:hover{background:#F7FBFD}
 
     #view-login,#view-rotas{display:none}
     #view-login.visible,#view-rotas.visible{display:block}
@@ -50,7 +53,6 @@
 <body>
 <div class="container">
 
-  <!-- TELA 1: LOGIN -->
   <div id="view-login" class="visible">
     <div class="card">
       <div class="logo-area">
@@ -73,7 +75,6 @@
     <div class="footer">Loglife &mdash; Operação Loglife/Pardini</div>
   </div>
 
-  <!-- TELA 2: SELEÇÃO DE ROTA -->
   <div id="view-rotas">
     <div class="card">
       <div class="logo-area" style="margin-bottom:1rem">
@@ -81,7 +82,7 @@
       </div>
       <p class="greet">Bem-vindo,</p>
       <div class="greet-nome" id="greet-nome">—</div>
-      <p class="subtitle">Você está cadastrado em mais de uma rota. Qual deseja acessar?</p>
+      <p class="subtitle" id="rotas-subtitle">Selecione sua rota para hoje</p>
       <div id="lista-rotas"></div>
       <button class="btn-voltar" onclick="voltarLogin()">← Voltar</button>
     </div>
@@ -92,7 +93,6 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-
   const input = document.getElementById('telefone');
   const btn   = document.getElementById('btn-entrar');
 
@@ -120,43 +120,79 @@
       });
       const d = await r.json();
       if (d.status === 'ok') {
-        // Se só tem 1 rota, entra direto
-        if (d.rotas.length === 1) {
-          localStorage.setItem('motoboy_nome', d.nome);
-          localStorage.setItem('motoboy_rota', d.rotas[0]);
-          localStorage.setItem('motoboy_tel', tel);
-          window.location.href = 'rota.html';
+        // Se só tem 1 rota livre, tenta entrar direto. Senão mostra seleção
+        const rotasLivresOuMinhas = (d.rotas_info || []).filter(r => r.status !== 'travada');
+        if ((d.rotas_info || []).length === 1) {
+          const r0 = d.rotas_info[0];
+          if (r0.status === 'travada') {
+            mostrarSelecaoRotas(d.nome, d.rotas_info, tel);
+          } else {
+            await escolherRota(r0.rota, d.nome, tel);
+          }
         } else {
-          // Múltiplas rotas: mostra tela de seleção
-          mostrarSelecaoRotas(d.nome, d.rotas, tel);
+          mostrarSelecaoRotas(d.nome, d.rotas_info, tel);
         }
       } else if (d.status === 'nao_encontrado') {
         showMsg('Telefone não encontrado. Fale com o organizador.', 'error');
       } else {
-        showMsg('Erro ao buscar. Tente novamente.', 'error');
+        showMsg('Erro ao buscar.', 'error');
       }
-    } catch(e) { showMsg('Erro de conexão. Verifique sua internet.', 'error'); }
+    } catch(e) { showMsg('Erro de conexão.', 'error'); }
     btn.disabled = false;
   }
 
-  function mostrarSelecaoRotas(nome, rotas, tel) {
+  function mostrarSelecaoRotas(nome, rotasInfo, tel) {
     document.getElementById('view-login').classList.remove('visible');
     document.getElementById('view-rotas').classList.add('visible');
     document.getElementById('greet-nome').textContent = nome;
 
     const lista = document.getElementById('lista-rotas');
-    lista.innerHTML = rotas.map(rota => `
-      <div class="rota-option" onclick="escolherRota('${rota.replace(/'/g,"\\'")}', '${nome.replace(/'/g,"\\'")}', '${tel}')">
-        <div class="rota-option-info">
-          <div class="rota-icon">🚚</div>
-          <div class="rota-name">${rota}</div>
-        </div>
-        <div class="rota-arrow">→</div>
-      </div>
-    `).join('');
+    lista.innerHTML = (rotasInfo || []).map(r => {
+      let iconClass = '', iconChar = '🚚', statusTxt = 'Livre', statusClass = '', cls = '', click = '';
+      if (r.status === 'travada') {
+        iconClass = 'lock';
+        iconChar = '🔒';
+        statusTxt = `Em uso por ${r.por || 'outro motorista'}`;
+        statusClass = 'travada';
+        cls = 'disabled';
+        click = '';
+      } else if (r.status === 'minha') {
+        iconClass = 'mine';
+        iconChar = '▶';
+        statusTxt = 'Continuar minha rota';
+        statusClass = 'minha';
+        click = `onclick="escolherRota('${r.rota.replace(/'/g,"\\'")}', '${nome.replace(/'/g,"\\'")}', '${tel}')"`;
+      } else {
+        click = `onclick="escolherRota('${r.rota.replace(/'/g,"\\'")}', '${nome.replace(/'/g,"\\'")}', '${tel}')"`;
+      }
+      return `
+        <div class="rota-option ${cls} ${r.status==='minha'?'minha':''}" ${click}>
+          <div class="rota-option-info">
+            <div class="rota-icon ${iconClass}">${iconChar}</div>
+            <div>
+              <div class="rota-name">${r.rota}</div>
+              <div class="rota-status ${statusClass}">${statusTxt}</div>
+            </div>
+          </div>
+          ${r.status !== 'travada' ? '<div class="rota-arrow">→</div>' : ''}
+        </div>`;
+    }).join('');
   }
 
-  function escolherRota(rota, nome, tel) {
+  async function escolherRota(rota, nome, tel) {
+    // Trava a rota
+    const r = await fetch(API + '/abrir-rota', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone: tel, rota, nome })
+    });
+    const d = await r.json();
+    if (d.status === 'travada') {
+      alert(`Esta rota foi aberta por ${d.por || 'outro motorista'}. Aguarde a finalização ou contate o organizador.`);
+      // Recarrega
+      window.location.reload();
+      return;
+    }
     localStorage.setItem('motoboy_nome', nome);
     localStorage.setItem('motoboy_rota', rota);
     localStorage.setItem('motoboy_tel', tel);
