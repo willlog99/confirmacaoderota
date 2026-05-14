@@ -15,6 +15,27 @@
     .tabs{display:flex;background:#fff;border-bottom:1px solid #D6E5EE;overflow-x:auto}
     .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#5A7A8F;border-bottom:2px solid transparent;white-space:nowrap}
     .tab.active{color:#1E9FD9;border-bottom-color:#1E9FD9}
+
+    /* Topbar com menu hambúrguer */
+    .topbar{background:#fff;padding:12px 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #D6E5EE;box-shadow:0 1px 3px rgba(30,159,217,0.06)}
+    .menu-btn{background:#E8F4FB;color:#0F4C7A;border:none;height:40px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .menu-btn:hover{background:#BFE0F0}
+    .topbar-title{font-size:16px;font-weight:700;color:#0F4C7A;text-align:center;flex:1}
+
+    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:none;animation:fadeIn .2s}
+    .menu-overlay.open{display:flex}
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+    .menu-side{background:#fff;width:280px;max-width:85vw;height:100%;display:flex;flex-direction:column;animation:slideIn .25s ease}
+    @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
+    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .menu-items{padding:.5rem 0;overflow-y:auto;flex:1}
+    .menu-item{display:block;width:100%;padding:14px 1.25rem;background:#fff;border:none;text-align:left;font-size:14px;font-weight:500;color:#0F4C7A;cursor:pointer;border-left:3px solid transparent}
+    .menu-item:hover{background:#F7FBFD;border-left-color:#BFE0F0}
+    .menu-item.active{background:#E8F4FB;border-left-color:#1E9FD9;color:#0F4C7A;font-weight:700}
+    .menu-item.danger{color:#A32D2D}
+    .menu-item.danger:hover{background:#FCEBEB}
+    .menu-divider{height:1px;background:#EBF1F5;margin:6px 1.25rem}
     .container{padding:1rem 1.25rem 0}
     .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
     .card-title{font-size:15px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
@@ -113,19 +134,35 @@
   </div>
 </div>
 
-<div class="tabs">
-  <button class="tab active" onclick="setTab('motoboys',this)">👤 Motoboys</button>
-  <button class="tab" onclick="window.location.href='rotas.html'">🛣 Rotas</button>
-  <button class="tab" onclick="setTab('clientes',this)">📋 Clientes</button>
-  <button class="tab" onclick="setTab('gerenciar',this)">🔎 Buscar/Mover</button>
-  <button class="tab" onclick="setTab('entregas',this)">📦 Entregas</button>
-  <button class="tab" onclick="setTab('confirmacoes',this)">✓ Confirmações</button>
-  <button class="tab" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-  <button class="tab" onclick="window.location.href='historico.html'">📅 Histórico</button>
-  <button class="tab" onclick="window.location.href='base.html'">📋 Base atual</button>
-  <button class="tab" onclick="window.location.href='importar.html'">📤 Importar IHP</button>
-  <button class="tab" onclick="window.location.href='exportar.html'">📥 Planilha IHP</button>
-  <button class="tab" onclick="setTab('reset',this)">🔄 Reset</button>
+<div class="topbar">
+  <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
+  <div class="topbar-title" id="topbar-title">👤 Motoboys</div>
+  <div style="width:60px"></div>
+</div>
+
+<div class="menu-overlay" id="menu-overlay" onclick="fecharMenu(event)">
+  <div class="menu-side" onclick="event.stopPropagation()">
+    <div class="menu-header">
+      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" style="height:32px;filter:brightness(0) invert(1)"/>
+      <button class="menu-close" onclick="fecharMenu()">✕</button>
+    </div>
+    <div class="menu-items">
+      <button class="menu-item active" onclick="setTab('motoboys',this,'👤 Motoboys')">👤 Motoboys</button>
+      <button class="menu-item" onclick="window.location.href='rotas.html'">🛣 Rotas</button>
+      <button class="menu-item" onclick="setTab('clientes',this,'📋 Clientes')">📋 Clientes</button>
+      <button class="menu-item" onclick="setTab('gerenciar',this,'🔎 Buscar/Mover')">🔎 Buscar/Mover</button>
+      <button class="menu-item" onclick="setTab('entregas',this,'📦 Entregas')">📦 Entregas</button>
+      <button class="menu-item" onclick="setTab('confirmacoes',this,'✓ Confirmações')">✓ Confirmações</button>
+      <div class="menu-divider"></div>
+      <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+      <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
+      <button class="menu-item" onclick="window.location.href='base.html'">📋 Base atual</button>
+      <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar IHP</button>
+      <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Planilha IHP</button>
+      <div class="menu-divider"></div>
+      <button class="menu-item danger" onclick="setTab('reset',this,'🔄 Reset')">🔄 Reset</button>
+    </div>
+  </div>
 </div>
 
 <div style="background:#0F4C7A;padding:8px 1rem;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap">
@@ -409,15 +446,26 @@
     clienteParaMover = null;
   }
 
-  function setTab(tab, el) {
+  function setTab(tab, el, titulo) {
+    document.querySelectorAll('.menu-item').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    el.classList.add('active');
+    if (el) el.classList.add('active');
     document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.remove('active'));
     document.getElementById('view-' + tab).classList.add('active');
+    if (titulo) document.getElementById('topbar-title').textContent = titulo;
+    fecharMenu();
     if (tab === 'motoboys') carregarMotoboys();
     if (tab === 'clientes') carregarClientes();
     if (tab === 'entregas') carregarEntregas();
     if (tab === 'confirmacoes') carregarConfirmacoes();
+  }
+
+  function abrirMenu() {
+    document.getElementById('menu-overlay').classList.add('open');
+  }
+  function fecharMenu(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('menu-overlay').classList.remove('open');
   }
 
   function toast(msg, cor) {
