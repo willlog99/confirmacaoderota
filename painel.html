@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
@@ -124,8 +123,18 @@
   <button class="tab" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
   <button class="tab" onclick="window.location.href='historico.html'">📅 Histórico</button>
   <button class="tab" onclick="window.location.href='base.html'">📋 Base atual</button>
+  <button class="tab" onclick="window.location.href='importar.html'">📤 Importar IHP</button>
   <button class="tab" onclick="window.location.href='exportar.html'">📥 Planilha IHP</button>
   <button class="tab" onclick="setTab('reset',this)">🔄 Reset</button>
+</div>
+
+<div style="background:#0F4C7A;padding:8px 1rem;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap">
+  <span style="color:#9FE0FF;font-size:12px;font-weight:600">📅 Visualizando dia:</span>
+  <select id="dia-semana-seletor" onchange="trocarDia()" style="height:32px;border-radius:7px;border:none;font-size:13px;padding:0 10px;background:#fff;color:#0F4C7A;font-weight:600;cursor:pointer">
+    <option value="seg-sex">Seg a Sex</option>
+    <option value="sabado">Sábado</option>
+    <option value="domingo">Domingo</option>
+  </select>
 </div>
 
 <div class="container">
@@ -259,7 +268,6 @@
 </div>
 
 <!-- MODAL MOVER CLIENTE -->
-
 <div class="modal-overlay hidden" id="modal-mover">
   <div class="modal">
     <h2>Mover cliente de rota</h2>
@@ -282,6 +290,19 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
+
+  // Dia da semana selecionado (persistente)
+  let diaAtual = localStorage.getItem('admin_dia_semana') || 'seg-sex';
+  document.getElementById('dia-semana-seletor').value = diaAtual;
+  function trocarDia() {
+    diaAtual = document.getElementById('dia-semana-seletor').value;
+    localStorage.setItem('admin_dia_semana', diaAtual);
+    // Recarrega tudo
+    carregarMotoboys();
+    carregarClientes();
+    carregarEntregas();
+  }
+  function getDia() { return diaAtual; }
   let todosClientes = [];
 
   function toggleHorario() {
@@ -423,7 +444,7 @@
 
   async function carregarMotoboys() {
     try {
-      const r = await fetch(API + '/motoboys');
+      const r = await fetch(API + '/motoboys?dia_semana=' + getDia());
       const d = await r.json();
       const lista = document.getElementById('lista-motoboys');
       if (!d.motoboys?.length) { lista.innerHTML = '<p class="empty">Nenhum motoboy cadastrado.</p>'; return; }
@@ -443,7 +464,7 @@
     const tel  = document.getElementById('mb-tel').value.replace(/\D/g,'');
     const rota = document.getElementById('mb-rota').value;
     if (!nome || !tel || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
-    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota}) });
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota, dia_semana: getDia()}) });
     document.getElementById('mb-nome').value = '';
     document.getElementById('mb-tel').value = '';
     document.getElementById('mb-rota').value = '';
@@ -461,7 +482,7 @@
   async function carregarClientes() {
     const rota = document.getElementById('filtro-rota-cl').value;
     try {
-      const url = rota ? API + '/clientes?rota=' + encodeURIComponent(rota) : API + '/clientes';
+      const url = rota ? `${API}/clientes?rota=${encodeURIComponent(rota)}&dia_semana=${getDia()}` : `${API}/clientes?dia_semana=${getDia()}`;
       const r = await fetch(url);
       const d = await r.json();
       todosClientes = d.clientes || [];
@@ -509,7 +530,7 @@
     const rota  = document.getElementById('cl-rota').value;
     if (!num || !nome || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
     if (tipo === 'normal' && !horario) { toast('Informe o horário.', '#e55'); return; }
-    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota, tipo}) });
+    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota, tipo, dia_semana: getDia()}) });
     document.getElementById('cl-num').value = '';
     document.getElementById('cl-nome').value = '';
     document.getElementById('cl-horario').value = '';
@@ -535,7 +556,7 @@
 
   async function carregarEntregas() {
     try {
-      const r = await fetch(API + '/clientes');
+      const r = await fetch(API + '/clientes?dia_semana=' + getDia());
       const d = await r.json();
       const clientes = d.clientes || [];
       const entregues = clientes.filter(c => c.status === 'entregue').length;
@@ -606,6 +627,5 @@
 
   carregarMotoboys();
 </script>
-
 </body>
 </html>
