@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loglife — Importar Planilha IHP</title>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
+
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
+    .header-row{display:flex;align-items:center;gap:14px}
+    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
+
+    .container{padding:1.25rem;max-width:800px;margin:0 auto}
+    .card{background:#fff;border-radius:16px;padding:1.5rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
+    .card-icon{width:56px;height:56px;border-radius:14px;background:linear-gradient(135deg,#E8F4FB,#BFE0F0);display:flex;align-items:center;justify-content:center;font-size:28px;margin-bottom:1rem}
+    .card-title{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
+    .card-desc{font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5}
+
+    .info-box{background:#FEF9EC;border:1.5px solid #F2CC70;border-radius:12px;padding:1rem;margin-bottom:1.25rem;font-size:13px;color:#92400E;line-height:1.6}
+    .info-box strong{color:#5A4400}
+
+    .file-input-wrap{border:2px dashed #1E9FD9;border-radius:12px;padding:2rem;text-align:center;background:#F7FBFD;cursor:pointer;transition:all .2s}
+    .file-input-wrap:hover{background:#E8F4FB;border-color:#0F7BB0}
+    .file-input-wrap.has-file{border-style:solid;background:#E8F4FB}
+    input[type=file]{display:none}
+    .file-icon{font-size:48px;margin-bottom:10px}
+    .file-text{font-size:14px;color:#5A7A8F;margin-bottom:6px}
+    .file-name{font-size:14px;color:#0F4C7A;font-weight:600}
+
+    .btn{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);width:100%;margin-top:1rem}
+    .btn-primary:disabled{opacity:.5;cursor:not-allowed}
+    .btn-confirmar{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);width:100%}
+    .btn-cancel{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE;width:100%;margin-top:8px}
+    .btn-danger{background:#DC2626;width:auto;padding:8px 14px;font-size:13px}
+    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;width:auto;padding:8px 14px;font-size:13px}
+
+    .preview-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+    .stat{background:#F7FBFD;border-radius:10px;padding:12px;text-align:center;border:1px solid #D6E5EE}
+    .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
+    .stat-val.green{color:#0F6E56}
+    .stat-val.blue{color:#1E9FD9}
+    .stat-val.orange{color:#B45309}
+    .stat-val.red{color:#A32D2D}
+    .stat-label{font-size:10px;color:#5A7A8F;margin-top:2px;text-transform:uppercase}
+
+    .preview-section{margin-bottom:1.25rem}
+    .preview-section-title{font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;align-items:center;gap:8px}
+    .preview-list{background:#F7FBFD;border-radius:10px;border:1px solid #D6E5EE;max-height:200px;overflow-y:auto}
+    .preview-item{padding:8px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;color:#0F4C7A;display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .preview-item:last-child{border-bottom:none}
+    .preview-item-name{font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .preview-item-meta{font-size:11px;color:#5A7A8F;flex-shrink:0}
+    .preview-item-changes{font-size:11px;color:#B45309;margin-top:2px}
+
+    .acao-sumidos{background:#FFF8E6;border:1.5px solid #F2A536;border-radius:12px;padding:1rem;margin-bottom:1rem}
+    .acao-sumidos-title{font-size:14px;font-weight:700;color:#92400E;margin-bottom:8px}
+    .acao-opcoes{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+    .acao-opcoes label{display:flex;align-items:center;gap:8px;font-size:13px;color:#5A4400;cursor:pointer;padding:6px;border-radius:7px;background:#fff}
+    .acao-opcoes label input{cursor:pointer}
+
+    .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
+    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
+    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
+
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:6px;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .github-reminder{background:#FFF8E6;border:1.5px solid #F2A536;border-radius:12px;padding:1rem;margin-top:1rem;font-size:13px;color:#5A4400;line-height:1.6}
+    .github-reminder a{color:#0F4C7A;text-decoration:underline;font-weight:600}
+
+    @media (max-width:600px){.preview-stats{grid-template-columns:repeat(2,1fr)}}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <a href="painel.html" class="back-link">← Voltar ao painel</a>
+  <div class="header-row">
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div>
+      <h1 style="font-size:18px;font-weight:700">Importar Planilha IHP</h1>
+      <div style="font-size:13px;opacity:.85">Atualizar base de clientes</div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- ETAPA 1: Upload -->
+  <div class="card" id="card-upload">
+    <div class="card-icon">📤</div>
+    <div class="card-title">Importar nova planilha IHP</div>
+    <div class="card-desc">Suba a planilha mais recente do Pardini. O sistema vai comparar com a base atual e mostrar um resumo das mudanças <strong>antes de aplicar</strong>.</div>
+
+    <div class="info-box">
+      <strong>📋 O sistema vai detectar:</strong><br/>
+      • Clientes novos (não existem no banco)<br/>
+      • Clientes com dados alterados (rota, horário, nome)<br/>
+      • Clientes que sumiram da planilha (você decide o que fazer)<br/><br/>
+      ⚠️ <strong>O histórico de coletas não é apagado.</strong> Clientes excluídos continuam aparecendo no histórico e nas planilhas IHP exportadas como "INATIVO".
+    </div>
+
+    <div style="background:#F7FBFD;border:1.5px solid #1E9FD9;border-radius:11px;padding:12px;margin-bottom:1rem">
+      <label style="font-size:13px;font-weight:700;color:#0F4C7A;display:block;margin-bottom:6px">📅 Importar para qual dia da semana?</label>
+      <select id="dia-importar" style="width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;font-weight:600">
+        <option value="seg-sex">Segunda a Sexta</option>
+        <option value="sabado">Sábado</option>
+        <option value="domingo">Domingo</option>
+      </select>
+    </div>
+
+    <label class="file-input-wrap" id="file-label" for="arquivo">
+      <div class="file-icon">📄</div>
+      <div class="file-text">Clique aqui para escolher o arquivo Excel</div>
+      <div class="file-name" id="file-name"></div>
+    </label>
+    <input type="file" id="arquivo" accept=".xlsx,.xls"/>
+
+    <button class="btn btn-primary" id="btn-analisar" onclick="analisar()" disabled>
+      🔍 Analisar planilha
+    </button>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <!-- ETAPA 2: Preview -->
+  <div class="card" id="card-preview" style="display:none">
+    <div class="card-icon">📊</div>
+    <div class="card-title">Preview da importação</div>
+    <div class="card-desc">Revise as mudanças antes de aplicar.</div>
+
+    <div class="preview-stats">
+      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">Planilha</div></div>
+      <div class="stat"><div class="stat-val green" id="s-novos">—</div><div class="stat-label">Novos</div></div>
+      <div class="stat"><div class="stat-val blue" id="s-atualizados">—</div><div class="stat-label">Alterados</div></div>
+      <div class="stat"><div class="stat-val orange" id="s-sumidos">—</div><div class="stat-label">Sumidos</div></div>
+    </div>
+
+    <div class="preview-section" id="sec-novos" style="display:none">
+      <div class="preview-section-title">🆕 Clientes novos</div>
+      <div class="preview-list" id="lista-novos"></div>
+    </div>
+
+    <div class="preview-section" id="sec-atualizados" style="display:none">
+      <div class="preview-section-title">🔄 Clientes alterados</div>
+      <div class="preview-list" id="lista-atualizados"></div>
+    </div>
+
+    <div class="preview-section" id="sec-sumidos" style="display:none">
+      <div class="preview-section-title">⚠️ Clientes que sumiram da planilha</div>
+      <div class="preview-list" id="lista-sumidos"></div>
+
+      <div class="acao-sumidos">
+        <div class="acao-sumidos-title">O que fazer com esses clientes?</div>
+        <div class="acao-opcoes">
+          <label><input type="radio" name="acao" value="manter" checked/> Manter ativos (não fazer nada)</label>
+          <label><input type="radio" name="acao" value="desativar"/> Desativar todos (vira "Inativo")</label>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn btn-confirmar" onclick="confirmar()">
+      ✓ Aplicar mudanças
+    </button>
+    <button class="btn btn-cancel" onclick="cancelar()">Cancelar</button>
+
+    <div class="msg" id="msg2"></div>
+  </div>
+
+  <!-- ETAPA 3: Sucesso -->
+  <div class="card" id="card-sucesso" style="display:none">
+    <div class="card-icon">✅</div>
+    <div class="card-title">Importação concluída!</div>
+    <div class="card-desc" id="resultado-msg">—</div>
+
+    <div class="github-reminder">
+      ⚠️ <strong>Importante:</strong> Os dados dos clientes foram atualizados no banco, mas o <strong>template_ihp.xlsx</strong> no GitHub continua o mesmo. <br/><br/>
+
+      Se a planilha do Pardini teve <strong>mudança grande de formatação</strong> (novas colunas, cabeçalho diferente), vá no GitHub e substitua o template manualmente:<br/><br/>
+
+      <a href="https://github.com/willlog99/loglife-painel/blob/main/template_ihp.xlsx" target="_blank">📄 Abrir template_ihp.xlsx no GitHub →</a>
+    </div>
+
+    <button class="btn btn-primary" onclick="window.location.href='painel.html'">Voltar ao painel</button>
+  </div>
+
+</div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let clientesPlanilha = [];
+  let previewData = null;
+
+  document.getElementById('arquivo').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('file-name').textContent = file.name;
+    document.getElementById('file-label').classList.add('has-file');
+    document.getElementById('btn-analisar').disabled = false;
+  });
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = (type === 'loading' ? '<span class="spinner"></span>' : '') + text;
+    el.className = 'msg ' + type;
+  }
+
+  async function analisar() {
+    const file = document.getElementById('arquivo').files[0];
+    if (!file) return;
+
+    const btn = document.getElementById('btn-analisar');
+    btn.disabled = true;
+    showMsg('msg', 'Lendo planilha...', 'loading');
+
+    try {
+      // Ler o Excel
+      const buffer = await file.arrayBuffer();
+      const wb = new ExcelJS.Workbook();
+      await wb.xlsx.load(buffer);
+
+      // Procurar aba "PLANILHA IHP" ou primeira aba
+      let ws = wb.getWorksheet('PLANILHA IHP') || wb.worksheets[0];
+      if (!ws) throw new Error('Não foi possível ler a planilha');
+
+      // Extrair clientes (assume header na linha 1)
+      // Colunas esperadas: A=CODIGO, B=ROTA, C=NOME BR, K=HORARIO REAL
+      clientesPlanilha = [];
+      for (let rowNum = 2; rowNum <= ws.rowCount; rowNum++) {
+        const row = ws.getRow(rowNum);
+        const codigo = row.getCell(1).value;
+        const rota = row.getCell(2).value;
+        const nome = row.getCell(3).value;
+        const horarioReal = row.getCell(11).value;
+
+        if (!codigo || !nome || !rota) continue;
+
+        // Determinar horário e tipo
+        let horario = '00:00';
+        let tipo = 'normal';
+        if (horarioReal) {
+          if (horarioReal instanceof Date) {
+            horario = horarioReal.toTimeString().substring(0, 5);
+          } else if (typeof horarioReal === 'string') {
+            const txt = horarioReal.trim().toUpperCase();
+            if (txt.includes('CONTRA')) tipo = 'contra pedido';
+            else if (txt.includes('DEMANDA')) tipo = 'sob demanda';
+            else if (/^\d{1,2}:\d{2}/.test(txt)) horario = txt.substring(0, 5);
+          } else if (typeof horarioReal === 'number') {
+            // Excel converte horário em fração de dia
+            const totalMin = Math.round(horarioReal * 24 * 60);
+            const h = Math.floor(totalMin / 60);
+            const m = totalMin % 60;
+            horario = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+          }
+        }
+
+        clientesPlanilha.push({
+          numero_cliente: String(codigo).trim(),
+          nome: String(nome).trim(),
+          rota: String(rota).trim(),
+          horario,
+          tipo
+        });
+      }
+
+      if (!clientesPlanilha.length) throw new Error('Nenhum cliente encontrado na planilha');
+
+      showMsg('msg', `Analisando ${clientesPlanilha.length} clientes...`, 'loading');
+
+      // Pedir preview ao servidor
+      const diaSelecionado = document.getElementById('dia-importar').value;
+      const r = await fetch(API + '/preview-importar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientes_planilha: clientesPlanilha, dia_semana: diaSelecionado })
+      });
+      const d = await r.json();
+      if (d.status !== 'ok') throw new Error('Erro ao analisar: ' + (d.msg || 'Tente novamente'));
+
+      previewData = d;
+      mostrarPreview(d);
+
+      showMsg('msg', '', '');
+      document.getElementById('card-upload').style.display = 'none';
+      document.getElementById('card-preview').style.display = 'block';
+    } catch(e) {
+      showMsg('msg', 'Erro: ' + e.message, 'error');
+      btn.disabled = false;
+    }
+  }
+
+  function mostrarPreview(d) {
+    document.getElementById('s-total').textContent = d.total_planilha;
+    document.getElementById('s-novos').textContent = d.novos.length;
+    document.getElementById('s-atualizados').textContent = d.atualizados.length;
+    document.getElementById('s-sumidos').textContent = d.sumidos.length;
+
+    // Novos
+    if (d.novos.length) {
+      document.getElementById('sec-novos').style.display = 'block';
+      document.getElementById('lista-novos').innerHTML = d.novos.slice(0, 50).map(n => `
+        <div class="preview-item">
+          <div class="preview-item-name">${n.nome}</div>
+          <div class="preview-item-meta">Nº ${n.numero} · ${n.rota} · ${n.horario || '—'}</div>
+        </div>`).join('') + (d.novos.length > 50 ? `<div class="preview-item"><em>...e mais ${d.novos.length - 50}</em></div>` : '');
+    }
+
+    // Atualizados
+    if (d.atualizados.length) {
+      document.getElementById('sec-atualizados').style.display = 'block';
+      document.getElementById('lista-atualizados').innerHTML = d.atualizados.slice(0, 50).map(a => `
+        <div class="preview-item">
+          <div style="flex:1;min-width:0">
+            <div class="preview-item-name">${a.nome}</div>
+            <div class="preview-item-changes">Nº ${a.numero} · ${a.rota}</div>
+          </div>
+        </div>`).join('') + (d.atualizados.length > 50 ? `<div class="preview-item"><em>...e mais ${d.atualizados.length - 50}</em></div>` : '');
+    }
+
+    // Sumidos
+    if (d.sumidos.length) {
+      document.getElementById('sec-sumidos').style.display = 'block';
+      document.getElementById('lista-sumidos').innerHTML = d.sumidos.slice(0, 50).map(s => `
+        <div class="preview-item">
+          <div class="preview-item-name">${s.nome}</div>
+          <div class="preview-item-meta">Nº ${s.numero} · ${s.rota}</div>
+        </div>`).join('') + (d.sumidos.length > 50 ? `<div class="preview-item"><em>...e mais ${d.sumidos.length - 50}</em></div>` : '');
+    }
+  }
+
+  async function confirmar() {
+    const acao = document.querySelector('input[name="acao"]:checked')?.value || 'manter';
+
+    if (acao === 'desativar' && previewData.sumidos.length > 0) {
+      if (!confirm(`Tem certeza que quer DESATIVAR ${previewData.sumidos.length} clientes? Eles vão sumir das rotas dos motoboys (mas continuam no histórico).`)) return;
+    }
+
+    showMsg('msg2', 'Aplicando mudanças no banco...', 'loading');
+
+    try {
+      const diaSelecionado = document.getElementById('dia-importar').value;
+      const r = await fetch(API + '/importar-planilha', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientes_planilha: clientesPlanilha, acao_sumidos: acao, dia_semana: diaSelecionado })
+      });
+      const d = await r.json();
+      if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao importar');
+
+      document.getElementById('card-preview').style.display = 'none';
+      document.getElementById('card-sucesso').style.display = 'block';
+      document.getElementById('resultado-msg').innerHTML = `
+        ✅ <strong>${d.novos}</strong> cliente${d.novos!==1?'s':''} novo${d.novos!==1?'s':''}<br/>
+        🔄 <strong>${d.atualizados}</strong> cliente${d.atualizados!==1?'s':''} atualizado${d.atualizados!==1?'s':''}<br/>
+        ${d.desativados ? `⚠️ <strong>${d.desativados}</strong> cliente${d.desativados!==1?'s':''} desativado${d.desativados!==1?'s':''}` : ''}
+      `;
+    } catch(e) {
+      showMsg('msg2', 'Erro: ' + e.message, 'error');
+    }
+  }
+
+  function cancelar() {
+    document.getElementById('card-preview').style.display = 'none';
+    document.getElementById('card-upload').style.display = 'block';
+    document.getElementById('btn-analisar').disabled = false;
+    clientesPlanilha = [];
+    previewData = null;
+  }
+</script>
+</body>
+</html>
