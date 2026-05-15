@@ -166,13 +166,8 @@
     <div class="preview-section" id="sec-sumidos" style="display:none">
       <div class="preview-section-title">⚠️ Clientes que sumiram da planilha</div>
       <div class="preview-list" id="lista-sumidos"></div>
-
-      <div class="acao-sumidos">
-        <div class="acao-sumidos-title">O que fazer com esses clientes?</div>
-        <div class="acao-opcoes">
-          <label><input type="radio" name="acao" value="manter" checked/> Manter ativos (não fazer nada)</label>
-          <label><input type="radio" name="acao" value="desativar"/> Desativar todos (vira "Inativo")</label>
-        </div>
+      <div style="font-size:12px;color:#5A7A8F;padding:8px;background:#F7FBFD;border-radius:8px;margin-top:8px">
+        💡 Marque os clientes que quer <strong>desativar</strong>. Os desmarcados continuam ativos.
       </div>
     </div>
 
@@ -388,19 +383,35 @@
     // Sumidos
     if (d.sumidos.length) {
       document.getElementById('sec-sumidos').style.display = 'block';
-      document.getElementById('lista-sumidos').innerHTML = d.sumidos.slice(0, 50).map(s => `
-        <div class="preview-item">
-          <div class="preview-item-name">${s.nome}</div>
-          <div class="preview-item-meta">Nº ${s.numero} · ${s.rota}</div>
-        </div>`).join('') + (d.sumidos.length > 50 ? `<div class="preview-item"><em>...e mais ${d.sumidos.length - 50}</em></div>` : '');
+      document.getElementById('lista-sumidos').innerHTML = `
+        <div style="padding:10px;background:#FEF9EC;border-bottom:1px solid #F2CC70;font-size:12px;color:#92400E;font-weight:600;display:flex;justify-content:space-between;align-items:center">
+          <span>Marque os que quer DESATIVAR:</span>
+          <div>
+            <button onclick="toggleTodosSumidos(true)" style="background:#A32D2D;color:#fff;border:none;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;margin-right:4px">Marcar todos</button>
+            <button onclick="toggleTodosSumidos(false)" style="background:#fff;color:#0F4C7A;border:1px solid #D6E5EE;padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer">Desmarcar todos</button>
+          </div>
+        </div>
+      ` + d.sumidos.map(s => `
+        <label class="preview-item" style="cursor:pointer">
+          <input type="checkbox" class="sumido-check" data-id="${s.id}" style="margin-right:8px;width:18px;height:18px;cursor:pointer"/>
+          <div style="flex:1;min-width:0">
+            <div class="preview-item-name">${s.nome}</div>
+            <div class="preview-item-meta">Nº ${s.numero} · ${s.rota}</div>
+          </div>
+        </label>`).join('');
     }
   }
 
-  async function confirmar() {
-    const acao = document.querySelector('input[name="acao"]:checked')?.value || 'manter';
+  function toggleTodosSumidos(marcar) {
+    document.querySelectorAll('.sumido-check').forEach(c => c.checked = marcar);
+  }
 
-    if (acao === 'desativar' && previewData.sumidos.length > 0) {
-      if (!confirm(`Tem certeza que quer DESATIVAR ${previewData.sumidos.length} clientes? Eles vão sumir das rotas dos motoboys (mas continuam no histórico).`)) return;
+  async function confirmar() {
+    // Pega IDs dos sumidos marcados para desativar
+    const idsDesativar = Array.from(document.querySelectorAll('.sumido-check:checked')).map(c => parseInt(c.dataset.id));
+
+    if (idsDesativar.length > 0) {
+      if (!confirm(`Tem certeza que quer DESATIVAR ${idsDesativar.length} cliente${idsDesativar.length>1?'s':''}? Eles vão sumir das rotas dos motoboys (mas continuam no histórico).`)) return;
     }
 
     showMsg('msg2', 'Aplicando mudanças no banco...', 'loading');
@@ -410,7 +421,11 @@
       const r = await fetch(API + '/importar-planilha', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientes_planilha: clientesPlanilha, acao_sumidos: acao, dia_semana: diaSelecionado })
+        body: JSON.stringify({
+          clientes_planilha: clientesPlanilha,
+          ids_desativar: idsDesativar,
+          dia_semana: diaSelecionado
+        })
       });
       const d = await r.json();
       if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao importar');
