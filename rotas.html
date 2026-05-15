@@ -39,6 +39,30 @@
     .rota-actions{display:flex;gap:6px;flex-wrap:wrap}
     .rota-actions .btn{height:32px;padding:0 12px;font-size:12px}
 
+    /* Expandir clientes da rota */
+    .rota-expandir{margin-top:10px;border-top:1px solid #E5EEF5;padding-top:10px;display:none}
+    .rota-expandir.aberto{display:block}
+    .rota-progress{display:flex;gap:6px;font-size:12px;margin-bottom:8px;flex-wrap:wrap}
+    .rota-progress span{padding:3px 8px;border-radius:6px;font-weight:600}
+    .rota-progress .total{background:#F0F4F8;color:#0F4C7A}
+    .rota-progress .feito{background:#E8F4FB;color:#0F4C7A}
+    .rota-progress .pend{background:#FEF9EC;color:#92400E}
+    .cliente-mini{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:#F7FBFD;margin-bottom:4px;font-size:12px}
+    .cliente-mini.feito{background:#E8F4FB}
+    .cliente-mini.improdutivo{background:#F0F4F8}
+    .cliente-mini-icon{flex-shrink:0;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:#fff;border:1px solid #D6E5EE}
+    .cliente-mini-icon.feito{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
+    .cliente-mini-icon.improdutivo{background:#5A7A8F;border-color:#5A7A8F;color:#fff}
+    .cliente-mini-icon.chegou{background:#F2CC70;border-color:#F2CC70}
+    .cliente-mini-info{flex:1;min-width:0;overflow:hidden}
+    .cliente-mini-nome{font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cliente-mini-ts{font-size:10px;color:#5A7A8F;margin-top:2px}
+    .cliente-mini-ts .ch{color:#92400E;font-weight:600}
+    .cliente-mini-ts .sd{color:#1E9FD9;font-weight:600}
+    .cliente-mini-horario{font-size:10px;color:#94A8B8;flex-shrink:0;font-weight:600}
+    .btn-expandir{background:#fff;color:#1E9FD9;border:1.5px solid #1E9FD9;height:32px;padding:0 12px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer}
+    .btn-expandir.aberto{background:#1E9FD9;color:#fff}
+
     .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
 
     .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
@@ -164,7 +188,7 @@
       motoboysPorRota[m.rota].push(m);
     });
 
-    lista.innerHTML = rotas.map(r => {
+    lista.innerHTML = rotas.map((r, idxRota) => {
       const motos = motoboysPorRota[r.rota] || [];
       const motoStr = motos.length ? motos.map(m => `<strong>${m.nome}</strong> (${m.telefone})`).join(', ') : '<em style="color:#94A8B8">Sem motorista atribuído</em>';
       const statusBadge = r.ativa
@@ -177,6 +201,7 @@
       } else {
         actions += `<button class="btn btn-primary" onclick="abrirTrocar('${r.rota}', '${motos[0].nome.replace(/'/g,"\\'")}', ${motos[0].id})">↔ Trocar motorista</button>`;
       }
+      actions += `<button class="btn-expandir" id="exp-btn-${idxRota}" onclick="expandirRota('${r.rota.replace(/'/g,"\\'")}', ${idxRota})">▼ Ver coletas</button>`;
       actions += `<button class="btn btn-secondary" onclick="abrirRenomear('${r.rota}')">✎ Renomear</button>`;
       if (r.ativa) actions += `<button class="btn btn-warning" onclick="destravarRota('${r.rota}')">🔓 Destravar</button>`;
       actions += `<button class="btn btn-danger" onclick="excluirRota('${r.rota}')">🗑 Excluir</button>`;
@@ -189,6 +214,7 @@
           </div>
           <div class="rota-motoboy">👤 ${motoStr}</div>
           <div class="rota-actions">${actions}</div>
+          <div class="rota-expandir" id="exp-${idxRota}"></div>
         </div>`;
     }).join('');
   }
@@ -275,6 +301,65 @@
     fecharModal('modal-renomear');
     toast('Rota renomeada!', '#1E9FD9');
     carregar();
+  }
+
+  async function expandirRota(rota, idx) {
+    const div = document.getElementById('exp-' + idx);
+    const btn = document.getElementById('exp-btn-' + idx);
+    if (div.classList.contains('aberto')) {
+      div.classList.remove('aberto');
+      btn.classList.remove('aberto');
+      btn.innerHTML = '▼ Ver coletas';
+      return;
+    }
+    div.innerHTML = '<p style="font-size:12px;color:#94A8B8;padding:10px">Carregando...</p>';
+    div.classList.add('aberto');
+    btn.classList.add('aberto');
+    btn.innerHTML = '▲ Ocultar';
+    try {
+      const r = await fetch(`${API}/rota?rota=${encodeURIComponent(rota)}`);
+      const d = await r.json();
+      const clientes = d.clientes || [];
+      const entregues = clientes.filter(c => c.status === 'entregue');
+      const pendentes = clientes.filter(c => c.status !== 'entregue');
+      const produtivas = entregues.filter(c => c.produtividade === 'produtiva').length;
+      const improdutivas = entregues.filter(c => c.produtividade === 'improdutiva').length;
+
+      const renderCli = c => {
+        const prod = c.produtividade || '';
+        const cls = c.status === 'entregue' ? (prod === 'improdutiva' ? 'improdutivo' : 'feito') : (c.horario_chegada ? 'feito' : '');
+        const icon = c.status === 'entregue' ? (prod === 'improdutiva' ? '✕' : '✓') : (c.horario_chegada ? '📍' : '');
+        const iconCls = c.status === 'entregue' ? (prod === 'improdutiva' ? 'improdutivo' : 'feito') : (c.horario_chegada ? 'chegou' : '');
+        const horaSaida = c.horario_entrega ? String(c.horario_entrega).split(' ').pop() : '';
+        return `
+          <div class="cliente-mini ${cls}">
+            <div class="cliente-mini-icon ${iconCls}">${icon}</div>
+            <div class="cliente-mini-info">
+              <div class="cliente-mini-nome">${c.nome}</div>
+              <div class="cliente-mini-ts">
+                Nº ${c.numero_cliente}
+                ${c.horario_chegada ? ` · <span class="ch">🟡 ${c.horario_chegada}</span>` : ''}
+                ${horaSaida ? ` · <span class="sd">${prod === 'improdutiva' ? '🔘' : '🔵'} ${horaSaida}</span>` : ''}
+                ${prod === 'improdutiva' && c.motivo_improdutiva ? `<br/><em style="color:#A32D2D">↳ ${c.motivo_improdutiva}</em>` : ''}
+              </div>
+            </div>
+            <div class="cliente-mini-horario">${c.horario || ''}</div>
+          </div>`;
+      };
+
+      div.innerHTML = `
+        <div class="rota-progress">
+          <span class="total">${clientes.length} total</span>
+          <span class="feito">✓ ${produtivas} produt.</span>
+          ${improdutivas > 0 ? `<span class="feito">✕ ${improdutivas} improd.</span>` : ''}
+          <span class="pend">⏳ ${pendentes.length} pendentes</span>
+        </div>
+        ${pendentes.length > 0 ? `<div style="font-size:11px;font-weight:700;color:#92400E;margin:8px 0 4px">PENDENTES (${pendentes.length})</div>${pendentes.map(renderCli).join('')}` : ''}
+        ${entregues.length > 0 ? `<div style="font-size:11px;font-weight:700;color:#1E9FD9;margin:8px 0 4px">REGISTRADAS (${entregues.length})</div>${entregues.map(renderCli).join('')}` : ''}
+      `;
+    } catch(e) {
+      div.innerHTML = '<p style="font-size:12px;color:#A32D2D;padding:10px">Erro ao carregar coletas.</p>';
+    }
   }
 
   async function destravarRota(rota) {
