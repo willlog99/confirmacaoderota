@@ -327,18 +327,43 @@
 
       showMsg('msg', `Analisando ${clientesPlanilha.length} clientes...`, 'loading');
 
-      // Pedir preview ao servidor
+      // Pedir preview ao servidor — em lotes pra evitar payload grande
       const diaSelecionado = document.getElementById('dia-importar').value;
-      const r = await fetch(API + '/preview-importar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientes_planilha: clientesPlanilha, dia_semana: diaSelecionado })
-      });
-      const d = await r.json();
-      if (d.status !== 'ok') throw new Error('Erro ao analisar: ' + (d.msg || 'Tente novamente'));
+      const LOTE_PRV = 80;
+      const totalCli = clientesPlanilha.length;
+      const lotesPrv = Math.ceil(totalCli / LOTE_PRV);
+      let acumulado = { status: 'ok', total_planilha: totalCli, novos: [], atualizados: [], sumidos: [] };
+      const sumidosVistos = new Set();
 
-      previewData = d;
-      mostrarPreview(d);
+      for (let i = 0; i < lotesPrv; i++) {
+        const inicio = i * LOTE_PRV;
+        const fim = Math.min(inicio + LOTE_PRV, totalCli);
+        showMsg('msg', `Analisando lote ${i+1} de ${lotesPrv} (${fim}/${totalCli})...`, 'loading');
+
+        const r = await fetch(API + '/preview-importar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientes_planilha: clientesPlanilha.slice(inicio, fim),
+            dia_semana: diaSelecionado,
+            primeiro_lote: i === 0,
+            ultimo_lote: i === lotesPrv - 1
+          })
+        });
+        const dp = await r.json();
+        if (dp.status !== 'ok') throw new Error(dp.msg || 'Erro ao analisar lote ' + (i+1));
+        acumulado.novos.push(...(dp.novos || []));
+        acumulado.atualizados.push(...(dp.atualizados || []));
+        // Sumidos: só conta no último lote (banco completo)
+        if (i === lotesPrv - 1) {
+          // Filtra sumidos que NÃO estão em outros lotes da planilha
+          const codigosCompletos = new Set(clientesPlanilha.map(c => String(c.numero_cliente).trim() + '|' + String(c.rota).trim()));
+          acumulado.sumidos = (dp.todos_banco || []).filter(c => !codigosCompletos.has(String(c.numero).trim() + '|' + String(c.rota).trim()));
+        }
+      }
+
+      previewData = acumulado;
+      mostrarPreview(acumulado);
 
       showMsg('msg', '', '');
       document.getElementById('card-upload').style.display = 'none';
@@ -414,28 +439,47 @@
       if (!confirm(`Tem certeza que quer DESATIVAR ${idsDesativar.length} cliente${idsDesativar.length>1?'s':''}? Eles vão sumir das rotas dos motoboys (mas continuam no histórico).`)) return;
     }
 
-    showMsg('msg2', 'Aplicando mudanças no banco...', 'loading');
+    const diaSelecionado = document.getElementById('dia-importar').value;
+    const LOTE = 50;
+    const total = clientesPlanilha.length;
+    let lotes = Math.ceil(total / LOTE);
+    let novos = 0, atualizados = 0;
+
+    showMsg('msg2', `Enviando lote 1 de ${lotes}...`, 'loading');
 
     try {
-      const diaSelecionado = document.getElementById('dia-importar').value;
-      const r = await fetch(API + '/importar-planilha', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          clientes_planilha: clientesPlanilha,
-          ids_desativar: idsDesativar,
-          dia_semana: diaSelecionado
-        })
-      });
-      const d = await r.json();
-      if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao importar');
+      // Envia em lotes
+      for (let i = 0; i < lotes; i++) {
+        const inicio = i * LOTE;
+        const fim = Math.min(inicio + LOTE, total);
+        const pedaco = clientesPlanilha.slice(inicio, fim);
+
+        showMsg('msg2', `Enviando lote ${i+1} de ${lotes} (${fim}/${total} clientes)...`, 'loading');
+
+        const isUltimoLote = i === lotes - 1;
+        const r = await fetch(API + '/importar-planilha', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientes_planilha: pedaco,
+            ids_desativar: isUltimoLote ? idsDesativar : [],
+            dia_semana: diaSelecionado
+          })
+        });
+        const d = await r.json();
+        if (d.status !== 'ok') throw new Error(d.msg || 'Erro no lote ' + (i+1));
+        novos += d.novos || 0;
+        atualizados += d.atualizados || 0;
+      }
+
+      const desativados = idsDesativar.length;
 
       document.getElementById('card-preview').style.display = 'none';
       document.getElementById('card-sucesso').style.display = 'block';
       document.getElementById('resultado-msg').innerHTML = `
-        ✅ <strong>${d.novos}</strong> cliente${d.novos!==1?'s':''} novo${d.novos!==1?'s':''}<br/>
-        🔄 <strong>${d.atualizados}</strong> cliente${d.atualizados!==1?'s':''} atualizado${d.atualizados!==1?'s':''}<br/>
-        ${d.desativados ? `⚠️ <strong>${d.desativados}</strong> cliente${d.desativados!==1?'s':''} desativado${d.desativados!==1?'s':''}` : ''}
+        ✅ <strong>${novos}</strong> cliente${novos!==1?'s':''} novo${novos!==1?'s':''}<br/>
+        🔄 <strong>${atualizados}</strong> cliente${atualizados!==1?'s':''} atualizado${atualizados!==1?'s':''}<br/>
+        ${desativados ? `⚠️ <strong>${desativados}</strong> cliente${desativados!==1?'s':''} desativado${desativados!==1?'s':''}` : ''}
       `;
     } catch(e) {
       showMsg('msg2', 'Erro: ' + e.message, 'error');
