@@ -99,12 +99,14 @@
     <div class="card-desc">Suba a planilha mais recente do Pardini. O sistema vai comparar com a base atual e mostrar um resumo das mudanças <strong>antes de aplicar</strong>.</div>
 
     <div class="info-box">
-      <strong>📋 O sistema vai detectar:</strong><br/>
-      • Clientes novos (não existem no banco)<br/>
-      • Clientes com dados alterados (rota, horário, nome, obs)<br/>
-      • Clientes que sumiram da planilha (você decide o que fazer)<br/><br/>
+      <strong>📋 Estrutura esperada da planilha:</strong><br/>
+      • Coluna A: CODIGO<br/>
+      • Coluna B: ROTA<br/>
+      • Coluna C: NOME BR<br/>
+      • Coluna D: Horário<br/>
+      • Coluna E: OBSERVAÇÃO (dias específicos)<br/><br/>
 
-      📅 <strong>Coluna OBS (J) — Dias de coleta:</strong><br/>
+      📅 <strong>Coluna OBSERVAÇÃO — Dias de coleta:</strong><br/>
       O sistema lê a coluna obs e entende automaticamente:<br/>
       • <code>Seg/Qua/Sex</code> → coleta só nesses dias<br/>
       • <code>Ter/Qui</code> → só terça e quinta<br/>
@@ -234,8 +236,8 @@
       const wb = new ExcelJS.Workbook();
       await wb.xlsx.load(buffer);
 
-      // Procurar aba "PLANILHA IHP" ou primeira aba
-      let ws = wb.getWorksheet('PLANILHA IHP') || wb.worksheets[0];
+      // Procurar aba (qualquer aba serve, pega a primeira)
+      let ws = wb.getWorksheet('Planilha1') || wb.getWorksheet('PLANILHA IHP') || wb.worksheets[0];
       if (!ws) throw new Error('Não foi possível ler a planilha');
 
       // Função pra interpretar a obs e gerar dias_ativos
@@ -245,7 +247,6 @@
         const txt = obsTexto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim();
         if (!txt) return TODOS.join(',');
 
-        // Mapa de palavras pra dias
         const dias = {
           seg: ['seg', 'segunda', 'sgunda'],
           ter: ['ter', 'terca', 'terça'],
@@ -254,7 +255,6 @@
           sex: ['sex', 'sexta']
         };
 
-        // Detecta dias mencionados
         const mencionados = new Set();
         for (const dia in dias) {
           for (const palavra of dias[dia]) {
@@ -266,30 +266,27 @@
           }
         }
 
-        // Se tem palavra de exclusão (sem, exceto, nao, fora)
         const eExclusao = /\b(sem|exceto|nao|fora|menos|excluir)\b/i.test(txt);
 
         if (!mencionados.size) return TODOS.join(',');
 
         if (eExclusao) {
-          // Todos menos os mencionados
           return TODOS.filter(d => !mencionados.has(d)).join(',');
         } else {
-          // Só os mencionados
           return Array.from(mencionados).filter(d => TODOS.includes(d)).join(',');
         }
       }
 
-      // Extrair clientes (assume header na linha 1)
-      // Colunas: A=CODIGO, B=ROTA, C=NOME BR, J=OBS (coluna 10), K=HORARIO REAL (coluna 11)
+      // Extrair clientes — NOVA ESTRUTURA:
+      // A=CODIGO, B=ROTA, C=NOME BR, D=Horário, E=OBSERVAÇÃO
       clientesPlanilha = [];
       for (let rowNum = 2; rowNum <= ws.rowCount; rowNum++) {
         const row = ws.getRow(rowNum);
         const codigo = row.getCell(1).value;
         const rota = row.getCell(2).value;
         const nome = row.getCell(3).value;
-        const obsCell = row.getCell(10).value; // J = obs
-        const horarioReal = row.getCell(11).value;
+        const horarioCell = row.getCell(4).value;
+        const obsCell = row.getCell(5).value;
 
         if (!codigo || !nome || !rota) continue;
 
@@ -304,16 +301,16 @@
         // Determinar horário e tipo
         let horario = '00:00';
         let tipo = 'normal';
-        if (horarioReal) {
-          if (horarioReal instanceof Date) {
-            horario = horarioReal.toTimeString().substring(0, 5);
-          } else if (typeof horarioReal === 'string') {
-            const txt = horarioReal.trim().toUpperCase();
+        if (horarioCell) {
+          if (horarioCell instanceof Date) {
+            horario = horarioCell.toTimeString().substring(0, 5);
+          } else if (typeof horarioCell === 'string') {
+            const txt = horarioCell.trim().toUpperCase();
             if (txt.includes('CONTRA')) tipo = 'contra pedido';
             else if (txt.includes('DEMANDA')) tipo = 'sob demanda';
             else if (/^\d{1,2}:\d{2}/.test(txt)) horario = txt.substring(0, 5);
-          } else if (typeof horarioReal === 'number') {
-            const totalMin = Math.round(horarioReal * 24 * 60);
+          } else if (typeof horarioCell === 'number') {
+            const totalMin = Math.round(horarioCell * 24 * 60);
             const h = Math.floor(totalMin / 60);
             const m = totalMin % 60;
             horario = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
