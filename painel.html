@@ -3,322 +3,223 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Painel Gerencial</title>
+  <title>Loglife — Painel</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem}
-    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
-    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
-    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
-    .header h1{font-size:18px;font-weight:700}
-    .header .sub{font-size:13px;opacity:.85}
-    .tabs{display:flex;background:#fff;border-bottom:1px solid #D6E5EE;overflow-x:auto}
-    .tab{flex-shrink:0;padding:13px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#fff;color:#5A7A8F;border-bottom:2px solid transparent;white-space:nowrap}
-    .tab.active{color:#1E9FD9;border-bottom-color:#1E9FD9}
-
-    /* Topbar com menu hambúrguer */
-    .topbar{background:#fff;padding:12px 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #D6E5EE;box-shadow:0 1px 3px rgba(30,159,217,0.06)}
-    .menu-btn{background:#E8F4FB;color:#0F4C7A;border:none;height:40px;padding:0 14px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px}
-    .menu-btn:hover{background:#BFE0F0}
-    .topbar-title{font-size:16px;font-weight:700;color:#0F4C7A;text-align:center;flex:1}
-
-    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:none;animation:fadeIn .2s}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
+    .topbar{background:#fff;padding:0 1rem;height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #D6E5EE;box-shadow:0 1px 3px rgba(30,159,217,0.06);position:sticky;top:0;z-index:100}
+    .menu-btn{background:#E8F4FB;color:#0F4C7A;border:none;height:38px;padding:0 14px;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer}
+    .topbar-title{font-size:15px;font-weight:700;color:#0F4C7A;flex:1;text-align:center}
+    .topbar-logo{height:28px}
+    .dia-bar{background:#0F4C7A;padding:7px 1rem;display:flex;align-items:center;gap:10px;justify-content:center}
+    .dia-bar select{height:30px;border-radius:7px;border:none;font-size:13px;padding:0 10px;background:#fff;color:#0F4C7A;font-weight:600;cursor:pointer}
+    .dia-bar span{color:#9FE0FF;font-size:12px;font-weight:600}
+    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:none}
     .menu-overlay.open{display:flex}
-    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    .menu-side{background:#fff;width:280px;max-width:85vw;height:100%;display:flex;flex-direction:column;animation:slideIn .25s ease}
-    @keyframes slideIn{from{transform:translateX(-100%)}to{transform:translateX(0)}}
-    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
-    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
-    .menu-items{padding:.5rem 0;overflow-y:auto;flex:1}
-    .menu-item{display:block;width:100%;padding:14px 1.25rem;background:#fff;border:none;text-align:left;font-size:14px;font-weight:500;color:#0F4C7A;cursor:pointer;border-left:3px solid transparent}
+    .menu-side{background:#fff;width:280px;max-width:85vw;height:100%;display:flex;flex-direction:column;overflow-y:auto}
+    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px}
+    .menu-category{border-bottom:1px solid #EBF1F5}
+    .menu-cat-btn{width:100%;padding:11px 1.25rem;background:#F7FBFD;border:none;text-align:left;font-size:11px;font-weight:700;color:#5A7A8F;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.5px}
+    .menu-cat-btn:hover{background:#EBF1F5}
+    .menu-cat-items{display:none}
+    .menu-cat-items.open{display:block}
+    .menu-item{display:block;width:100%;padding:12px 1.5rem;background:#fff;border:none;text-align:left;font-size:14px;font-weight:500;color:#0F4C7A;cursor:pointer;border-left:3px solid transparent}
     .menu-item:hover{background:#F7FBFD;border-left-color:#BFE0F0}
-    .menu-item.active{background:#E8F4FB;border-left-color:#1E9FD9;color:#0F4C7A;font-weight:700}
+    .menu-item.active{background:#E8F4FB;border-left-color:#1E9FD9;font-weight:700}
     .menu-item.danger{color:#A32D2D}
     .menu-item.danger:hover{background:#FCEBEB}
-    .menu-divider{height:1px;background:#EBF1F5;margin:6px 1.25rem}
-    .container{padding:1rem 1.25rem 0}
-    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
-    .card-title{font-size:15px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-    .refresh-btn{font-size:12px;color:#1E9FD9;background:none;border:none;cursor:pointer;font-weight:600}
-    .form-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
-    .form-row input,.form-row select{flex:1;min-width:110px;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 10px;color:#111;background:#F7FBFD}
-    .form-row input:focus,.form-row select:focus{outline:none;border-color:#1E9FD9;background:#fff}
-    .btn-add{height:40px;padding:0 16px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
-    .btn-add:hover{opacity:.95}
-    .cl-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
-    .cl-item:last-child{border-bottom:none}
-    .cl-item.entregue .cl-nome{color:#aaa;text-decoration:line-through}
-    .cl-info{flex:1;min-width:0}
-    .cl-nome{font-size:14px;font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cl-sub{font-size:12px;color:#94A8B8;margin-top:2px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-    .cl-entrega-ts{font-size:11px;color:#1D9E75;font-weight:500;margin-top:2px}
-    .cl-motivo{font-size:11px;color:#EF4444;font-style:italic;margin-top:2px}
-    .cl-actions{display:flex;gap:6px;flex-shrink:0;align-items:center;flex-wrap:wrap;justify-content:flex-end}
-    .btn-desfazer{background:#FEF9EC;border:1px solid #F2CC70;color:#92400E;font-size:11px;padding:4px 8px;border-radius:7px;cursor:pointer;font-weight:600;white-space:nowrap}
-    .btn-desfazer:hover{background:#FEF3C7}
-    .del-btn{background:none;border:none;cursor:pointer;color:#D6E5EE;font-size:17px;padding:3px 5px;border-radius:6px}
-    .del-btn:hover{color:#e55;background:#fff0f0}
-    .tipo-badge{font-size:11px;padding:2px 8px;border-radius:6px;font-weight:600;white-space:nowrap;flex-shrink:0}
-    .tipo-badge.normal{background:#E8F4FB;color:#0F4C7A}
-    .tipo-badge.entregue{background:#E1F5EE;color:#085041}
-    .tipo-badge.improdutiva{background:#FCEBEB;color:#791F1F}
-    .tipo-badge.contra-pedido{background:#EDE9FE;color:#5B21B6}
-    .tipo-badge.sob-demanda{background:#FEF3C7;color:#92400E}
-    .tipo-badge.pendente{background:#F0F4F8;color:#5A7A8F}
-    .mb-item{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
-    .mb-item:last-child{border-bottom:none}
-    .mb-info{flex:1;min-width:0}
-    .mb-nome{font-size:14px;font-weight:600;color:#0F4C7A}
-    .mb-sub{font-size:12px;color:#94A8B8;margin-top:2px}
-    .stats-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:1rem}
-    .stat-card{background:#E8F4FB;border-radius:12px;padding:14px;text-align:center}
-    .stat-val{font-size:28px;font-weight:700;color:#0F4C7A}
-    .stat-val.green{color:#0F6E56}
-    .stat-val.red{color:#A32D2D}
-    .stat-val.orange{color:#B45309}
-    .stat-label{font-size:12px;color:#5A7A8F;margin-top:2px}
-    .rota-row{padding:12px 0;border-bottom:1px solid #EBF1F5}
-    .rota-row:last-child{border-bottom:none}
-    .rota-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-    .rota-nome{font-size:14px;font-weight:600;color:#0F4C7A}
-    .rota-pct{font-size:13px;font-weight:700;color:#1E9FD9}
-    .rota-pct.done{color:#0F6E56}
-    .prog-bar{background:#E8F4FB;border-radius:99px;height:5px;overflow:hidden}
-    .prog-fill{background:linear-gradient(90deg,#1E9FD9,#0F7BB0);height:100%;border-radius:99px}
-    .rota-sub{font-size:11px;color:#94A8B8;margin-top:4px}
-    .conf-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EBF1F5;gap:10px}
-    .conf-item:last-child{border-bottom:none}
-    .conf-nome{font-size:14px;font-weight:600;color:#0F4C7A}
-    .conf-ts{font-size:12px;color:#1E9FD9;margin-top:4px;font-weight:600;background:#E8F4FB;padding:3px 8px;border-radius:6px;display:inline-block}
-    .conf-obs{margin-top:5px;background:#FEF9EC;border:1px solid #F2CC70;border-radius:7px;padding:6px 10px;font-size:12px;color:#6B4E00}
-    .badge-sim{background:#E1F5EE;color:#085041;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
-    .badge-nao{background:#FCEBEB;color:#791F1F;font-size:11px;padding:3px 10px;border-radius:99px;font-weight:600;white-space:nowrap;flex-shrink:0}
-    .reset-card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
-    .reset-card.danger{border:1.5px solid #FEE2E2}
-    .reset-card.warning{border:1.5px solid #FEF3C7}
-    .reset-title{font-size:15px;font-weight:700;margin-bottom:6px}
-    .reset-title.danger{color:#991B1B}
-    .reset-title.warning{color:#92400E}
-    .reset-desc{font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5}
-    .btn-reset-danger{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEE2E2;color:#991B1B;border:1.5px solid #FCA5A5}
-    .btn-reset-warn{width:100%;padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;background:#FEF9EC;color:#92400E;border:1.5px solid #FCD34D}
-    .filter-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-    .filter-row select,.filter-row input{height:36px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:13px;padding:0 10px;color:#111;background:#fff}
-    .filter-row input{flex:1}
-    .badge-rota{font-size:11px;background:#E8F4FB;color:#0F4C7A;padding:2px 7px;border-radius:5px;font-weight:600}
-    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
-    .toast.show{opacity:1}
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .content{padding:1.25rem;max-width:900px;margin:0 auto}
+    .view{display:none}
+    .view.active{display:block}
+    .card{background:#fff;border-radius:14px;padding:1.25rem;box-shadow:0 1px 5px rgba(30,159,217,0.07);margin-bottom:1rem}
+    .card-title{font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    .field{margin-bottom:.9rem}
+    .field label{display:block;font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+    .field input,.field select{width:100%;height:42px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
+    .field input:focus,.field select:focus{border-color:#1E9FD9}
+    .btn{height:42px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;padding:0 16px;display:inline-flex;align-items:center;gap:6px}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
+    .btn-danger{background:#DC2626;color:#fff}
+    .btn-warning{background:#F59E0B;color:#fff}
+    .btn-block{width:100%;justify-content:center}
+    .list-item{padding:12px;border-radius:10px;border:1.5px solid #D6E5EE;margin-bottom:8px;background:#fff}
+    .list-item-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .list-item-name{font-size:14px;font-weight:700;color:#0F4C7A;flex:1;min-width:0}
+    .list-item-meta{font-size:12px;color:#5A7A8F}
+    .list-item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
+    .badge-ativa{background:#FEF3C7;color:#92400E}
+    .badge-livre{background:#E1F5EE;color:#085041}
+    .badge-pendente{background:#FEF9EC;color:#92400E}
+    .rota-card{background:#fff;border-radius:12px;border:1.5px solid #D6E5EE;margin-bottom:10px;overflow:hidden}
+    .rota-card.ativa{border-color:#F2A536}
+    .rota-header{padding:12px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;cursor:pointer;user-select:none}
+    .rota-nome{font-size:15px;font-weight:700;color:#0F4C7A;flex:1}
+    .rota-expand{background:#F7FBFD;padding:12px 14px;border-top:1px solid #EBF1F5;display:none}
+    .rota-expand.open{display:block}
+    .cli-mini{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:#fff;border:1px solid #EBF1F5;margin-bottom:4px;font-size:12px}
+    .cli-mini.feito{background:#E8F4FB}
+    .cli-mini.imp{background:#F0F4F8}
+    .cli-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;background:#fff;border:1px solid #D6E5EE;flex-shrink:0}
+    .cli-icon.ok{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
+    .cli-icon.bad{background:#5A7A8F;border-color:#5A7A8F;color:#fff}
+    .cli-icon.ch{background:#F2CC70;border-color:#F2CC70}
+    .conf-item{padding:12px;border-radius:10px;margin-bottom:8px;border:1.5px solid}
+    .conf-sim{background:#E1F5EE;border-color:#85DDBA;color:#085041}
+    .conf-nao{background:#FCEBEB;border-color:#F09595;color:#791F1F}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
     .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
-    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:8px}
-    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
-    .modal-btns{display:flex;flex-direction:column;gap:10px}
-    .modal-sim{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#DC2626;color:#fff}
-    .modal-nao{padding:13px;border-radius:11px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
-    #view-motoboys,#view-clientes,#view-gerenciar,#view-entregas,#view-confirmacoes,#view-reset{display:none}
-    #view-motoboys.active,#view-clientes.active,#view-gerenciar.active,#view-entregas.active,#view-confirmacoes.active,#view-reset.active{display:block}
-    .horario-field.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
+    .modal h2{font-size:17px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    .modal-btns{display:flex;gap:8px;margin-top:1rem}
+    .modal-btns .btn{flex:1;justify-content:center}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1}
+    .msg{padding:10px 14px;border-radius:9px;font-size:13px;font-weight:500;margin-top:10px;display:none;text-align:center}
+    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
+    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
+    .spinner{display:inline-block;width:13px;height:13px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:5px;vertical-align:middle}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
+    .search-row{display:flex;gap:8px;margin-bottom:1rem}
+    .search-row input{flex:1;height:42px;border-radius:9px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;color:#0F4C7A;outline:none}
+    .search-row input:focus{border-color:#1E9FD9}
   </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-row">
-    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
-    <div>
-      <h1>Painel Gerencial</h1>
-      <div class="sub">Operação Loglife/Pardini</div>
-    </div>
-  </div>
-</div>
-
 <div class="topbar">
   <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
-  <div class="topbar-title" id="topbar-title">👤 Motoboys</div>
-  <div style="width:60px"></div>
+  <div class="topbar-title" id="topbar-title">🛵 Retiradas</div>
+  <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="topbar-logo"/>
 </div>
 
-<div class="menu-overlay" id="menu-overlay" onclick="fecharMenu(event)">
-  <div class="menu-side" onclick="event.stopPropagation()">
-    <div class="menu-header">
-      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" style="height:32px;filter:brightness(0) invert(1)"/>
-      <button class="menu-close" onclick="fecharMenu()">✕</button>
-    </div>
-    <div class="menu-items">
-      <button class="menu-item active" onclick="setTab('motoboys',this,'👤 Motoboys')">👤 Motoboys</button>
-      <button class="menu-item" onclick="window.location.href='rotas.html'">🛣 Rotas</button>
-      <button class="menu-item" onclick="setTab('clientes',this,'📋 Clientes')">📋 Clientes</button>
-      <button class="menu-item" onclick="setTab('gerenciar',this,'🔎 Buscar/Mover')">🔎 Buscar/Mover</button>
-      <button class="menu-item" onclick="setTab('entregas',this,'📦 Entregas')">📦 Entregas</button>
-      <button class="menu-item" onclick="setTab('confirmacoes',this,'✓ Confirmações')">✓ Confirmações</button>
-      <div class="menu-divider"></div>
-      <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-      <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
-      <button class="menu-item" onclick="window.location.href='base.html'">📋 Base atual</button>
-      <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar IHP</button>
-      <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Planilha IHP</button>
-      <div class="menu-divider"></div>
-      <button class="menu-item danger" onclick="setTab('reset',this,'🔄 Reset')">🔄 Reset</button>
-    </div>
-  </div>
-</div>
-
-<div style="background:#0F4C7A;padding:8px 1rem;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap">
-  <span style="color:#9FE0FF;font-size:12px;font-weight:600">📅 Visualizando dia:</span>
-  <select id="dia-semana-seletor" onchange="trocarDia()" style="height:32px;border-radius:7px;border:none;font-size:13px;padding:0 10px;background:#fff;color:#0F4C7A;font-weight:600;cursor:pointer">
+<div class="dia-bar">
+  <span>📅 Dia:</span>
+  <select id="dia-seletor" onchange="trocarDia()">
     <option value="seg-sex">Seg a Sex</option>
     <option value="sabado">Sábado</option>
     <option value="domingo">Domingo</option>
   </select>
 </div>
 
-<div class="container">
+<div class="menu-overlay" id="menu-overlay" onclick="fecharMenuOverlay(event)">
+  <div class="menu-side" onclick="event.stopPropagation()">
+    <div class="menu-header">
+      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" style="height:30px;filter:brightness(0) invert(1)"/>
+      <button class="menu-close" onclick="fecharMenu()">✕</button>
+    </div>
 
-  <div id="view-motoboys" class="active">
-    <div class="card">
-      <div class="card-title">Cadastrar motoboy</div>
-      <div class="form-row">
-        <input type="text" id="mb-nome" placeholder="Nome completo"/>
-        <input type="tel" id="mb-tel" placeholder="Telefone (11999999999)"/>
-      </div>
-      <div class="form-row">
-        <select id="mb-rota"><option value="">Selecione a rota...</option>
-          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
-          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
-        </select>
-        <button class="btn-add" onclick="addMotoboy()">+ Adicionar</button>
+    <div class="menu-category">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">⚡ Operação <span>▼</span></button>
+      <div class="menu-cat-items open">
+        <button class="menu-item active" onclick="setView('retiradas',this,'🛵 Retiradas')">🛵 Retiradas</button>
+        <button class="menu-item" onclick="setView('confirmacoes',this,'✓ Confirmações')">✓ Confirmações</button>
+        <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+        <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
       </div>
     </div>
+
+    <div class="menu-category">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">⚙️ Configuração <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item" onclick="setView('motoristas',this,'👤 Motoristas')">👤 Motoristas</button>
+        <button class="menu-item" onclick="window.location.href='criar-rota.html'">🛣️ Criar Rota</button>
+        <button class="menu-item" onclick="window.location.href='rotas.html'">📋 Rotas</button>
+        <button class="menu-item" onclick="setView('buscar',this,'🔎 Buscar/Mover')">🔎 Buscar/Mover</button>
+      </div>
+    </div>
+
+    <div class="menu-category">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">📁 Importação / Exportação <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar IHP</button>
+        <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Exportar IHP</button>
+        <button class="menu-item" onclick="window.location.href='base.html'">📋 Base de Clientes</button>
+      </div>
+    </div>
+
+    <div class="menu-category">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">🔧 Sistema <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item danger" onclick="setView('reset',this,'🔄 Reset')">🔄 Reset</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- RETIRADAS -->
+  <div class="view active" id="view-retiradas">
+    <div id="lista-retiradas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+  </div>
+
+  <!-- CONFIRMAÇÕES -->
+  <div class="view" id="view-confirmacoes">
     <div class="card">
-      <div class="card-title">Motoboys cadastrados <button class="refresh-btn" onclick="carregarMotoboys()">↻</button></div>
-      <div id="lista-motoboys"><p class="empty">Carregando...</p></div>
+      <div class="card-title">✓ Confirmações de hoje</div>
+      <div id="lista-conf"><div class="empty"><span class="spinner"></span></div></div>
     </div>
   </div>
 
-  <div id="view-gerenciar">
+  <!-- MOTORISTAS -->
+  <div class="view" id="view-motoristas">
     <div class="card">
-      <div class="card-title">🔎 Buscar cliente por número</div>
-      <div class="form-row">
-        <input type="text" id="busca-num" placeholder="Digite o número do cliente (ex: 22088)"/>
-        <button class="btn-add" onclick="buscarCliente()">🔍 Buscar</button>
-      </div>
-      <div id="resultado-busca" style="margin-top:1rem"></div>
+      <div class="card-title">+ Cadastrar motorista</div>
+      <div class="field"><label>Nome</label><input type="text" id="mb-nome" placeholder="Nome completo"/></div>
+      <div class="field"><label>Telefone</label><input type="tel" id="mb-tel" placeholder="(11) 99999-0000"/></div>
+      <button class="btn btn-primary btn-block" onclick="adicionarMotoboy()">+ Adicionar</button>
+      <div class="msg" id="msg-mb"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">👤 Motoristas cadastrados</div>
+      <div id="lista-mb"><div class="empty"><span class="spinner"></span></div></div>
     </div>
   </div>
 
-  <div id="view-clientes">
+  <!-- BUSCAR -->
+  <div class="view" id="view-buscar">
     <div class="card">
-      <div class="card-title">Adicionar cliente</div>
-      <div class="form-row">
-        <input type="text" id="cl-num" placeholder="Nº cliente" style="max-width:110px"/>
-        <input type="text" id="cl-nome" placeholder="Nome do cliente"/>
+      <div class="card-title">🔎 Buscar cliente</div>
+      <div class="search-row">
+        <input type="text" id="busca-input" placeholder="Nome ou código do cliente" onkeydown="if(event.key==='Enter')buscarCliente()"/>
+        <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
       </div>
-      <div class="form-row">
-        <select id="cl-tipo" onchange="toggleHorario()">
-          <option value="normal">Normal</option>
-          <option value="contra pedido">Contra Pedido</option>
-          <option value="sob demanda">Sob Demanda</option>
-        </select>
-        <input type="time" id="cl-horario" class="horario-field"/>
-      </div>
-      <div class="form-row">
-        <select id="cl-rota"><option value="">Rota...</option>
-          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
-          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
-        </select>
-        <button class="btn-add" onclick="addCliente()">+ Adicionar</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">Clientes <button class="refresh-btn" onclick="carregarClientes()">↻</button></div>
-      <div class="filter-row">
-        <select id="filtro-rota-cl" onchange="carregarClientes()">
-          <option value="">Todas as rotas</option>
-          <optgroup label="São Paulo"><option>SAO PAULO 01</option><option>SAO PAULO 03</option><option>SAO PAULO 04</option><option>SAO PAULO 05</option><option>SAO PAULO 07</option><option>SAO PAULO 08</option><option>SAO PAULO 09</option><option>SAO PAULO 10</option><option>SAO PAULO 13</option><option>SAO PAULO 14</option><option>SAO PAULO 15</option><option>SAO PAULO 17</option><option>SAO PAULO 18</option><option>SAO PAULO 20</option><option>SAO PAULO 22</option><option>SAO PAULO 23</option><option>SAO PAULO 24</option><option>SAO PAULO 25</option><option>SAO PAULO 30</option><option>SAO PAULO 31</option><option>SAO PAULO 32</option><option>SAO PAULO 34</option><option>SAO PAULO 35</option><option>SAO PAULO 37</option><option>SAO PAULO 38</option><option>SAO PAULO 39</option><option>SAO PAULO 40</option><option>SAO PAULO 41</option><option>SAO PAULO 42</option><option>SAO PAULO 43</option><option>SAO PAULO 44</option><option>SAO PAULO 45</option><option>SAO PAULO 46</option><option>SAO PAULO 47</option><option>SAO PAULO 48</option><option>SAO PAULO 49</option><option>SAO PAULO 50</option><option>SAO PAULO 51</option></optgroup>
-          <optgroup label="Outros"><option>NTHCC</option><option>PSC3</option><option>PSC4</option><option>PSC5</option><option>PSC6</option><option>PSC7</option><option>PSC8</option></optgroup>
-        </select>
-        <input type="text" id="busca-cl" placeholder="Buscar cliente..." oninput="filtrarClientes()"/>
-      </div>
-      <div id="lista-clientes"><p class="empty">Selecione uma rota ou busque acima.</p></div>
+      <div id="busca-resultado"></div>
     </div>
   </div>
 
-  <div id="view-entregas">
+  <!-- RESET -->
+  <div class="view" id="view-reset">
     <div class="card">
-      <div class="card-title">Visão geral <button class="refresh-btn" onclick="carregarEntregas()">↻ Atualizar</button></div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val green" id="e-total-ent">—</div><div class="stat-label">entregues</div></div>
-        <div class="stat-card"><div class="stat-val orange" id="e-total-pend">—</div><div class="stat-label">pendentes</div></div>
-      </div>
-      <div id="lista-entregas"><p class="empty">Carregando...</p></div>
+      <div class="card-title">⚠️ Reset do sistema</div>
+      <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Reseta o status de todos os clientes e destrava todas as rotas.</p>
+      <button class="btn btn-danger btn-block" onclick="fazerReset()">⚠️ Fazer Reset agora</button>
+      <div class="msg" id="msg-reset"></div>
     </div>
-  </div>
-
-  <div id="view-confirmacoes">
     <div class="card">
-      <div class="card-title">Confirmações de Rota <button class="refresh-btn" onclick="carregarConfirmacoes()">↻</button></div>
-      <div class="stats-grid">
-        <div class="stat-card"><div class="stat-val green" id="c-sim">—</div><div class="stat-label">confirmadas</div></div>
-        <div class="stat-card"><div class="stat-val red" id="c-nao">—</div><div class="stat-label">não confirmadas</div></div>
-      </div>
-      <div id="lista-confirmacoes"><p class="empty">Carregando...</p></div>
-    </div>
-  </div>
-
-  <div id="view-reset">
-    <div class="reset-card danger">
-      <div class="reset-title danger">🔄 Reset diário de entregas</div>
-      <div class="reset-desc">Zera o status de <strong>todas</strong> as entregas para "pendente". Use no início de cada dia.</div>
-      <button class="btn-reset-danger" onclick="abrirModal('modal-reset')">🔄 Resetar todas as entregas</button>
-    </div>
-    <div class="reset-card warning">
-      <div class="reset-title warning">🗑️ Limpar confirmações de rota</div>
-      <div class="reset-desc">Apaga todas as confirmações de presença.</div>
-      <button class="btn-reset-warn" onclick="abrirModal('modal-reset-conf')">🗑️ Limpar confirmações</button>
+      <div class="card-title">🔄 Limpar confirmações</div>
+      <button class="btn btn-warning btn-block" onclick="resetConfirmacoes()">Limpar confirmações de hoje</button>
+      <div class="msg" id="msg-reset-conf"></div>
     </div>
   </div>
 
 </div>
 
-<div class="modal-overlay hidden" id="modal-reset">
-  <div class="modal">
-    <h2>Resetar entregas?</h2>
-    <p>Todas as entregas voltarão para "pendente".</p>
-    <div class="modal-btns">
-      <button class="modal-sim" onclick="resetarEntregas()">Sim, resetar</button>
-      <button class="modal-nao" onclick="fecharModal('modal-reset')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<div class="modal-overlay hidden" id="modal-reset-conf">
-  <div class="modal">
-    <h2>Limpar confirmações?</h2>
-    <p>Todas as confirmações de rota serão apagadas.</p>
-    <div class="modal-btns">
-      <button class="modal-sim" onclick="resetarConfirmacoes()">Sim, limpar</button>
-      <button class="modal-nao" onclick="fecharModal('modal-reset-conf')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL MOVER CLIENTE -->
+<!-- MODAL MOVER -->
 <div class="modal-overlay hidden" id="modal-mover">
   <div class="modal">
-    <h2>Mover cliente de rota</h2>
-    <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
-      Cliente: <strong id="mov-nome" style="color:#0F4C7A"></strong><br/>
-      Rota atual: <strong id="mov-atual" style="color:#0F4C7A"></strong>
-    </p>
-    <label style="font-size:13px;color:#0F4C7A;font-weight:600;display:block;margin-bottom:6px">Nova rota</label>
-    <select id="mov-rota-nova" style="width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 12px;color:#111;background:#F7FBFD;margin-bottom:14px">
-      <option value="">Selecione a nova rota...</option>
-    </select>
+    <h2>↔ Mover cliente</h2>
+    <div class="field"><label>Nova rota</label><input type="text" id="nova-rota-input" placeholder="Ex: SAO PAULO 52"/></div>
     <div class="modal-btns">
-      <button class="modal-sim" style="background:#1E9FD9" onclick="confirmarMover()">Mover</button>
-      <button class="modal-nao" onclick="fecharModal('modal-mover')">Cancelar</button>
+      <button class="btn btn-secondary" onclick="fecharModal('modal-mover')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMover()">Mover</button>
     </div>
   </div>
 </div>
@@ -327,353 +228,274 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-
-  // Dia da semana selecionado (persistente)
-  let diaAtual = localStorage.getItem('admin_dia_semana') || 'seg-sex';
-  document.getElementById('dia-semana-seletor').value = diaAtual;
-  function trocarDia() {
-    diaAtual = document.getElementById('dia-semana-seletor').value;
-    localStorage.setItem('admin_dia_semana', diaAtual);
-    // Recarrega tudo
-    carregarMotoboys();
-    carregarClientes();
-    carregarEntregas();
-  }
-  function getDia() { return diaAtual; }
-  let todosClientes = [];
-
-  function toggleHorario() {
-    const tipo = document.getElementById('cl-tipo').value;
-    const horField = document.getElementById('cl-horario');
-    if (tipo === 'normal') horField.classList.remove('hidden');
-    else { horField.classList.add('hidden'); horField.value = ''; }
-  }
-
-  // ── BUSCAR / MOVER / EXCLUIR CLIENTE ─────────────
-  async function buscarCliente() {
-    const num = document.getElementById('busca-num').value.trim();
-    if (!num) { toast('Digite o número do cliente.', '#e55'); return; }
-    const res = document.getElementById('resultado-busca');
-    res.innerHTML = '<p class="empty">Buscando...</p>';
-    try {
-      // Busca incluindo inativos
-      const r = await fetch(API + '/clientes?todos=1');
-      const d = await r.json();
-      const encontrados = (d.clientes || []).filter(c => String(c.numero_cliente).trim() === num);
-      if (!encontrados.length) {
-        res.innerHTML = `<p class="empty">Cliente "${num}" não encontrado em nenhuma rota.</p>`;
-        return;
-      }
-      const ativos = encontrados.filter(c => c.ativo !== 0);
-      const inativos = encontrados.filter(c => c.ativo === 0);
-
-      res.innerHTML = `
-        <div style="background:#E8F4FB;border:1.5px solid #BFE0F0;border-radius:11px;padding:10px 14px;margin-bottom:1rem;font-size:13px;color:#0F4C7A">
-          Cliente <strong>${num}</strong>: <strong>${ativos.length}</strong> ativo${ativos.length!==1?'s':''}, <strong>${inativos.length}</strong> inativo${inativos.length!==1?'s':''}.
-        </div>
-      ` + encontrados.map(c => {
-        const inativo = c.ativo === 0;
-        return `
-        <div class="cl-item" style="flex-direction:column;align-items:stretch;padding:14px 0;gap:10px${inativo?';opacity:.7':''}">
-          <div style="display:flex;gap:10px;align-items:flex-start">
-            <div class="cl-info">
-              <div class="cl-nome" style="${inativo?'text-decoration:line-through;color:#94A8B8':''}">${c.nome}</div>
-              <div class="cl-sub">
-                <span>Nº ${c.numero_cliente}</span>
-                ${(c.tipo||'normal') === 'normal' ? `<span>${c.horario}</span>` : ''}
-                <span class="badge-rota">${c.rota}</span>
-                <span class="tipo-badge ${inativo?'improdutiva':(c.status === 'entregue' ? 'entregue' : 'pendente')}">${inativo?'INATIVO':(c.status === 'entregue' ? 'Entregue' : 'Pendente')}</span>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            ${inativo
-              ? `<button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#1E9FD9" onclick="reativarCliente(${c.id}, '${c.nome.replace(/'/g,"\\'")}')">↻ Reativar</button>`
-              : `
-                <button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#0F4C7A" onclick="abrirMover(${c.id}, '${c.nome.replace(/'/g,"\\'")}', '${c.rota}')">➡ Mover de rota</button>
-                <button class="btn-add" style="font-size:12px;padding:6px 12px;height:auto;background:#A32D2D" onclick="excluirEspecifico(${c.id}, '${c.nome.replace(/'/g,"\\'")}', '${c.rota}')">🗑 Desativar</button>
-              `
-            }
-          </div>
-        </div>`;
-      }).join('');
-    } catch(e) { res.innerHTML = '<p class="empty">Erro ao buscar.</p>'; }
-  }
-
-  async function reativarCliente(id, nome) {
-    if (!confirm(`Reativar "${nome}"?`)) return;
-    await fetch(API + '/reativar-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Cliente reativado!', '#1D9E75');
-    buscarCliente();
-  }
-
-  async function excluirEspecifico(id, nome, rota) {
-    if (!confirm(`Excluir "${nome}" da rota ${rota}?`)) return;
-    await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast(`Cliente removido de ${rota}.`, '#1D9E75');
-    buscarCliente();
-  }
-
+  let diaAtual = localStorage.getItem('admin_dia') || 'seg-sex';
   let clienteParaMover = null;
-  function abrirMover(id, nome, rotaAtual) {
-    clienteParaMover = { id, nome, rotaAtual };
-    document.getElementById('mov-nome').textContent = nome;
-    document.getElementById('mov-atual').textContent = rotaAtual;
+  document.getElementById('dia-seletor').value = diaAtual;
 
-    // Preencher dropdown com as rotas (vindas do D1)
-    fetch(API + '/rotas-disponiveis').then(r => r.json()).then(d => {
-      const sel = document.getElementById('mov-rota-nova');
-      const rotas = (d.rotas || []).map(r => r.rota).filter(r => r !== rotaAtual);
-      sel.innerHTML = '<option value="">Selecione a nova rota...</option>' +
-        rotas.map(r => `<option value="${r}">${r}</option>`).join('');
-    });
+  function getDia() { return diaAtual; }
 
-    abrirModal('modal-mover');
+  function trocarDia() {
+    diaAtual = document.getElementById('dia-seletor').value;
+    localStorage.setItem('admin_dia', diaAtual);
+    const viewAtiva = document.querySelector('.view.active')?.id?.replace('view-','');
+    if (viewAtiva === 'retiradas') carregarRetiradas();
+  }
+
+  function abrirMenu() { document.getElementById('menu-overlay').classList.add('open'); }
+  function fecharMenu() { document.getElementById('menu-overlay').classList.remove('open'); }
+  function fecharMenuOverlay(e) { if (e.target === e.currentTarget) fecharMenu(); }
+
+  function toggleCat(btn) {
+    const items = btn.nextElementSibling;
+    const aberto = items.classList.contains('open');
+    items.classList.toggle('open', !aberto);
+  }
+
+  function setView(id, el, titulo) {
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+    document.getElementById('topbar-title').textContent = titulo;
+    fecharMenu();
+    if (id === 'retiradas') carregarRetiradas();
+    if (id === 'confirmacoes') carregarConfirmacoes();
+    if (id === 'motoristas') carregarMotoboys();
+  }
+
+  // RETIRADAS
+  async function carregarRetiradas() {
+    const el = document.getElementById('lista-retiradas');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+    try {
+      const dia = getDia();
+      const [rRes, mbRes] = await Promise.all([
+        fetch(API + '/rotas-disponiveis?dia_semana=' + dia).then(r => r.json()),
+        fetch(API + '/motoboys?todos=1').then(r => r.json())
+      ]);
+      const rotas = rRes.rotas || [];
+      const motoboys = mbRes.motoboys || [];
+      const mbPorRota = {};
+      motoboys.filter(m => m.rota && m.dia_semana === dia).forEach(m => {
+        if (!mbPorRota[m.rota]) mbPorRota[m.rota] = [];
+        mbPorRota[m.rota].push(m);
+      });
+      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota para este dia</div>'; return; }
+      el.innerHTML = rotas.map((r, i) => {
+        const motos = mbPorRota[r.rota] || [];
+        const motoStr = motos.length ? motos.map(m => m.nome).join(', ') : 'Sem motorista';
+        return `
+          <div class="rota-card ${r.ativa ? 'ativa' : ''}">
+            <div class="rota-header" onclick="expandirRota('${r.rota.replace(/'/g,"\\'")}',${i})">
+              <div style="flex:1;min-width:0">
+                <div class="rota-nome">${r.rota}</div>
+                <div style="font-size:12px;color:#5A7A8F;margin-top:2px">🏍️ ${motoStr}</div>
+              </div>
+              <span class="badge ${r.ativa ? 'badge-ativa' : 'badge-livre'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
+              <span style="color:#94A8B8;font-size:12px" id="arr-${i}">▼</span>
+            </div>
+            <div class="rota-expand" id="exp-${i}"></div>
+          </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar</div>';
+    }
+  }
+
+  async function expandirRota(rota, idx) {
+    const div = document.getElementById('exp-' + idx);
+    const arr = document.getElementById('arr-' + idx);
+    if (div.classList.contains('open')) {
+      div.classList.remove('open'); div.innerHTML = ''; arr.textContent = '▼'; return;
+    }
+    div.classList.add('open'); arr.textContent = '▲';
+    div.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota) + '&dia_semana=' + getDia());
+      const d = await r.json();
+      const cls = d.clientes || [];
+      const ent = cls.filter(c => c.status === 'entregue');
+      const pend = cls.filter(c => c.status !== 'entregue');
+      const prod = ent.filter(c => c.produtividade === 'produtiva').length;
+      const imp = ent.filter(c => c.produtividade === 'improdutiva').length;
+
+      const renderC = c => {
+        const feito = c.status === 'entregue';
+        const bad = c.produtividade === 'improdutiva';
+        const icls = feito ? (bad ? 'bad' : 'ok') : (c.horario_chegada ? 'ch' : '');
+        const icon = feito ? (bad ? '✕' : '✓') : (c.horario_chegada ? '📍' : '');
+        const saida = c.horario_entrega ? c.horario_entrega.split(' ').pop() : '';
+        return `<div class="cli-mini ${feito ? (bad?'imp':'feito') : ''}">
+          <div class="cli-icon ${icls}">${icon}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</div>
+            <div style="font-size:10px;color:#5A7A8F">Nº${c.numero_cliente}${c.horario_chegada?' · <span style="color:#92400E">🟡'+c.horario_chegada+'</span>':''}${saida?' · <span style="color:#1E9FD9">🔵'+saida+'</span>':''}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;color:#1E9FD9">${c.horario}</span>
+        </div>`;
+      };
+
+      div.innerHTML = `
+        <div style="display:flex;gap:5px;margin-bottom:8px;flex-wrap:wrap">
+          <span class="badge" style="background:#F0F4F8;color:#0F4C7A">${cls.length} total</span>
+          <span class="badge" style="background:#E1F5EE;color:#085041">✓ ${prod}</span>
+          ${imp?`<span class="badge" style="background:#F0F4F8;color:#5A7A8F">✕ ${imp}</span>`:''}
+          <span class="badge badge-pendente">⏳ ${pend.length}</span>
+        </div>
+        ${pend.length?`<div style="font-size:10px;font-weight:700;color:#92400E;margin-bottom:4px">PENDENTES (${pend.length})</div>${pend.map(renderC).join('')}`:''}
+        ${ent.length?`<div style="font-size:10px;font-weight:700;color:#1E9FD9;margin:8px 0 4px">REGISTRADAS (${ent.length})</div>${ent.map(renderC).join('')}`:''}
+      `;
+    } catch(e) {
+      div.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
+    }
+  }
+
+  // CONFIRMAÇÕES
+  async function carregarConfirmacoes() {
+    const el = document.getElementById('lista-conf');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/');
+      const d = await r.json();
+      const conf = d.confirmacoes || [];
+      if (!conf.length) { el.innerHTML = '<div class="empty">Nenhuma confirmação hoje</div>'; return; }
+      el.innerHTML = conf.map(c => `
+        <div class="conf-item conf-${c.resposta}">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>${c.unidade}</strong>
+            <span>${c.resposta==='sim'?'✅ Sim':'❌ Não'}</span>
+          </div>
+          ${c.obs?`<div style="font-size:12px;margin-top:4px;opacity:.8">${c.obs}</div>`:''}
+          <div style="font-size:11px;margin-top:4px;opacity:.7">${c.data||''}</div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
+    }
+  }
+
+  // MOTORISTAS
+  async function carregarMotoboys() {
+    const el = document.getElementById('lista-mb');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/motoboys?todos=1');
+      const d = await r.json();
+      if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
+      el.innerHTML = d.motoboys.map(m => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${m.nome}</div>
+            <div class="list-item-meta">📱 ${m.telefone}</div>
+            ${m.rota?`<span class="badge" style="background:#E8F4FB;color:#0F4C7A">${m.rota}·${m.dia_semana||''}</span>`:'<span class="badge" style="background:#F0F4F8;color:#94A8B8">Sem rota</span>'}
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-danger" style="height:32px;font-size:12px" onclick="excluirMotoboy(${m.id})">🗑 Excluir</button>
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
+    }
+  }
+
+  async function adicionarMotoboy() {
+    const nome = document.getElementById('mb-nome').value.trim();
+    const tel = document.getElementById('mb-tel').value.trim();
+    if (!nome || !tel) { showMsg('msg-mb','Preencha nome e telefone','error'); return; }
+    showMsg('msg-mb','Salvando...','loading');
+    try {
+      await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:''}) });
+      document.getElementById('mb-nome').value = '';
+      document.getElementById('mb-tel').value = '';
+      showMsg('msg-mb','✅ Motorista adicionado!','success');
+      carregarMotoboys();
+    } catch(e) { showMsg('msg-mb','Erro: '+e.message,'error'); }
+  }
+
+  async function excluirMotoboy(id) {
+    if (!confirm('Excluir este motorista?')) return;
+    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Motorista excluído');
+    carregarMotoboys();
+  }
+
+  // BUSCAR
+  async function buscarCliente() {
+    const q = document.getElementById('busca-input').value.trim();
+    if (!q) return;
+    const el = document.getElementById('busca-resultado');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
+      const d = await r.json();
+      const ql = q.toLowerCase();
+      const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
+      if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
+      el.innerHTML = encontrados.slice(0,20).map(c => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${c.nome}</div>
+            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
+          </div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario} · ${c.dia_semana||''}</div>
+          <div class="list-item-actions">
+            <button class="btn btn-secondary" style="height:32px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover</button>
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  }
+
+  function abrirMover(id) {
+    clienteParaMover = id;
+    document.getElementById('nova-rota-input').value = '';
+    document.getElementById('modal-mover').classList.remove('hidden');
   }
 
   async function confirmarMover() {
-    if (!clienteParaMover) return;
-    const novaRota = document.getElementById('mov-rota-nova').value;
-    if (!novaRota) { toast('Selecione a rota.', '#A32D2D'); return; }
-    await fetch(API + '/mover-cliente', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ id: clienteParaMover.id, rota: novaRota })
-    });
-    toast(`✓ Movido para ${novaRota}!`, '#1E9FD9');
-    fecharModal('modal-mover');
+    const rota = document.getElementById('nova-rota-input').value.trim();
+    if (!rota || !clienteParaMover) return;
+    await fetch(API + '/mover-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:clienteParaMover, rota}) });
+    document.getElementById('modal-mover').classList.add('hidden');
+    toast('✓ Movido para ' + rota);
     buscarCliente();
-    clienteParaMover = null;
   }
 
-  function setTab(tab, el, titulo) {
-    document.querySelectorAll('.menu-item').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    if (el) el.classList.add('active');
-    document.querySelectorAll('[id^="view-"]').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-' + tab).classList.add('active');
-    if (titulo) document.getElementById('topbar-title').textContent = titulo;
-    fecharMenu();
-    if (tab === 'motoboys') carregarMotoboys();
-    if (tab === 'clientes') carregarClientes();
-    if (tab === 'entregas') carregarEntregas();
-    if (tab === 'confirmacoes') carregarConfirmacoes();
+  // RESET
+  async function fazerReset() {
+    if (!confirm('Tem certeza? Reseta TODOS os clientes.')) return;
+    showMsg('msg-reset','Resetando...','loading');
+    try {
+      const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+      const d = await r.json();
+      showMsg('msg-reset','✅ Reset feito! '+d.total+' clientes resetados.','success');
+    } catch(e) { showMsg('msg-reset','Erro: '+e.message,'error'); }
   }
 
-  function abrirMenu() {
-    document.getElementById('menu-overlay').classList.add('open');
-  }
-  function fecharMenu(e) {
-    if (e && e.target !== e.currentTarget) return;
-    document.getElementById('menu-overlay').classList.remove('open');
+  async function resetConfirmacoes() {
+    if (!confirm('Limpar todas as confirmações de hoje?')) return;
+    await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    showMsg('msg-reset-conf','✅ Confirmações limpas!','success');
   }
 
-  function toast(msg, cor) {
+  // HELPERS
+  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = (type==='loading'?'<span class="spinner"></span>':'')+text;
+    el.className = 'msg'+(type?' '+type:'');
+  }
+
+  function toast(msg) {
     const el = document.getElementById('toast');
     el.textContent = msg;
-    el.style.background = cor || '#0F4C7A';
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 2500);
   }
 
-  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
-  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-  function getTipoBadge(c) {
-    const entregue = c.status === 'entregue';
-    const tipo = (c.tipo || 'normal').toLowerCase();
-    if (entregue && c.produtividade === 'improdutiva') return `<span class="tipo-badge improdutiva">❌ Improdutiva</span>`;
-    if (entregue && c.produtividade === 'produtiva')   return `<span class="tipo-badge entregue">✅ Produtiva</span>`;
-    if (tipo === 'contra pedido') return `<span class="tipo-badge contra-pedido">Contra Pedido</span>`;
-    if (tipo === 'sob demanda')   return `<span class="tipo-badge sob-demanda">Sob Demanda</span>`;
-    if (entregue) return `<span class="tipo-badge entregue">${c.horario}</span>`;
-    return `<span class="tipo-badge normal">${c.horario}</span>`;
-  }
-
-  async function carregarMotoboys() {
-    try {
-      const r = await fetch(API + '/motoboys?dia_semana=' + getDia());
-      const d = await r.json();
-      const lista = document.getElementById('lista-motoboys');
-      if (!d.motoboys?.length) { lista.innerHTML = '<p class="empty">Nenhum motoboy cadastrado.</p>'; return; }
-      lista.innerHTML = d.motoboys.map(m => `
-        <div class="mb-item">
-          <div class="mb-info">
-            <div class="mb-nome">${m.nome}</div>
-            <div class="mb-sub">${m.telefone} &middot; <span class="badge-rota">${m.rota}</span></div>
-          </div>
-          <button class="del-btn" onclick="delMotoboy(${m.id},'${m.nome.replace(/'/g,"\\'")}')">✕</button>
-        </div>`).join('');
-    } catch(e) { document.getElementById('lista-motoboys').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
-  }
-
-  async function addMotoboy() {
-    const nome = document.getElementById('mb-nome').value.trim();
-    const tel  = document.getElementById('mb-tel').value.replace(/\D/g,'');
-    const rota = document.getElementById('mb-rota').value;
-    if (!nome || !tel || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
-    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota, dia_semana: getDia()}) });
-    document.getElementById('mb-nome').value = '';
-    document.getElementById('mb-tel').value = '';
-    document.getElementById('mb-rota').value = '';
-    toast('Motoboy adicionado! ✓', '#1D9E75');
-    carregarMotoboys();
-  }
-
-  async function delMotoboy(id, nome) {
-    if (!confirm(`Remover "${nome}"?`)) return;
-    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Motoboy removido.', '#5A7A8F');
-    carregarMotoboys();
-  }
-
-  async function carregarClientes() {
-    const rota = document.getElementById('filtro-rota-cl').value;
-    try {
-      const url = rota ? `${API}/clientes?rota=${encodeURIComponent(rota)}&dia_semana=${getDia()}` : `${API}/clientes?dia_semana=${getDia()}`;
-      const r = await fetch(url);
-      const d = await r.json();
-      todosClientes = d.clientes || [];
-      filtrarClientes();
-    } catch(e) { document.getElementById('lista-clientes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
-  }
-
-  function filtrarClientes() {
-    const busca = (document.getElementById('busca-cl').value || '').toLowerCase();
-    const lista = document.getElementById('lista-clientes');
-    const filtrados = busca ? todosClientes.filter(c =>
-      c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca)
-    ) : todosClientes;
-    if (!filtrados.length) { lista.innerHTML = '<p class="empty">Nenhum cliente encontrado.</p>'; return; }
-    lista.innerHTML = filtrados.map(c => {
-      const entregue = c.status === 'entregue';
-      const tipo = (c.tipo || 'normal').toLowerCase();
-      return `
-        <div class="cl-item ${entregue ? 'entregue' : ''}">
-          <div class="cl-info">
-            <div class="cl-nome">${c.nome}</div>
-            <div class="cl-sub">
-              <span>Nº ${c.numero_cliente}</span>
-              ${tipo === 'normal' ? `<span>${c.horario}</span>` : ''}
-              <span class="badge-rota">${c.rota}</span>
-            </div>
-            ${entregue && c.horario_entrega ? `<div class="cl-entrega-ts">✓ ${c.produtividade === 'improdutiva' ? 'Improdutiva' : 'Produtiva'} às ${c.horario_entrega}</div>` : ''}
-            ${entregue && c.produtividade === 'improdutiva' && c.motivo_improdutiva ? `<div class="cl-motivo">↳ ${c.motivo_improdutiva}</div>` : ''}
-          </div>
-          <div class="cl-actions">
-            ${getTipoBadge(c)}
-            <span class="tipo-badge ${entregue ? 'entregue' : 'pendente'}">${entregue ? 'Registrada' : 'Pendente'}</span>
-            ${entregue ? `<button class="btn-desfazer" onclick="desfazerEntrega(${c.id})">↩ Voltar</button>` : ''}
-            <button class="del-btn" onclick="delCliente(${c.id},'${c.nome.replace(/'/g,"\\'")}')">✕</button>
-          </div>
-        </div>`;
-    }).join('');
-  }
-
-  async function addCliente() {
-    const num   = document.getElementById('cl-num').value.trim();
-    const nome  = document.getElementById('cl-nome').value.trim();
-    const tipo  = document.getElementById('cl-tipo').value;
-    const horario = tipo === 'normal' ? document.getElementById('cl-horario').value : '00:00';
-    const rota  = document.getElementById('cl-rota').value;
-    if (!num || !nome || !rota) { toast('Preencha todos os campos.', '#e55'); return; }
-    if (tipo === 'normal' && !horario) { toast('Informe o horário.', '#e55'); return; }
-    await fetch(API + '/clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:num, nome, horario, rota, tipo, dia_semana: getDia()}) });
-    document.getElementById('cl-num').value = '';
-    document.getElementById('cl-nome').value = '';
-    document.getElementById('cl-horario').value = '';
-    document.getElementById('cl-tipo').value = 'normal';
-    toggleHorario();
-    toast('Cliente adicionado! ✓', '#1D9E75');
-    carregarClientes();
-  }
-
-  async function delCliente(id, nome) {
-    if (!confirm(`Remover "${nome}"?`)) return;
-    await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Cliente removido.', '#5A7A8F');
-    carregarClientes();
-  }
-
-  async function desfazerEntrega(id) {
-    if (!confirm('Voltar status para pendente?')) return;
-    await fetch(API + '/desticar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Status voltado para pendente. ↩', '#B45309');
-    carregarClientes();
-  }
-
-  async function carregarEntregas() {
-    try {
-      const r = await fetch(API + '/clientes?dia_semana=' + getDia());
-      const d = await r.json();
-      const clientes = d.clientes || [];
-      const entregues = clientes.filter(c => c.status === 'entregue').length;
-      document.getElementById('e-total-ent').textContent  = entregues;
-      document.getElementById('e-total-pend').textContent = clientes.length - entregues;
-      const rotas = {};
-      clientes.forEach(c => {
-        if (!rotas[c.rota]) rotas[c.rota] = { total:0, entregues:0 };
-        rotas[c.rota].total++;
-        if (c.status === 'entregue') rotas[c.rota].entregues++;
-      });
-      document.getElementById('lista-entregas').innerHTML = Object.entries(rotas)
-        .sort((a,b) => (b[1].entregues/b[1].total) - (a[1].entregues/a[1].total))
-        .map(([rota, info]) => {
-          const pct = Math.round(info.entregues / info.total * 100);
-          return `<div class="rota-row">
-            <div class="rota-header"><div class="rota-nome">${rota}</div><div class="rota-pct ${pct===100?'done':''}">${pct}%</div></div>
-            <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-            <div class="rota-sub">${info.entregues} de ${info.total} entregues</div>
-          </div>`;
-        }).join('');
-    } catch(e) { document.getElementById('lista-entregas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
-  }
-
-  async function carregarConfirmacoes() {
-    try {
-      const r = await fetch(API + '?action=listar');
-      const d = await r.json();
-      const confs = d.confirmacoes || [];
-      document.getElementById('c-sim').textContent = confs.filter(c => c.resposta === 'sim').length;
-      document.getElementById('c-nao').textContent = confs.filter(c => c.resposta === 'nao').length;
-      const lista = document.getElementById('lista-confirmacoes');
-      if (!confs.length) { lista.innerHTML = '<p class="empty">Nenhuma confirmação ainda.</p>'; return; }
-      lista.innerHTML = confs.map(c => `
-        <div class="conf-item">
-          <div style="flex:1;min-width:0">
-            <div class="conf-nome">${c.unidade}</div>
-            <div class="conf-ts">🕐 ${c.data || '—'}</div>
-            ${c.obs ? `<div class="conf-obs">📝 ${c.obs}</div>` : ''}
-          </div>
-          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
-            <span class="${c.resposta==='sim'?'badge-sim':'badge-nao'}">${c.resposta==='sim'?'Confirmada':'Não confirmada'}</span>
-            <button class="del-btn" onclick="delConf('${c.id}')">✕</button>
-          </div>
-        </div>`).join('');
-    } catch(e) { document.getElementById('lista-confirmacoes').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
-  }
-
-  async function delConf(id) {
-    await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    toast('Confirmação removida.', '#5A7A8F');
-    carregarConfirmacoes();
-  }
-
-  async function resetarEntregas() {
-    fecharModal('modal-reset');
-    const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'} });
-    const d = await r.json();
-    if (d.status === 'ok') toast(`✓ ${d.total} entregas resetadas!`, '#1D9E75');
-  }
-
-  async function resetarConfirmacoes() {
-    fecharModal('modal-reset-conf');
-    const r = await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'} });
-    const d = await r.json();
-    if (d.status === 'ok') { toast('✓ Confirmações limpas!', '#1D9E75'); carregarConfirmacoes(); }
-  }
-
-  carregarMotoboys();
+  // Init
+  carregarRetiradas();
 </script>
 </body>
 </html>
