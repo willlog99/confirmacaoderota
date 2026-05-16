@@ -299,8 +299,8 @@
         if (horarioCell) {
           if (horarioCell instanceof Date) {
             const h = String(horarioCell.getUTCHours()).padStart(2,'0');
-const m = String(horarioCell.getUTCMinutes()).padStart(2,'0');
-horario = h + ':' + m;
+            const m = String(horarioCell.getUTCMinutes()).padStart(2,'0');
+            horario = h + ':' + m;
           } else if (typeof horarioCell === 'string') {
             const txt = horarioCell.trim().toUpperCase();
             if (txt.includes('CONTRA')) tipo = 'contra pedido';
