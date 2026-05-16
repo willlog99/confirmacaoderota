@@ -53,8 +53,9 @@
     .cliente-horario{font-size:13px;font-weight:700;color:#1E9FD9;flex-shrink:0}
     .cliente-dias{padding:0 12px 10px;display:none}
     .cliente-card.sel .cliente-dias{display:block}
-    .cliente-dias select{width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;font-size:13px;padding:0 10px;color:#0F4C7A;background:#fff;outline:none}
-    .cliente-dias select:focus{border-color:#1E9FD9}
+    .dias-checks{display:flex;gap:6px;flex-wrap:wrap}
+    .dia-btn{padding:5px 10px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;user-select:none}
+    .dia-btn.ativo{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
 
     .sel-info{font-size:13px;color:#0F4C7A;background:#E8F4FB;padding:8px 12px;border-radius:8px;margin-bottom:12px;font-weight:600;display:none}
     .btn-row{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
@@ -180,27 +181,26 @@
   let clientesEncontrados = [];
   let clientesSelecionados = new Map(); // id -> {cliente, dias}
 
-  const OPCOES_DIAS = [
-    { val: 'seg-sex', label: 'Seg a Sex' },
-    { val: 'sabado', label: 'Sábado' },
-    { val: 'domingo', label: 'Domingo' },
-    { val: 'seg', label: 'Segunda' },
-    { val: 'ter', label: 'Terça' },
-    { val: 'qua', label: 'Quarta' },
-    { val: 'qui', label: 'Quinta' },
-    { val: 'sex', label: 'Sexta' },
+  const TODOS_DIAS = [
+    { val: 'seg', label: 'Seg' },
+    { val: 'ter', label: 'Ter' },
+    { val: 'qua', label: 'Qua' },
+    { val: 'qui', label: 'Qui' },
+    { val: 'sex', label: 'Sex' },
+    { val: 'sab', label: 'Sáb' },
+    { val: 'dom', label: 'Dom' },
   ];
 
-  const DIAS_MAP = {
-    'seg-sex': 'seg,ter,qua,qui,sex',
-    'sabado': 'sab',
-    'domingo': 'dom',
-    'seg': 'seg',
-    'ter': 'ter',
-    'qua': 'qua',
-    'qui': 'qui',
-    'sex': 'sex',
-  };
+  // Dias padrão por dia principal da rota
+  function diasPadrao(diaPrincipal) {
+    if (diaPrincipal === 'sabado') return ['sab'];
+    if (diaPrincipal === 'domingo') return ['dom'];
+    return ['seg','ter','qua','qui','sex'];
+  }
+
+  function diasAtivosStr(diasSelecionados) {
+    return diasSelecionados.join(',');
+  }
 
   // ── ETAPA 1 ───────────────────────────────────────
   async function carregarMotoboys() {
@@ -279,7 +279,7 @@
       showMsg('msg3', '', '');
 
       const diaPrincipal = document.getElementById('dia-semana').value;
-      const opcoesHtml = OPCOES_DIAS.map(o => `<option value="${o.val}" ${o.val === diaPrincipal ? 'selected' : ''}>${o.label}</option>`).join('');
+      const padrao = diasPadrao(diaPrincipal);
 
       let html = clientesEncontrados.map(c => `
         <div class="cliente-card" id="cli-${c.id}">
@@ -292,10 +292,10 @@
             <div class="cliente-horario">${c.horario}</div>
           </div>
           <div class="cliente-dias">
-            <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Dia desta coleta</label>
-            <select id="dias-${c.id}" onchange="atualizarDiasCliente(${c.id})">
-              ${opcoesHtml}
-            </select>
+            <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px">Dias desta coleta</div>
+            <div class="dias-checks">
+              ${TODOS_DIAS.map(d => `<button type="button" class="dia-btn ${padrao.includes(d.val) ? 'ativo' : ''}" id="dia-${c.id}-${d.val}" onclick="toggleDia(${c.id},'${d.val}')">${d.label}</button>`).join('')}
+            </div>
           </div>
         </div>`).join('');
 
@@ -329,26 +329,32 @@
       card.classList.remove('sel');
       chk.innerHTML = '';
     } else {
-      const diaSel = document.getElementById('dias-' + id)?.value || document.getElementById('dia-semana').value;
-      clientesSelecionados.set(id, { cliente, dia: diaSel });
+      // Pega dias marcados
+      const diasMarcados = getDiasMarcados(id);
+      clientesSelecionados.set(id, { cliente, dias: diasMarcados });
       card.classList.add('sel');
       chk.innerHTML = '✓';
     }
     atualizarSelInfo();
   }
 
-  function atualizarDiasCliente(id) {
-    if (clientesSelecionados.has(id)) {
-      const diaSel = document.getElementById('dias-' + id).value;
-      clientesSelecionados.get(id).dia = diaSel;
+  function getDiasMarcados(id) {
+    return TODOS_DIAS.filter(d => document.getElementById('dia-' + id + '-' + d.val)?.classList.contains('ativo')).map(d => d.val);
+  }
+
+  function toggleDia(clienteId, dia) {
+    const btn = document.getElementById('dia-' + clienteId + '-' + dia);
+    btn.classList.toggle('ativo');
+    // Atualiza se já está selecionado
+    if (clientesSelecionados.has(clienteId)) {
+      clientesSelecionados.get(clienteId).dias = getDiasMarcados(clienteId);
     }
   }
 
   function selecionarTodos() {
-    const diaPrincipal = document.getElementById('dia-semana').value;
     clientesEncontrados.forEach(c => {
-      const diaSel = document.getElementById('dias-' + c.id)?.value || diaPrincipal;
-      clientesSelecionados.set(c.id, { cliente: c, dia: diaSel });
+      const dias = getDiasMarcados(c.id);
+      clientesSelecionados.set(c.id, { cliente: c, dias });
       document.getElementById('cli-' + c.id)?.classList.add('sel');
       const chk = document.getElementById('chk-' + c.id);
       if (chk) chk.innerHTML = '✓';
@@ -378,25 +384,23 @@
     if (!clientesSelecionados.size) return;
     const rota = document.getElementById('nome-rota').value.trim();
     const dia = document.getElementById('dia-semana').value;
-    const diaLabel = OPCOES_DIAS.find(o => o.val === dia)?.label || dia;
+    const diaLabels = { 'seg-sex': 'Seg a Sex', 'sabado': 'Sábado', 'domingo': 'Domingo' };
 
     document.getElementById('resumo').innerHTML = `
       <div class="resumo-linha"><span class="resumo-label">Motorista</span><span class="resumo-valor">${motoboySelected.nome}</span></div>
       <div class="resumo-linha"><span class="resumo-label">Telefone</span><span class="resumo-valor">${motoboySelected.telefone}</span></div>
       <div class="resumo-linha"><span class="resumo-label">Rota</span><span class="resumo-valor">${rota}</span></div>
-      <div class="resumo-linha"><span class="resumo-label">Dia principal</span><span class="resumo-valor">${diaLabel}</span></div>
+      <div class="resumo-linha"><span class="resumo-label">Dia principal</span><span class="resumo-valor">${diaLabels[dia] || dia}</span></div>
       <div class="resumo-linha"><span class="resumo-label">Clientes</span><span class="resumo-valor">${clientesSelecionados.size}</span></div>
     `;
 
-    document.getElementById('lista-conf').innerHTML = Array.from(clientesSelecionados.values()).map(({ cliente, dia: diaC }) => {
-      const diaLabel = OPCOES_DIAS.find(o => o.val === diaC)?.label || diaC;
-      return `<div class="resumo-cli">
+    document.getElementById('lista-conf').innerHTML = Array.from(clientesSelecionados.values()).map(({ cliente, dias }) => `
+      <div class="resumo-cli">
         <span style="color:#1E9FD9;font-weight:700">✓</span>
         <span style="flex:1;font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${cliente.nome}</span>
         <span style="font-size:11px;color:#5A7A8F;flex-shrink:0">${cliente.horario}</span>
-        <span style="font-size:11px;background:#E8F4FB;color:#0F4C7A;padding:2px 7px;border-radius:6px;font-weight:600;flex-shrink:0">${diaLabel}</span>
-      </div>`;
-    }).join('');
+        <span style="font-size:11px;background:#E8F4FB;color:#0F4C7A;padding:2px 7px;border-radius:6px;font-weight:600;flex-shrink:0">${(dias||[]).join('/')}</span>
+      </div>`).join('');
 
     mostrarCard(4);
   }
@@ -410,14 +414,14 @@
     showMsg('msg4', 'Criando rota...', 'loading');
 
     try {
-      const clientesPayload = Array.from(clientesSelecionados.values()).map(({ cliente, dia }) => ({
+      const clientesPayload = Array.from(clientesSelecionados.values()).map(({ cliente, dias }) => ({
         id_base: cliente.id,
         numero_cliente: cliente.numero_cliente,
         nome: cliente.nome,
         horario: cliente.horario,
         obs: cliente.obs || '',
-        dia_coleta: dia,
-        dias_ativos: DIAS_MAP[dia] || 'seg,ter,qua,qui,sex',
+        dia_coleta: (dias && dias.length) ? dias.join(',') : 'seg,ter,qua,qui,sex',
+        dias_ativos: (dias && dias.length) ? dias.join(',') : 'seg,ter,qua,qui,sex',
         tipo: 'normal'
       }));
 
