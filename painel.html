@@ -119,27 +119,31 @@
       <div class="menu-cat-items open">
         <button class="menu-item active" onclick="setView('retiradas',this,'🛵 Retiradas')">🛵 Retiradas</button>
         <button class="menu-item" onclick="setView('confirmacoes',this,'✓ Confirmações')">✓ Confirmações</button>
+        <button class="menu-item" onclick="window.location.href='rotas.html'">🛣️ Rotas</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-        <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
-      </div>
-    </div>
-
-    <div class="menu-category">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">⚙️ Configuração <span>▼</span></button>
-      <div class="menu-cat-items">
         <button class="menu-item" onclick="setView('motoristas',this,'👤 Motoristas')">👤 Motoristas</button>
-        <button class="menu-item" onclick="window.location.href='criar-rota.html'">🛣️ Criar Rota</button>
-        <button class="menu-item" onclick="window.location.href='rotas.html'">📋 Rotas</button>
-        <button class="menu-item" onclick="setView('buscar',this,'🔎 Buscar/Mover')">🔎 Buscar/Mover</button>
       </div>
     </div>
 
     <div class="menu-category">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">📁 Importação / Exportação <span>▼</span></button>
+      <button class="menu-cat-btn" onclick="toggleCat(this)">⚙️ Configuração de OPS <span>▼</span></button>
       <div class="menu-cat-items">
-        <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar IHP</button>
-        <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Exportar IHP</button>
-        <button class="menu-item" onclick="window.location.href='base.html'">📋 Base de Clientes</button>
+        <button class="menu-item" onclick="window.location.href='criar-rota.html'">➕ Criar rota</button>
+        <button class="menu-item" onclick="window.location.href='rotas.html'">✏️ Alterar rota</button>
+        <button class="menu-item" onclick="setView('buscar',this,'🔎 Buscar/Mover cliente')">🔎 Buscar/Mover cliente</button>
+        <button class="menu-item" onclick="setView('criar-cliente',this,'👤 Criar cliente')">👤 Criar cliente</button>
+        <button class="menu-item" onclick="setView('motoristas',this,'👤 Motoristas')">➕➖ Adicionar/Excluir motoboy</button>
+        <button class="menu-item" onclick="setView('ativar-cliente',this,'🔁 Ativar/Desativar cliente')">🔁 Ativar/Desativar cliente</button>
+      </div>
+    </div>
+
+    <div class="menu-category">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">📁 Importação e Registro <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar</button>
+        <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Exportar</button>
+        <button class="menu-item" onclick="window.location.href='base.html'">📋 Base de clientes</button>
+        <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
       </div>
     </div>
 
@@ -192,6 +196,30 @@
         <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
       </div>
       <div id="busca-resultado"></div>
+    </div>
+  </div>
+
+  <!-- CRIAR CLIENTE -->
+  <div class="view" id="view-criar-cliente">
+    <div class="card">
+      <div class="card-title">👤 Criar cliente</div>
+      <div class="field"><label>Código</label><input type="text" id="cc-codigo" placeholder="Ex: 22088"/></div>
+      <div class="field"><label>Nome</label><input type="text" id="cc-nome" placeholder="Nome do cliente"/></div>
+      <div class="field"><label>Horário</label><input type="time" id="cc-horario"/></div>
+      <button class="btn btn-primary btn-block" onclick="criarCliente()">+ Criar cliente</button>
+      <div class="msg" id="msg-cc"></div>
+    </div>
+  </div>
+
+  <!-- ATIVAR/DESATIVAR CLIENTE -->
+  <div class="view" id="view-ativar-cliente">
+    <div class="card">
+      <div class="card-title">🔁 Ativar / Desativar cliente</div>
+      <div class="search-row">
+        <input type="text" id="ativar-input" placeholder="Nome ou código do cliente" onkeydown="if(event.key==='Enter')buscarParaAtivar()"/>
+        <button class="btn btn-primary" onclick="buscarParaAtivar()">Buscar</button>
+      </div>
+      <div id="ativar-resultado"></div>
     </div>
   </div>
 
@@ -457,6 +485,66 @@
     document.getElementById('modal-mover').classList.add('hidden');
     toast('✓ Movido para ' + rota);
     buscarCliente();
+  }
+
+  // CRIAR CLIENTE
+  async function criarCliente() {
+    const codigo = document.getElementById('cc-codigo').value.trim();
+    const nome = document.getElementById('cc-nome').value.trim();
+    const horario = document.getElementById('cc-horario').value;
+    if (!codigo || !nome) { showMsg('msg-cc','Preencha código e nome','error'); return; }
+    showMsg('msg-cc','Salvando...','loading');
+    try {
+      await fetch(API + '/clientes-base', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ numero_cliente: codigo, nome, horario: horario || '00:00' })
+      });
+      document.getElementById('cc-codigo').value = '';
+      document.getElementById('cc-nome').value = '';
+      document.getElementById('cc-horario').value = '';
+      showMsg('msg-cc','✅ Cliente criado na base!','success');
+    } catch(e) { showMsg('msg-cc','Erro: '+e.message,'error'); }
+  }
+
+  // ATIVAR/DESATIVAR
+  async function buscarParaAtivar() {
+    const q = document.getElementById('ativar-input').value.trim();
+    if (!q) return;
+    const el = document.getElementById('ativar-resultado');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
+      const d = await r.json();
+      const ql = q.toLowerCase();
+      const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
+      if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
+      el.innerHTML = encontrados.slice(0,20).map(c => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${c.nome}</div>
+            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
+            <span class="badge" style="${c.ativo ? 'background:#E1F5EE;color:#085041' : 'background:#FCEBEB;color:#791F1F'}">${c.ativo ? 'Ativo' : 'Inativo'}</span>
+          </div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ${c.dia_semana||''}</div>
+          <div class="list-item-actions">
+            ${c.ativo
+              ? `<button class="btn btn-danger" style="height:32px;font-size:12px" onclick="toggleAtivar(${c.id},0)">⛔ Desativar</button>`
+              : `<button class="btn btn-primary" style="height:32px;font-size:12px" onclick="toggleAtivar(${c.id},1)">✅ Ativar</button>`
+            }
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  }
+
+  async function toggleAtivar(id, ativo) {
+    if (ativo) {
+      await fetch(API + '/reativar-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    } else {
+      await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    }
+    toast(ativo ? '✅ Cliente ativado' : '⛔ Cliente desativado');
+    buscarParaAtivar();
   }
 
   // RESET
