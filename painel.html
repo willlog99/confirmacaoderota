@@ -8,24 +8,25 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
 
-    /* TOPBAR */
-    .topbar{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:0 1.25rem;height:60px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px rgba(15,75,122,0.25)}
-    .topbar-logo{height:38px;width:auto}
-    .menu-btn{background:rgba(255,255,255,0.15);color:#fff;border:none;height:40px;padding:0 16px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;backdrop-filter:blur(4px)}
-    .menu-btn:hover{background:rgba(255,255,255,0.25)}
-    .topbar-info{text-align:right;color:#fff}
-    .topbar-data{font-size:13px;opacity:.85}
-    .topbar-titulo{font-size:11px;opacity:.6;text-transform:uppercase;letter-spacing:.5px}
+    /* TOPBAR GRANDE */
+    .topbar{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(15,75,122,0.25)}
+    .topbar-left{display:flex;align-items:center;gap:1.5rem}
+    .menu-btn{background:rgba(255,255,255,0.18);color:#fff;border:none;height:44px;padding:0 18px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
+    .menu-btn:hover{background:rgba(255,255,255,0.28)}
+    .topbar-logo{height:70px;width:auto}
+    .topbar-right{text-align:right;color:#fff}
+    .topbar-titulo{font-size:13px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
+    .topbar-data{font-size:17px;font-weight:700;margin-top:2px}
 
     /* MENU OVERLAY */
-    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.6);z-index:200;display:none}
+    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.65);z-index:200;display:none}
     .menu-overlay.open{display:flex}
-    .menu-side{background:#fff;width:290px;max-width:88vw;height:100%;display:flex;flex-direction:column;overflow-y:auto;box-shadow:4px 0 20px rgba(15,75,122,0.15)}
-    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-    .menu-header img{height:34px;filter:brightness(0) invert(1)}
-    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:34px;height:34px;border-radius:9px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .menu-side{background:#fff;width:300px;max-width:88vw;height:100%;display:flex;flex-direction:column;overflow-y:auto;box-shadow:4px 0 25px rgba(15,75,122,0.2)}
+    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .menu-header img{height:40px;filter:brightness(0) invert(1)}
+    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:17px}
     .menu-cat{border-bottom:1px solid #EBF1F5}
-    .menu-cat-btn{width:100%;padding:11px 1.25rem;background:#F7FBFD;border:none;text-align:left;font-size:11px;font-weight:700;color:#5A7A8F;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.6px}
+    .menu-cat-btn{width:100%;padding:13px 1.25rem;background:#F7FBFD;border:none;text-align:left;font-size:11px;font-weight:700;color:#5A7A8F;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.7px}
     .menu-cat-btn:hover{background:#EBF1F5}
     .menu-cat-items{display:none}
     .menu-cat-items.open{display:block}
@@ -36,98 +37,142 @@
     .menu-item.danger:hover{background:#FCEBEB;border-left-color:#F09595}
 
     /* CONTEÚDO */
-    .content{padding:1.25rem;max-width:960px;margin:0 auto}
+    .content{padding:2rem;max-width:1400px;margin:0 auto}
     .view{display:none}
     .view.active{display:block}
 
     /* KPIs */
-    .kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1rem}
-    .kpi{background:#fff;border-radius:14px;padding:1rem;text-align:center;box-shadow:0 1px 5px rgba(30,159,217,0.08);border-top:3px solid}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2rem}
+    .kpi{background:#fff;border-radius:16px;padding:1.5rem;text-align:center;box-shadow:0 2px 10px rgba(30,159,217,0.08);border-top:4px solid;transition:transform .2s,box-shadow .2s}
+    .kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,159,217,0.15)}
     .kpi.total{border-color:#1E9FD9}
     .kpi.feitas{border-color:#0F9B78}
     .kpi.pendentes{border-color:#F59E0B}
-    .kpi-val{font-size:28px;font-weight:800;line-height:1}
+    .kpi.motoboys{border-color:#7C3AED}
+    .kpi-icon{font-size:24px;margin-bottom:6px}
+    .kpi-val{font-size:42px;font-weight:800;line-height:1}
     .kpi.total .kpi-val{color:#1E9FD9}
     .kpi.feitas .kpi-val{color:#0F9B78}
     .kpi.pendentes .kpi-val{color:#F59E0B}
-    .kpi-label{font-size:11px;color:#5A7A8F;margin-top:4px;text-transform:uppercase;letter-spacing:.4px;font-weight:600}
+    .kpi.motoboys .kpi-val{color:#7C3AED}
+    .kpi-label{font-size:13px;color:#5A7A8F;margin-top:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
 
-    /* CONFIRMAÇÕES MINI */
-    .conf-mini{background:#fff;border-radius:14px;padding:1rem 1.25rem;margin-bottom:1rem;box-shadow:0 1px 5px rgba(30,159,217,0.08);display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
-    .conf-mini:hover{background:#F7FBFD}
-    .conf-mini-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#E8F4FB,#BFE0F0);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
-    .conf-mini-info{flex:1}
-    .conf-mini-title{font-size:14px;font-weight:700;color:#0F4C7A}
-    .conf-mini-sub{font-size:12px;color:#5A7A8F;margin-top:2px}
-    .conf-mini-arrow{color:#94A8B8;font-size:16px}
-    .conf-bar{height:6px;border-radius:99px;background:#EBF1F5;margin-top:8px;overflow:hidden}
-    .conf-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .5s}
+    /* LAYOUT EM 2 COLUNAS */
+    .dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:1.5rem}
+    @media(max-width:980px){
+      .dash-grid{grid-template-columns:1fr}
+      .kpi-grid{grid-template-columns:repeat(2,1fr)}
+      .topbar-logo{height:48px}
+      .content{padding:1rem}
+    }
+
+    /* PAINÉIS */
+    .panel{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(30,159,217,0.08);overflow:hidden}
+    .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;background:#F7FBFD}
+    .panel-title{font-size:15px;font-weight:800;color:#0F4C7A;display:flex;align-items:center;gap:8px}
+    .panel-badge{font-size:11px;background:#1E9FD9;color:#fff;padding:3px 9px;border-radius:99px;font-weight:700}
+    .panel-live{display:flex;align-items:center;gap:6px;font-size:11px;color:#0F9B78;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:#0F9B78;animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .panel-body{padding:1rem 1.5rem;max-height:600px;overflow-y:auto}
 
     /* CARDS DE ROTA */
-    .secao-titulo{font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;margin-top:4px}
-    .rota-card{background:#fff;border-radius:14px;padding:1rem 1.25rem;margin-bottom:10px;box-shadow:0 1px 5px rgba(30,159,217,0.08);cursor:pointer;transition:all .15s;border-left:4px solid #D6E5EE}
-    .rota-card:hover{box-shadow:0 3px 12px rgba(30,159,217,0.15);transform:translateY(-1px)}
-    .rota-card.em-andamento{border-left-color:#1E9FD9}
-    .rota-card.completa{border-left-color:#0F9B78}
-    .rota-card.livre{border-left-color:#D6E5EE}
+    .rota-card{background:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .2s;position:relative}
+    .rota-card:hover{border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.12)}
+    .rota-card.em-andamento{border-left:4px solid #1E9FD9}
+    .rota-card.completa{border-left:4px solid #0F9B78;background:#F0FAF7}
+    .rota-card.livre{border-left:4px solid #D6E5EE}
     .rota-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    .rota-nome{font-size:15px;font-weight:700;color:#0F4C7A;flex:1}
-    .rota-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px}
+    .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A;flex:1}
+    .rota-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
     .badge-andamento{background:#E8F4FB;color:#0F4C7A}
     .badge-completa{background:#E1F5EE;color:#085041}
     .badge-livre{background:#F0F4F8;color:#94A8B8}
-    .rota-motoboy{font-size:12px;color:#5A7A8F;margin-bottom:8px}
-    .rota-progress{display:flex;align-items:center;gap:8px}
+    .rota-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:#5A7A8F;margin-bottom:8px}
+    .rota-progress{display:flex;align-items:center;gap:10px}
     .progress-bar{flex:1;height:8px;border-radius:99px;background:#EBF1F5;overflow:hidden}
-    .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .5s}
+    .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
     .rota-card.completa .progress-fill{background:linear-gradient(90deg,#0F9B78,#085041)}
-    .progress-txt{font-size:12px;font-weight:700;color:#0F4C7A;flex-shrink:0}
+    .progress-txt{font-size:13px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:55px;text-align:right}
+
+    /* PREVIEW CLIENTES NO HOVER */
+    .rota-preview{margin-top:10px;padding-top:10px;border-top:1px solid #EBF1F5;display:none;animation:fadeIn .2s}
+    .rota-card.expanded .rota-preview{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+    .preview-sec{font-size:10px;font-weight:800;color:#5A7A8F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+    .preview-cli{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:11px;margin-bottom:2px}
+    .preview-cli.feito{background:#E1F5EE;color:#085041}
+    .preview-cli.imp{background:#F0F4F8;color:#5A7A8F}
+    .preview-cli.pend{background:#FEF9EC;color:#92400E}
+    .preview-cli-ico{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+    .preview-cli.feito .preview-cli-ico{background:#0F9B78;color:#fff}
+    .preview-cli.imp .preview-cli-ico{background:#5A7A8F;color:#fff}
+    .preview-cli.pend .preview-cli-ico{background:#F59E0B;color:#fff}
+    .preview-cli-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+    .preview-cli-hora{font-weight:700;flex-shrink:0}
+
+    /* CONFIRMAÇÕES LIVE */
+    .conf-progress{padding:1rem 1.5rem;background:linear-gradient(135deg,#E8F4FB,#F0FAFD);border-bottom:1px solid #EBF1F5}
+    .conf-prog-val{font-size:32px;font-weight:800;color:#1E9FD9;line-height:1}
+    .conf-prog-lbl{font-size:13px;color:#5A7A8F;margin:6px 0}
+    .conf-bar{height:8px;border-radius:99px;background:#fff;overflow:hidden;border:1px solid #D6E5EE}
+    .conf-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
+    .conf-list{padding:0.75rem 1.5rem}
+    .conf-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;margin-bottom:6px;border:1px solid;animation:slideIn .3s}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+    .conf-row.sim{background:#F0FAF7;border-color:#85DDBA}
+    .conf-row.nao{background:#FEF4F4;border-color:#F09595}
+    .conf-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+    .conf-row.sim .conf-ico{background:#0F9B78;color:#fff}
+    .conf-row.nao .conf-ico{background:#DC2626;color:#fff}
+    .conf-info{flex:1;min-width:0}
+    .conf-uni{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conf-obs{font-size:11px;color:#5A7A8F;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conf-hora{font-size:11px;color:#94A8B8;flex-shrink:0;font-weight:600}
 
     /* DETALHE ROTA */
-    .detalhe-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem}
-    .detalhe-back{background:#E8F4FB;color:#0F4C7A;border:none;height:38px;padding:0 14px;border-radius:9px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
-    .detalhe-titulo{font-size:18px;font-weight:800;color:#0F4C7A;flex:1}
-    .cli-item{background:#fff;border-radius:11px;padding:11px 14px;margin-bottom:6px;border:1.5px solid #EBF1F5;display:flex;align-items:center;gap:10px}
+    .detalhe-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+    .detalhe-back{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;height:42px;padding:0 16px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .detalhe-back:hover{background:#F7FBFD}
+    .detalhe-titulo{font-size:22px;font-weight:800;color:#0F4C7A;flex:1}
+    .cli-item{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #EBF1F5;display:flex;align-items:center;gap:12px;transition:all .15s}
+    .cli-item:hover{box-shadow:0 2px 8px rgba(30,159,217,0.08)}
     .cli-item.feito{background:#F0FAF7;border-color:#85DDBA}
     .cli-item.improdutivo{background:#F5F6F8;border-color:#C5D0DA}
     .cli-item.chegou{background:#FEF9EC;border-color:#F2CC70}
-    .cli-status{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:#EBF1F5;color:#94A8B8;font-weight:700}
+    .cli-status{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:#EBF1F5;color:#94A8B8;font-weight:800}
     .cli-status.ok{background:#0F9B78;color:#fff}
     .cli-status.imp{background:#5A7A8F;color:#fff}
     .cli-status.ch{background:#F2CC70;color:#92400E}
     .cli-info{flex:1;min-width:0}
-    .cli-nome{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cli-meta{font-size:11px;color:#5A7A8F;margin-top:2px}
-    .cli-hora{font-size:12px;font-weight:700;color:#1E9FD9;flex-shrink:0}
+    .cli-nome{font-size:14px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cli-meta{font-size:12px;color:#5A7A8F;margin-top:2px}
+    .cli-hora{font-size:14px;font-weight:800;color:#1E9FD9;flex-shrink:0}
 
-    /* CARD GENÉRICO */
-    .card{background:#fff;border-radius:14px;padding:1.25rem;box-shadow:0 1px 5px rgba(30,159,217,0.07);margin-bottom:1rem}
-    .card-title{font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    /* CARDS / FORMS */
+    .card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 2px 10px rgba(30,159,217,0.07);margin-bottom:1rem}
+    .card-title{font-size:17px;font-weight:800;color:#0F4C7A;margin-bottom:1rem}
     .field{margin-bottom:.9rem}
     .field label{display:block;font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-    .field input,.field select{width:100%;height:42px;border-radius:9px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
+    .field input,.field select{width:100%;height:44px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
     .field input:focus,.field select:focus{border-color:#1E9FD9}
-    .btn{height:42px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;padding:0 16px;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+    .btn{height:44px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;border:none;padding:0 18px;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
     .btn:disabled{opacity:.5;cursor:not-allowed}
     .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
     .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
     .btn-danger{background:#DC2626;color:#fff}
     .btn-warning{background:#F59E0B;color:#fff}
     .btn-block{width:100%;justify-content:center}
-    .list-item{padding:12px;border-radius:10px;border:1.5px solid #D6E5EE;margin-bottom:8px;background:#fff}
-    .list-item-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .list-item{padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;margin-bottom:8px;background:#fff}
+    .list-item-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
     .list-item-name{font-size:14px;font-weight:700;color:#0F4C7A;flex:1;min-width:0}
     .list-item-meta{font-size:12px;color:#5A7A8F}
     .list-item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-    .badge{display:inline-block;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600}
-    .conf-item{padding:12px;border-radius:10px;margin-bottom:8px;border:1.5px solid}
-    .conf-sim{background:#E1F5EE;border-color:#85DDBA;color:#085041}
-    .conf-nao{background:#FCEBEB;border-color:#F09595;color:#791F1F}
+    .badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
     .search-row{display:flex;gap:8px;margin-bottom:1rem}
-    .search-row input{flex:1;height:42px;border-radius:9px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;color:#0F4C7A;outline:none}
+    .search-row input{flex:1;height:44px;border-radius:10px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;color:#0F4C7A;outline:none}
     .search-row input:focus{border-color:#1E9FD9}
 
-    /* MODAL */
     .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
     .modal-overlay.hidden{display:none}
     .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
@@ -135,14 +180,13 @@
     .modal-btns{display:flex;gap:8px;margin-top:1rem}
     .modal-btns .btn{flex:1;justify-content:center}
 
-    /* MSG / TOAST */
-    .msg{padding:10px 14px;border-radius:9px;font-size:13px;font-weight:500;margin-top:10px;display:none;text-align:center}
+    .msg{padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-top:10px;display:none;text-align:center}
     .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
     .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
     .spinner{display:inline-block;width:13px;height:13px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:5px;vertical-align:middle}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:11px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(15,75,122,0.3)}
     .toast.show{opacity:1}
     .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
   </style>
@@ -151,9 +195,11 @@
 
 <!-- TOPBAR -->
 <div class="topbar">
-  <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
-  <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="topbar-logo"/>
-  <div class="topbar-info">
+  <div class="topbar-left">
+    <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="topbar-logo"/>
+  </div>
+  <div class="topbar-right">
     <div class="topbar-titulo">Centro de Controle</div>
     <div class="topbar-data" id="topbar-data">—</div>
   </div>
@@ -170,11 +216,11 @@
     <div class="menu-cat">
       <button class="menu-cat-btn" onclick="toggleCat(this)">⚡ Operação <span>▼</span></button>
       <div class="menu-cat-items open">
-        <button class="menu-item active" id="menu-painel" onclick="setView('painel',this,'🏠 Painel')">🏠 Painel</button>
-        <button class="menu-item" onclick="setView('confirmacoes',this,'✓ Confirmações')">✓ Confirmações</button>
+        <button class="menu-item active" id="menu-painel" onclick="setView('painel',this)">🏠 Painel</button>
+        <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-        <button class="menu-item" onclick="setView('motoristas',this,'👤 Motoristas')">👤 Motoristas</button>
-        <button class="menu-item" onclick="setView('rotas-view',this,'🛣️ Rotas')">🛣️ Rotas</button>
+        <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
+        <button class="menu-item" onclick="setView('rotas-view',this)">🛣️ Rotas</button>
       </div>
     </div>
 
@@ -183,10 +229,10 @@
       <div class="menu-cat-items">
         <button class="menu-item" onclick="window.location.href='criar-rota.html'">➕ Criar rota</button>
         <button class="menu-item" onclick="window.location.href='rotas.html'">✏️ Alterar rota</button>
-        <button class="menu-item" onclick="setView('buscar',this,'🔎 Buscar/Mover cliente')">🔎 Buscar/Mover cliente</button>
-        <button class="menu-item" onclick="setView('criar-cliente',this,'👤 Criar cliente')">👤 Criar cliente</button>
-        <button class="menu-item" onclick="setView('gerenciar-motoboys',this,'➕➖ Motoristas')">➕➖ Adicionar/Excluir motoboy</button>
-        <button class="menu-item" onclick="setView('ativar-cliente',this,'🔁 Ativar/Desativar cliente')">🔁 Ativar/Desativar cliente</button>
+        <button class="menu-item" onclick="setView('buscar',this)">🔎 Buscar/Mover cliente</button>
+        <button class="menu-item" onclick="setView('criar-cliente',this)">👤 Criar cliente</button>
+        <button class="menu-item" onclick="setView('gerenciar-motoboys',this)">➕➖ Adicionar/Excluir motoboy</button>
+        <button class="menu-item" onclick="setView('ativar-cliente',this)">🔁 Ativar/Desativar cliente</button>
       </div>
     </div>
 
@@ -203,7 +249,7 @@
     <div class="menu-cat">
       <button class="menu-cat-btn" onclick="toggleCat(this)">🔧 Sistema <span>▼</span></button>
       <div class="menu-cat-items">
-        <button class="menu-item danger" onclick="setView('reset',this,'🔄 Reset')">🔄 Reset</button>
+        <button class="menu-item danger" onclick="setView('reset',this)">🔄 Reset</button>
       </div>
     </div>
   </div>
@@ -218,47 +264,71 @@
     <!-- KPIs -->
     <div class="kpi-grid">
       <div class="kpi total">
+        <div class="kpi-icon">📦</div>
         <div class="kpi-val" id="kpi-total">—</div>
         <div class="kpi-label">Total</div>
       </div>
       <div class="kpi feitas">
+        <div class="kpi-icon">✓</div>
         <div class="kpi-val" id="kpi-feitas">—</div>
         <div class="kpi-label">Coletadas</div>
       </div>
       <div class="kpi pendentes">
+        <div class="kpi-icon">⏳</div>
         <div class="kpi-val" id="kpi-pendentes">—</div>
         <div class="kpi-label">Pendentes</div>
       </div>
-    </div>
-
-    <!-- CONFIRMAÇÕES MINI -->
-    <div class="conf-mini" onclick="setView('confirmacoes', document.querySelector('[onclick*=confirmacoes]'), '✓ Confirmações')">
-      <div class="conf-mini-icon">✓</div>
-      <div class="conf-mini-info">
-        <div class="conf-mini-title">Confirmações de presença</div>
-        <div class="conf-mini-sub" id="conf-mini-sub">Carregando...</div>
-        <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
+      <div class="kpi motoboys">
+        <div class="kpi-icon">🏍️</div>
+        <div class="kpi-val" id="kpi-motoboys">—</div>
+        <div class="kpi-label">Motoboys</div>
       </div>
-      <div class="conf-mini-arrow">›</div>
     </div>
 
-    <!-- ROTAS -->
-    <div class="secao-titulo">🛵 Rotas em operação</div>
-    <div id="painel-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+    <!-- 2 COLUNAS -->
+    <div class="dash-grid">
 
+      <!-- ESQUERDA: ROTAS -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🛵 Rotas em operação <span class="panel-badge" id="rotas-badge">0</span></div>
+          <div class="panel-live"><div class="live-dot"></div>Live</div>
+        </div>
+        <div class="panel-body" id="painel-rotas">
+          <div class="empty"><span class="spinner"></span> Carregando...</div>
+        </div>
+      </div>
+
+      <!-- DIREITA: CONFIRMAÇÕES LIVE -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">✓ Confirmações de presença</div>
+          <div class="panel-live"><div class="live-dot"></div>Live</div>
+        </div>
+        <div class="conf-progress">
+          <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:18px;color:#5A7A8F;font-weight:600">/ 37</span></div>
+          <div class="conf-prog-lbl" id="conf-prog-lbl">unidades confirmadas</div>
+          <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
+        </div>
+        <div class="conf-list" id="conf-list-live">
+          <div class="empty"><span class="spinner"></span></div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- DETALHE ROTA -->
   <div class="view" id="view-detalhe-rota">
     <div class="detalhe-header">
-      <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'), '🏠 Painel')">← Voltar</button>
+      <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
       <div class="detalhe-titulo" id="detalhe-titulo">—</div>
     </div>
-    <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap"></div>
+    <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
     <div id="detalhe-lista"></div>
   </div>
 
-  <!-- CONFIRMAÇÕES -->
+  <!-- CONFIRMAÇÕES (full) -->
   <div class="view" id="view-confirmacoes">
     <div class="card">
       <div class="card-title">✓ Confirmações de hoje</div>
@@ -266,7 +336,7 @@
     </div>
   </div>
 
-  <!-- MOTORISTAS (lista) -->
+  <!-- MOTORISTAS -->
   <div class="view" id="view-motoristas">
     <div class="card">
       <div class="card-title">👤 Motoristas cadastrados</div>
@@ -350,7 +420,6 @@
 
 </div>
 
-<!-- MODAL MOVER -->
 <div class="modal-overlay hidden" id="modal-mover">
   <div class="modal">
     <h2>↔ Mover cliente</h2>
@@ -367,13 +436,13 @@
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let clienteParaMover = null;
-  let rotaAtualDetalhe = null;
+  let autoRefreshInterval = null;
+  let cardExpandido = null;
 
-  // Data no topbar
   const agora = new Date();
   const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  document.getElementById('topbar-data').textContent = `${dias[agora.getDay()]}, ${agora.getDate()} ${meses[agora.getMonth()]}`;
+  document.getElementById('topbar-data').textContent = `${dias[agora.getDay()]}, ${agora.getDate()} ${meses[agora.getMonth()]} ${agora.getFullYear()}`;
 
   // ── MENU ─────────────────────────────────────────
   function abrirMenu() { document.getElementById('menu-overlay').classList.add('open'); }
@@ -381,22 +450,32 @@
   function fecharMenuOverlay(e) { if (e.target === e.currentTarget) fecharMenu(); }
   function toggleCat(btn) { btn.nextElementSibling.classList.toggle('open'); }
 
-  function setView(id, el, titulo) {
+  function setView(id, el) {
+    pararAutoRefresh();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
     document.getElementById('view-' + id).classList.add('active');
     if (el) el.classList.add('active');
     fecharMenu();
     window.scrollTo(0,0);
-    if (id === 'painel') carregarPainel();
+    if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); }
     if (id === 'confirmacoes') carregarConfirmacoes();
     if (id === 'motoristas') carregarMotoristasList();
     if (id === 'rotas-view') carregarRotasView();
     if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
   }
 
+  // ── AUTO REFRESH ──────────────────────────────────
+  function iniciarAutoRefresh() {
+    pararAutoRefresh();
+    autoRefreshInterval = setInterval(() => carregarPainel(true), 8000);
+  }
+  function pararAutoRefresh() {
+    if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+  }
+
   // ── PAINEL PRINCIPAL ──────────────────────────────
-  async function carregarPainel() {
+  async function carregarPainel(silent) {
     try {
       const [rRes, mbRes, confRes] = await Promise.all([
         fetch(API + '/rotas-disponiveis').then(r => r.json()),
@@ -408,12 +487,12 @@
       const motoboys = mbRes.motoboys || [];
       const confirmacoes = confRes.confirmacoes || [];
 
-      // KPIs — busca clientes de todas as rotas em paralelo
-      let totalGeral = 0, feitasGeral = 0;
+      // Dados de cada rota em paralelo
       const dadosRotas = await Promise.all(
         rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota)).then(res => res.json()))
       );
 
+      let totalGeral = 0, feitasGeral = 0;
       dadosRotas.forEach(d => {
         const cls = d.clientes || [];
         totalGeral += cls.length;
@@ -423,12 +502,33 @@
       document.getElementById('kpi-total').textContent = totalGeral;
       document.getElementById('kpi-feitas').textContent = feitasGeral;
       document.getElementById('kpi-pendentes').textContent = totalGeral - feitasGeral;
+      document.getElementById('kpi-motoboys').textContent = motoboys.length;
+      document.getElementById('rotas-badge').textContent = rotas.length;
 
-      // Confirmações mini
+      // Confirmações
       const totalUnidades = 37;
       const conf = confirmacoes.length;
-      document.getElementById('conf-mini-sub').textContent = `${conf} de ${totalUnidades} unidades confirmadas`;
+      document.getElementById('conf-prog-val').textContent = conf;
+      document.getElementById('conf-prog-lbl').textContent = conf === 1 ? 'unidade confirmada' : 'unidades confirmadas';
       document.getElementById('conf-bar-fill').style.width = Math.min(100, Math.round(conf/totalUnidades*100)) + '%';
+
+      // Lista de confirmações live (últimas 15)
+      const confEl = document.getElementById('conf-list-live');
+      if (!confirmacoes.length) {
+        confEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
+      } else {
+        confEl.innerHTML = confirmacoes.slice(0, 15).map(c => {
+          const hora = c.data ? c.data.split(' ').pop() : '';
+          return `<div class="conf-row ${c.resposta}">
+            <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
+            <div class="conf-info">
+              <div class="conf-uni">${c.unidade}</div>
+              ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
+            </div>
+            <div class="conf-hora">${hora}</div>
+          </div>`;
+        }).join('');
+      }
 
       // Motoboys por rota
       const mbPorRota = {};
@@ -450,35 +550,67 @@
         const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
         const nomes = mbPorRota[r.rota] || [];
         const motoStr = nomes.length ? nomes.join(', ') : 'Sem motorista';
+        const expandida = cardExpandido === r.rota ? 'expanded' : '';
+
+        const ent = cls.filter(c => c.status === 'entregue');
+        const pend = cls.filter(c => c.status !== 'entregue');
+
+        const renderPrev = (c, tipo) => {
+          const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
+          return `<div class="preview-cli ${tipo}">
+            <div class="preview-cli-ico">${ico}</div>
+            <div class="preview-cli-nome">${c.nome}</div>
+            <div class="preview-cli-hora">${c.horario}</div>
+          </div>`;
+        };
+
+        const prodList = ent.filter(c => c.produtividade !== 'improdutiva').map(c => renderPrev(c, 'feito')).join('');
+        const impList = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
+        const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
 
         return `
-          <div class="rota-card ${status}" onclick="abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}', ${i})">
+          <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
             <div class="rota-top">
               <div class="rota-nome">${r.rota}</div>
               <span class="rota-badge ${badgeCls}">${badgeLabel}</span>
             </div>
-            <div class="rota-motoboy">🏍️ ${motoStr}</div>
+            <div class="rota-meta">
+              <span>🏍️ ${motoStr}</span>
+            </div>
             <div class="rota-progress">
               <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
               <div class="progress-txt">${feitas}/${total}</div>
             </div>
+            <div class="rota-preview">
+              ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
+              ${prodList ? `<div class="preview-sec" style="margin-top:8px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
+              ${impList ? `<div class="preview-sec" style="margin-top:8px">✕ Improdutivas</div>${impList}` : ''}
+              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')" style="margin-top:10px;background:#1E9FD9;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
+            </div>
           </div>`;
       }).join('');
 
-      // Guarda dados das rotas pra uso no detalhe
-      window._rotasDados = dadosRotas;
-      window._rotasLista = rotas;
-
     } catch(e) {
-      document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar</div>';
+      if (!silent) document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
     }
   }
 
-  async function abrirDetalheRota(rota, idx) {
+  function toggleRotaPreview(card, rota) {
+    if (cardExpandido === rota) {
+      cardExpandido = null;
+      card.classList.remove('expanded');
+    } else {
+      document.querySelectorAll('.rota-card.expanded').forEach(c => c.classList.remove('expanded'));
+      cardExpandido = rota;
+      card.classList.add('expanded');
+    }
+  }
+
+  async function abrirDetalheRota(rota) {
+    pararAutoRefresh();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-detalhe-rota').classList.add('active');
     document.getElementById('detalhe-titulo').textContent = rota;
-    rotaAtualDetalhe = rota;
     window.scrollTo(0,0);
 
     const listaEl = document.getElementById('detalhe-lista');
@@ -495,10 +627,10 @@
       const imp = ent.filter(c => c.produtividade === 'improdutiva').length;
 
       kpisEl.innerHTML = `
-        <span class="badge" style="background:#F0F4F8;color:#0F4C7A;font-size:12px;padding:5px 10px">${cls.length} total</span>
-        <span class="badge" style="background:#E1F5EE;color:#085041;font-size:12px;padding:5px 10px">✓ ${prod} produtivas</span>
-        ${imp ? `<span class="badge" style="background:#F0F4F8;color:#5A7A8F;font-size:12px;padding:5px 10px">✕ ${imp} improdutivas</span>` : ''}
-        <span class="badge" style="background:#FEF9EC;color:#92400E;font-size:12px;padding:5px 10px">⏳ ${pend.length} pendentes</span>
+        <span class="badge" style="background:#F0F4F8;color:#0F4C7A;font-size:13px;padding:6px 12px">${cls.length} total</span>
+        <span class="badge" style="background:#E1F5EE;color:#085041;font-size:13px;padding:6px 12px">✓ ${prod} produtivas</span>
+        ${imp ? `<span class="badge" style="background:#F0F4F8;color:#5A7A8F;font-size:13px;padding:6px 12px">✕ ${imp} improdutivas</span>` : ''}
+        <span class="badge" style="background:#FEF9EC;color:#92400E;font-size:13px;padding:6px 12px">⏳ ${pend.length} pendentes</span>
       `;
 
       const renderC = c => {
@@ -519,16 +651,16 @@
         </div>`;
       };
 
-      listaEl.innerHTML = (pend.length ? `<div class="secao-titulo" style="margin-bottom:6px">PENDENTES</div>${pend.map(renderC).join('')}` : '') +
-        (ent.length ? `<div class="secao-titulo" style="margin-top:12px;margin-bottom:6px">REGISTRADAS</div>${ent.map(renderC).join('')}` : '') ||
+      listaEl.innerHTML = (pend.length ? `<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⏳ Pendentes (${pend.length})</div>${pend.map(renderC).join('')}` : '') +
+        (ent.length ? `<div style="font-size:11px;font-weight:800;color:#1E9FD9;text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 8px">✓ Registradas (${ent.length})</div>${ent.map(renderC).join('')}` : '') ||
         '<div class="empty">Nenhum cliente nesta rota</div>';
 
     } catch(e) {
-      listaEl.innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar</div>';
+      listaEl.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
     }
   }
 
-  // ── CONFIRMAÇÕES ──────────────────────────────────
+  // ── CONFIRMAÇÕES (full) ───────────────────────────
   async function carregarConfirmacoes() {
     const el = document.getElementById('lista-conf');
     el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
@@ -538,13 +670,13 @@
       const conf = d.confirmacoes || [];
       if (!conf.length) { el.innerHTML = '<div class="empty">Nenhuma confirmação hoje</div>'; return; }
       el.innerHTML = conf.map(c => `
-        <div class="conf-item conf-${c.resposta}">
-          <div style="display:flex;justify-content:space-between;align-items:center">
-            <strong>${c.unidade}</strong>
-            <span>${c.resposta==='sim'?'✅ Sim':'❌ Não'}</span>
+        <div class="conf-row ${c.resposta}">
+          <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
+          <div class="conf-info">
+            <div class="conf-uni">${c.unidade}</div>
+            ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
           </div>
-          ${c.obs?`<div style="font-size:12px;margin-top:4px;opacity:.8">${c.obs}</div>`:''}
-          <div style="font-size:11px;margin-top:4px;opacity:.7">${c.data||''}</div>
+          <div class="conf-hora">${c.data ? c.data.split(' ').pop() : ''}</div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
   }
@@ -585,7 +717,7 @@
           </div>
           ${r.motoboy_aberto ? `<div style="font-size:12px;color:#5A7A8F;margin-top:4px">🏍️ ${r.motoboy_aberto}</div>` : ''}
           <div class="list-item-actions">
-            ${r.ativa ? `<button class="btn btn-warning" style="height:32px;font-size:12px" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
+            ${r.ativa ? `<button class="btn btn-warning" style="height:34px;font-size:12px" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
           </div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
@@ -613,7 +745,7 @@
             <div class="list-item-meta">📱 ${m.telefone}</div>
           </div>
           <div class="list-item-actions">
-            <button class="btn btn-danger" style="height:32px;font-size:12px" onclick="excluirMotoboy(${m.id})">🗑 Excluir</button>
+            <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy(${m.id})">🗑 Excluir</button>
           </div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
@@ -676,7 +808,7 @@
           </div>
           <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
           <div class="list-item-actions">
-            <button class="btn btn-secondary" style="height:32px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover</button>
+            <button class="btn btn-secondary" style="height:34px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover</button>
           </div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
@@ -716,11 +848,11 @@
             <div class="list-item-meta">Nº ${c.numero_cliente}</div>
             <span class="badge" style="${c.ativo ? 'background:#E1F5EE;color:#085041' : 'background:#FCEBEB;color:#791F1F'}">${c.ativo ? 'Ativo' : 'Inativo'}</span>
           </div>
-          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ${c.dia_semana||''}</div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'}</div>
           <div class="list-item-actions">
             ${c.ativo
-              ? `<button class="btn btn-danger" style="height:32px;font-size:12px" onclick="toggleAtivar(${c.id},0)">⛔ Desativar</button>`
-              : `<button class="btn btn-primary" style="height:32px;font-size:12px" onclick="toggleAtivar(${c.id},1)">✅ Ativar</button>`}
+              ? `<button class="btn btn-danger" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},0)">⛔ Desativar</button>`
+              : `<button class="btn btn-primary" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},1)">✅ Ativar</button>`}
           </div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
@@ -772,6 +904,7 @@
 
   // Init
   carregarPainel();
+  iniciarAutoRefresh();
 </script>
 </body>
 </html>
