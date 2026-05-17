@@ -8,17 +8,15 @@
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
 
-    /* TOPBAR GRANDE */
     .topbar{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(15,75,122,0.25)}
     .topbar-left{display:flex;align-items:center;gap:1.5rem}
     .menu-btn{background:rgba(255,255,255,0.18);color:#fff;border:none;height:44px;padding:0 18px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
     .menu-btn:hover{background:rgba(255,255,255,0.28)}
-    .topbar-logo{height:70px;width:auto}
+    .topbar-logo{height:70px;width:auto;filter:brightness(0) invert(1)}
     .topbar-right{text-align:right;color:#fff}
     .topbar-titulo{font-size:13px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
     .topbar-data{font-size:17px;font-weight:700;margin-top:2px}
 
-    /* MENU OVERLAY */
     .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.65);z-index:200;display:none}
     .menu-overlay.open{display:flex}
     .menu-side{background:#fff;width:300px;max-width:88vw;height:100%;display:flex;flex-direction:column;overflow-y:auto;box-shadow:4px 0 25px rgba(15,75,122,0.2)}
@@ -36,12 +34,10 @@
     .menu-item.danger{color:#A32D2D}
     .menu-item.danger:hover{background:#FCEBEB;border-left-color:#F09595}
 
-    /* CONTEÚDO */
     .content{padding:2rem;max-width:1400px;margin:0 auto}
     .view{display:none}
     .view.active{display:block}
 
-    /* KPIs */
     .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2rem}
     .kpi{background:#fff;border-radius:16px;padding:1.5rem;text-align:center;box-shadow:0 2px 10px rgba(30,159,217,0.08);border-top:4px solid;transition:transform .2s,box-shadow .2s}
     .kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,159,217,0.15)}
@@ -57,7 +53,6 @@
     .kpi.motoboys .kpi-val{color:#7C3AED}
     .kpi-label{font-size:13px;color:#5A7A8F;margin-top:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
 
-    /* LAYOUT EM 2 COLUNAS */
     .dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:1.5rem}
     @media(max-width:980px){
       .dash-grid{grid-template-columns:1fr}
@@ -66,7 +61,6 @@
       .content{padding:1rem}
     }
 
-    /* PAINÉIS */
     .panel{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(30,159,217,0.08);overflow:hidden}
     .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;background:#F7FBFD}
     .panel-title{font-size:15px;font-weight:800;color:#0F4C7A;display:flex;align-items:center;gap:8px}
@@ -76,7 +70,6 @@
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
     .panel-body{padding:1rem 1.5rem;max-height:600px;overflow-y:auto}
 
-    /* CARDS DE ROTA */
     .rota-card{background:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .2s;position:relative}
     .rota-card:hover{border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.12)}
     .rota-card.em-andamento{border-left:4px solid #1E9FD9}
@@ -95,7 +88,6 @@
     .rota-card.completa .progress-fill{background:linear-gradient(90deg,#0F9B78,#085041)}
     .progress-txt{font-size:13px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:55px;text-align:right}
 
-    /* PREVIEW CLIENTES NO HOVER */
     .rota-preview{margin-top:10px;padding-top:10px;border-top:1px solid #EBF1F5;display:none;animation:fadeIn .2s}
     .rota-card.expanded .rota-preview{display:block}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
@@ -111,7 +103,6 @@
     .preview-cli-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
     .preview-cli-hora{font-weight:700;flex-shrink:0}
 
-    /* CONFIRMAÇÕES LIVE */
     .conf-progress{padding:1rem 1.5rem;background:linear-gradient(135deg,#E8F4FB,#F0FAFD);border-bottom:1px solid #EBF1F5}
     .conf-prog-val{font-size:32px;font-weight:800;color:#1E9FD9;line-height:1}
     .conf-prog-lbl{font-size:13px;color:#5A7A8F;margin:6px 0}
@@ -130,7 +121,6 @@
     .conf-obs{font-size:11px;color:#5A7A8F;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .conf-hora{font-size:11px;color:#94A8B8;flex-shrink:0;font-weight:600}
 
-    /* DETALHE ROTA */
     .detalhe-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
     .detalhe-back{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;height:42px;padding:0 16px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
     .detalhe-back:hover{background:#F7FBFD}
@@ -149,7 +139,6 @@
     .cli-meta{font-size:12px;color:#5A7A8F;margin-top:2px}
     .cli-hora{font-size:14px;font-weight:800;color:#1E9FD9;flex-shrink:0}
 
-    /* CARDS / FORMS */
     .card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 2px 10px rgba(30,159,217,0.07);margin-bottom:1rem}
     .card-title{font-size:17px;font-weight:800;color:#0F4C7A;margin-bottom:1rem}
     .field{margin-bottom:.9rem}
@@ -193,7 +182,6 @@
 </head>
 <body>
 
-<!-- TOPBAR -->
 <div class="topbar">
   <div class="topbar-left">
     <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
@@ -205,7 +193,6 @@
   </div>
 </div>
 
-<!-- MENU LATERAL -->
 <div class="menu-overlay" id="menu-overlay" onclick="fecharMenuOverlay(event)">
   <div class="menu-side" onclick="event.stopPropagation()">
     <div class="menu-header">
@@ -255,13 +242,9 @@
   </div>
 </div>
 
-<!-- CONTEÚDO -->
 <div class="content">
 
-  <!-- PAINEL PRINCIPAL -->
   <div class="view active" id="view-painel">
-
-    <!-- KPIs -->
     <div class="kpi-grid">
       <div class="kpi total">
         <div class="kpi-icon">📦</div>
@@ -285,10 +268,7 @@
       </div>
     </div>
 
-    <!-- 2 COLUNAS -->
     <div class="dash-grid">
-
-      <!-- ESQUERDA: ROTAS -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">🛵 Rotas em operação <span class="panel-badge" id="rotas-badge">0</span></div>
@@ -299,7 +279,6 @@
         </div>
       </div>
 
-      <!-- DIREITA: CONFIRMAÇÕES LIVE -->
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">✓ Confirmações de presença</div>
@@ -307,18 +286,26 @@
         </div>
         <div class="conf-progress">
           <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:18px;color:#5A7A8F;font-weight:600">/ 37</span></div>
-          <div class="conf-prog-lbl" id="conf-prog-lbl">unidades confirmadas</div>
+          <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
           <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
         </div>
         <div class="conf-list" id="conf-list-live">
           <div class="empty"><span class="spinner"></span></div>
         </div>
       </div>
+    </div>
 
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">⏰ Clientes em Atraso <span class="panel-badge" id="atrasos-badge">0</span></div>
+        <div class="panel-live"><div class="live-dot"></div>Live</div>
+      </div>
+      <div class="panel-body" id="painel-atrasos">
+        <div class="empty">Nenhum cliente em atraso ✓</div>
+      </div>
     </div>
   </div>
 
-  <!-- DETALHE ROTA -->
   <div class="view" id="view-detalhe-rota">
     <div class="detalhe-header">
       <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
@@ -328,7 +315,6 @@
     <div id="detalhe-lista"></div>
   </div>
 
-  <!-- CONFIRMAÇÕES (full) -->
   <div class="view" id="view-confirmacoes">
     <div class="card">
       <div class="card-title">✓ Confirmações de hoje</div>
@@ -336,7 +322,6 @@
     </div>
   </div>
 
-  <!-- MOTORISTAS -->
   <div class="view" id="view-motoristas">
     <div class="card">
       <div class="card-title">👤 Motoristas cadastrados</div>
@@ -344,7 +329,6 @@
     </div>
   </div>
 
-  <!-- ROTAS VIEW -->
   <div class="view" id="view-rotas-view">
     <div class="card">
       <div class="card-title">🛣️ Rotas</div>
@@ -352,7 +336,6 @@
     </div>
   </div>
 
-  <!-- BUSCAR -->
   <div class="view" id="view-buscar">
     <div class="card">
       <div class="card-title">🔎 Buscar cliente</div>
@@ -364,7 +347,6 @@
     </div>
   </div>
 
-  <!-- CRIAR CLIENTE -->
   <div class="view" id="view-criar-cliente">
     <div class="card">
       <div class="card-title">👤 Criar cliente</div>
@@ -376,7 +358,6 @@
     </div>
   </div>
 
-  <!-- GERENCIAR MOTOBOYS -->
   <div class="view" id="view-gerenciar-motoboys">
     <div class="card">
       <div class="card-title">➕ Adicionar motorista</div>
@@ -391,7 +372,6 @@
     </div>
   </div>
 
-  <!-- ATIVAR/DESATIVAR -->
   <div class="view" id="view-ativar-cliente">
     <div class="card">
       <div class="card-title">🔁 Ativar / Desativar cliente</div>
@@ -403,7 +383,6 @@
     </div>
   </div>
 
-  <!-- RESET -->
   <div class="view" id="view-reset">
     <div class="card">
       <div class="card-title">⚠️ Reset do sistema</div>
@@ -423,7 +402,7 @@
 <div class="modal-overlay hidden" id="modal-mover">
   <div class="modal">
     <h2>↔ Mover cliente</h2>
-    <div class="field"><label>Nova rota</label><input type="text" id="nova-rota-input" placeholder="Ex: SAO PAULO 52"/></div>
+    <div class="field"><label>Rota</label><select id="nova-rota-select"><option value="">Selecione a rota...</option></select></div>
     <div class="modal-btns">
       <button class="btn btn-secondary" onclick="fecharModal('modal-mover')">Cancelar</button>
       <button class="btn btn-primary" onclick="confirmarMover()">Mover</button>
@@ -438,13 +417,13 @@
   let clienteParaMover = null;
   let autoRefreshInterval = null;
   let cardExpandido = null;
+  let rotasDisponiveis = [];
 
   const agora = new Date();
   const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   document.getElementById('topbar-data').textContent = `${dias[agora.getDay()]}, ${agora.getDate()} ${meses[agora.getMonth()]} ${agora.getFullYear()}`;
 
-  // ── MENU ─────────────────────────────────────────
   function abrirMenu() { document.getElementById('menu-overlay').classList.add('open'); }
   function fecharMenu() { document.getElementById('menu-overlay').classList.remove('open'); }
   function fecharMenuOverlay(e) { if (e.target === e.currentTarget) fecharMenu(); }
@@ -465,7 +444,6 @@
     if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
   }
 
-  // ── AUTO REFRESH ──────────────────────────────────
   function iniciarAutoRefresh() {
     pararAutoRefresh();
     autoRefreshInterval = setInterval(() => carregarPainel(true), 8000);
@@ -474,20 +452,19 @@
     if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
   }
 
-  // ── PAINEL PRINCIPAL ──────────────────────────────
   async function carregarPainel(silent) {
     try {
       const [rRes, mbRes, confRes] = await Promise.all([
-        fetch(API + '/rotas-disponiveis').then(r => r.json()),
+        fetch(API + '/rotas-disponiveis?todos_dias=1').then(r => r.json()),
         fetch(API + '/motoboys?todos=1').then(r => r.json()),
         fetch(API + '/').then(r => r.json())
       ]);
 
       const rotas = rRes.rotas || [];
+      rotasDisponiveis = rotas.map(r => r.rota);
       const motoboys = mbRes.motoboys || [];
       const confirmacoes = confRes.confirmacoes || [];
 
-      // Dados de cada rota em paralelo
       const dadosRotas = await Promise.all(
         rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota)).then(res => res.json()))
       );
@@ -505,14 +482,12 @@
       document.getElementById('kpi-motoboys').textContent = motoboys.length;
       document.getElementById('rotas-badge').textContent = rotas.length;
 
-      // Confirmações
       const totalUnidades = 37;
       const conf = confirmacoes.length;
       document.getElementById('conf-prog-val').textContent = conf;
-      document.getElementById('conf-prog-lbl').textContent = conf === 1 ? 'unidade confirmada' : 'unidades confirmadas';
+      document.getElementById('conf-prog-lbl').textContent = conf === 1 ? 'Biocondutor confirmado' : 'Biocondutores confirmados';
       document.getElementById('conf-bar-fill').style.width = Math.min(100, Math.round(conf/totalUnidades*100)) + '%';
 
-      // Lista de confirmações live (últimas 15)
       const confEl = document.getElementById('conf-list-live');
       if (!confirmacoes.length) {
         confEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
@@ -522,7 +497,7 @@
           return `<div class="conf-row ${c.resposta}">
             <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
             <div class="conf-info">
-              <div class="conf-uni">${c.unidade}</div>
+              <div class="conf-uni">${c.biocondutor}</div>
               ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
             </div>
             <div class="conf-hora">${hora}</div>
@@ -530,11 +505,9 @@
         }).join('');
       }
 
-      // Motoboys por rota
       const mbPorRota = {};
       motoboys.forEach(m => { if (m.rota) { if (!mbPorRota[m.rota]) mbPorRota[m.rota] = []; mbPorRota[m.rota].push(m.nome); } });
 
-      // Cards de rota
       const el = document.getElementById('painel-rotas');
       if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
 
@@ -589,6 +562,36 @@
             </div>
           </div>`;
       }).join('');
+
+      // Carregar atrasos
+      const atrasoPromises = rotas.map(r => 
+        fetch(API + '/atraso?rota=' + encodeURIComponent(r.rota)).then(res => res.json()).catch(() => ({ atrasos: [] }))
+      );
+      const atrasoRes = await Promise.all(atrasoPromises);
+      const todosAtrasos = atrasoRes.flatMap(r => r.atrasos || []);
+      
+      document.getElementById('atrasos-badge').textContent = todosAtrasos.length;
+      
+      const atrasoEl = document.getElementById('painel-atrasos');
+      if (!todosAtrasos.length) {
+        atrasoEl.innerHTML = '<div class="empty">Nenhum cliente em atraso ✓</div>';
+      } else {
+        atrasoEl.innerHTML = todosAtrasos.map(a => {
+          const horas = Math.floor(a.minutos_atrasado / 60);
+          const mins = a.minutos_atrasado % 60;
+          const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
+          return `<div class="cliente-card" style="border-left:3px solid #DC2626;background:#FCEBEB">
+            <div class="check-btn" style="background:#DC2626;color:#fff;border-color:#DC2626">⏰</div>
+            <div class="cliente-info">
+              <div class="cliente-nome">${a.nome}</div>
+              <div class="cliente-meta">Nº ${a.numero_cliente} • ${a.rota}</div>
+              <div class="ts-info">
+                <span style="color:#DC2626">⏱️ ${a.horario} → Atrasado ${tempoStr}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      }
 
     } catch(e) {
       if (!silent) document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
@@ -660,7 +663,6 @@
     }
   }
 
-  // ── CONFIRMAÇÕES (full) ───────────────────────────
   async function carregarConfirmacoes() {
     const el = document.getElementById('lista-conf');
     el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
@@ -673,7 +675,7 @@
         <div class="conf-row ${c.resposta}">
           <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
           <div class="conf-info">
-            <div class="conf-uni">${c.unidade}</div>
+            <div class="conf-uni">${c.biocondutor}</div>
             ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
           </div>
           <div class="conf-hora">${c.data ? c.data.split(' ').pop() : ''}</div>
@@ -681,12 +683,11 @@
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
   }
 
-  // ── MOTORISTAS (lista) ────────────────────────────
   async function carregarMotoristasList() {
     const el = document.getElementById('lista-mb-view');
     el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
     try {
-      const r = await fetch(API + '/motoboys?todos=1');
+      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
       const d = await r.json();
       if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
       el.innerHTML = d.motoboys.map(m => `
@@ -694,18 +695,17 @@
           <div class="list-item-row">
             <div class="list-item-name">${m.nome}</div>
             <div class="list-item-meta">📱 ${m.telefone}</div>
-            ${m.rota ? `<span class="badge" style="background:#E8F4FB;color:#0F4C7A">${m.rota}</span>` : '<span class="badge" style="background:#F0F4F8;color:#94A8B8">Sem rota</span>'}
           </div>
+          ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:6px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:6px">Sem rotas</div>'}
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
   }
 
-  // ── ROTAS VIEW ────────────────────────────────────
   async function carregarRotasView() {
     const el = document.getElementById('lista-rotas-view');
     el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
     try {
-      const r = await fetch(API + '/rotas-disponiveis');
+      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
       const d = await r.json();
       const rotas = d.rotas || [];
       if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
@@ -730,7 +730,6 @@
     carregarRotasView();
   }
 
-  // ── GERENCIAR MOTOBOYS ────────────────────────────
   async function carregarMotoboysGerenciar() {
     const el = document.getElementById('lista-mb-ger');
     el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
@@ -772,7 +771,6 @@
     carregarMotoboysGerenciar();
   }
 
-  // ── CRIAR CLIENTE ─────────────────────────────────
   async function criarCliente() {
     const codigo = document.getElementById('cc-codigo').value.trim();
     const nome = document.getElementById('cc-nome').value.trim();
@@ -788,7 +786,6 @@
     } catch(e) { showMsg('msg-cc','Erro: '+e.message,'error'); }
   }
 
-  // ── BUSCAR/MOVER ──────────────────────────────────
   async function buscarCliente() {
     const q = document.getElementById('busca-input').value.trim();
     if (!q) return;
@@ -816,12 +813,13 @@
 
   function abrirMover(id) {
     clienteParaMover = id;
-    document.getElementById('nova-rota-input').value = '';
+    const sel = document.getElementById('nova-rota-select');
+    sel.innerHTML = '<option value="">Selecione a rota...</option>' + rotasDisponiveis.map(r => `<option value="${r}">${r}</option>`).join('');
     document.getElementById('modal-mover').classList.remove('hidden');
   }
 
   async function confirmarMover() {
-    const rota = document.getElementById('nova-rota-input').value.trim();
+    const rota = document.getElementById('nova-rota-select').value;
     if (!rota || !clienteParaMover) return;
     await fetch(API + '/mover-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:clienteParaMover, rota}) });
     document.getElementById('modal-mover').classList.add('hidden');
@@ -829,7 +827,6 @@
     buscarCliente();
   }
 
-  // ── ATIVAR/DESATIVAR ──────────────────────────────
   async function buscarParaAtivar() {
     const q = document.getElementById('ativar-input').value.trim();
     if (!q) return;
@@ -848,7 +845,7 @@
             <div class="list-item-meta">Nº ${c.numero_cliente}</div>
             <span class="badge" style="${c.ativo ? 'background:#E1F5EE;color:#085041' : 'background:#FCEBEB;color:#791F1F'}">${c.ativo ? 'Ativo' : 'Inativo'}</span>
           </div>
-          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'}</div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
           <div class="list-item-actions">
             ${c.ativo
               ? `<button class="btn btn-danger" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},0)">⛔ Desativar</button>`
@@ -868,7 +865,6 @@
     buscarParaAtivar();
   }
 
-  // ── RESET ─────────────────────────────────────────
   async function fazerReset() {
     if (!confirm('Tem certeza? Reseta TODOS os clientes.')) return;
     showMsg('msg-reset','Resetando...','loading');
@@ -885,7 +881,6 @@
     showMsg('msg-reset-conf','✅ Confirmações limpas!','success');
   }
 
-  // ── HELPERS ───────────────────────────────────────
   function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
 
   function showMsg(id, text, type) {
@@ -902,7 +897,6 @@
     setTimeout(() => el.classList.remove('show'), 2500);
   }
 
-  // Init
   carregarPainel();
   iniciarAutoRefresh();
 </script>
