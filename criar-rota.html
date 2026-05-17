@@ -439,7 +439,8 @@
       const d = await r.json();
       if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao criar');
 
-      const diaLabel = OPCOES_DIAS.find(o => o.val === diaPrincipal)?.label || diaPrincipal;
+      const diaLabels = { 'seg-sex': 'Seg a Sex', 'sabado': 'Sábado', 'domingo': 'Domingo' };
+const diaLabel = diaLabels[diaPrincipal] || diaPrincipal;
       document.getElementById('msg-sucesso').innerHTML = `
         Rota <strong>${rota}</strong> criada com <strong>${d.inseridos} clientes</strong><br/>
         Motorista: <strong>${motoboySelected.nome}</strong> · ${diaLabel}
