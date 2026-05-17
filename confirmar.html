@@ -3,221 +3,185 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Confirmação de Presença</title>
+  <title>Loglife — Exportar IHP</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem}
-    .container{width:100%;max-width:460px}
-    .card{background:#fff;border-radius:24px;padding:1.75rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1rem}
-    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.25rem;text-decoration:none;font-weight:500}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;padding:2rem 1rem}
+    .container{width:100%;max-width:800px;margin:0 auto}
+    .card{background:#fff;border-radius:16px;padding:2rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:2rem}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.5rem;text-decoration:none;font-weight:500}
     .back-link:hover{color:#0F4C7A}
-    .logo-area{text-align:center;margin-bottom:1.25rem}
-    .logo-img{height:52px;width:auto}
-    h1{font-size:20px;font-weight:700;color:#0F4C7A;margin-bottom:4px;text-align:center}
-    .subtitle{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;text-align:center}
-    .info-card{background:#E8F4FB;border:1.5px solid #1E9FD9;border-radius:12px;padding:14px;margin-bottom:1rem;text-align:center}
-    .info-nome{font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:4px}
-    .info-rota{font-size:13px;color:#5A7A8F}
-    .info-label{font-size:11px;color:#94A8B8;text-transform:uppercase;font-weight:700;letter-spacing:.4px}
-    .btn-group{display:flex;flex-direction:column;gap:10px;margin-bottom:1rem}
-    .btn{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:0}
+    h1{font-size:22px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    .subtitle{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem}
+    .field{margin-bottom:1.5rem}
+    label{font-size:13px;color:#0F4C7A;font-weight:600;display:block;margin-bottom:6px}
+    select{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#111;background:#F7FBFD;cursor:pointer}
+    select:focus{outline:none;border-color:#1E9FD9;background:#fff}
+    .btn{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;margin-bottom:8px;box-shadow:0 4px 12px rgba(30,159,217,0.3)}
     .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn-sim{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
-    .btn-sim:hover:not(:disabled){background:#c8f0e0}
-    .btn-nao{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
-    .btn-nao:hover:not(:disabled){background:#fad5d5}
-    .obs-area{display:none;margin-top:14px;animation:fadeIn .2s ease}
-    .obs-area.visible{display:block}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
-    textarea{width:100%;border-radius:11px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:10px;background:#F7FBFD}
-    textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
-    label{font-size:13px;color:#0F4C7A;display:block;margin-bottom:6px;font-weight:600}
-    .msg{border-radius:11px;padding:14px 16px;font-size:14px;text-align:center;margin-top:14px;display:none;font-weight:500}
+    .msg{border-radius:11px;padding:12px 16px;font-size:13px;text-align:center;margin-bottom:1rem;display:none;font-weight:500}
     .msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:block}
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
     .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
-    .footer{text-align:center;font-size:11px;color:#94A8B8;margin-top:.75rem}
-
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.6);z-index:200;display:flex;align-items:center;justify-content:center}
-    .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px;padding:2rem 1.75rem;width:90%;max-width:340px;text-align:center;max-height:80vh;overflow-y:auto}
-    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
-    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
-    .modal-btns{display:flex;flex-direction:column;gap:10px}
-    .modal-btn{padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center}
-    .modal-btn.primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
-    .modal-btn.secondary{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE}
-
-    .rota-option{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:8px;cursor:pointer;transition:all .2s;text-align:left}
-    .rota-option:hover{border-color:#1E9FD9;background:#F7FBFD;transform:translateY(-1px)}
-    .rota-option-info{flex:1;min-width:0}
-    .rota-name{font-size:14px;font-weight:700;color:#0F4C7A}
-    .rota-arrow{color:#1E9FD9;font-size:18px;font-weight:bold;flex-shrink:0}
+    .info{font-size:12px;color:#5A7A8F;padding:10px;background:#F7FBFD;border-radius:8px;border-left:3px solid #1E9FD9;margin-top:1rem}
   </style>
 </head>
 <body>
 <div class="container">
-  <a class="back-link" href="index.html">← Voltar</a>
+  <a class="back-link" href="painel.html">← Voltar</a>
   <div class="card">
-    <div class="logo-area"><img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="logo-img"/></div>
-    <h1>Confirmação de Presença</h1>
-    <p class="subtitle">Confirme sua presença</p>
-    
-    <div class="info-card">
-      <div class="info-label">Biocondutor</div>
-      <div class="info-nome" id="info-nome">—</div>
+    <h1>📊 Exportar Planilha IHP</h1>
+    <p class="subtitle">Gere relatório com dados de coletas e atrasos</p>
+
+    <div class="field">
+      <label for="sel-dia">Selecione o dia</label>
+      <select id="sel-dia">
+        <option value="">Carregando...</option>
+      </select>
     </div>
 
-    <div class="btn-group">
-      <button class="btn btn-sim" id="btn-sim" onclick="confirmarPresenca('sim')">✓ Confirmar presença</button>
-      <button class="btn btn-nao" id="btn-nao" onclick="abrirMotivo()">✗ Não irei</button>
-    </div>
-
-    <div class="obs-area" id="obs-area">
-      <label>Motivo <span style="color:#94A8B8;font-size:12px;font-weight:400">(opcional)</span></label>
-      <textarea id="obs-text" placeholder="Ex: ficou doente, veículo quebrou..."></textarea>
-      <button class="btn btn-nao" id="btn-send" onclick="confirmarPresenca('nao')">Confirmar não presença</button>
-    </div>
-
+    <button class="btn" onclick="exportar()">📥 Gerar e baixar planilha</button>
     <div class="msg" id="msg"></div>
-  </div>
-  <div class="footer">Loglife</div>
-</div>
 
-<!-- MODAL: SELEÇÃO DE ROTAS -->
-<div class="modal-overlay hidden" id="modal-rotas">
-  <div class="modal">
-    <h2>🛣️ Selecione sua rota</h2>
-    <p>Você tem múltiplas rotas. Escolha qual deseja abrir:</p>
-    <div id="lista-rotas-modal"></div>
-  </div>
-</div>
-
-<!-- MODAL: VOLTAR AO INICIO -->
-<div class="modal-overlay hidden" id="modal-fim">
-  <div class="modal">
-    <h2>✓ Tudo pronto!</h2>
-    <p id="msg-fim">Sua presença foi registrada.</p>
-    <div class="modal-btns">
-      <button class="modal-btn primary" onclick="voltarInicial()">← Voltar ao início</button>
+    <div class="info">
+      ℹ️ A planilha terá 2 abas:<br/>
+      • <strong>IHP</strong> — dados normais de coletas<br/>
+      • <strong>Atrasos</strong> — clientes com atraso em vermelho
     </div>
   </div>
 </div>
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  let telefoneSalvo = null;
-  let nomeUsuario = null;
-  let rotasDisponivel = [];
 
-  // Carregar dados do localStorage
   window.addEventListener('load', async () => {
-    telefoneSalvo = localStorage.getItem('telefone_temp');
-    nomeUsuario = localStorage.getItem('nome_temp');
-
-    if (!telefoneSalvo || !nomeUsuario) {
-      window.location.href = 'index.html';
-      return;
-    }
-
-    document.getElementById('info-nome').textContent = nomeUsuario;
-
-    // Buscar rotas disponíveis
-    try {
-      const r = await fetch(API + '/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefone: telefoneSalvo })
-      });
-      const d = await r.json();
-      if (d.status === 'ok') {
-        rotasDisponivel = (d.rotas_info || []).filter(r => r.status !== 'travada');
-      }
-    } catch(e) {}
+    await carregarDias();
   });
 
-  function abrirMotivo() {
-    document.getElementById('obs-area').classList.add('visible');
-    document.getElementById('obs-text').focus();
-  }
-
-  async function confirmarPresenca(resp) {
-    const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
-    setBtns(true);
-    showMsg('Enviando...', 'loading');
-    
+  async function carregarDias() {
     try {
-      const r = await fetch(API, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ biocondutor: nomeUsuario, resposta: resp, obs })
-      });
+      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
       const d = await r.json();
+      const rotas = d.rotas || [];
       
-      if (d.status === 'ok') {
-        localStorage.setItem('motoboy_tel', telefoneSalvo);
-        localStorage.setItem('motoboy_nome', nomeUsuario);
-        
-        showMsg(resp === 'sim' ? '✓ Presença confirmada!' : '✗ Não confirmação registrada.', 'success');
-        
-        setTimeout(() => {
-          if (rotasDisponivel.length > 0) {
-            mostrarSelecaoRotas();
-          } else {
-            mostrarFim(resp === 'sim' ? 'Sua presença foi confirmada.' : 'Sua não confirmação foi registrada.');
-          }
-        }, 800);
-      } else if (d.status === 'duplicado') {
-        showMsg('Sua presença já foi registrada. Fale com o organizador.', 'error');
-      } else {
-        showMsg('Erro ao enviar.', 'error');
+      const dias = new Set();
+      rotas.forEach(r => {
+        if (r.data_abertura) {
+          const data = r.data_abertura.split(' ')[0];
+          dias.add(data);
+        }
+      });
+
+      const diaArray = Array.from(dias).sort().reverse();
+      const sel = document.getElementById('sel-dia');
+      sel.innerHTML = diaArray.map(d => `<option value="${d}">${d}</option>`).join('');
+      
+      if (diaArray.length === 0) {
+        sel.innerHTML = '<option value="">Nenhum dia disponível</option>';
       }
     } catch(e) {
-      showMsg('Erro de conexão.', 'error');
+      document.getElementById('sel-dia').innerHTML = '<option value="">Erro ao carregar</option>';
     }
-    setBtns(false);
   }
 
-  function mostrarSelecaoRotas() {
-    if (rotasDisponivel.length === 1) {
-      irParaRota(rotasDisponivel[0].rota);
-      return;
+  async function exportar() {
+    const dia = document.getElementById('sel-dia').value;
+    if (!dia) { showMsg('Selecione um dia.', 'error'); return; }
+
+    const btn = document.querySelector('.btn');
+    btn.disabled = true;
+    showMsg('Gerando planilha...', 'loading');
+
+    try {
+      const r = await fetch(API + '/historico?data=' + encodeURIComponent(dia));
+      const d = await r.json();
+      const historico = d.historico || [];
+
+      // Agrupar por rota
+      const porRota = {};
+      historico.forEach(h => {
+        if (!porRota[h.rota]) porRota[h.rota] = [];
+        porRota[h.rota].push(h);
+      });
+
+      // Criar workbook
+      const wb = XLSX.utils.book_new();
+
+      // ABA 1: IHP (dados normais)
+      const dadosIHP = [];
+      Object.keys(porRota).sort().forEach(rota => {
+        porRota[rota].forEach(h => {
+          dadosIHP.push({
+            'Rota': rota,
+            'Cliente': h.nome,
+            'Nº': h.numero_cliente,
+            'Horário': h.horario,
+            'Entrega': h.horario_entrega ? h.horario_entrega.split(' ').pop() : '—',
+            'Status': h.produtividade === 'produtiva' ? 'Produtiva' : h.produtividade === 'improdutiva' ? 'Improdutiva' : 'Pendente',
+            'Motivo': h.motivo_improdutiva || ''
+          });
+        });
+      });
+
+      const wsIHP = XLSX.utils.json_to_sheet(dadosIHP);
+      XLSX.utils.book_append_sheet(wb, wsIHP, 'IHP');
+
+      // ABA 2: Atrasos (em vermelho)
+      const dadosAtrasos = [];
+      Object.keys(porRota).sort().forEach(rota => {
+        porRota[rota].forEach(h => {
+          if (h.horario_entrega && h.horario) {
+            const [hMarcada, mMarcada] = h.horario.split(':').map(Number);
+            const horarioMarcado = new Date();
+            horarioMarcado.setHours(hMarcada, mMarcada, 0);
+            
+            const dataEntrega = new Date(h.horario_entrega);
+            const minAtrasado = Math.floor((dataEntrega - horarioMarcado) / 60000);
+            
+            if (minAtrasado > 30) {
+              const horas = Math.floor(minAtrasado / 60);
+              const mins = minAtrasado % 60;
+              const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
+              
+              dadosAtrasos.push({
+                'Rota': rota,
+                'Cliente': h.nome,
+                'Nº': h.numero_cliente,
+                'Hora Marcada': h.horario,
+                'Hora Baixa': h.horario_entrega.split(' ').pop(),
+                'Atraso': tempoStr
+              });
+            }
+          }
+        });
+      });
+
+      const wsAtrasos = XLSX.utils.json_to_sheet(dadosAtrasos);
+      
+      // Aplicar cor vermelha em negrito nos atrasos
+      const range = XLSX.utils.decode_range(wsAtrasos['!ref'] || 'A1');
+      for (let R = range.s.r; R <= range.e.r; ++R) {
+        for (let C = range.s.c; C <= range.e.c; ++C) {
+          const cellAddress = XLSX.utils.encode_col(C) + XLSX.utils.encode_row(R + 1);
+          if (wsAtrasos[cellAddress]) {
+            wsAtrasos[cellAddress].s = {
+              font: { color: { rgb: 'FFCC0000' }, bold: true },
+              alignment: { horizontal: 'left' }
+            };
+          }
+        }
+      }
+
+      XLSX.utils.book_append_sheet(wb, wsAtrasos, 'Atrasos');
+
+      // Baixar
+      XLSX.writeFile(wb, `IHP_${dia}.xlsx`);
+      showMsg('✓ Planilha gerada e baixada com sucesso!', 'success');
+    } catch(e) {
+      showMsg('Erro ao gerar planilha: ' + e.message, 'error');
     }
-
-    const lista = document.getElementById('lista-rotas-modal');
-    lista.innerHTML = rotasDisponivel.map(r => `
-      <div class="rota-option" onclick="irParaRota('${r.rota.replace(/'/g,"\\'")}')" style="cursor:pointer">
-        <div class="rota-option-info">
-          <div class="rota-name">🚚 ${r.rota}</div>
-        </div>
-        <div class="rota-arrow">→</div>
-      </div>
-    `).join('');
-
-    document.getElementById('modal-rotas').classList.remove('hidden');
-  }
-
-  function irParaRota(rota) {
-    localStorage.setItem('motoboy_rota', rota);
-    window.location.href = 'rota.html';
-  }
-
-  function mostrarFim(msg) {
-    document.getElementById('msg-fim').textContent = msg;
-    document.getElementById('modal-fim').classList.remove('hidden');
-  }
-
-  function voltarInicial() {
-    localStorage.removeItem('telefone_temp');
-    localStorage.removeItem('nome_temp');
-    window.location.href = 'index.html';
-  }
-
-  function setBtns(disabled) {
-    document.getElementById('btn-sim').disabled = disabled;
-    document.getElementById('btn-nao').disabled = disabled;
-    const s = document.getElementById('btn-send');
-    if (s) s.disabled = disabled;
+    btn.disabled = false;
   }
 
   function showMsg(text, type) {
