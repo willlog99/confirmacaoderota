@@ -18,6 +18,11 @@
     .header-text .sub{font-size:12px;opacity:.85}
     .rota-badge{display:inline-block;background:rgba(255,255,255,0.25);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-top:4px}
 
+    .abas-rotas{display:flex;gap:8px;padding:1rem 1.25rem 0;overflow-x:auto;scroll-behavior:smooth;margin-bottom:.5rem}
+    .aba-rota{padding:10px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .3s}
+    .aba-rota:hover{background:rgba(255,255,255,0.25)}
+    .aba-rota.ativa{background:rgba(255,255,255,0.95);color:#0F7BB0;border-color:rgba(255,255,255,0.95)}
+
     .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:1rem 1.25rem 0}
     .stat{background:#fff;border-radius:12px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(30,159,217,0.08)}
     .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
@@ -35,8 +40,14 @@
     .filter-btn{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:500;color:#5A7A8F;cursor:pointer;white-space:nowrap}
     .filter-btn.active{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
 
-    .lista{padding:.75rem 1.25rem 0}
+    .lista-container{perspective:1000px;position:relative;height:600px}
+    .lista{padding:.75rem 1.25rem 0;animation:flipIn .6s ease forwards}
     .section-title{font-size:12px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
+
+    @keyframes flipIn{
+      0%{opacity:0;transform:rotateY(90deg)}
+      100%{opacity:1;transform:rotateY(0deg)}
+    }
 
     .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer}
     .cliente-card.chegou{background:#FEF9EC;border:1.5px solid #F2CC70}
@@ -117,6 +128,8 @@
       <div class="rota-badge" id="header-rota">—</div>
     </div>
   </div>
+
+  <div class="abas-rotas" id="abas-rotas"></div>
 </div>
 
 <div class="stats-bar">
@@ -135,24 +148,15 @@
   <button class="filter-btn" id="filter-btn" onclick="toggleFiltro()">Pendentes</button>
 </div>
 
-<div class="lista" id="lista"><div class="loading-msg">Carregando...</div></div>
+<div class="lista-container">
+  <div class="lista" id="lista"><div class="loading-msg">Carregando...</div></div>
+</div>
 
 <div class="footer-bar">
   <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModalFinalizar()">🏁 Finalizar Rota</button>
 </div>
 
-<!-- MODAL CHEGUEI -->
-<div class="modal-overlay hidden" id="modal-chegada">
-  <div class="modal">
-    <div class="modal-cliente" id="modal-chegada-cliente"></div>
-    <h2>Você chegou no cliente?</h2>
-    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem">Ao confirmar, será registrado o horário de chegada.</p>
-    <div class="modal-btns">
-      <button class="btn-cheguei" onclick="confirmarChegada()">📍 Sim, cheguei</button>
-      <button class="btn-cancelar" onclick="fecharModal('modal-chegada')">Cancelar</button>
-    </div>
-  </div>
-</div>
+
 
 <!-- MODAL PRODUTIVA / IMPRODUTIVA -->
 <div class="modal-overlay hidden" id="modal-prod">
@@ -185,7 +189,7 @@
 <div class="modal-overlay hidden" id="modal-trocar-rota">
   <div class="modal">
     <h2>🔄 Trocar de rota</h2>
-    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Suas rotas continuarão reservadas. Toque na rota que quer abrir agora:</p>
+    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Toque na rota para abrir:</p>
     <div id="lista-rotas-trocar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem"></div>
     <div class="modal-btns">
       <button class="btn-cancelar" onclick="fecharModal('modal-trocar-rota')">Cancelar</button>
@@ -229,6 +233,8 @@
   let clientes = [];
   let somentePendentes = false;
   let clienteSelecionado = null;
+  let todasAsRotas = [];
+  let rotaAtualIdx = 0;
 
   function toggleFiltro() {
     somentePendentes = !somentePendentes;
@@ -251,41 +257,15 @@
     }
   }
 
-  // 1º clique no card: abre modal Cheguei
-  function abrirModalChegada(id) {
-    const c = clientes.find(c => c.id === id);
-    if (!c || c.status === 'entregue' || c.horario_chegada) return;
-    clienteSelecionado = id;
-    document.getElementById('modal-chegada-cliente').textContent = c.nome;
-    document.getElementById('modal-chegada').classList.remove('hidden');
-  }
 
-  async function confirmarChegada() {
-    const id = clienteSelecionado;
-    document.getElementById('modal-chegada').classList.add('hidden');
-    if (!id) return;
-    try {
-      const r = await fetch(API + '/chegada', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      const d = await r.json();
-      if (d.status === 'ok') {
-        const c = clientes.find(c => c.id === id);
-        if (c) c.horario_chegada = d.horario_chegada;
-        renderizar();
-      }
-    } catch(e) {}
-    clienteSelecionado = null;
-  }
 
-  // 2º clique (já tem chegada): abre modal produtividade
+
+
   function abrirModalProd(id) {
     const c = clientes.find(c => c.id === id);
     if (!c || c.status === 'entregue') return;
     clienteSelecionado = id;
     document.getElementById('modal-cliente-nome').textContent = c.nome;
-    document.getElementById('modal-chegada-info').textContent = c.horario_chegada ? `🟡 Chegada registrada às ${c.horario_chegada}` : '';
     document.getElementById('modal-prod').classList.remove('hidden');
   }
   function cancelarTique() { clienteSelecionado = null; document.getElementById('modal-prod').classList.add('hidden'); }
@@ -345,7 +325,6 @@
 
   function cardHTML(c) {
     const entregue = c.status === 'entregue';
-    const chegou = !!c.horario_chegada;
     const prod = c.produtividade || '';
 
     let cardClass = '', btnClass = '', btnIcon = '';
@@ -353,10 +332,6 @@
       cardClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
       btnClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
       btnIcon = prod === 'improdutiva' ? '✕' : '✓';
-    } else if (chegou) {
-      cardClass = 'chegou';
-      btnClass = 'chegou';
-      btnIcon = '📍';
     }
 
     const horaSaida = extrairHoraSaida(c);
@@ -367,10 +342,9 @@
         <div class="cliente-info">
           <div class="cliente-nome">${c.nome}</div>
           <div class="cliente-meta">Nº ${c.numero_cliente}</div>
-          ${(chegou || entregue) ? `
+          ${entregue && horaSaida ? `
             <div class="ts-info">
-              ${chegou ? `<span class="ts-chegada">🟡 Chegada: ${c.horario_chegada}</span>` : ''}
-              ${entregue && horaSaida ? `<span class="ts-saida ${prod}">${prod === 'improdutiva' ? '🔘 Saída' : '🔵 Saída'}: ${horaSaida}</span>` : ''}
+              <span class="ts-saida ${prod}">${prod === 'improdutiva' ? '🔘 Saída' : '🔵 Saída'}: ${horaSaida}</span>
             </div>
           ` : ''}
           ${entregue && prod === 'improdutiva' && c.motivo_improdutiva ? `<div class="motivo-txt">↳ ${c.motivo_improdutiva}</div>` : ''}
@@ -441,33 +415,29 @@
     if (entrFiltrados.length > 0) { html += `<div class="section-title">Registradas (${entrFiltrados.length})</div>`; html += entrFiltrados.map(c => cardHTML(c)).join(''); }
     document.getElementById('lista').innerHTML = html;
 
-    // Clique no card decide qual modal abrir
     document.querySelectorAll('.cliente-card').forEach(card => {
       card.addEventListener('click', () => {
         const id = parseInt(card.dataset.id);
         const c = clientes.find(c => c.id === id);
         if (!c || c.status === 'entregue') return;
-        if (!c.horario_chegada) abrirModalChegada(id);
-        else abrirModalProd(id);
+        abrirModalProd(id);
       });
     });
   }
 
   async function sair() {
     if (!confirm('Sair desta rota? Ela continua reservada para você. Quando voltar, abre direto nela.')) return;
-    // NÃO limpa o localStorage - quando voltar, entra direto na mesma rota
     window.location.href = 'index.html';
   }
 
   function trocarUsuario() {
-    if (!confirm('Trocar de motoboy? Você precisará digitar o telefone de novo.')) return;
+    if (!confirm('Trocar de motoboy? Sua sessão será encerrada.')) return;
     localStorage.removeItem('motoboy_nome');
     localStorage.removeItem('motoboy_rota');
     localStorage.removeItem('motoboy_tel');
     window.location.href = 'index.html#trocar';
   }
 
-  // Verifica se o motoboy tem outras rotas e mostra o botão
   async function verificarOutrasRotas() {
     try {
       const r = await fetch(API + '/login', {
@@ -476,60 +446,54 @@
         body: JSON.stringify({ telefone: tel })
       });
       const d = await r.json();
-      if (d.status === 'ok' && (d.rotas_info || []).length > 1) {
-        document.getElementById('btn-trocar-rota').style.display = 'flex';
+      if (d.status === 'ok') {
+        todasAsRotas = (d.rotas_info || []).filter(r => r.status !== 'travada');
+        if (todasAsRotas.length > 1) {
+          document.getElementById('btn-trocar-rota').style.display = 'flex';
+          renderizarAbas();
+        }
       }
     } catch(e) {}
   }
 
-  async function trocarRota() {
+  function renderizarAbas() {
+    const abas = document.getElementById('abas-rotas');
+    abas.innerHTML = todasAsRotas.map((r, idx) => {
+      const ativa = r.rota === rota ? 'ativa' : '';
+      return `<button class="aba-rota ${ativa}" onclick="mudarRota(${idx})">${r.rota}</button>`;
+    }).join('');
+  }
+
+  async function mudarRota(idx) {
+    if (idx === rotaAtualIdx) return;
+    rotaAtualIdx = idx;
+    const novaRota = todasAsRotas[idx].rota;
+    document.getElementById('lista').style.animation = 'none';
+    setTimeout(() => {
+      document.getElementById('lista').style.animation = 'flipIn .6s ease forwards';
+    }, 10);
+    localStorage.setItem('motoboy_rota', novaRota);
+    document.getElementById('header-rota').textContent = novaRota;
+    document.getElementById('lista').innerHTML = '<div class="loading-msg">Carregando...</div>';
     try {
-      const r = await fetch(API + '/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefone: tel })
-      });
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(novaRota));
       const d = await r.json();
-      if (d.status !== 'ok') return;
-
-      const outras = (d.rotas_info || []).filter(r => r.rota !== rota && r.status !== 'travada');
-      if (!outras.length) {
-        alert('Você não tem outras rotas disponíveis no momento.');
-        return;
-      }
-
-      const lista = document.getElementById('lista-rotas-trocar');
-      lista.innerHTML = outras.map(r => `
-        <button onclick="abrirOutraRota('${r.rota.replace(/'/g,"\\'")}')"
-          style="padding:14px;border-radius:11px;border:1.5px solid #1E9FD9;background:#F7FBFD;color:#0F4C7A;font-size:15px;font-weight:600;cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;gap:8px">
-          <span>🚚 ${r.rota}</span>
-          <span style="font-size:11px;font-weight:500;color:#5A7A8F">${r.status === 'minha' ? 'Continuar' : 'Abrir'} →</span>
-        </button>
-      `).join('');
-
-      document.getElementById('modal-trocar-rota').classList.remove('hidden');
+      clientes = d.clientes || [];
+      renderizar();
+      renderizarAbas();
     } catch(e) {
-      alert('Erro ao buscar rotas.');
+      document.getElementById('lista').innerHTML = '<p class="empty">Erro ao carregar.</p>';
     }
+  }
+
+  async function trocarRota() {
+    document.getElementById('modal-trocar-rota').classList.remove('hidden');
   }
 
   async function abrirOutraRota(novaRota) {
     document.getElementById('modal-trocar-rota').classList.add('hidden');
-    try {
-      const r = await fetch(API + '/abrir-rota', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefone: tel, rota: novaRota, nome })
-      });
-      const d = await r.json();
-      if (d.status === 'travada') {
-        alert(`Esta rota foi aberta por ${d.por || 'outro motorista'}.`);
-        return;
-      }
-      // Atualiza localStorage e recarrega
-      localStorage.setItem('motoboy_rota', novaRota);
-      window.location.reload();
-    } catch(e) { alert('Erro ao trocar rota.'); }
+    const idx = todasAsRotas.findIndex(r => r.rota === novaRota);
+    if (idx >= 0) mudarRota(idx);
   }
 
   carregar();
