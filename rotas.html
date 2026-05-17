@@ -189,7 +189,7 @@
     });
 
     lista.innerHTML = rotas.map((r, idxRota) => {
-      const motos = motoboysPorRota[r.rota] || [];
+      fetch(API + '/rotas-disponiveis?todos_dias=1').then(r=>r.json()),
       const motoStr = motos.length ? motos.map(m => `<strong>${m.nome}</strong> (${m.telefone})`).join(', ') : '<em style="color:#94A8B8">Sem motorista atribuído</em>';
       const statusBadge = r.ativa
         ? `<span class="rota-status ativa">🔒 Em uso por ${r.motoboy_aberto || 'motorista'}</span>`
