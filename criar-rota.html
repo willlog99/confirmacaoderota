@@ -6,174 +6,174 @@
   <title>Loglife — Criar Rota</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
-    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
-    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
-    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding-bottom:3rem}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff;display:flex;align-items:center;gap:14px}
+    .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0}
+    .header-logo{height:32px;width:auto;filter:brightness(0) invert(1)}
     .header h1{font-size:18px;font-weight:700}
-    .header .sub{font-size:13px;opacity:.85}
-    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
 
-    .container{padding:1rem 1.25rem 2rem;max-width:700px;margin:0 auto}
+    .container{padding:1rem 1.25rem;max-width:700px;margin:0 auto}
 
-    .etapas{display:flex;gap:8px;margin-bottom:1.5rem;position:relative}
-    .etapas::after{content:'';position:absolute;top:20px;left:0;right:0;height:2px;background:#D6E5EE;z-index:0}
-    .etapa-num{position:relative;z-index:1;width:40px;height:40px;border-radius:50%;background:#fff;border:2px solid #D6E5EE;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;cursor:pointer;transition:all .2s}
-    .etapa-num.ativa{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
-    .etapa-num.completa{background:#0F9B78;color:#fff;border-color:#0F9B78}
-    .etapa-nome{font-size:11px;color:#5A7A8F;text-align:center;margin-top:6px;text-transform:uppercase;font-weight:600;letter-spacing:.4px}
+    .etapas{display:flex;gap:0;margin-bottom:1.5rem;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(30,159,217,0.08)}
+    .etapa{flex:1;padding:12px 8px;text-align:center;border-right:1px solid #EBF1F5;cursor:pointer;transition:background .15s}
+    .etapa:last-child{border-right:none}
+    .etapa-num{width:28px;height:28px;border-radius:50%;background:#EBF1F5;color:#94A8B8;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;margin:0 auto 4px}
+    .etapa.ativa .etapa-num{background:#1E9FD9;color:#fff}
+    .etapa.completa .etapa-num{background:#0F9B78;color:#fff}
+    .etapa-label{font-size:10px;color:#94A8B8;font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+    .etapa.ativa .etapa-label{color:#0F4C7A}
 
-    .card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 1px 5px rgba(30,159,217,0.08);margin-bottom:1rem;display:none}
+    .card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 1px 4px rgba(30,159,217,0.07);margin-bottom:1rem;display:none}
     .card.ativa{display:block}
-
-    .card-title{font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem}
-    .card-sub{font-size:12px;color:#5A7A8F;margin-bottom:1rem}
+    .card-title{font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:.5rem}
+    .card-sub{font-size:13px;color:#5A7A8F;margin-bottom:1rem}
 
     .field{margin-bottom:1rem}
-    .field label{display:block;font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-    .field input,.field select{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
-    .field input:focus,.field select:focus{border-color:#1E9FD9}
+    .field label{display:block;font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px}
+    .field input{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
+    .field input:focus{border-color:#1E9FD9}
+    .field textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:13px;padding:10px 12px;color:#0F4C7A;background:#fff;outline:none;resize:vertical;font-family:monospace}
+    .field textarea:focus{border-color:#1E9FD9}
 
-    .search-results{margin-top:8px;max-height:200px;overflow-y:auto;border-radius:10px;border:1px solid #D6E5EE}
-    .search-item{padding:10px 12px;border-bottom:1px solid #EBF1F5;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .15s}
+    /* BUSCA MOTORISTA */
+    .search-results{margin-top:6px;border-radius:10px;border:1px solid #D6E5EE;overflow:hidden;max-height:220px;overflow-y:auto}
+    .search-item{padding:10px 12px;border-bottom:1px solid #EBF1F5;cursor:pointer;display:flex;align-items:center;gap:10px;transition:background .1s}
     .search-item:hover{background:#F7FBFD}
     .search-item:last-child{border-bottom:none}
-    .search-item-icon{width:32px;height:32px;border-radius:8px;background:#E8F4FB;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
-    .search-item-info{flex:1;min-width:0}
+    .search-item-icon{width:32px;height:32px;border-radius:8px;background:#E8F4FB;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
     .search-item-nome{font-size:13px;font-weight:700;color:#0F4C7A}
-    .search-item-tel{font-size:12px;color:#5A7A8F;margin-top:2px}
-    .search-item-novo{padding:12px;background:#F0FAF7;border:1.5px dashed #0F9B78;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;transition:all .15s;margin-top:8px}
-    .search-item-novo:hover{background:#E1F5EE;border-color:#085041}
-    .search-item-novo-icon{width:28px;height:28px;border-radius:50%;background:#0F9B78;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
-    .search-item-novo-txt{font-size:13px;font-weight:700;color:#0F9B78}
+    .search-item-tel{font-size:12px;color:#5A7A8F;margin-top:1px}
+    .search-novo{padding:11px 12px;background:#F0FAF7;border:1.5px dashed #0F9B78;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;margin-top:6px}
+    .search-novo:hover{background:#E1F5EE}
+    .search-novo-icon{width:26px;height:26px;border-radius:50%;background:#0F9B78;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+    .search-novo-txt{font-size:13px;font-weight:700;color:#0F9B78}
 
-    .motoboy-selecionado{padding:12px;border-radius:10px;background:#E8F4FB;border:1.5px solid #1E9FD9;display:flex;align-items:center;gap:10px;margin-bottom:1rem}
-    .motoboy-sel-icon{width:36px;height:36px;border-radius:50%;background:#1E9FD9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px}
-    .motoboy-sel-info{flex:1}
+    .motoboy-sel{padding:12px;border-radius:10px;background:#E8F4FB;border:1.5px solid #1E9FD9;display:flex;align-items:center;gap:10px;margin-bottom:1rem}
+    .motoboy-sel-icon{width:36px;height:36px;border-radius:50%;background:#1E9FD9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
     .motoboy-sel-nome{font-size:14px;font-weight:700;color:#0F4C7A}
     .motoboy-sel-tel{font-size:12px;color:#5A7A8F;margin-top:2px}
-    .motoboy-sel-remove{background:#fff;color:#DC2626;border:none;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+    .motoboy-sel-remove{background:#fff;color:#DC2626;border:none;padding:5px 10px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto;flex-shrink:0}
 
-    .horario-selecao{display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-    .horario-btn{height:36px;padding:0 14px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
-    .horario-btn:hover{border-color:#1E9FD9}
-    .horario-btn.sel{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
+    /* DIAS */
+    .dias-opts{display:flex;gap:8px;flex-wrap:wrap}
+    .dia-opt{padding:10px 16px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;user-select:none}
+    .dia-opt:hover{border-color:#1E9FD9}
+    .dia-opt.sel{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
 
-    .dias-checkboxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem}
-    .dia-checkbox{display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;transition:all .15s}
-    .dia-checkbox:hover{border-color:#1E9FD9}
-    .dia-checkbox input{margin:0;cursor:pointer}
-    .dia-checkbox input:checked+label{color:#0F4C7A}
-    .dia-checkbox label{margin:0;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F}
-    .dia-checkbox input:checked{accent-color:#1E9FD9}
-    .dia-checkbox.checked{background:#E8F4FB;border-color:#1E9FD9}
+    /* CLIENTES */
+    .cli-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+    .cli-sel-all{padding:6px 12px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:700;color:#0F4C7A;cursor:pointer}
+    .cli-sel-all:hover{background:#E8F4FB;border-color:#1E9FD9}
+    .cli-count{font-size:12px;color:#1E9FD9;font-weight:700}
 
-    .cli-lista{margin-top:1rem;max-height:300px;overflow-y:auto}
-    .cli-item{padding:10px;border-radius:9px;border:1.5px solid #D6E5EE;margin-bottom:6px;background:#fff;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s}
-    .cli-item:hover{background:#F7FBFD}
-    .cli-item.sel{background:#E8F4FB;border-color:#1E9FD9}
-    .cli-check{width:20px;height:20px;border-radius:5px;border:2px solid #D6E5EE;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
-    .cli-item.sel .cli-check{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
-    .cli-info{flex:1;min-width:0}
-    .cli-nome{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cli-meta{font-size:11px;color:#5A7A8F;margin-top:2px}
-    .cli-hora{font-size:12px;font-weight:700;color:#1E9FD9;flex-shrink:0}
+    .cli-lista{max-height:420px;overflow-y:auto;border:1px solid #EBF1F5;border-radius:10px}
+    .cli-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #EBF1F5;background:#fff;transition:background .1s;cursor:pointer}
+    .cli-row:last-child{border-bottom:none}
+    .cli-row.sel{background:#E8F4FB}
+    .cli-checkbox{width:20px;height:20px;border-radius:5px;border:2px solid #D6E5EE;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;transition:all .1s}
+    .cli-row.sel .cli-checkbox{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
+    .cli-nome{font-size:13px;font-weight:700;color:#0F4C7A;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cli-num{font-size:11px;color:#5A7A8F;flex-shrink:0}
+    .cli-hora-badge{font-size:12px;font-weight:700;color:#1E9FD9;flex-shrink:0}
 
+    /* DIAS POR CLIENTE */
+    .cli-dias{display:flex;gap:4px;flex-wrap:wrap;padding:4px 12px 10px 42px;background:#E8F4FB;border-bottom:1px solid #D6E5EE}
+    .cli-dia-tick{padding:3px 8px;border-radius:6px;border:1px solid #BFE0F0;background:#fff;color:#0F4C7A;font-size:10px;font-weight:700;cursor:pointer;transition:all .1s;user-select:none}
+    .cli-dia-tick.ativo{background:#1E9FD9;color:#fff;border-color:#1E9FD9}
+    .cli-dia-tick:hover{border-color:#1E9FD9}
+
+    /* RESUMO */
     .resumo{padding:1rem;border-radius:10px;background:#F7FBFD;border:1.5px solid #D6E5EE;margin-bottom:1rem}
-    .resumo-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid #EBF1F5}
-    .resumo-row:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
-    .resumo-label{font-size:12px;color:#5A7A8F;text-transform:uppercase;font-weight:700;letter-spacing:.3px}
-    .resumo-valor{font-size:14px;font-weight:700;color:#0F4C7A}
+    .resumo-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #EBF1F5;font-size:13px}
+    .resumo-row:last-child{border-bottom:none}
+    .resumo-label{color:#5A7A8F;font-weight:600;text-transform:uppercase;font-size:11px;letter-spacing:.3px}
+    .resumo-val{font-weight:700;color:#0F4C7A}
 
-    .btn{height:42px;padding:0 16px;border-radius:10px;border:none;color:#fff;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:all .15s;width:100%;margin-bottom:8px}
+    .btn{width:100%;padding:13px;border-radius:11px;border:none;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px;transition:all .15s}
     .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0)}
-    .btn-primary:hover:not(:disabled){box-shadow:0 4px 12px rgba(30,159,217,0.3)}
-    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
-    .btn-secondary:hover{background:#F7FBFD}
+    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .btn-secondary{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE}
 
-    .msg{padding:10px 14px;border-radius:9px;font-size:12px;font-weight:500;margin-bottom:10px;display:none;text-align:center}
+    .msg{padding:10px 14px;border-radius:9px;font-size:12px;font-weight:500;margin-bottom:8px;display:none;text-align:center}
     .msg.show{display:block}
-    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9}
-    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
-    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE}
+    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1px solid #1E9FD9}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1px solid #F09595}
+    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1px solid #D6E5EE}
     .spinner{display:inline-block;width:12px;height:12px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:4px;vertical-align:middle}
     @keyframes spin{to{transform:rotate(360deg)}}
 
-    .empty{text-align:center;padding:1rem;color:#94A8B8;font-size:13px}
-
-    @media(max-width:600px){
-      .etapas{gap:4px}
-      .etapa-num{width:36px;height:36px;font-size:12px}
-    }
+    .sucesso-box{text-align:center;padding:2rem 0}
+    .sucesso-icon{font-size:48px;margin-bottom:1rem}
+    .sucesso-title{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem}
+    .sucesso-msg{font-size:13px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <a href="painel.html" class="back-link">← Voltar ao painel</a>
-  <div class="header-row">
-    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
-    <div>
-      <h1>Criar Rota</h1>
-      <div class="sub">Passo a passo</div>
-    </div>
-  </div>
+  <a href="painel.html" class="back-btn">←</a>
+  <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+  <h1>Criar Rota</h1>
 </div>
 
 <div class="container">
 
   <!-- ETAPAS -->
   <div class="etapas">
-    <div>
-      <div class="etapa-num ativa" id="et1-num" onclick="irPara(1)">1</div>
-      <div class="etapa-nome">Motorista</div>
+    <div class="etapa ativa" id="et1" onclick="irPara(1)">
+      <div class="etapa-num">1</div>
+      <div class="etapa-label">Motorista</div>
     </div>
-    <div>
-      <div class="etapa-num" id="et2-num" onclick="irPara(2)">2</div>
-      <div class="etapa-nome">Rota</div>
+    <div class="etapa" id="et2" onclick="irPara(2)">
+      <div class="etapa-num">2</div>
+      <div class="etapa-label">Rota</div>
     </div>
-    <div>
-      <div class="etapa-num" id="et3-num" onclick="irPara(3)">3</div>
-      <div class="etapa-nome">Clientes</div>
+    <div class="etapa" id="et3" onclick="irPara(3)">
+      <div class="etapa-num">3</div>
+      <div class="etapa-label">Clientes</div>
     </div>
-    <div>
-      <div class="etapa-num" id="et4-num" onclick="irPara(4)">4</div>
-      <div class="etapa-nome">Confirmar</div>
+    <div class="etapa" id="et4" onclick="irPara(4)">
+      <div class="etapa-num">4</div>
+      <div class="etapa-label">Confirmar</div>
     </div>
   </div>
 
-  <!-- ETAPA 1: BUSCAR MOTORISTA -->
+  <!-- ETAPA 1: MOTORISTA -->
   <div class="card ativa" id="card1">
     <div class="card-title">1️⃣ Selecione o motorista</div>
     <div class="card-sub">Busque por nome ou telefone</div>
 
-    <div id="busca-motorista-bloco">
+    <div id="bloco-busca">
       <div class="field">
-        <label>Nome ou telefone do motorista</label>
-        <input type="text" id="busca-moto-input" placeholder="Digite para buscar..." oninput="buscarMotoboys()"/>
+        <label>Nome ou telefone</label>
+        <input type="text" id="busca-moto" placeholder="Digite para buscar..." oninput="buscarMotoboys()"/>
       </div>
-      <div id="busca-moto-results" class="search-results" style="display:none"></div>
-      <div class="msg" id="msg1"></div>
+      <div id="busca-results" style="display:none"></div>
+      <div class="search-novo" onclick="cadastrarNovoMotoboy()" style="display:none" id="btn-novo-moto">
+        <div class="search-novo-icon">+</div>
+        <div class="search-novo-txt">Cadastrar novo motorista</div>
+      </div>
     </div>
 
-    <div id="motoboy-selecionado-bloco" style="display:none">
-      <div class="motoboy-selecionado" id="motoboy-card">
+    <div id="bloco-motoboy-sel" style="display:none">
+      <div class="motoboy-sel">
         <div class="motoboy-sel-icon">👤</div>
-        <div class="motoboy-sel-info">
-          <div class="motoboy-sel-nome" id="motoboy-nome-sel">—</div>
-          <div class="motoboy-sel-tel" id="motoboy-tel-sel">—</div>
+        <div>
+          <div class="motoboy-sel-nome" id="sel-nome">—</div>
+          <div class="motoboy-sel-tel" id="sel-tel">—</div>
         </div>
-        <button class="motoboy-sel-remove" onclick="desSelecionarMotoboy()">✕ Trocar</button>
+        <button class="motoboy-sel-remove" onclick="trocarMotoboy()">✕ Trocar</button>
       </div>
       <button class="btn btn-primary" onclick="irPara(2)">Próximo: Nome da rota →</button>
     </div>
+
+    <div class="msg" id="msg1"></div>
   </div>
 
-  <!-- ETAPA 2: NOME DA ROTA E DIA PRINCIPAL -->
+  <!-- ETAPA 2: ROTA E DIAS -->
   <div class="card" id="card2">
-    <div class="card-title">2️⃣ Nome da rota e dia principal</div>
-    <div class="card-sub">Defina o nome e qual será o dia de operação</div>
+    <div class="card-title">2️⃣ Nome da rota e dias</div>
+    <div class="card-sub">Defina o nome e quais dias esta rota opera</div>
 
     <div class="field">
       <label>Nome da rota</label>
@@ -181,80 +181,63 @@
     </div>
 
     <div class="field">
-      <label>Dias de operação desta rota</label>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="dias-checkboxes">
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-seg">
-          <input type="checkbox" value="seg" onchange="atualizarDias()"/> Seg
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-ter">
-          <input type="checkbox" value="ter" onchange="atualizarDias()"/> Ter
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-qua">
-          <input type="checkbox" value="qua" onchange="atualizarDias()"/> Qua
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-qui">
-          <input type="checkbox" value="qui" onchange="atualizarDias()"/> Qui
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-sex">
-          <input type="checkbox" value="sex" onchange="atualizarDias()"/> Sex
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-sab">
-          <input type="checkbox" value="sab" onchange="atualizarDias()"/> Sáb
-        </label>
-        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-dom">
-          <input type="checkbox" value="dom" onchange="atualizarDias()"/> Dom
-        </label>
+      <label>Dias de operação</label>
+      <div class="dias-opts">
+        <div class="dia-opt" onclick="toggleDia('seg-sex',this)">Seg-Sex</div>
+        <div class="dia-opt" onclick="toggleDia('sab',this)">Sábado</div>
+        <div class="dia-opt" onclick="toggleDia('dom',this)">Domingo</div>
       </div>
-      <div id="dias-selecionados-txt" style="font-size:12px;color:#1E9FD9;font-weight:700;margin-top:8px"></div>
     </div>
 
     <div class="msg" id="msg2"></div>
-
     <button class="btn btn-secondary" onclick="irPara(1)">← Voltar</button>
     <button class="btn btn-primary" onclick="irPara(3)">Próximo: Clientes →</button>
   </div>
 
-  <!-- ETAPA 3: CLIENTES E DIAS -->
+  <!-- ETAPA 3: CLIENTES -->
   <div class="card" id="card3">
-    <div class="card-title">3️⃣ Selecione clientes e dias</div>
-    <div class="card-sub">Busque códigos na base, marque quais vão nesta rota e escolha os dias de cada um</div>
+    <div class="card-title">3️⃣ Clientes</div>
+    <div class="card-sub">Cole os códigos (um por linha) e busque na base</div>
 
     <div class="field">
-      <label>Cole a lista de clientes (um código por linha)</label>
-      <textarea id="codigos-input" rows="8" placeholder="22088&#10;22089&#10;22090&#10;22091..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:13px;padding:10px 12px;font-family:monospace;resize:vertical;color:#0F4C7A;background:#F7FBFD;outline:none"></textarea>
+      <label>Códigos dos clientes</label>
+      <textarea id="codigos-input" rows="6" placeholder="22088&#10;22089&#10;22090&#10;..."></textarea>
     </div>
-    <button class="btn btn-primary" onclick="buscarClientesBase()" style="margin-bottom:1rem">🔍 Buscar na base</button>
+    <button class="btn btn-primary" onclick="buscarClientes()" style="margin-bottom:1rem">🔍 Buscar na base</button>
 
     <div class="msg" id="msg3"></div>
 
-    <div class="cli-lista" id="lista-clientes"></div>
+    <div id="clientes-area" style="display:none">
+      <div class="cli-header">
+        <div class="cli-count" id="cli-count">0 selecionados</div>
+        <button class="cli-sel-all" onclick="selecionarTodos()">Selecionar todos</button>
+      </div>
+      <div class="cli-lista" id="cli-lista"></div>
+    </div>
 
     <div class="msg" id="msg3b"></div>
-
-    <button class="btn btn-secondary" onclick="irPara(2)">← Voltar</button>
+    <button class="btn btn-secondary" onclick="irPara(2)" style="margin-top:.5rem">← Voltar</button>
     <button class="btn btn-primary" id="btn-et3" disabled onclick="irPara(4)">Próximo: Confirmar →</button>
   </div>
 
   <!-- ETAPA 4: CONFIRMAR -->
   <div class="card" id="card4">
-    <div class="card-title">4️⃣ Confirme e crie a rota</div>
-    <div class="card-sub">Revise antes de criar</div>
-
+    <div class="card-title">4️⃣ Confirme e crie</div>
     <div class="resumo" id="resumo"></div>
-
     <div class="msg" id="msg4"></div>
-
     <button class="btn btn-secondary" onclick="irPara(3)">← Voltar</button>
     <button class="btn btn-primary" id="btn-criar" onclick="criarRota()">✓ Criar rota</button>
   </div>
 
   <!-- SUCESSO -->
-  <div class="card ativa" id="card-sucesso" style="display:none;text-align:center">
-    <div style="font-size:48px;margin-bottom:1rem">✓</div>
-    <div class="card-title">Rota criada com sucesso!</div>
-    <div class="msg success show" id="msg-sucesso"></div>
-    <button class="btn btn-primary" onclick="novaRota()" style="margin-top:1rem">+ Criar outra rota</button>
-    <button class="btn btn-secondary" onclick="window.location.href='painel.html'">← Voltar ao painel</button>
+  <div class="card" id="card-sucesso">
+    <div class="sucesso-box">
+      <div class="sucesso-icon">✅</div>
+      <div class="sucesso-title">Rota criada com sucesso!</div>
+      <div class="sucesso-msg" id="sucesso-msg"></div>
+      <button class="btn btn-primary" onclick="novaRota()">+ Criar outra rota</button>
+      <button class="btn btn-secondary" onclick="window.location.href='painel.html'">← Voltar ao painel</button>
+    </div>
   </div>
 
 </div>
@@ -262,130 +245,100 @@
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let motoboySelected = null;
-  let diaSelecionados = []; // array de dias selecionados
+  let diasSelecionados = []; // ['seg-sex'] ou ['sab'] ou ['dom'] ou combinações
   let clientesEncontrados = [];
   let clientesSelecionados = new Set();
-  let clientesDias = {};
+  let clientesDias = {}; // id => array de dias ativos
+  let todosMotoboys = [];
 
-  function atualizarDias() {
-    diaSelecionados = Array.from(document.querySelectorAll('#dias-checkboxes input:checked')).map(cb => cb.value);
-    // Atualizar visual dos labels
-    document.querySelectorAll('#dias-checkboxes label').forEach(lbl => {
-      const cb = lbl.querySelector('input');
-      if (cb.checked) {
-        lbl.style.background = '#E8F4FB';
-        lbl.style.borderColor = '#1E9FD9';
-        lbl.style.color = '#0F4C7A';
-      } else {
-        lbl.style.background = '#fff';
-        lbl.style.borderColor = '#D6E5EE';
-        lbl.style.color = '#5A7A8F';
-      }
-    });
-    const txt = document.getElementById('dias-selecionados-txt');
-    txt.textContent = diaSelecionados.length ? '✓ ' + diaSelecionados.join(', ') : '';
-  }
-
-  function getDiaSemana() {
-    if (diaSelecionados.includes('sab') && !diaSelecionados.some(d => ['seg','ter','qua','qui','sex'].includes(d))) return 'sabado';
-    if (diaSelecionados.includes('dom') && !diaSelecionados.some(d => ['seg','ter','qua','qui','sex'].includes(d))) return 'domingo';
-    return 'seg-sex';
-  }
-
+  // ETAPA 1 - BUSCA MOTORISTA
   async function buscarMotoboys() {
-    const q = document.getElementById('busca-moto-input').value.trim();
-    const el = document.getElementById('busca-moto-results');
-    
-    if (!q) { el.style.display = 'none'; return; }
+    const q = document.getElementById('busca-moto').value.trim();
+    const el = document.getElementById('busca-results');
+    const btnNovo = document.getElementById('btn-novo-moto');
+
+    if (q.length < 2) { el.style.display = 'none'; btnNovo.style.display = 'none'; return; }
+
+    if (!todosMotoboys.length) {
+      try {
+        const r = await fetch(API + '/motoboys?todos=1');
+        const d = await r.json();
+        todosMotoboys = d.motoboys || [];
+      } catch(e) { return; }
+    }
+
+    const ql = q.toLowerCase();
+    const vistos = new Set();
+    const encontrados = todosMotoboys.filter(m => {
+      const match = m.nome.toLowerCase().includes(ql) || m.telefone.includes(q.replace(/\D/g,''));
+      if (!match || vistos.has(m.telefone)) return false;
+      vistos.add(m.telefone);
+      return true;
+    });
 
     el.style.display = 'block';
-    el.innerHTML = '<div class="empty"><span class="spinner"></span> Buscando...</div>';
+    btnNovo.style.display = 'flex';
 
-    try {
-      const r = await fetch(API + '/motoboys?todos=1');
-      const d = await r.json();
-      const motoboys = d.motoboys || [];
-      const ql = q.toLowerCase();
-      const encontrados = motoboys.filter(m => 
-        m.nome.toLowerCase().includes(ql) || 
-        m.telefone.includes(q.replace(/\D/g, ''))
-      );
-
-      // Agrupar por telefone (evitar duplicatas)
-      const vistos = new Set();
-      const unicos = encontrados.filter(m => {
-        if (vistos.has(m.telefone)) return false;
-        vistos.add(m.telefone);
-        return true;
-      });
-
-      if (!unicos.length) {
-        el.innerHTML = `<div class="search-item-novo" onclick="abrirCadastroNovoMotoboy()">
-          <div class="search-item-novo-icon">+</div>
-          <div class="search-item-novo-txt">Cadastrar novo motorista</div>
-        </div>`;
-        return;
-      }
-
-      el.innerHTML = unicos.map(m => `
-        <div class="search-item" onclick="selecionarMotoboy(${JSON.stringify(m).replace(/"/g, '&quot;')})">
-          <div class="search-item-icon">🏍️</div>
-          <div class="search-item-info">
-            <div class="search-item-nome">${m.nome}</div>
-            <div class="search-item-tel">📱 ${m.telefone}</div>
-          </div>
-        </div>`).join('') + `
-        <div class="search-item-novo" onclick="abrirCadastroNovoMotoboy()">
-          <div class="search-item-novo-icon">+</div>
-          <div class="search-item-novo-txt">Cadastrar novo motorista</div>
-        </div>`;
-    } catch(e) {
-      el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao buscar</div>';
+    if (!encontrados.length) {
+      el.style.display = 'none';
+      return;
     }
+
+    el.innerHTML = encontrados.map(m => `
+      <div class="search-item" onclick='selecionarMotoboy(${JSON.stringify(m)})'>
+        <div class="search-item-icon">🏍️</div>
+        <div>
+          <div class="search-item-nome">${m.nome}</div>
+          <div class="search-item-tel">📱 ${m.telefone}</div>
+        </div>
+      </div>`).join('');
   }
 
-  function selecionarMotoboy(motoboy) {
-    motoboySelected = motoboy;
-    document.getElementById('busca-motorista-bloco').style.display = 'none';
-    document.getElementById('motoboy-selecionado-bloco').style.display = 'block';
-    document.getElementById('motoboy-nome-sel').textContent = motoboy.nome;
-    document.getElementById('motoboy-tel-sel').textContent = '📱 ' + motoboy.telefone;
+  function selecionarMotoboy(m) {
+    motoboySelected = m;
+    document.getElementById('bloco-busca').style.display = 'none';
+    document.getElementById('bloco-motoboy-sel').style.display = 'block';
+    document.getElementById('sel-nome').textContent = m.nome;
+    document.getElementById('sel-tel').textContent = '📱 ' + m.telefone;
   }
 
-  function desSelecionarMotoboy() {
+  function trocarMotoboy() {
     motoboySelected = null;
-    document.getElementById('busca-moto-input').value = '';
-    document.getElementById('busca-moto-results').style.display = 'none';
-    document.getElementById('busca-motorista-bloco').style.display = 'block';
-    document.getElementById('motoboy-selecionado-bloco').style.display = 'none';
+    document.getElementById('busca-moto').value = '';
+    document.getElementById('busca-results').style.display = 'none';
+    document.getElementById('btn-novo-moto').style.display = 'none';
+    document.getElementById('bloco-busca').style.display = 'block';
+    document.getElementById('bloco-motoboy-sel').style.display = 'none';
   }
 
-  function abrirCadastroNovoMotoboy() {
+  function cadastrarNovoMotoboy() {
     const nome = prompt('Nome completo do novo motorista:');
     if (!nome) return;
     const tel = prompt('Telefone (apenas números):');
     if (!tel) return;
-    const telLimpo = tel.replace(/\D/g, '');
+    const telLimpo = tel.replace(/\D/g,'');
     if (telLimpo.length < 10) { alert('Telefone inválido'); return; }
-    motoboySelected = { id: null, nome, telefone: telLimpo, rota: '', dia_semana: '' };
-    document.getElementById('busca-motorista-bloco').style.display = 'none';
-    document.getElementById('motoboy-selecionado-bloco').style.display = 'block';
-    document.getElementById('motoboy-nome-sel').textContent = nome;
-    document.getElementById('motoboy-tel-sel').textContent = '📱 ' + telLimpo;
+    selecionarMotoboy({ id: null, nome: nome.trim(), telefone: telLimpo, rota: '', dia_semana: '' });
   }
 
-  function selecionarDiaPrincipal(dia, el) {
-    document.querySelectorAll('#dias-principais .horario-btn').forEach(b => b.classList.remove('sel'));
-    el.classList.add('sel');
-    diaPrincipal = dia;
+  // ETAPA 2 - DIAS
+  function toggleDia(dia, el) {
+    const idx = diasSelecionados.indexOf(dia);
+    if (idx >= 0) {
+      diasSelecionados.splice(idx, 1);
+      el.classList.remove('sel');
+    } else {
+      diasSelecionados.push(dia);
+      el.classList.add('sel');
+    }
   }
 
-  async function buscarClientesBase() {
+  // ETAPA 3 - CLIENTES
+  async function buscarClientes() {
     const txt = document.getElementById('codigos-input').value.trim();
-    if (!txt) { showMsg('msg3', 'Digite códigos', 'error'); return; }
-    
+    if (!txt) { showMsg('msg3', 'Cole os códigos', 'error'); return; }
     const codigos = txt.split(/[\n,;\s]+/).map(c => c.trim()).filter(Boolean);
-    showMsg('msg3', 'Buscando...', 'loading');
+    showMsg('msg3', '<span class="spinner"></span>Buscando...', 'loading');
 
     try {
       const r = await fetch(API + '/buscar-clientes-base', {
@@ -400,88 +353,161 @@
 
       if (!clientesEncontrados.length) { showMsg('msg3', 'Nenhum cliente encontrado', 'error'); return; }
 
-      renderizarClientes();
       showMsg('msg3', '', '');
+      renderizarListaClientes();
+      document.getElementById('clientes-area').style.display = 'block';
     } catch(e) {
       showMsg('msg3', 'Erro: ' + e.message, 'error');
     }
   }
 
-  function renderizarClientes() {
-    const el = document.getElementById('lista-clientes');
-    el.innerHTML = clientesEncontrados.map((c, i) => `
-      <div class="cli-item" id="cli-${c.id}" onclick="toggleCliente(${c.id}, ${i})">
-        <div class="cli-check"></div>
-        <div class="cli-info">
-          <div class="cli-nome">${c.nome}</div>
-          <div class="cli-meta">Nº ${c.numero_cliente}</div>
-        </div>
-        <div class="cli-hora">${c.horario}</div>
-      </div>`).join('');
+  function renderizarListaClientes() {
+    const lista = document.getElementById('cli-lista');
+    // Gera HTML de uma vez só para performance
+    const rows = clientesEncontrados.map(c => {
+      const sel = clientesSelecionados.has(c.id);
+      const dias = clientesDias[c.id] || [];
+      const diasHTML = sel ? gerarDiasTicks(c.id, dias) : '';
+      return `<div class="cli-row${sel ? ' sel' : ''}" id="row-${c.id}" onclick="toggleCliente(${c.id})">
+        <div class="cli-checkbox">${sel ? '✓' : ''}</div>
+        <div class="cli-nome">${c.nome}</div>
+        <div class="cli-num">Nº ${c.numero_cliente}</div>
+        <div class="cli-hora-badge">${c.horario}</div>
+      </div>${sel ? `<div class="cli-dias" id="dias-${c.id}">${diasHTML}</div>` : ''}`;
+    }).join('');
+    lista.innerHTML = rows;
+    atualizarContador();
   }
 
-  function toggleCliente(id, idx) {
+  function gerarDiasTicks(id, diasAtivos) {
+    const opcoes = [
+      { key: 'seg', label: 'Seg' },
+      { key: 'ter', label: 'Ter' },
+      { key: 'qua', label: 'Qua' },
+      { key: 'qui', label: 'Qui' },
+      { key: 'sex', label: 'Sex' },
+      { key: 'sab', label: 'Sáb' },
+      { key: 'dom', label: 'Dom' },
+    ];
+    // Mostrar apenas os dias relevantes baseado na seleção da etapa 2
+    const diasBase = expandirDias(diasSelecionados);
+    return opcoes.filter(o => diasBase.includes(o.key)).map(o => {
+      const ativo = diasAtivos.includes(o.key);
+      return `<span class="cli-dia-tick${ativo ? ' ativo' : ''}" onclick="event.stopPropagation();toggleDiaCliente(${id},'${o.key}',this)">${o.label}</span>`;
+    }).join('');
+  }
+
+  function expandirDias(dias) {
+    const result = [];
+    if (dias.includes('seg-sex')) result.push('seg','ter','qua','qui','sex');
+    if (dias.includes('sab')) result.push('sab');
+    if (dias.includes('dom')) result.push('dom');
+    return result;
+  }
+
+  function toggleCliente(id) {
+    const row = document.getElementById('row-' + id);
     if (clientesSelecionados.has(id)) {
       clientesSelecionados.delete(id);
       delete clientesDias[id];
+      row.classList.remove('sel');
+      row.querySelector('.cli-checkbox').textContent = '';
+      const diasEl = document.getElementById('dias-' + id);
+      if (diasEl) diasEl.remove();
     } else {
       clientesSelecionados.add(id);
-      clientesDias[id] = diaPrincipal || 'seg-sex';
+      clientesDias[id] = expandirDias(diasSelecionados); // herda dias da etapa 2
+      row.classList.add('sel');
+      row.querySelector('.cli-checkbox').textContent = '✓';
+      // Inserir dias logo após o row
+      const diasDiv = document.createElement('div');
+      diasDiv.className = 'cli-dias';
+      diasDiv.id = 'dias-' + id;
+      diasDiv.innerHTML = gerarDiasTicks(id, clientesDias[id]);
+      row.insertAdjacentElement('afterend', diasDiv);
     }
-    document.getElementById('cli-' + id).classList.toggle('sel');
-    document.getElementById('btn-et3').disabled = clientesSelecionados.size === 0;
-    
-    if (clientesSelecionados.size > 0) {
-      showMsg('msg3b', `${clientesSelecionados.size} cliente(s) selecionado(s)`, 'success');
-    } else {
-      showMsg('msg3b', '', '');
-    }
+    atualizarContador();
   }
 
+  function toggleDiaCliente(id, dia, el) {
+    const dias = clientesDias[id] || [];
+    const idx = dias.indexOf(dia);
+    if (idx >= 0) { dias.splice(idx, 1); el.classList.remove('ativo'); }
+    else { dias.push(dia); el.classList.add('ativo'); }
+    clientesDias[id] = dias;
+  }
+
+  function atualizarContador() {
+    const n = clientesSelecionados.size;
+    document.getElementById('cli-count').textContent = n + ' selecionado' + (n !== 1 ? 's' : '');
+    document.getElementById('btn-et3').disabled = n === 0;
+  }
+
+  function selecionarTodos() {
+    const lista = document.getElementById('cli-lista');
+    const diasBase = expandirDias(diasSelecionados);
+    clientesEncontrados.forEach(c => {
+      if (!clientesSelecionados.has(c.id)) {
+        clientesSelecionados.add(c.id);
+        clientesDias[c.id] = [...diasBase];
+      }
+    });
+    renderizarListaClientes();
+  }
+
+  // NAVEGAÇÃO
   function irPara(n) {
-    // Validações antes de ir pra próxima
     if (n === 2 && !motoboySelected) { showMsg('msg1', 'Selecione um motorista', 'error'); return; }
-    if (n === 3 && diaSelecionados.length === 0) { showMsg('msg2', 'Selecione pelo menos um dia', 'error'); return; }
     if (n === 3 && !document.getElementById('nome-rota').value.trim()) { showMsg('msg2', 'Digite o nome da rota', 'error'); return; }
+    if (n === 3 && diasSelecionados.length === 0) { showMsg('msg2', 'Selecione pelo menos um dia', 'error'); return; }
     if (n === 4 && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
+    if (n === 4) renderizarResumo();
 
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
     document.getElementById('card' + n).classList.add('ativa');
-    window.scrollTo(0, 0);
 
-    if (n === 4) renderizarResumo();
+    // Atualizar etapas visuais
+    for (let i = 1; i <= 4; i++) {
+      const et = document.getElementById('et' + i);
+      et.classList.remove('ativa', 'completa');
+      if (i < n) et.classList.add('completa');
+      else if (i === n) et.classList.add('ativa');
+    }
+    window.scrollTo(0, 0);
   }
 
   function renderizarResumo() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
-    const clientesResumo = clientesEncontrados.filter(c => clientesSelecionados.has(c.id));
-    const html = `
-      <div class="resumo-row"><span class="resumo-label">Rota</span><span class="resumo-valor">${nomeRota}</span></div>
-      <div class="resumo-row"><span class="resumo-label">Motorista</span><span class="resumo-valor">${motoboySelected.nome}</span></div>
-      <div class="resumo-row"><span class="resumo-label">Telefone</span><span class="resumo-valor">${motoboySelected.telefone}</span></div>
-      <div class="resumo-row"><span class="resumo-label">Dias</span><span class="resumo-valor">${diaSelecionados.join(', ')}</span></div>
-      <div class="resumo-row"><span class="resumo-label">Clientes</span><span class="resumo-valor">${clientesResumo.length}</span></div>
+    const n = clientesSelecionados.size;
+    const diasLabel = diasSelecionados.map(d => d === 'seg-sex' ? 'Seg-Sex' : d === 'sab' ? 'Sábado' : 'Domingo').join(', ');
+    document.getElementById('resumo').innerHTML = `
+      <div class="resumo-row"><span class="resumo-label">Rota</span><span class="resumo-val">${nomeRota}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Motorista</span><span class="resumo-val">${motoboySelected.nome}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Telefone</span><span class="resumo-val">${motoboySelected.telefone}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Dias</span><span class="resumo-val">${diasLabel}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Clientes</span><span class="resumo-val">${n}</span></div>
     `;
-    document.getElementById('resumo').innerHTML = html;
   }
 
   async function criarRota() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
-    const diasAtivos = diaSelecionados.join(',');
-    const diaSemana = getDiaSemana();
+    const diasAtivos = expandirDias(diasSelecionados).join(',');
+    const diaSemana = diasSelecionados.includes('sab') && !diasSelecionados.includes('seg-sex') ? 'sabado'
+      : diasSelecionados.includes('dom') && !diasSelecionados.includes('seg-sex') ? 'domingo' : 'seg-sex';
+
     const clientesData = clientesEncontrados.filter(c => clientesSelecionados.has(c.id)).map(c => ({
       id_base: c.id,
       numero_cliente: c.numero_cliente,
       nome: c.nome,
       horario: c.horario,
-      dias_ativos: diasAtivos,
+      dias_ativos: (clientesDias[c.id] || []).join(',') || diasAtivos,
       obs: '',
       tipo: 'normal'
     }));
 
     const btn = document.getElementById('btn-criar');
     btn.disabled = true;
-    showMsg('msg4', 'Criando rota...', 'loading');
+    showMsg('msg4', '<span class="spinner"></span>Criando rota...', 'loading');
 
     try {
       const r = await fetch(API + '/criar-rota', {
@@ -498,13 +524,9 @@
       const d = await r.json();
       if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao criar');
 
-      document.getElementById('card-sucesso').style.display = 'block';
-      document.getElementById('msg-sucesso').innerHTML = `
-        Rota <strong>${nomeRota}</strong> criada com <strong>${d.inseridos} clientes</strong><br/>
-        Dias: <strong>${diasAtivos}</strong><br/>
-        Motorista: <strong>${motoboySelected.nome}</strong>
-      `;
+      document.getElementById('sucesso-msg').innerHTML = `Rota <strong>${nomeRota}</strong> criada com <strong>${d.inseridos} clientes</strong>.<br/>Motorista: <strong>${motoboySelected.nome}</strong>`;
       document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
+      document.getElementById('card-sucesso').classList.add('ativa');
     } catch(e) {
       showMsg('msg4', 'Erro: ' + e.message, 'error');
       btn.disabled = false;
@@ -513,29 +535,28 @@
 
   function novaRota() {
     motoboySelected = null;
-    diaSelecionados = [];
+    diasSelecionados = [];
     clientesEncontrados = [];
     clientesSelecionados.clear();
     clientesDias = {};
-    document.getElementById('busca-moto-input').value = '';
+    document.getElementById('busca-moto').value = '';
     document.getElementById('codigos-input').value = '';
     document.getElementById('nome-rota').value = '';
-    document.querySelectorAll('#dias-checkboxes input').forEach(cb => cb.checked = false);
-    document.querySelectorAll('#dias-checkboxes label').forEach(lbl => { lbl.style.background='#fff'; lbl.style.borderColor='#D6E5EE'; lbl.style.color='#5A7A8F'; });
-    document.getElementById('dias-selecionados-txt').textContent = '';
-    document.getElementById('busca-motorista-bloco').style.display = 'block';
-    document.getElementById('motoboy-selecionado-bloco').style.display = 'none';
-    document.getElementById('card-sucesso').style.display = 'none';
+    document.querySelectorAll('.dia-opt').forEach(d => d.classList.remove('sel'));
+    document.getElementById('bloco-busca').style.display = 'block';
+    document.getElementById('bloco-motoboy-sel').style.display = 'none';
+    document.getElementById('clientes-area').style.display = 'none';
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
     document.getElementById('card1').classList.add('ativa');
+    for (let i = 1; i <= 4; i++) { const et = document.getElementById('et' + i); et.classList.remove('ativa','completa'); if (i===1) et.classList.add('ativa'); }
     window.scrollTo(0, 0);
   }
 
   function showMsg(id, text, type) {
     const el = document.getElementById(id);
     if (!el) return;
-    if (!text) { el.classList.remove('show', 'success', 'error', 'loading'); return; }
-    el.innerHTML = (type === 'loading' ? '<span class="spinner"></span>' : '') + text;
+    if (!text) { el.className = 'msg'; return; }
+    el.innerHTML = text;
     el.className = 'msg show ' + type;
   }
 </script>
