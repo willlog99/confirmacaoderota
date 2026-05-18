@@ -525,10 +525,12 @@
       } else {
         confEl.innerHTML = confirmacoes.slice(0, 15).map(c => {
           const hora = c.data ? c.data.split(' ').pop() : '';
+          const rotasStr = c.rotas && c.rotas.length ? c.rotas.join(', ') : '';
           return `<div class="conf-row ${c.resposta}">
             <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
             <div class="conf-info">
               <div class="conf-uni">${c.biocondutor}</div>
+              ${rotasStr ? `<div style="font-size:11px;color:#5A7A8F;margin-top:2px">🛣️ ${rotasStr}</div>` : ''}
               ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
             </div>
             <div class="conf-hora">${hora}</div>
@@ -749,6 +751,7 @@
           <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
           <div class="conf-info">
             <div class="conf-uni">${c.biocondutor}</div>
+            ${c.rotas && c.rotas.length ? `<div style="font-size:11px;color:#5A7A8F;margin-top:2px">🛣️ ${c.rotas.join(', ')}</div>` : ''}
             ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
           </div>
           <div class="conf-hora">${c.data ? c.data.split(' ').pop() : ''}</div>
