@@ -262,6 +262,7 @@
             <div class="cli-actions">
               <button class="btn-cli btn-hora-cli" onclick="abrirAlterarHorario(${c.id},'${c.nome.replace(/'/g,"\\'")}','${c.horario}')">⏰</button>
               <button class="btn-cli btn-mover-cli" onclick="abrirMover(${c.id},'${todasRotas[i].rota.replace(/'/g,"\\'")}')">↔</button>
+              <button class="btn-cli" style="background:#FCEBEB;color:#791F1F;border-color:#F09595" onclick="excluirCliente(${c.id},${i})">🗑</button>
             </div>
           </div>`).join('')}
       </div>`;
@@ -428,7 +429,24 @@
     carregarRotas();
   }
 
-  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+  async function excluirCliente(id, rotaIdx) {
+    if (!confirm('Excluir este cliente da rota? Ele voltará para a base.')) return;
+    try {
+      // Volta cliente para base antes de desativar
+      const rota = todasRotas[rotaIdx].rota;
+      const cli = (clientesPorRota[rota] || []).find(c => c.id === id);
+      if (cli) {
+        await fetch(API + '/clientes-base', { 
+          method:'POST', 
+          headers:{'Content-Type':'application/json'}, 
+          body: JSON.stringify({ numero_cliente: cli.numero_cliente, nome: cli.nome, horario: cli.horario }) 
+        });
+      }
+      await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+      toast('✓ Cliente removido da rota');
+      await carregarClientes(rotaIdx);
+    } catch(e) { toast('Erro ao excluir'); }
+  }
 
   function toast(msg) {
     const el = document.getElementById('toast');
