@@ -283,14 +283,14 @@
         </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:1.5rem">
+      <div style="display:flex;flex-direction:column;gap:1rem">
         <div class="panel">
           <div class="panel-header">
-            <div class="panel-title">✓ Confirmações de presença</div>
+            <div class="panel-title">✓ Confirmações <span class="panel-badge" id="conf-badge-count">0</span></div>
             <div class="panel-live"><div class="live-dot"></div>Live</div>
           </div>
           <div class="conf-progress">
-            <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:18px;color:#5A7A8F;font-weight:600">/ 37</span></div>
+            <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:16px;color:#5A7A8F;font-weight:600">/ 37</span></div>
             <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
             <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
           </div>
@@ -304,20 +304,20 @@
             <div class="panel-title">📋 Checklist <span class="panel-badge" id="checklist-badge">0</span></div>
             <div class="panel-live"><div class="live-dot"></div>Live</div>
           </div>
-          <div class="panel-body" id="painel-checklist">
+          <div class="panel-body" id="painel-checklist" style="max-height:200px">
             <div class="empty"><span class="spinner"></span></div>
           </div>
         </div>
-      </div>
-    </div>
 
-    <div class="panel" style="margin-top:1.5rem">
-      <div class="panel-header">
-        <div class="panel-title">⏰ Clientes em Atraso <span class="panel-badge" id="atrasos-badge">0</span></div>
-        <div class="panel-live"><div class="live-dot"></div>Live</div>
-      </div>
-      <div class="panel-body" id="painel-atrasos">
-        <div class="empty">Nenhum cliente em atraso ✓</div>
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">⏰ Atrasos <span class="panel-badge" id="atrasos-badge">0</span></div>
+            <div class="panel-live"><div class="live-dot"></div>Live</div>
+          </div>
+          <div class="panel-body" id="painel-atrasos" style="max-height:200px">
+            <div class="empty">Nenhum atraso ✓</div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
