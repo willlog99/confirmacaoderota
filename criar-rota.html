@@ -181,12 +181,31 @@
     </div>
 
     <div class="field">
-      <label>Dia principal de operação</label>
-      <div class="horario-selecao" id="dias-principais">
-        <button class="horario-btn" data-dia="seg-sex" onclick="selecionarDiaPrincipal('seg-sex', this)">Seg-Sex</button>
-        <button class="horario-btn" data-dia="sabado" onclick="selecionarDiaPrincipal('sabado', this)">Sábado</button>
-        <button class="horario-btn" data-dia="domingo" onclick="selecionarDiaPrincipal('domingo', this)">Domingo</button>
+      <label>Dias de operação desta rota</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px" id="dias-checkboxes">
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-seg">
+          <input type="checkbox" value="seg" onchange="atualizarDias()"/> Seg
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-ter">
+          <input type="checkbox" value="ter" onchange="atualizarDias()"/> Ter
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-qua">
+          <input type="checkbox" value="qua" onchange="atualizarDias()"/> Qua
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-qui">
+          <input type="checkbox" value="qui" onchange="atualizarDias()"/> Qui
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-sex">
+          <input type="checkbox" value="sex" onchange="atualizarDias()"/> Sex
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-sab">
+          <input type="checkbox" value="sab" onchange="atualizarDias()"/> Sáb
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;cursor:pointer;font-size:13px;font-weight:600;color:#5A7A8F" id="lbl-dom">
+          <input type="checkbox" value="dom" onchange="atualizarDias()"/> Dom
+        </label>
       </div>
+      <div id="dias-selecionados-txt" style="font-size:12px;color:#1E9FD9;font-weight:700;margin-top:8px"></div>
     </div>
 
     <div class="msg" id="msg2"></div>
@@ -243,10 +262,35 @@
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let motoboySelected = null;
-  let diaPrincipal = null;
+  let diaSelecionados = []; // array de dias selecionados
   let clientesEncontrados = [];
   let clientesSelecionados = new Set();
   let clientesDias = {};
+
+  function atualizarDias() {
+    diaSelecionados = Array.from(document.querySelectorAll('#dias-checkboxes input:checked')).map(cb => cb.value);
+    // Atualizar visual dos labels
+    document.querySelectorAll('#dias-checkboxes label').forEach(lbl => {
+      const cb = lbl.querySelector('input');
+      if (cb.checked) {
+        lbl.style.background = '#E8F4FB';
+        lbl.style.borderColor = '#1E9FD9';
+        lbl.style.color = '#0F4C7A';
+      } else {
+        lbl.style.background = '#fff';
+        lbl.style.borderColor = '#D6E5EE';
+        lbl.style.color = '#5A7A8F';
+      }
+    });
+    const txt = document.getElementById('dias-selecionados-txt');
+    txt.textContent = diaSelecionados.length ? '✓ ' + diaSelecionados.join(', ') : '';
+  }
+
+  function getDiaSemana() {
+    if (diaSelecionados.includes('sab') && !diaSelecionados.some(d => ['seg','ter','qua','qui','sex'].includes(d))) return 'sabado';
+    if (diaSelecionados.includes('dom') && !diaSelecionados.some(d => ['seg','ter','qua','qui','sex'].includes(d))) return 'domingo';
+    return 'seg-sex';
+  }
 
   async function buscarMotoboys() {
     const q = document.getElementById('busca-moto-input').value.trim();
@@ -397,7 +441,7 @@
   function irPara(n) {
     // Validações antes de ir pra próxima
     if (n === 2 && !motoboySelected) { showMsg('msg1', 'Selecione um motorista', 'error'); return; }
-    if (n === 3 && !diaPrincipal) { showMsg('msg2', 'Selecione o dia principal', 'error'); return; }
+    if (n === 3 && diaSelecionados.length === 0) { showMsg('msg2', 'Selecione pelo menos um dia', 'error'); return; }
     if (n === 3 && !document.getElementById('nome-rota').value.trim()) { showMsg('msg2', 'Digite o nome da rota', 'error'); return; }
     if (n === 4 && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
 
@@ -411,40 +455,26 @@
   function renderizarResumo() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
     const clientesResumo = clientesEncontrados.filter(c => clientesSelecionados.has(c.id));
-    
     const html = `
-      <div class="resumo-row">
-        <span class="resumo-label">Rota</span>
-        <span class="resumo-valor">${nomeRota}</span>
-      </div>
-      <div class="resumo-row">
-        <span class="resumo-label">Motorista</span>
-        <span class="resumo-valor">${motoboySelected.nome}</span>
-      </div>
-      <div class="resumo-row">
-        <span class="resumo-label">Telefone</span>
-        <span class="resumo-valor">${motoboySelected.telefone}</span>
-      </div>
-      <div class="resumo-row">
-        <span class="resumo-label">Dia principal</span>
-        <span class="resumo-valor">${diaPrincipal === 'seg-sex' ? 'Seg a Sex' : diaPrincipal === 'sabado' ? 'Sábado' : 'Domingo'}</span>
-      </div>
-      <div class="resumo-row">
-        <span class="resumo-label">Clientes</span>
-        <span class="resumo-valor">${clientesResumo.length}</span>
-      </div>
+      <div class="resumo-row"><span class="resumo-label">Rota</span><span class="resumo-valor">${nomeRota}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Motorista</span><span class="resumo-valor">${motoboySelected.nome}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Telefone</span><span class="resumo-valor">${motoboySelected.telefone}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Dias</span><span class="resumo-valor">${diaSelecionados.join(', ')}</span></div>
+      <div class="resumo-row"><span class="resumo-label">Clientes</span><span class="resumo-valor">${clientesResumo.length}</span></div>
     `;
     document.getElementById('resumo').innerHTML = html;
   }
 
   async function criarRota() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
+    const diasAtivos = diaSelecionados.join(',');
+    const diaSemana = getDiaSemana();
     const clientesData = clientesEncontrados.filter(c => clientesSelecionados.has(c.id)).map(c => ({
       id_base: c.id,
       numero_cliente: c.numero_cliente,
       nome: c.nome,
       horario: c.horario,
-      dias_ativos: clientesDias[c.id] || diaPrincipal || 'seg-sex',
+      dias_ativos: diasAtivos,
       obs: '',
       tipo: 'normal'
     }));
@@ -459,7 +489,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rota: nomeRota,
-          dia_semana: diaPrincipal || 'seg-sex',
+          dia_semana: diaSemana,
           telefone_motoboy: motoboySelected.telefone,
           nome_motoboy: motoboySelected.nome,
           clientes: clientesData
@@ -471,6 +501,7 @@
       document.getElementById('card-sucesso').style.display = 'block';
       document.getElementById('msg-sucesso').innerHTML = `
         Rota <strong>${nomeRota}</strong> criada com <strong>${d.inseridos} clientes</strong><br/>
+        Dias: <strong>${diasAtivos}</strong><br/>
         Motorista: <strong>${motoboySelected.nome}</strong>
       `;
       document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
@@ -482,14 +513,16 @@
 
   function novaRota() {
     motoboySelected = null;
-    diaPrincipal = null;
+    diaSelecionados = [];
     clientesEncontrados = [];
     clientesSelecionados.clear();
     clientesDias = {};
     document.getElementById('busca-moto-input').value = '';
     document.getElementById('codigos-input').value = '';
     document.getElementById('nome-rota').value = '';
-    document.querySelectorAll('#dias-principais .horario-btn').forEach(b => b.classList.remove('sel'));
+    document.querySelectorAll('#dias-checkboxes input').forEach(cb => cb.checked = false);
+    document.querySelectorAll('#dias-checkboxes label').forEach(lbl => { lbl.style.background='#fff'; lbl.style.borderColor='#D6E5EE'; lbl.style.color='#5A7A8F'; });
+    document.getElementById('dias-selecionados-txt').textContent = '';
     document.getElementById('busca-motorista-bloco').style.display = 'block';
     document.getElementById('motoboy-selecionado-bloco').style.display = 'none';
     document.getElementById('card-sucesso').style.display = 'none';
