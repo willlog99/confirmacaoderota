@@ -1,353 +1,347 @@
 <!DOCTYPE html>
-
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Gerenciar Rotas</title>
+  <title>Loglife — Rotas</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 3rem;color:#0F4C7A}
-    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;color:#fff}
-    .header-row{display:flex;align-items:center;gap:14px;margin-bottom:.25rem}
-    .header-logo{height:36px;width:auto;filter:brightness(0) invert(1)}
-    .header h1{font-size:18px;font-weight:700}
-    .header .sub{font-size:13px;opacity:.85}
-    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#fff;opacity:.85;cursor:pointer;text-decoration:none;margin-bottom:8px}
-    .container{padding:1rem 1.25rem 0;max-width:800px;margin:0 auto}
-    .card{background:#fff;border-radius:16px;padding:1.25rem;box-shadow:0 1px 6px rgba(30,159,217,0.08);margin-bottom:1rem}
-    .card-title{font-size:15px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
-    .refresh-btn{font-size:12px;color:#1E9FD9;background:none;border:none;cursor:pointer;font-weight:600}
-    .form-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
-    .form-row input{flex:1;min-width:140px;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#111;background:#F7FBFD}
-    .btn{height:40px;padding:0 16px;border-radius:10px;border:none;color:#fff;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
-    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0)}
-    .btn-danger{background:#DC2626}
-    .btn-warning{background:#B45309}
-    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
-    .rota-item{padding:14px;border-radius:12px;border:1.5px solid #D6E5EE;margin-bottom:10px;background:#fff}
-    .rota-item.ativa{border-color:#F2A536;background:#FFF8E6}
-    .rota-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
-    .rota-titulo{font-size:15px;font-weight:700;color:#0F4C7A}
-    .rota-status{font-size:11px;padding:3px 8px;border-radius:99px;font-weight:600}
-    .rota-status.livre{background:#E1F5EE;color:#085041}
-    .rota-status.ativa{background:#FEF3C7;color:#92400E}
-    .rota-motoboy{font-size:13px;color:#5A7A8F;margin-bottom:10px}
-    .rota-motoboy strong{color:#0F4C7A}
-    .rota-actions{display:flex;gap:6px;flex-wrap:wrap}
-    .rota-actions .btn{height:32px;padding:0 12px;font-size:12px}
-    .rota-expandir{margin-top:10px;border-top:1px solid #E5EEF5;padding-top:10px;display:none}
-    .rota-expandir.aberto{display:block}
-    .rota-progress{display:flex;gap:6px;font-size:12px;margin-bottom:8px;flex-wrap:wrap}
-    .rota-progress span{padding:3px 8px;border-radius:6px;font-weight:600}
-    .rota-progress .total{background:#F0F4F8;color:#0F4C7A}
-    .rota-progress .feito{background:#E8F4FB;color:#0F4C7A}
-    .rota-progress .pend{background:#FEF9EC;color:#92400E}
-    .cliente-mini{display:flex;align-items:center;gap:8px;padding:8px;border-radius:8px;background:#F7FBFD;margin-bottom:4px;font-size:12px}
-    .cliente-mini.feito{background:#E8F4FB}
-    .cliente-mini.improdutivo{background:#F0F4F8}
-    .cliente-mini-icon{flex-shrink:0;width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;background:#fff;border:1px solid #D6E5EE}
-    .cliente-mini-icon.feito{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
-    .cliente-mini-icon.improdutivo{background:#5A7A8F;border-color:#5A7A8F;color:#fff}
-    .cliente-mini-icon.chegou{background:#F2CC70;border-color:#F2CC70}
-    .cliente-mini-info{flex:1;min-width:0;overflow:hidden}
-    .cliente-mini-nome{font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cliente-mini-ts{font-size:10px;color:#5A7A8F;margin-top:2px}
-    .cliente-mini-ts .ch{color:#92400E;font-weight:600}
-    .cliente-mini-ts .sd{color:#1E9FD9;font-weight:600}
-    .cliente-mini-horario{font-size:10px;color:#94A8B8;flex-shrink:0;font-weight:600}
-    .btn-expandir{background:#fff;color:#1E9FD9;border:1.5px solid #1E9FD9;height:32px;padding:0 12px;font-size:12px;font-weight:600;border-radius:8px;cursor:pointer}
-    .btn-expandir.aberto{background:#1E9FD9;color:#fff}
-    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:14px}
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
-    .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:500px}
-    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:8px}
-    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5}
-    .modal input,.modal select{width:100%;height:46px;border-radius:11px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 12px;color:#111;background:#F7FBFD;margin-bottom:14px}
-    .modal-btns{display:flex;flex-direction:column;gap:10px}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 20px;border-radius:10px;font-size:14px;font-weight:500;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding-bottom:3rem}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 1.25rem 1.5rem;color:#fff;display:flex;align-items:center;gap:14px;margin-bottom:1.5rem}
+    .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0}
+    .header-logo{height:32px;width:auto;filter:brightness(0) invert(1)}
+    .header h1{font-size:18px;font-weight:700;flex:1}
+
+    .container{padding:0 1.25rem;max-width:800px;margin:0 auto}
+
+    .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+    .btn-atualizar{padding:8px 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:600;color:#0F4C7A;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .btn-atualizar:hover{background:#E8F4FB;border-color:#1E9FD9}
+
+    .rota-card{background:#fff;border-radius:14px;box-shadow:0 1px 5px rgba(30,159,217,0.08);margin-bottom:12px;overflow:hidden;border:1.5px solid #EBF1F5}
+    .rota-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
+    .rota-header:hover{background:#F7FBFD}
+    .rota-info{flex:1;min-width:0}
+    .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A}
+    .rota-meta{font-size:12px;color:#5A7A8F;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .dia-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#E8F4FB;color:#0F7BB0}
+    .status-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+    .status-livre{background:#E1F5EE;color:#085041}
+    .status-andamento{background:#FEF9EC;color:#92400E}
+    .rota-stats{display:flex;gap:8px;font-size:12px;color:#5A7A8F;flex-shrink:0}
+    .rota-expand-icon{font-size:14px;color:#94A8B8;transition:transform .2s;flex-shrink:0}
+    .rota-card.open .rota-expand-icon{transform:rotate(180deg)}
+
+    .rota-actions{display:flex;gap:6px;padding:0 1.25rem .75rem;flex-wrap:wrap}
+    .btn-action{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;display:flex;align-items:center;gap:4px;transition:all .15s}
+    .btn-trocar{background:#E8F4FB;color:#0F4C7A;border-color:#BFE0F0}
+    .btn-trocar:hover{background:#D0EAF8}
+    .btn-renomear{background:#FEF9EC;color:#92400E;border-color:#F2CC70}
+    .btn-renomear:hover{background:#FEF3C7}
+    .btn-excluir{background:#FCEBEB;color:#791F1F;border-color:#F09595}
+    .btn-excluir:hover{background:#FAD5D5}
+    .btn-editar{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+    .btn-editar:hover{background:#C8F0E0}
+
+    .rota-body{display:none;border-top:1px solid #EBF1F5}
+    .rota-card.open .rota-body{display:block}
+
+    .cli-lista-edit{padding:.75rem 1.25rem}
+    .cli-drag{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1.5px solid #D6E5EE;display:flex;align-items:center;gap:10px;transition:all .2s;user-select:none}
+    .cli-drag.dragging{opacity:.5;border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.2)}
+    .cli-drag.drag-over{border-color:#1E9FD9;background:#E8F4FB;transform:translateY(2px)}
+    .drag-handle{cursor:grab;color:#94A8B8;font-size:16px;flex-shrink:0;padding:0 4px}
+    .drag-handle:active{cursor:grabbing}
+    .cli-drag-info{flex:1;min-width:0}
+    .cli-drag-nome{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cli-drag-meta{font-size:11px;color:#5A7A8F;margin-top:2px}
+    .cli-drag-hora{font-size:12px;font-weight:700;color:#1E9FD9;flex-shrink:0}
+    .cli-drag-pos{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+
+    .edit-actions{padding:.75rem 1.25rem;border-top:1px solid #EBF1F5;display:flex;gap:8px}
+    .btn-salvar{flex:1;padding:10px;border-radius:10px;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none}
+    .btn-cancelar-edit{flex:1;padding:10px;border-radius:10px;background:#fff;color:#5A7A8F;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE}
+
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
+    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:4px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
     .toast.show{opacity:1}
+    .msg-inline{font-size:12px;padding:6px 10px;border-radius:8px;margin:0 1.25rem .75rem;text-align:center}
+    .msg-inline.success{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5}
+    .msg-inline.error{background:#FCEBEB;color:#791F1F;border:1px solid #F09595}
   </style>
 </head>
 <body>
 
 <div class="header">
-  <a href="painel.html" class="back-link">← Voltar ao painel</a>
-  <div class="header-row">
-    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
-    <div>
-      <h1>Gerenciar Rotas</h1>
-      <div class="sub">Renomear, excluir e atribuir motoristas</div>
-    </div>
-  </div>
+  <a href="painel.html" class="back-btn">←</a>
+  <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+  <h1>Alterar Rotas</h1>
 </div>
 
 <div class="container">
-  <div class="card">
-    <div class="card-title">📋 Rotas existentes <button class="refresh-btn" onclick="carregar()">↻ Atualizar</button></div>
-    <div id="lista-rotas"><p class="empty">Carregando...</p></div>
+  <div class="toolbar">
+    <button class="btn-atualizar" onclick="carregarRotas()">🔄 Atualizar</button>
   </div>
-</div>
-
-<!-- Modal renomear -->
-
-<div class="modal-overlay hidden" id="modal-renomear">
-  <div class="modal">
-    <h2>Renomear rota</h2>
-    <p>Rota atual: <strong id="ren-atual"></strong></p>
-    <input type="text" id="ren-nova" placeholder="Novo nome" style="text-transform:uppercase"/>
-    <div class="modal-btns">
-      <button class="btn btn-primary" onclick="confirmarRenomear()">Renomear</button>
-      <button class="btn btn-secondary" onclick="fecharModal('modal-renomear')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal atribuir motorista -->
-
-<div class="modal-overlay hidden" id="modal-atribuir">
-  <div class="modal">
-    <h2>Atribuir motorista à rota</h2>
-    <p>Rota: <strong id="atr-rota"></strong></p>
-    <input type="text" id="atr-nome" placeholder="Nome completo"/>
-    <input type="tel" id="atr-tel" placeholder="Telefone (11999999999)"/>
-    <div class="modal-btns">
-      <button class="btn btn-primary" onclick="confirmarAtribuir()">Atribuir</button>
-      <button class="btn btn-secondary" onclick="fecharModal('modal-atribuir')">Cancelar</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal trocar motorista -->
-
-<div class="modal-overlay hidden" id="modal-trocar">
-  <div class="modal">
-    <h2>Trocar motorista</h2>
-    <p>Rota: <strong id="trc-rota"></strong> · Motorista atual: <strong id="trc-atual"></strong></p>
-    <select id="trc-novo"><option value="">Selecione novo motorista...</option></select>
-    <div class="modal-btns">
-      <button class="btn btn-primary" onclick="confirmarTrocar()">Trocar</button>
-      <button class="btn btn-secondary" onclick="fecharModal('modal-trocar')">Cancelar</button>
-    </div>
-  </div>
+  <div id="lista-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  let rotas = [];
-  let motoboys = [];
+  let todasRotas = [];
+  let clientesPorRota = {};
+  let modoEditar = null;
+  let dragSrc = null;
 
-  function toast(msg, cor) {
+  const diaLabels = { 'seg-sex': 'Seg-Sex', 'sabado': 'Sábado', 'domingo': 'Domingo' };
+
+  async function carregarRotas() {
+    document.getElementById('lista-rotas').innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+    try {
+      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
+      const d = await r.json();
+      todasRotas = d.rotas || [];
+      renderizarRotas();
+    } catch(e) {
+      document.getElementById('lista-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar</div>';
+    }
+  }
+
+  function renderizarRotas() {
+    const el = document.getElementById('lista-rotas');
+    if (!todasRotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
+    el.innerHTML = todasRotas.map((r, i) => `
+      <div class="rota-card" id="rota-card-${i}">
+        <div class="rota-header" onclick="toggleRota(${i})">
+          <div class="rota-info">
+            <div class="rota-nome">${r.rota}</div>
+            <div class="rota-meta">
+              <span class="dia-badge">${diaLabels[r.dia_semana] || r.dia_semana || '—'}</span>
+              ${r.motoboy_aberto ? `<span>🏍️ ${r.motoboy_aberto}</span>` : ''}
+              <span class="${r.ativa ? 'status-badge status-andamento' : 'status-badge status-livre'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
+            </div>
+          </div>
+          <div class="rota-expand-icon">▼</div>
+        </div>
+        <div class="rota-body" id="rota-body-${i}">
+          <div class="rota-actions">
+            <button class="btn-action btn-editar" onclick="editarOrdem(${i})">↕ Reordenar coletas</button>
+            <button class="btn-action btn-trocar" onclick="trocarMotorista('${r.rota.replace(/'/g,"\\'")}')">⇄ Trocar motorista</button>
+            <button class="btn-action btn-renomear" onclick="renomearRota('${r.rota.replace(/'/g,"\\'")}')">✎ Renomear</button>
+            ${r.ativa ? `<button class="btn-action btn-trocar" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
+            <button class="btn-action btn-excluir" onclick="excluirRota('${r.rota.replace(/'/g,"\\'")}')">🗑 Excluir</button>
+          </div>
+          <div id="clientes-rota-${i}"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>`).join('');
+  }
+
+  async function toggleRota(i) {
+    const card = document.getElementById('rota-card-' + i);
+    const isOpen = card.classList.contains('open');
+    
+    // Fechar todos
+    document.querySelectorAll('.rota-card').forEach(c => c.classList.remove('open'));
+    
+    if (!isOpen) {
+      card.classList.add('open');
+      await carregarClientes(i);
+    }
+  }
+
+  async function carregarClientes(i) {
+    const rota = todasRotas[i].rota;
+    if (clientesPorRota[rota]) { renderizarClientes(i, clientesPorRota[rota]); return; }
+    
+    try {
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
+      const d = await r.json();
+      clientesPorRota[rota] = d.clientes || [];
+      renderizarClientes(i, clientesPorRota[rota]);
+    } catch(e) {
+      document.getElementById('clientes-rota-' + i).innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar coletas</div>';
+    }
+  }
+
+  function renderizarClientes(i, clientes) {
+    const el = document.getElementById('clientes-rota-' + i);
+    if (!clientes.length) { el.innerHTML = '<div class="empty">Nenhum cliente nesta rota</div>'; return; }
+    
+    const emEdicao = modoEditar === i;
+    
+    if (emEdicao) {
+      el.innerHTML = `
+        <div class="cli-lista-edit" id="drag-lista-${i}">
+          ${clientes.map((c, idx) => `
+            <div class="cli-drag" draggable="true" data-id="${c.id}" data-idx="${idx}"
+              ondragstart="onDragStart(event,${i})"
+              ondragover="onDragOver(event)"
+              ondragenter="onDragEnter(event)"
+              ondragleave="onDragLeave(event)"
+              ondrop="onDrop(event,${i})"
+              ondragend="onDragEnd(event)">
+              <div class="drag-handle">⠿</div>
+              <div class="cli-drag-pos">${idx + 1}</div>
+              <div class="cli-drag-info">
+                <div class="cli-drag-nome">${c.nome}</div>
+                <div class="cli-drag-meta">Nº ${c.numero_cliente}</div>
+              </div>
+              <div class="cli-drag-hora">${c.horario}</div>
+            </div>`).join('')}
+        </div>
+        <div class="edit-actions">
+          <button class="btn-salvar" onclick="salvarOrdem(${i})">✓ Salvar ordem</button>
+          <button class="btn-cancelar-edit" onclick="cancelarEditar(${i})">Cancelar</button>
+        </div>`;
+    } else {
+      el.innerHTML = `<div class="cli-lista-edit">
+        ${clientes.map((c, idx) => `
+          <div class="cli-drag" style="cursor:default">
+            <div class="cli-drag-pos">${idx + 1}</div>
+            <div class="cli-drag-info">
+              <div class="cli-drag-nome">${c.nome}</div>
+              <div class="cli-drag-meta">Nº ${c.numero_cliente} · ${c.status === 'entregue' ? (c.produtividade === 'produtiva' ? '✓ Produtiva' : '✕ Improdutiva') : '⏳ Pendente'}</div>
+            </div>
+            <div class="cli-drag-hora">${c.horario}</div>
+          </div>`).join('')}
+      </div>`;
+    }
+  }
+
+  function editarOrdem(i) {
+    modoEditar = i;
+    renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []);
+  }
+
+  function cancelarEditar(i) {
+    modoEditar = null;
+    renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []);
+  }
+
+  // DRAG AND DROP
+  function onDragStart(e, rotaIdx) {
+    dragSrc = e.currentTarget;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', dragSrc.dataset.idx);
+    setTimeout(() => dragSrc.classList.add('dragging'), 0);
+  }
+
+  function onDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  }
+
+  function onDragEnter(e) {
+    const target = e.currentTarget;
+    if (target !== dragSrc) target.classList.add('drag-over');
+  }
+
+  function onDragLeave(e) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+
+  function onDragEnd(e) {
+    document.querySelectorAll('.cli-drag').forEach(el => {
+      el.classList.remove('dragging', 'drag-over');
+    });
+  }
+
+  function onDrop(e, rotaIdx) {
+    e.preventDefault();
+    const target = e.currentTarget;
+    target.classList.remove('drag-over');
+    
+    if (!dragSrc || dragSrc === target) return;
+    
+    const rota = todasRotas[rotaIdx].rota;
+    const clientes = clientesPorRota[rota];
+    
+    const srcIdx = parseInt(dragSrc.dataset.idx);
+    const tgtIdx = parseInt(target.dataset.idx);
+    
+    // Reordenar array
+    const [removed] = clientes.splice(srcIdx, 1);
+    clientes.splice(tgtIdx, 0, removed);
+    
+    clientesPorRota[rota] = clientes;
+    renderizarClientes(rotaIdx, clientes);
+  }
+
+  async function salvarOrdem(i) {
+    const rota = todasRotas[i].rota;
+    const clientes = clientesPorRota[rota];
+    const ordem = clientes.map((c, idx) => ({ id: c.id, ordem: idx + 1 }));
+    
+    try {
+      await fetch(API + '/reordenar-clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rota, ordem })
+      });
+      modoEditar = null;
+      renderizarClientes(i, clientes);
+      toast('✓ Ordem salva!');
+    } catch(e) {
+      toast('Erro ao salvar ordem');
+    }
+  }
+
+  async function trocarMotorista(rota) {
+    const novoNome = prompt('Nome do novo motorista:');
+    if (!novoNome) return;
+    const novoTel = prompt('Telefone do novo motorista:');
+    if (!novoTel) return;
+    await fetch(API + '/trocar-motorista', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rota, nome_motoboy: novoNome, telefone_motoboy: novoTel.replace(/\D/g,'') })
+    });
+    toast('✓ Motorista trocado!');
+    carregarRotas();
+  }
+
+  async function renomearRota(rota) {
+    const novoNome = prompt('Novo nome da rota:', rota);
+    if (!novoNome || novoNome === rota) return;
+    await fetch(API + '/renomear-rota', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rota, novo_nome: novoNome.toUpperCase() })
+    });
+    toast('✓ Rota renomeada!');
+    carregarRotas();
+  }
+
+  async function destravarRota(rota) {
+    if (!confirm('Destravar rota "' + rota + '"?')) return;
+    await fetch(API + '/destravar-rota', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rota })
+    });
+    toast('✓ Rota destravada!');
+    carregarRotas();
+  }
+
+  async function excluirRota(rota) {
+    if (!confirm('Excluir rota "' + rota + '"? Os clientes voltam para a base.')) return;
+    await fetch(API + '/excluir-rota', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rota })
+    });
+    toast('✓ Rota excluída!');
+    carregarRotas();
+  }
+
+  function toast(msg) {
     const el = document.getElementById('toast');
     el.textContent = msg;
-    el.style.background = cor || '#0F4C7A';
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 2500);
   }
 
-  function abrirModal(id) { document.getElementById(id).classList.remove('hidden'); }
-  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-  async function carregar() {
-    try {
-      const [r1, r2] = await Promise.all([
-        fetch(API + '/rotas-disponiveis?todos_dias=1').then(r=>r.json()),
-        fetch(API + '/motoboys?todos=1').then(r=>r.json())
-      ]);
-      rotas = r1.rotas || [];
-      motoboys = r2.motoboys || [];
-      renderizar();
-    } catch(e) { document.getElementById('lista-rotas').innerHTML = '<p class="empty">Erro ao carregar.</p>'; }
-  }
-
-  function renderizar() {
-    const lista = document.getElementById('lista-rotas');
-    if (!rotas.length) { lista.innerHTML = '<p class="empty">Nenhuma rota cadastrada ainda.</p>'; return; }
-
-    const motoboysPorRota = {};
-    motoboys.forEach(m => {
-      if (!motoboysPorRota[m.rota]) motoboysPorRota[m.rota] = [];
-      motoboysPorRota[m.rota].push(m);
-    });
-
-    lista.innerHTML = rotas.map((r, idxRota) => {
-      const motos = motoboysPorRota[r.rota] || [];
-      const motoStr = motos.length ? motos.map(m => `<strong>${m.nome}</strong> (${m.telefone})`).join(', ') : '<em style="color:#94A8B8">Sem motorista atribuído</em>';
-      const statusBadge = r.ativa
-        ? `<span class="rota-status ativa">🔒 Em uso por ${r.motoboy_aberto || 'motorista'}</span>`
-        : `<span class="rota-status livre">Livre</span>`;
-
-      let actions = '';
-      if (motos.length === 0) {
-        actions += `<button class="btn btn-primary" onclick="abrirAtribuir('${r.rota.replace(/'/g,"\\'")}')">+ Atribuir motorista</button>`;
-      } else {
-        actions += `<button class="btn btn-primary" onclick="abrirTrocar('${r.rota.replace(/'/g,"\\'")}', '${motos[0].nome.replace(/'/g,"\\'")}', ${motos[0].id})">↔ Trocar motorista</button>`;
-      }
-      actions += `<button class="btn-expandir" id="exp-btn-${idxRota}" onclick="expandirRota('${r.rota.replace(/'/g,"\\'")}', ${idxRota})">▼ Ver coletas</button>`;
-      actions += `<button class="btn btn-secondary" onclick="abrirRenomear('${r.rota.replace(/'/g,"\\'")}')">✎ Renomear</button>`;
-      if (r.ativa) actions += `<button class="btn btn-warning" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>`;
-      actions += `<button class="btn btn-danger" onclick="excluirRota('${r.rota.replace(/'/g,"\\'")}')">🗑 Excluir</button>`;
-
-      return `
-        <div class="rota-item ${r.ativa ? 'ativa' : ''}">
-          <div class="rota-header">
-            <div class="rota-titulo">${r.rota}</div>
-            ${statusBadge}
-          </div>
-          <div class="rota-motoboy">👤 ${motoStr}</div>
-          <div class="rota-actions">${actions}</div>
-          <div class="rota-expandir" id="exp-${idxRota}"></div>
-        </div>`;
-    }).join('');
-  }
-
-  function abrirAtribuir(rota) {
-    document.getElementById('atr-rota').textContent = rota;
-    document.getElementById('atr-nome').value = '';
-    document.getElementById('atr-tel').value = '';
-    document.getElementById('modal-atribuir').dataset.rota = rota;
-    abrirModal('modal-atribuir');
-  }
-
-  async function confirmarAtribuir() {
-    const rota = document.getElementById('modal-atribuir').dataset.rota;
-    const nome = document.getElementById('atr-nome').value.trim();
-    const tel = document.getElementById('atr-tel').value.replace(/\D/g,'');
-    if (!nome || !tel) { toast('Preencha nome e telefone.', '#A32D2D'); return; }
-    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ nome, telefone: tel, rota }) });
-    fecharModal('modal-atribuir');
-    toast('Motorista atribuído!', '#1E9FD9');
-    carregar();
-  }
-
-  function abrirTrocar(rota, atualNome, atualId) {
-    document.getElementById('trc-rota').textContent = rota;
-    document.getElementById('trc-atual').textContent = atualNome;
-    const sel = document.getElementById('trc-novo');
-    sel.innerHTML = '<option value="">Selecione novo motorista...</option>' +
-      motoboys.filter(m => m.id !== atualId).map(m => `<option value="${m.id}">${m.nome} (${m.rota || 'sem rota'})</option>`).join('') +
-      '<option value="__novo__">+ Cadastrar novo motorista</option>';
-    document.getElementById('modal-trocar').dataset.rota = rota;
-    document.getElementById('modal-trocar').dataset.atualId = atualId;
-    abrirModal('modal-trocar');
-  }
-
-  async function confirmarTrocar() {
-    const rota = document.getElementById('modal-trocar').dataset.rota;
-    const atualId = parseInt(document.getElementById('modal-trocar').dataset.atualId);
-    const escolhido = document.getElementById('trc-novo').value;
-    if (!escolhido) { toast('Selecione um motorista.', '#A32D2D'); return; }
-    if (escolhido === '__novo__') {
-      fecharModal('modal-trocar');
-      await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: atualId }) });
-      abrirAtribuir(rota);
-      return;
-    }
-    const novoId = parseInt(escolhido);
-    const novo = motoboys.find(m => m.id === novoId);
-    if (!novo) return;
-    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: atualId }) });
-    await fetch(API + '/motoboys', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: novoId, telefone: novo.telefone, nome: novo.nome, rota }) });
-    fecharModal('modal-trocar');
-    toast('Motorista trocado!', '#1E9FD9');
-    carregar();
-  }
-
-  function abrirRenomear(rota) {
-    document.getElementById('ren-atual').textContent = rota;
-    document.getElementById('ren-nova').value = rota;
-    document.getElementById('modal-renomear').dataset.rota = rota;
-    abrirModal('modal-renomear');
-  }
-
-  async function confirmarRenomear() {
-    const rotaAntiga = document.getElementById('modal-renomear').dataset.rota;
-    const rotaNova = document.getElementById('ren-nova').value.trim().toUpperCase();
-    if (!rotaNova || rotaNova === rotaAntiga) { fecharModal('modal-renomear'); return; }
-    await fetch(API + '/renomear-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota_antiga: rotaAntiga, rota_nova: rotaNova }) });
-    fecharModal('modal-renomear');
-    toast('Rota renomeada!', '#1E9FD9');
-    carregar();
-  }
-
-  async function expandirRota(rota, idx) {
-    const div = document.getElementById('exp-' + idx);
-    const btn = document.getElementById('exp-btn-' + idx);
-    if (div.classList.contains('aberto')) {
-      div.classList.remove('aberto');
-      btn.classList.remove('aberto');
-      btn.innerHTML = '▼ Ver coletas';
-      return;
-    }
-    div.innerHTML = '<p style="font-size:12px;color:#94A8B8;padding:10px">Carregando...</p>';
-    div.classList.add('aberto');
-    btn.classList.add('aberto');
-    btn.innerHTML = '▲ Ocultar';
-    try {
-      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
-      const d = await r.json();
-      const clientes = d.clientes || [];
-      const entregues = clientes.filter(c => c.status === 'entregue');
-      const pendentes = clientes.filter(c => c.status !== 'entregue');
-      const produtivas = entregues.filter(c => c.produtividade === 'produtiva').length;
-      const improdutivas = entregues.filter(c => c.produtividade === 'improdutiva').length;
-
-      const renderCli = c => {
-        const prod = c.produtividade || '';
-        const cls = c.status === 'entregue' ? (prod === 'improdutiva' ? 'improdutivo' : 'feito') : (c.horario_chegada ? 'feito' : '');
-        const icon = c.status === 'entregue' ? (prod === 'improdutiva' ? '✕' : '✓') : (c.horario_chegada ? '📍' : '');
-        const iconCls = c.status === 'entregue' ? (prod === 'improdutiva' ? 'improdutivo' : 'feito') : (c.horario_chegada ? 'chegou' : '');
-        const horaSaida = c.horario_entrega ? String(c.horario_entrega).split(' ').pop() : '';
-        return `
-          <div class="cliente-mini ${cls}">
-            <div class="cliente-mini-icon ${iconCls}">${icon}</div>
-            <div class="cliente-mini-info">
-              <div class="cliente-mini-nome">${c.nome}</div>
-              <div class="cliente-mini-ts">
-                Nº ${c.numero_cliente}
-                ${c.horario_chegada ? ` · <span class="ch">🟡 ${c.horario_chegada}</span>` : ''}
-                ${horaSaida ? ` · <span class="sd">${prod === 'improdutiva' ? '🔘' : '🔵'} ${horaSaida}</span>` : ''}
-                ${prod === 'improdutiva' && c.motivo_improdutiva ? `<br/><em style="color:#A32D2D">↳ ${c.motivo_improdutiva}</em>` : ''}
-              </div>
-            </div>
-            <div class="cliente-mini-horario">${c.horario || ''}</div>
-          </div>`;
-      };
-
-      div.innerHTML = `
-        <div class="rota-progress">
-          <span class="total">${clientes.length} total</span>
-          <span class="feito">✓ ${produtivas} produt.</span>
-          ${improdutivas > 0 ? `<span class="feito">✕ ${improdutivas} improd.</span>` : ''}
-          <span class="pend">⏳ ${pendentes.length} pendentes</span>
-        </div>
-        ${pendentes.length > 0 ? `<div style="font-size:11px;font-weight:700;color:#92400E;margin:8px 0 4px">PENDENTES (${pendentes.length})</div>${pendentes.map(renderCli).join('')}` : ''}
-        ${entregues.length > 0 ? `<div style="font-size:11px;font-weight:700;color:#1E9FD9;margin:8px 0 4px">REGISTRADAS (${entregues.length})</div>${entregues.map(renderCli).join('')}` : ''}
-      `;
-    } catch(e) {
-      div.innerHTML = '<p style="font-size:12px;color:#A32D2D;padding:10px">Erro ao carregar coletas.</p>';
-    }
-  }
-
-  async function destravarRota(rota) {
-    if (!confirm(`Destravar a rota "${rota}"?`)) return;
-    await fetch(API + '/destravar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
-    toast('Rota destravada.', '#B45309');
-    carregar();
-  }
-
-  async function excluirRota(rota) {
-    if (!confirm(`Excluir a rota "${rota}"? Os clientes ficam no histórico mas saem da lista ativa.`)) return;
-    await fetch(API + '/excluir-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
-    toast('Rota excluída.', '#A32D2D');
-    carregar();
-  }
-
-  carregar();
+  carregarRotas();
 </script>
-
 </body>
 </html>
