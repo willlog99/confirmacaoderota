@@ -498,6 +498,15 @@
 
   carregar();
   verificarOutrasRotas();
+
+  // Auto-refresh a cada 8 segundos — atualiza clientes sem perder estado dos modais
+  setInterval(() => {
+    const algumModalAberto = !document.getElementById('modal-chegada').classList.contains('hidden') ||
+      !document.getElementById('modal-prod').classList.contains('hidden') ||
+      !document.getElementById('modal-motivo').classList.contains('hidden') ||
+      !document.getElementById('modal-fin').classList.contains('hidden');
+    if (!algumModalAberto) carregar();
+  }, 8000);
 </script>
 </body>
 </html>
