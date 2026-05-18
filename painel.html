@@ -616,13 +616,14 @@
           const horas = Math.floor(a.minutos_atrasado / 60);
           const mins = a.minutos_atrasado % 60;
           const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
-          return `<div class="cliente-card" style="border-left:3px solid #DC2626;background:#FCEBEB">
-            <div class="check-btn" style="background:#DC2626;color:#fff;border-color:#DC2626">⏰</div>
+          const isPendente = a.tipo === 'pendente';
+          return `<div class="cliente-card" style="border-left:3px solid ${isPendente ? '#F59E0B' : '#DC2626'};background:${isPendente ? '#FEF9EC' : '#FCEBEB'}">
+            <div class="check-btn" style="background:${isPendente ? '#F59E0B' : '#DC2626'};color:#fff;border-color:${isPendente ? '#F59E0B' : '#DC2626'}">${isPendente ? '⏳' : '⏰'}</div>
             <div class="cliente-info">
               <div class="cliente-nome">${a.nome}</div>
               <div class="cliente-meta">Nº ${a.numero_cliente} • ${a.rota}</div>
               <div class="ts-info">
-                <span style="color:#DC2626">⏱️ ${a.horario} → Atrasado ${tempoStr}</span>
+                <span style="color:${isPendente ? '#92400E' : '#DC2626'}">${isPendente ? '⚠️ Pendente há' : '⏰ Entregue com'} ${tempoStr} de atraso</span>
               </div>
             </div>
           </div>`;
