@@ -283,23 +283,35 @@
         </div>
       </div>
 
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-title">✓ Confirmações de presença</div>
-          <div class="panel-live"><div class="live-dot"></div>Live</div>
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">✓ Confirmações de presença</div>
+            <div class="panel-live"><div class="live-dot"></div>Live</div>
+          </div>
+          <div class="conf-progress">
+            <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:18px;color:#5A7A8F;font-weight:600">/ 37</span></div>
+            <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
+            <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
+          </div>
+          <div class="conf-list" id="conf-list-live">
+            <div class="empty"><span class="spinner"></span></div>
+          </div>
         </div>
-        <div class="conf-progress">
-          <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:18px;color:#5A7A8F;font-weight:600">/ 37</span></div>
-          <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
-          <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
-        </div>
-        <div class="conf-list" id="conf-list-live">
-          <div class="empty"><span class="spinner"></span></div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📋 Checklist <span class="panel-badge" id="checklist-badge">0</span></div>
+            <div class="panel-live"><div class="live-dot"></div>Live</div>
+          </div>
+          <div class="panel-body" id="painel-checklist">
+            <div class="empty"><span class="spinner"></span></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="panel">
+    <div class="panel" style="margin-top:1.5rem">
       <div class="panel-header">
         <div class="panel-title">⏰ Clientes em Atraso <span class="panel-badge" id="atrasos-badge">0</span></div>
         <div class="panel-live"><div class="live-dot"></div>Live</div>
@@ -552,6 +564,36 @@
             <div class="conf-hora">${hora}</div>
           </div>`;
         }).join('');
+      }
+
+      // Card Checklist — cruzar confirmações com checklists preenchidos
+      try {
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        const chkRes = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
+        const chkData = await chkRes.json();
+        const checklists = chkData.checklists || [];
+        const preencheram = new Set(checklists.map(c => c.biocondutor));
+        const confirmaramSim = confirmacoes.filter(c => c.resposta === 'sim');
+        
+        document.getElementById('checklist-badge').textContent = preencheram.size;
+        
+        const chkEl = document.getElementById('painel-checklist');
+        if (!confirmaramSim.length) {
+          chkEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
+        } else {
+          chkEl.innerHTML = confirmaramSim.map(c => {
+            const preencheu = preencheram.has(c.biocondutor);
+            return `<div class="conf-row" style="background:${preencheu ? '#F0FAF7' : '#FEF9EC'};border-color:${preencheu ? '#85DDBA' : '#F2CC70'}">
+              <div class="conf-ico" style="background:${preencheu ? '#0F9B78' : '#F59E0B'};color:#fff">${preencheu ? '✓' : '⏳'}</div>
+              <div class="conf-info">
+                <div class="conf-uni">${c.biocondutor}</div>
+                <div style="font-size:11px;color:#5A7A8F;margin-top:2px">${preencheu ? '✓ Checklist preenchido' : '⏳ Aguardando checklist'}</div>
+              </div>
+            </div>`;
+          }).join('');
+        }
+      } catch(e) {
+        document.getElementById('painel-checklist').innerHTML = '<div class="empty">Erro ao carregar</div>';
       }
 
       const mbPorRota = {};
