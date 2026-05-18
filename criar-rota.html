@@ -201,8 +201,8 @@
     <div class="card-sub">Busque códigos na base, marque quais vão nesta rota e escolha os dias de cada um</div>
 
     <div class="field">
-      <label>Códigos do cliente (separados por vírgula ou enter)</label>
-      <input type="text" id="codigos-input" placeholder="22088, 22089, 22090..." style="font-family:monospace"/>
+      <label>Cole a lista de clientes (um código por linha)</label>
+      <textarea id="codigos-input" rows="8" placeholder="22088&#10;22089&#10;22090&#10;22091..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:13px;padding:10px 12px;font-family:monospace;resize:vertical;color:#0F4C7A;background:#F7FBFD;outline:none"></textarea>
     </div>
     <button class="btn btn-primary" onclick="buscarClientesBase()" style="margin-bottom:1rem">🔍 Buscar na base</button>
 
@@ -267,7 +267,15 @@
         m.telefone.includes(q.replace(/\D/g, ''))
       );
 
-      if (!encontrados.length) {
+      // Agrupar por telefone (evitar duplicatas)
+      const vistos = new Set();
+      const unicos = encontrados.filter(m => {
+        if (vistos.has(m.telefone)) return false;
+        vistos.add(m.telefone);
+        return true;
+      });
+
+      if (!unicos.length) {
         el.innerHTML = `<div class="search-item-novo" onclick="abrirCadastroNovoMotoboy()">
           <div class="search-item-novo-icon">+</div>
           <div class="search-item-novo-txt">Cadastrar novo motorista</div>
@@ -275,7 +283,7 @@
         return;
       }
 
-      el.innerHTML = encontrados.map(m => `
+      el.innerHTML = unicos.map(m => `
         <div class="search-item" onclick="selecionarMotoboy(${JSON.stringify(m).replace(/"/g, '&quot;')})">
           <div class="search-item-icon">🏍️</div>
           <div class="search-item-info">
@@ -332,7 +340,7 @@
     const txt = document.getElementById('codigos-input').value.trim();
     if (!txt) { showMsg('msg3', 'Digite códigos', 'error'); return; }
     
-    const codigos = txt.split(/[,\n]+/).map(c => c.trim()).filter(Boolean);
+    const codigos = txt.split(/[\n,;\s]+/).map(c => c.trim()).filter(Boolean);
     showMsg('msg3', 'Buscando...', 'loading');
 
     try {
