@@ -344,7 +344,10 @@
       const r = await fetch(API + '/buscar-clientes-base', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ codigos })
+        body: JSON.stringify({ 
+          codigos,
+          rota_destino: document.getElementById('nome-rota').value.trim().toUpperCase() || null
+        })
       });
       const d = await r.json();
       clientesEncontrados = d.clientes || [];
