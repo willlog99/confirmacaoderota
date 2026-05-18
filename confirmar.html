@@ -131,6 +131,7 @@
       });
       const d = await r.json();
       if (d.status === 'ok') {
+        // Usa rotas_info já filtradas pelo dia no worker
         rotasDisponivel = (d.rotas_info || []).filter(r => r.status !== 'travada');
       }
     } catch(e) {}
