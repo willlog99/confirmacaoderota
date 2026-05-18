@@ -3,335 +3,922 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Rotas</title>
+  <title>Loglife — Centro de Controle</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding-bottom:3rem}
-    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 1.25rem 1.5rem;color:#fff;display:flex;align-items:center;gap:14px;margin-bottom:1.5rem}
-    .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;text-decoration:none;flex-shrink:0}
-    .header-logo{height:32px;width:auto;filter:brightness(0) invert(1)}
-    .header h1{font-size:18px;font-weight:700;flex:1}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
 
-    .container{padding:0 1.25rem;max-width:800px;margin:0 auto}
+    .topbar{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(15,75,122,0.25)}
+    .topbar-left{display:flex;align-items:center;gap:1.5rem}
+    .menu-btn{background:rgba(255,255,255,0.18);color:#fff;border:none;height:44px;padding:0 18px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
+    .menu-btn:hover{background:rgba(255,255,255,0.28)}
+    .topbar-logo{height:70px;width:auto;filter:brightness(0) invert(1)}
+    .topbar-right{text-align:right;color:#fff}
+    .topbar-titulo{font-size:13px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
+    .topbar-data{font-size:17px;font-weight:700;margin-top:2px}
 
-    .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
-    .btn-atualizar{padding:8px 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:600;color:#0F4C7A;cursor:pointer;display:flex;align-items:center;gap:6px}
-    .btn-atualizar:hover{background:#E8F4FB;border-color:#1E9FD9}
+    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.65);z-index:200;display:none}
+    .menu-overlay.open{display:flex}
+    .menu-side{background:#fff;width:300px;max-width:88vw;height:100%;display:flex;flex-direction:column;overflow-y:auto;box-shadow:4px 0 25px rgba(15,75,122,0.2)}
+    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+    .menu-header img{height:40px;filter:brightness(0) invert(1)}
+    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:17px}
+    .menu-cat{border-bottom:1px solid #EBF1F5}
+    .menu-cat-btn{width:100%;padding:13px 1.25rem;background:#F7FBFD;border:none;text-align:left;font-size:11px;font-weight:700;color:#5A7A8F;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.7px}
+    .menu-cat-btn:hover{background:#EBF1F5}
+    .menu-cat-items{display:none}
+    .menu-cat-items.open{display:block}
+    .menu-item{display:block;width:100%;padding:13px 1.5rem;background:#fff;border:none;text-align:left;font-size:14px;font-weight:500;color:#0F4C7A;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
+    .menu-item:hover{background:#F7FBFD;border-left-color:#BFE0F0}
+    .menu-item.active{background:#E8F4FB;border-left-color:#1E9FD9;font-weight:700}
+    .menu-item.danger{color:#A32D2D}
+    .menu-item.danger:hover{background:#FCEBEB;border-left-color:#F09595}
 
-    .rota-card{background:#fff;border-radius:14px;box-shadow:0 1px 5px rgba(30,159,217,0.08);margin-bottom:12px;overflow:hidden;border:1.5px solid #EBF1F5}
-    .rota-header{padding:1rem 1.25rem;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .15s}
-    .rota-header:hover{background:#F7FBFD}
-    .rota-info{flex:1;min-width:0}
-    .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A}
-    .rota-meta{font-size:12px;color:#5A7A8F;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .dia-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#E8F4FB;color:#0F7BB0}
-    .status-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
-    .status-livre{background:#E1F5EE;color:#085041}
-    .status-andamento{background:#FEF9EC;color:#92400E}
-    .rota-stats{display:flex;gap:8px;font-size:12px;color:#5A7A8F;flex-shrink:0}
-    .rota-expand-icon{font-size:14px;color:#94A8B8;transition:transform .2s;flex-shrink:0}
-    .rota-card.open .rota-expand-icon{transform:rotate(180deg)}
+    .content{padding:2rem;max-width:1400px;margin:0 auto}
+    .view{display:none}
+    .view.active{display:block}
 
-    .rota-actions{display:flex;gap:6px;padding:0 1.25rem .75rem;flex-wrap:wrap}
-    .btn-action{padding:7px 12px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:1.5px solid;display:flex;align-items:center;gap:4px;transition:all .15s}
-    .btn-trocar{background:#E8F4FB;color:#0F4C7A;border-color:#BFE0F0}
-    .btn-trocar:hover{background:#D0EAF8}
-    .btn-renomear{background:#FEF9EC;color:#92400E;border-color:#F2CC70}
-    .btn-renomear:hover{background:#FEF3C7}
-    .btn-excluir{background:#FCEBEB;color:#791F1F;border-color:#F09595}
-    .btn-excluir:hover{background:#FAD5D5}
-    .btn-editar{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
-    .btn-editar:hover{background:#C8F0E0}
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2rem}
+    .kpi{background:#fff;border-radius:16px;padding:1.5rem;text-align:center;box-shadow:0 2px 10px rgba(30,159,217,0.08);border-top:4px solid;transition:transform .2s,box-shadow .2s}
+    .kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,159,217,0.15)}
+    .kpi.total{border-color:#1E9FD9}
+    .kpi.feitas{border-color:#0F9B78}
+    .kpi.pendentes{border-color:#F59E0B}
+    .kpi.motoboys{border-color:#7C3AED}
+    .kpi-icon{font-size:24px;margin-bottom:6px}
+    .kpi-val{font-size:42px;font-weight:800;line-height:1}
+    .kpi.total .kpi-val{color:#1E9FD9}
+    .kpi.feitas .kpi-val{color:#0F9B78}
+    .kpi.pendentes .kpi-val{color:#F59E0B}
+    .kpi.motoboys .kpi-val{color:#7C3AED}
+    .kpi-label{font-size:13px;color:#5A7A8F;margin-top:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
 
-    .rota-body{display:none;border-top:1px solid #EBF1F5}
-    .rota-card.open .rota-body{display:block}
+    .dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:1.5rem}
+    @media(max-width:980px){
+      .dash-grid{grid-template-columns:1fr}
+      .kpi-grid{grid-template-columns:repeat(2,1fr)}
+      .topbar-logo{height:48px}
+      .content{padding:1rem}
+    }
 
-    .cli-lista-edit{padding:.75rem 1.25rem}
-    .cli-drag{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1.5px solid #D6E5EE;display:flex;align-items:center;gap:10px;transition:all .2s;user-select:none}
-    .cli-drag.dragging{opacity:.5;border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.2)}
-    .cli-drag.drag-over{border-color:#1E9FD9;background:#E8F4FB;transform:translateY(2px)}
-    .drag-handle{cursor:grab;color:#94A8B8;font-size:16px;flex-shrink:0;padding:0 4px}
-    .drag-handle:active{cursor:grabbing}
-    .cli-drag-info{flex:1;min-width:0}
-    .cli-drag-nome{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cli-drag-meta{font-size:11px;color:#5A7A8F;margin-top:2px}
-    .cli-drag-hora{font-size:12px;font-weight:700;color:#1E9FD9;flex-shrink:0}
-    .cli-drag-pos{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .panel{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(30,159,217,0.08);overflow:hidden}
+    .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;background:#F7FBFD}
+    .panel-title{font-size:15px;font-weight:800;color:#0F4C7A;display:flex;align-items:center;gap:8px}
+    .panel-badge{font-size:11px;background:#1E9FD9;color:#fff;padding:3px 9px;border-radius:99px;font-weight:700}
+    .panel-live{display:flex;align-items:center;gap:6px;font-size:11px;color:#0F9B78;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+    .live-dot{width:8px;height:8px;border-radius:50%;background:#0F9B78;animation:pulse 1.5s ease-in-out infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    .panel-body{padding:1rem 1.5rem;max-height:600px;overflow-y:auto}
 
-    .edit-actions{padding:.75rem 1.25rem;border-top:1px solid #EBF1F5;display:flex;gap:8px}
-    .btn-salvar{flex:1;padding:10px;border-radius:10px;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none}
-    .btn-cancelar-edit{flex:1;padding:10px;border-radius:10px;background:#fff;color:#5A7A8F;font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE}
+    .rota-card{background:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .2s;position:relative}
+    .rota-card:hover{border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.12)}
+    .rota-card.em-andamento{border-left:4px solid #1E9FD9}
+    .rota-card.completa{border-left:4px solid #0F9B78;background:#F0FAF7}
+    .rota-card.livre{border-left:4px solid #D6E5EE}
+    .rota-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A;flex:1}
+    .rota-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
+    .badge-andamento{background:#E8F4FB;color:#0F4C7A}
+    .badge-completa{background:#E1F5EE;color:#085041}
+    .badge-livre{background:#F0F4F8;color:#94A8B8}
+    .rota-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:#5A7A8F;margin-bottom:8px}
+    .rota-progress{display:flex;align-items:center;gap:10px}
+    .progress-bar{flex:1;height:8px;border-radius:99px;background:#EBF1F5;overflow:hidden}
+    .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
+    .rota-card.completa .progress-fill{background:linear-gradient(90deg,#0F9B78,#085041)}
+    .progress-txt{font-size:13px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:55px;text-align:right}
 
-    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
-    .spinner{display:inline-block;width:14px;height:14px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:4px}
+    .rota-preview{margin-top:10px;padding-top:10px;border-top:1px solid #EBF1F5;display:none;animation:fadeIn .2s}
+    .rota-card.expanded .rota-preview{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+    .preview-sec{font-size:10px;font-weight:800;color:#5A7A8F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+    .preview-cli{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:11px;margin-bottom:2px}
+    .preview-cli.feito{background:#E1F5EE;color:#085041}
+    .preview-cli.imp{background:#F0F4F8;color:#5A7A8F}
+    .preview-cli.pend{background:#FEF9EC;color:#92400E}
+    .preview-cli-ico{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+    .preview-cli.feito .preview-cli-ico{background:#0F9B78;color:#fff}
+    .preview-cli.imp .preview-cli-ico{background:#5A7A8F;color:#fff}
+    .preview-cli.pend .preview-cli-ico{background:#F59E0B;color:#fff}
+    .preview-cli-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+    .preview-cli-hora{font-weight:700;flex-shrink:0}
+
+    .conf-progress{padding:1rem 1.5rem;background:linear-gradient(135deg,#E8F4FB,#F0FAFD);border-bottom:1px solid #EBF1F5}
+    .conf-prog-val{font-size:32px;font-weight:800;color:#1E9FD9;line-height:1}
+    .conf-prog-lbl{font-size:13px;color:#5A7A8F;margin:6px 0}
+    .conf-bar{height:8px;border-radius:99px;background:#fff;overflow:hidden;border:1px solid #D6E5EE}
+    .conf-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
+    .conf-list{padding:0.75rem 1.5rem}
+    .conf-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;margin-bottom:6px;border:1px solid;animation:slideIn .3s}
+    @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
+    .conf-row.sim{background:#F0FAF7;border-color:#85DDBA}
+    .conf-row.nao{background:#FEF4F4;border-color:#F09595}
+    .conf-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
+    .conf-row.sim .conf-ico{background:#0F9B78;color:#fff}
+    .conf-row.nao .conf-ico{background:#DC2626;color:#fff}
+    .conf-info{flex:1;min-width:0}
+    .conf-uni{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conf-obs{font-size:11px;color:#5A7A8F;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .conf-hora{font-size:11px;color:#94A8B8;flex-shrink:0;font-weight:600}
+
+    .detalhe-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
+    .detalhe-back{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;height:42px;padding:0 16px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .detalhe-back:hover{background:#F7FBFD}
+    .detalhe-titulo{font-size:22px;font-weight:800;color:#0F4C7A;flex:1}
+    .cli-item{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #EBF1F5;display:flex;align-items:center;gap:12px;transition:all .15s}
+    .cli-item:hover{box-shadow:0 2px 8px rgba(30,159,217,0.08)}
+    .cli-item.feito{background:#F0FAF7;border-color:#85DDBA}
+    .cli-item.improdutivo{background:#F5F6F8;border-color:#C5D0DA}
+    .cli-item.chegou{background:#FEF9EC;border-color:#F2CC70}
+    .cli-status{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:#EBF1F5;color:#94A8B8;font-weight:800}
+    .cli-status.ok{background:#0F9B78;color:#fff}
+    .cli-status.imp{background:#5A7A8F;color:#fff}
+    .cli-status.ch{background:#F2CC70;color:#92400E}
+    .cli-info{flex:1;min-width:0}
+    .cli-nome{font-size:14px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cli-meta{font-size:12px;color:#5A7A8F;margin-top:2px}
+    .cli-hora{font-size:14px;font-weight:800;color:#1E9FD9;flex-shrink:0}
+
+    .card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 2px 10px rgba(30,159,217,0.07);margin-bottom:1rem}
+    .card-title{font-size:17px;font-weight:800;color:#0F4C7A;margin-bottom:1rem}
+    .field{margin-bottom:.9rem}
+    .field label{display:block;font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+    .field input,.field select{width:100%;height:44px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
+    .field input:focus,.field select:focus{border-color:#1E9FD9}
+    .btn{height:44px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;border:none;padding:0 18px;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
+    .btn-danger{background:#DC2626;color:#fff}
+    .btn-warning{background:#F59E0B;color:#fff}
+    .btn-block{width:100%;justify-content:center}
+    .list-item{padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;margin-bottom:8px;background:#fff}
+    .list-item-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+    .list-item-name{font-size:14px;font-weight:700;color:#0F4C7A;flex:1;min-width:0}
+    .list-item-meta{font-size:12px;color:#5A7A8F}
+    .list-item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
+    .search-row{display:flex;gap:8px;margin-bottom:1rem}
+    .search-row input{flex:1;height:44px;border-radius:10px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;color:#0F4C7A;outline:none}
+    .search-row input:focus{border-color:#1E9FD9}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
+    .modal h2{font-size:17px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    .modal-btns{display:flex;gap:8px;margin-top:1rem}
+    .modal-btns .btn{flex:1;justify-content:center}
+
+    .msg{padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-top:10px;display:none;text-align:center}
+    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
+    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
+    .spinner{display:inline-block;width:13px;height:13px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:5px;vertical-align:middle}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:11px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(15,75,122,0.3)}
     .toast.show{opacity:1}
-    .msg-inline{font-size:12px;padding:6px 10px;border-radius:8px;margin:0 1.25rem .75rem;text-align:center}
-    .msg-inline.success{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5}
-    .msg-inline.error{background:#FCEBEB;color:#791F1F;border:1px solid #F09595}
+    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
   </style>
 </head>
 <body>
 
-<div class="header">
-  <a href="painel.html" class="back-btn">←</a>
-  <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
-  <h1>Alterar Rotas</h1>
+<div class="topbar">
+  <div class="topbar-left">
+    <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="topbar-logo"/>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-titulo">Centro de Controle</div>
+    <div class="topbar-data" id="topbar-data">—</div>
+  </div>
 </div>
 
-<div class="container">
-  <div class="toolbar">
-    <button class="btn-atualizar" onclick="carregarRotas()">🔄 Atualizar</button>
+<div class="menu-overlay" id="menu-overlay" onclick="fecharMenuOverlay(event)">
+  <div class="menu-side" onclick="event.stopPropagation()">
+    <div class="menu-header">
+      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife"/>
+      <button class="menu-close" onclick="fecharMenu()">✕</button>
+    </div>
+
+    <div class="menu-cat">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">⚡ Operação <span>▼</span></button>
+      <div class="menu-cat-items open">
+        <button class="menu-item active" id="menu-painel" onclick="setView('painel',this)">🏠 Painel</button>
+        <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
+        <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
+        <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
+        <button class="menu-item" onclick="setView('rotas-view',this)">🛣️ Rotas</button>
+      </div>
+    </div>
+
+    <div class="menu-cat">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">⚙️ Configuração de OPS <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item" onclick="window.location.href='criar-rota.html'">➕ Criar rota</button>
+        <button class="menu-item" onclick="window.location.href='rotas.html'">✏️ Alterar rota</button>
+        <button class="menu-item" onclick="setView('buscar',this)">🔎 Buscar/Mover cliente</button>
+        <button class="menu-item" onclick="setView('criar-cliente',this)">👤 Criar cliente</button>
+        <button class="menu-item" onclick="setView('gerenciar-motoboys',this)">➕➖ Adicionar/Excluir motoboy</button>
+        <button class="menu-item" onclick="setView('ativar-cliente',this)">🔁 Ativar/Desativar cliente</button>
+      </div>
+    </div>
+
+    <div class="menu-cat">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">📁 Importação e Registro <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar</button>
+        <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Exportar</button>
+        <button class="menu-item" onclick="window.location.href='base.html'">📋 Base de clientes</button>
+        <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
+      </div>
+    </div>
+
+    <div class="menu-cat">
+      <button class="menu-cat-btn" onclick="toggleCat(this)">🔧 Sistema <span>▼</span></button>
+      <div class="menu-cat-items">
+        <button class="menu-item danger" onclick="setView('reset',this)">🔄 Reset</button>
+      </div>
+    </div>
   </div>
-  <div id="lista-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+</div>
+
+<div class="content">
+
+  <div class="view active" id="view-painel">
+    <div class="kpi-grid">
+      <div class="kpi total">
+        <div class="kpi-icon">📦</div>
+        <div class="kpi-val" id="kpi-total">—</div>
+        <div class="kpi-label">Total</div>
+      </div>
+      <div class="kpi feitas">
+        <div class="kpi-icon">✓</div>
+        <div class="kpi-val" id="kpi-feitas">—</div>
+        <div class="kpi-label">Coletadas</div>
+      </div>
+      <div class="kpi pendentes">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-val" id="kpi-pendentes">—</div>
+        <div class="kpi-label">Pendentes</div>
+      </div>
+      <div class="kpi motoboys">
+        <div class="kpi-icon">🏍️</div>
+        <div class="kpi-val" id="kpi-motoboys">—</div>
+        <div class="kpi-label">Motoboys</div>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">🛵 Rotas em operação <span class="panel-badge" id="rotas-badge">0</span></div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="filtro-dias" style="display:flex;gap:6px"></div>
+            <div class="panel-live"><div class="live-dot"></div>Live</div>
+          </div>
+        </div>
+        <div class="panel-body" id="painel-rotas">
+          <div class="empty"><span class="spinner"></span> Carregando...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">✓ Confirmações de presença</div>
+          <div class="panel-live"><div class="live-dot"></div>Live</div>
+        </div>
+        <div class="conf-progress">
+          <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:18px;color:#5A7A8F;font-weight:600">/ 37</span></div>
+          <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
+          <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
+        </div>
+        <div class="conf-list" id="conf-list-live">
+          <div class="empty"><span class="spinner"></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">⏰ Clientes em Atraso <span class="panel-badge" id="atrasos-badge">0</span></div>
+        <div class="panel-live"><div class="live-dot"></div>Live</div>
+      </div>
+      <div class="panel-body" id="painel-atrasos">
+        <div class="empty">Nenhum cliente em atraso ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="view" id="view-detalhe-rota">
+    <div class="detalhe-header">
+      <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
+      <div class="detalhe-titulo" id="detalhe-titulo">—</div>
+    </div>
+    <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
+    <div id="detalhe-lista"></div>
+  </div>
+
+  <div class="view" id="view-confirmacoes">
+    <div class="card">
+      <div class="card-title">✓ Confirmações de hoje</div>
+      <div id="lista-conf"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-motoristas">
+    <div class="card">
+      <div class="card-title">👤 Motoristas cadastrados</div>
+      <div id="lista-mb-view"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-rotas-view">
+    <div class="card">
+      <div class="card-title">🛣️ Rotas</div>
+      <div id="lista-rotas-view"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-buscar">
+    <div class="card">
+      <div class="card-title">🔎 Buscar cliente</div>
+      <div class="search-row">
+        <input type="text" id="busca-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarCliente()"/>
+        <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
+      </div>
+      <div id="busca-resultado"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-criar-cliente">
+    <div class="card">
+      <div class="card-title">👤 Criar cliente</div>
+      <div class="field"><label>Código</label><input type="text" id="cc-codigo" placeholder="Ex: 22088"/></div>
+      <div class="field"><label>Nome</label><input type="text" id="cc-nome" placeholder="Nome do cliente"/></div>
+      <div class="field"><label>Horário</label><input type="time" id="cc-horario"/></div>
+      <button class="btn btn-primary btn-block" onclick="criarCliente()">+ Criar cliente</button>
+      <div class="msg" id="msg-cc"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-gerenciar-motoboys">
+    <div class="card">
+      <div class="card-title">➕ Adicionar motorista</div>
+      <div class="field"><label>Nome</label><input type="text" id="mb-nome" placeholder="Nome completo"/></div>
+      <div class="field"><label>Telefone</label><input type="tel" id="mb-tel" placeholder="(11) 99999-0000"/></div>
+      <button class="btn btn-primary btn-block" onclick="adicionarMotoboy()">+ Adicionar</button>
+      <div class="msg" id="msg-mb"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Lista de motoristas</div>
+      <div id="lista-mb-ger"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-ativar-cliente">
+    <div class="card">
+      <div class="card-title">🔁 Ativar / Desativar cliente</div>
+      <div class="search-row">
+        <input type="text" id="ativar-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarParaAtivar()"/>
+        <button class="btn btn-primary" onclick="buscarParaAtivar()">Buscar</button>
+      </div>
+      <div id="ativar-resultado"></div>
+    </div>
+  </div>
+
+  <div class="view" id="view-reset">
+    <div class="card">
+      <div class="card-title">⚠️ Reset do sistema</div>
+      <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Reseta o status de todos os clientes e destrava todas as rotas.</p>
+      <button class="btn btn-danger btn-block" onclick="fazerReset()">⚠️ Fazer Reset agora</button>
+      <div class="msg" id="msg-reset"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🔄 Limpar confirmações</div>
+      <button class="btn btn-warning btn-block" onclick="resetConfirmacoes()">Limpar confirmações de hoje</button>
+      <div class="msg" id="msg-reset-conf"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay hidden" id="modal-mover">
+  <div class="modal">
+    <h2>↔ Mover cliente</h2>
+    <div class="field"><label>Rota</label><select id="nova-rota-select"><option value="">Selecione a rota...</option></select></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="fecharModal('modal-mover')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMover()">Mover</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  let todasRotas = [];
-  let clientesPorRota = {};
-  let modoEditar = null;
-  let dragSrc = null;
+  let clienteParaMover = null;
+  let autoRefreshInterval = null;
+  let cardExpandido = null;
+  let rotasDisponiveis = [];
 
-  const diaLabels = { 'seg-sex': 'Seg-Sex', 'sabado': 'Sábado', 'domingo': 'Domingo' };
+  const agora = new Date();
+  const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  document.getElementById('topbar-data').textContent = `${dias[agora.getDay()]}, ${agora.getDate()} ${meses[agora.getMonth()]} ${agora.getFullYear()}`;
 
-  async function carregarRotas() {
-    document.getElementById('lista-rotas').innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  // Filtro de dia: determinar dia atual
+  const diaSemanaAtual = agora.getDay(); // 0=dom, 1=seg...6=sab
+  let filtroDia = diaSemanaAtual === 0 ? 'domingo' : diaSemanaAtual === 6 ? 'sabado' : 'seg-sex';
+
+  function renderizarFiltroDias() {
+    const opcoes = [
+      { key: 'seg-sex', label: 'Seg-Sex' },
+      { key: 'sabado', label: 'Sábado' },
+      { key: 'domingo', label: 'Domingo' },
+      { key: 'todos', label: 'Todos' }
+    ];
+    document.getElementById('filtro-dias').innerHTML = opcoes.map(o => `
+      <button onclick="trocarFiltroDia('${o.key}')" id="filtro-btn-${o.key}"
+        style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .2s;
+        ${filtroDia===o.key ? 'background:#1E9FD9;color:#fff;border-color:#1E9FD9' : 'background:#fff;color:#5A7A8F;border-color:#D6E5EE'}">
+        ${o.label}
+      </button>`).join('');
+  }
+
+  function trocarFiltroDia(dia) {
+    filtroDia = dia;
+    renderizarFiltroDias();
+    carregarPainel();
+  }
+
+  renderizarFiltroDias();
+
+  function abrirMenu() { document.getElementById('menu-overlay').classList.add('open'); }
+  function fecharMenu() { document.getElementById('menu-overlay').classList.remove('open'); }
+  function fecharMenuOverlay(e) { if (e.target === e.currentTarget) fecharMenu(); }
+  function toggleCat(btn) { btn.nextElementSibling.classList.toggle('open'); }
+
+  function setView(id, el) {
+    pararAutoRefresh();
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+    document.getElementById('view-' + id).classList.add('active');
+    if (el) el.classList.add('active');
+    fecharMenu();
+    window.scrollTo(0,0);
+    if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); }
+    if (id === 'confirmacoes') carregarConfirmacoes();
+    if (id === 'motoristas') carregarMotoristasList();
+    if (id === 'rotas-view') carregarRotasView();
+    if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
+  }
+
+  function iniciarAutoRefresh() {
+    pararAutoRefresh();
+    autoRefreshInterval = setInterval(() => carregarPainel(true), 8000);
+  }
+  function pararAutoRefresh() {
+    if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+  }
+
+  async function carregarPainel(silent) {
     try {
-      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
-      const d = await r.json();
-      todasRotas = d.rotas || [];
-      renderizarRotas();
-    } catch(e) {
-      document.getElementById('lista-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar</div>';
-    }
-  }
+      const params = filtroDia === 'todos' ? '?todos_dias=1' : `?dia_semana=${filtroDia}`;
+      const [rRes, mbRes, confRes] = await Promise.all([
+        fetch(API + '/rotas-disponiveis' + params).then(r => r.json()),
+        fetch(API + '/motoboys?todos=1').then(r => r.json()),
+        fetch(API + '/').then(r => r.json())
+      ]);
 
-  function renderizarRotas() {
-    const el = document.getElementById('lista-rotas');
-    if (!todasRotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
-    el.innerHTML = todasRotas.map((r, i) => `
-      <div class="rota-card" id="rota-card-${i}">
-        <div class="rota-header" onclick="toggleRota(${i})">
-          <div class="rota-info">
-            <div class="rota-nome">${r.rota}</div>
-            <div class="rota-meta">
-              <span class="dia-badge">${diaLabels[r.dia_semana] || r.dia_semana || '—'}</span>
-              ${r.motoboy_aberto ? `<span>🏍️ ${r.motoboy_aberto}</span>` : ''}
-              <span class="${r.ativa ? 'status-badge status-andamento' : 'status-badge status-livre'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
+      const rotas = rRes.rotas || [];
+      rotasDisponiveis = rotas.map(r => r.rota);
+      const motoboys = mbRes.motoboys || [];
+      const confirmacoes = confRes.confirmacoes || [];
+
+      const dadosRotas = await Promise.all(
+        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota)).then(res => res.json()))
+      );
+
+      let totalGeral = 0, feitasGeral = 0;
+      dadosRotas.forEach(d => {
+        const cls = d.clientes || [];
+        totalGeral += cls.length;
+        feitasGeral += cls.filter(c => c.status === 'entregue').length;
+      });
+
+      document.getElementById('kpi-total').textContent = totalGeral;
+      document.getElementById('kpi-feitas').textContent = feitasGeral;
+      document.getElementById('kpi-pendentes').textContent = totalGeral - feitasGeral;
+      document.getElementById('kpi-motoboys').textContent = motoboys.length;
+      document.getElementById('rotas-badge').textContent = rotas.length;
+
+      const totalUnidades = 37;
+      const conf = confirmacoes.length;
+      document.getElementById('conf-prog-val').textContent = conf;
+      document.getElementById('conf-prog-lbl').textContent = conf === 1 ? 'Biocondutor confirmado' : 'Biocondutores confirmados';
+      document.getElementById('conf-bar-fill').style.width = Math.min(100, Math.round(conf/totalUnidades*100)) + '%';
+
+      const confEl = document.getElementById('conf-list-live');
+      if (!confirmacoes.length) {
+        confEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
+      } else {
+        confEl.innerHTML = confirmacoes.slice(0, 15).map(c => {
+          const hora = c.data ? c.data.split(' ').pop() : '';
+          return `<div class="conf-row ${c.resposta}">
+            <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
+            <div class="conf-info">
+              <div class="conf-uni">${c.biocondutor}</div>
+              ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
             </div>
-          </div>
-          <div class="rota-expand-icon">▼</div>
-        </div>
-        <div class="rota-body" id="rota-body-${i}">
-          <div class="rota-actions">
-            <button class="btn-action btn-editar" onclick="editarOrdem(${i})">↕ Reordenar coletas</button>
-            <button class="btn-action btn-trocar" onclick="trocarMotorista('${r.rota.replace(/'/g,"\\'")}')">⇄ Trocar motorista</button>
-            <button class="btn-action btn-renomear" onclick="renomearRota('${r.rota.replace(/'/g,"\\'")}')">✎ Renomear</button>
-            ${r.ativa ? `<button class="btn-action btn-trocar" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
-            <button class="btn-action btn-excluir" onclick="excluirRota('${r.rota.replace(/'/g,"\\'")}')">🗑 Excluir</button>
-          </div>
-          <div id="clientes-rota-${i}"><div class="empty"><span class="spinner"></span></div></div>
-        </div>
-      </div>`).join('');
-  }
+            <div class="conf-hora">${hora}</div>
+          </div>`;
+        }).join('');
+      }
 
-  async function toggleRota(i) {
-    const card = document.getElementById('rota-card-' + i);
-    const isOpen = card.classList.contains('open');
-    
-    // Fechar todos
-    document.querySelectorAll('.rota-card').forEach(c => c.classList.remove('open'));
-    
-    if (!isOpen) {
-      card.classList.add('open');
-      await carregarClientes(i);
+      const mbPorRota = {};
+      motoboys.forEach(m => { if (m.rota) { if (!mbPorRota[m.rota]) mbPorRota[m.rota] = []; mbPorRota[m.rota].push(m.nome); } });
+
+      const el = document.getElementById('painel-rotas');
+      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
+
+      el.innerHTML = rotas.map((r, i) => {
+        const cls = (dadosRotas[i] && dadosRotas[i].clientes) || [];
+        const total = cls.length;
+        const feitas = cls.filter(c => c.status === 'entregue').length;
+        const pct = total > 0 ? Math.round(feitas/total*100) : 0;
+        const completa = feitas === total && total > 0;
+        const emAndamento = r.ativa;
+        const status = completa ? 'completa' : emAndamento ? 'em-andamento' : 'livre';
+        const badgeLabel = completa ? '✓ Completa' : emAndamento ? '🔒 Em andamento' : 'Livre';
+        const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
+        const nomes = mbPorRota[r.rota] || [];
+        const motoStr = nomes.length ? nomes.join(', ') : 'Sem motorista';
+        const expandida = cardExpandido === r.rota ? 'expanded' : '';
+
+        const ent = cls.filter(c => c.status === 'entregue');
+        const pend = cls.filter(c => c.status !== 'entregue');
+
+        const renderPrev = (c, tipo) => {
+          const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
+          return `<div class="preview-cli ${tipo}">
+            <div class="preview-cli-ico">${ico}</div>
+            <div class="preview-cli-nome">${c.nome}</div>
+            <div class="preview-cli-hora">${c.horario}</div>
+          </div>`;
+        };
+
+        const prodList = ent.filter(c => c.produtividade !== 'improdutiva').map(c => renderPrev(c, 'feito')).join('');
+        const impList = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
+        const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
+
+        return `
+          <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
+            <div class="rota-top">
+              <div class="rota-nome">${r.rota}</div>
+              <span class="rota-badge ${badgeCls}">${badgeLabel}</span>
+            </div>
+            <div class="rota-meta">
+              <span>🏍️ ${motoStr}</span>
+            </div>
+            <div class="rota-progress">
+              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+              <div class="progress-txt">${feitas}/${total}</div>
+            </div>
+            <div class="rota-preview">
+              ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
+              ${prodList ? `<div class="preview-sec" style="margin-top:8px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
+              ${impList ? `<div class="preview-sec" style="margin-top:8px">✕ Improdutivas</div>${impList}` : ''}
+              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')" style="margin-top:10px;background:#1E9FD9;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
+            </div>
+          </div>`;
+      }).join('');
+
+      // Carregar atrasos
+      const atrasoPromises = rotas.map(r => 
+        fetch(API + '/atraso?rota=' + encodeURIComponent(r.rota)).then(res => res.json()).catch(() => ({ atrasos: [] }))
+      );
+      const atrasoRes = await Promise.all(atrasoPromises);
+      const todosAtrasos = atrasoRes.flatMap(r => r.atrasos || []);
+      
+      document.getElementById('atrasos-badge').textContent = todosAtrasos.length;
+      
+      const atrasoEl = document.getElementById('painel-atrasos');
+      if (!todosAtrasos.length) {
+        atrasoEl.innerHTML = '<div class="empty">Nenhum cliente em atraso ✓</div>';
+      } else {
+        atrasoEl.innerHTML = todosAtrasos.map(a => {
+          const horas = Math.floor(a.minutos_atrasado / 60);
+          const mins = a.minutos_atrasado % 60;
+          const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
+          return `<div class="cliente-card" style="border-left:3px solid #DC2626;background:#FCEBEB">
+            <div class="check-btn" style="background:#DC2626;color:#fff;border-color:#DC2626">⏰</div>
+            <div class="cliente-info">
+              <div class="cliente-nome">${a.nome}</div>
+              <div class="cliente-meta">Nº ${a.numero_cliente} • ${a.rota}</div>
+              <div class="ts-info">
+                <span style="color:#DC2626">⏱️ ${a.horario} → Atrasado ${tempoStr}</span>
+              </div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+
+    } catch(e) {
+      if (!silent) document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
     }
   }
 
-  async function carregarClientes(i) {
-    const rota = todasRotas[i].rota;
-    if (clientesPorRota[rota]) { renderizarClientes(i, clientesPorRota[rota]); return; }
-    
+  function toggleRotaPreview(card, rota) {
+    if (cardExpandido === rota) {
+      cardExpandido = null;
+      card.classList.remove('expanded');
+    } else {
+      document.querySelectorAll('.rota-card.expanded').forEach(c => c.classList.remove('expanded'));
+      cardExpandido = rota;
+      card.classList.add('expanded');
+    }
+  }
+
+  async function abrirDetalheRota(rota) {
+    pararAutoRefresh();
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-detalhe-rota').classList.add('active');
+    document.getElementById('detalhe-titulo').textContent = rota;
+    window.scrollTo(0,0);
+
+    const listaEl = document.getElementById('detalhe-lista');
+    const kpisEl = document.getElementById('detalhe-kpis');
+    listaEl.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
     try {
       const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
       const d = await r.json();
-      clientesPorRota[rota] = d.clientes || [];
-      renderizarClientes(i, clientesPorRota[rota]);
-    } catch(e) {
-      document.getElementById('clientes-rota-' + i).innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar coletas</div>';
-    }
-  }
+      const cls = d.clientes || [];
+      const ent = cls.filter(c => c.status === 'entregue');
+      const pend = cls.filter(c => c.status !== 'entregue');
+      const prod = ent.filter(c => c.produtividade === 'produtiva').length;
+      const imp = ent.filter(c => c.produtividade === 'improdutiva').length;
 
-  function renderizarClientes(i, clientes) {
-    const el = document.getElementById('clientes-rota-' + i);
-    if (!clientes.length) { el.innerHTML = '<div class="empty">Nenhum cliente nesta rota</div>'; return; }
-    
-    const emEdicao = modoEditar === i;
-    
-    if (emEdicao) {
-      el.innerHTML = `
-        <div class="cli-lista-edit" id="drag-lista-${i}">
-          ${clientes.map((c, idx) => `
-            <div class="cli-drag" draggable="true" data-id="${c.id}" data-idx="${idx}"
-              ondragstart="onDragStart(event,${i})"
-              ondragover="onDragOver(event)"
-              ondragenter="onDragEnter(event)"
-              ondragleave="onDragLeave(event)"
-              ondrop="onDrop(event,${i})"
-              ondragend="onDragEnd(event)">
-              <div class="drag-handle">⠿</div>
-              <div class="cli-drag-pos">${idx + 1}</div>
-              <div class="cli-drag-info">
-                <div class="cli-drag-nome">${c.nome}</div>
-                <div class="cli-drag-meta">Nº ${c.numero_cliente}</div>
-              </div>
-              <div class="cli-drag-hora">${c.horario}</div>
-            </div>`).join('')}
-        </div>
-        <div class="edit-actions">
-          <button class="btn-salvar" onclick="salvarOrdem(${i})">✓ Salvar ordem</button>
-          <button class="btn-cancelar-edit" onclick="cancelarEditar(${i})">Cancelar</button>
+      kpisEl.innerHTML = `
+        <span class="badge" style="background:#F0F4F8;color:#0F4C7A;font-size:13px;padding:6px 12px">${cls.length} total</span>
+        <span class="badge" style="background:#E1F5EE;color:#085041;font-size:13px;padding:6px 12px">✓ ${prod} produtivas</span>
+        ${imp ? `<span class="badge" style="background:#F0F4F8;color:#5A7A8F;font-size:13px;padding:6px 12px">✕ ${imp} improdutivas</span>` : ''}
+        <span class="badge" style="background:#FEF9EC;color:#92400E;font-size:13px;padding:6px 12px">⏳ ${pend.length} pendentes</span>
+      `;
+
+      const renderC = c => {
+        const feito = c.status === 'entregue';
+        const bad = c.produtividade === 'improdutiva';
+        const chegou = !!c.horario_chegada && !feito;
+        const cls2 = feito ? (bad ? 'improdutivo' : 'feito') : (chegou ? 'chegou' : '');
+        const icls = feito ? (bad ? 'imp' : 'ok') : (chegou ? 'ch' : '');
+        const icon = feito ? (bad ? '✕' : '✓') : (chegou ? '📍' : '');
+        const saida = c.horario_entrega ? c.horario_entrega.split(' ').pop() : '';
+        return `<div class="cli-item ${cls2}">
+          <div class="cli-status ${icls}">${icon}</div>
+          <div class="cli-info">
+            <div class="cli-nome">${c.nome}</div>
+            <div class="cli-meta">Nº ${c.numero_cliente}${c.horario_chegada ? ' · 🟡 '+c.horario_chegada : ''}${saida ? ' · 🔵 '+saida : ''}${bad && c.motivo_improdutiva ? ' · '+c.motivo_improdutiva : ''}</div>
+          </div>
+          <div class="cli-hora">${c.horario}</div>
         </div>`;
-    } else {
-      el.innerHTML = `<div class="cli-lista-edit">
-        ${clientes.map((c, idx) => `
-          <div class="cli-drag" style="cursor:default">
-            <div class="cli-drag-pos">${idx + 1}</div>
-            <div class="cli-drag-info">
-              <div class="cli-drag-nome">${c.nome}</div>
-              <div class="cli-drag-meta">Nº ${c.numero_cliente} · ${c.status === 'entregue' ? (c.produtividade === 'produtiva' ? '✓ Produtiva' : '✕ Improdutiva') : '⏳ Pendente'}</div>
-            </div>
-            <div class="cli-drag-hora">${c.horario}</div>
-          </div>`).join('')}
-      </div>`;
-    }
-  }
+      };
 
-  function editarOrdem(i) {
-    modoEditar = i;
-    renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []);
-  }
+      listaEl.innerHTML = (pend.length ? `<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⏳ Pendentes (${pend.length})</div>${pend.map(renderC).join('')}` : '') +
+        (ent.length ? `<div style="font-size:11px;font-weight:800;color:#1E9FD9;text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 8px">✓ Registradas (${ent.length})</div>${ent.map(renderC).join('')}` : '') ||
+        '<div class="empty">Nenhum cliente nesta rota</div>';
 
-  function cancelarEditar(i) {
-    modoEditar = null;
-    renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []);
-  }
-
-  // DRAG AND DROP
-  function onDragStart(e, rotaIdx) {
-    dragSrc = e.currentTarget;
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', dragSrc.dataset.idx);
-    setTimeout(() => dragSrc.classList.add('dragging'), 0);
-  }
-
-  function onDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    return false;
-  }
-
-  function onDragEnter(e) {
-    const target = e.currentTarget;
-    if (target !== dragSrc) target.classList.add('drag-over');
-  }
-
-  function onDragLeave(e) {
-    e.currentTarget.classList.remove('drag-over');
-  }
-
-  function onDragEnd(e) {
-    document.querySelectorAll('.cli-drag').forEach(el => {
-      el.classList.remove('dragging', 'drag-over');
-    });
-  }
-
-  function onDrop(e, rotaIdx) {
-    e.preventDefault();
-    const target = e.currentTarget;
-    target.classList.remove('drag-over');
-    
-    if (!dragSrc || dragSrc === target) return;
-    
-    const rota = todasRotas[rotaIdx].rota;
-    const clientes = clientesPorRota[rota];
-    
-    const srcIdx = parseInt(dragSrc.dataset.idx);
-    const tgtIdx = parseInt(target.dataset.idx);
-    
-    // Reordenar array
-    const [removed] = clientes.splice(srcIdx, 1);
-    clientes.splice(tgtIdx, 0, removed);
-    
-    clientesPorRota[rota] = clientes;
-    renderizarClientes(rotaIdx, clientes);
-  }
-
-  async function salvarOrdem(i) {
-    const rota = todasRotas[i].rota;
-    const clientes = clientesPorRota[rota];
-    const ordem = clientes.map((c, idx) => ({ id: c.id, ordem: idx + 1 }));
-    
-    try {
-      await fetch(API + '/reordenar-clientes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rota, ordem })
-      });
-      modoEditar = null;
-      renderizarClientes(i, clientes);
-      toast('✓ Ordem salva!');
     } catch(e) {
-      toast('Erro ao salvar ordem');
+      listaEl.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
     }
   }
 
-  async function trocarMotorista(rota) {
-    const novoNome = prompt('Nome do novo motorista:');
-    if (!novoNome) return;
-    const novoTel = prompt('Telefone do novo motorista:');
-    if (!novoTel) return;
-    await fetch(API + '/trocar-motorista', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, nome_motoboy: novoNome, telefone_motoboy: novoTel.replace(/\D/g,'') })
-    });
-    toast('✓ Motorista trocado!');
-    carregarRotas();
+  async function carregarConfirmacoes() {
+    const el = document.getElementById('lista-conf');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/');
+      const d = await r.json();
+      const conf = d.confirmacoes || [];
+      if (!conf.length) { el.innerHTML = '<div class="empty">Nenhuma confirmação hoje</div>'; return; }
+      el.innerHTML = conf.map(c => `
+        <div class="conf-row ${c.resposta}">
+          <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
+          <div class="conf-info">
+            <div class="conf-uni">${c.biocondutor}</div>
+            ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
+          </div>
+          <div class="conf-hora">${c.data ? c.data.split(' ').pop() : ''}</div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
   }
 
-  async function renomearRota(rota) {
-    const novoNome = prompt('Novo nome da rota:', rota);
-    if (!novoNome || novoNome === rota) return;
-    await fetch(API + '/renomear-rota', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, novo_nome: novoNome.toUpperCase() })
-    });
-    toast('✓ Rota renomeada!');
-    carregarRotas();
+  async function carregarMotoristasList() {
+    const el = document.getElementById('lista-mb-view');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
+      const d = await r.json();
+      if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
+      el.innerHTML = d.motoboys.map(m => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${m.nome}</div>
+            <div class="list-item-meta">📱 ${m.telefone}</div>
+          </div>
+          ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:6px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:6px">Sem rotas</div>'}
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  }
+
+  async function carregarRotasView() {
+    const el = document.getElementById('lista-rotas-view');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
+      const d = await r.json();
+      const rotas = d.rotas || [];
+      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
+      el.innerHTML = rotas.map(r => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${r.rota}</div>
+            <span class="badge" style="${r.ativa ? 'background:#FEF3C7;color:#92400E' : 'background:#E1F5EE;color:#085041'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
+          </div>
+          ${r.motoboy_aberto ? `<div style="font-size:12px;color:#5A7A8F;margin-top:4px">🏍️ ${r.motoboy_aberto}</div>` : ''}
+          <div class="list-item-actions">
+            ${r.ativa ? `<button class="btn btn-warning" style="height:34px;font-size:12px" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
   }
 
   async function destravarRota(rota) {
     if (!confirm('Destravar rota "' + rota + '"?')) return;
-    await fetch(API + '/destravar-rota', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota })
-    });
-    toast('✓ Rota destravada!');
-    carregarRotas();
+    await fetch(API + '/destravar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({rota}) });
+    toast('Rota destravada');
+    carregarRotasView();
   }
 
-  async function excluirRota(rota) {
-    if (!confirm('Excluir rota "' + rota + '"? Os clientes voltam para a base.')) return;
-    await fetch(API + '/excluir-rota', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota })
-    });
-    toast('✓ Rota excluída!');
-    carregarRotas();
+  async function carregarMotoboysGerenciar() {
+    const el = document.getElementById('lista-mb-ger');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/motoboys?todos=1');
+      const d = await r.json();
+      if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
+      el.innerHTML = d.motoboys.map(m => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${m.nome}</div>
+            <div class="list-item-meta">📱 ${m.telefone}</div>
+          </div>
+          <div class="list-item-actions">
+            <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy(${m.id})">🗑 Excluir</button>
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  }
+
+  async function adicionarMotoboy() {
+    const nome = document.getElementById('mb-nome').value.trim();
+    const tel = document.getElementById('mb-tel').value.trim();
+    if (!nome || !tel) { showMsg('msg-mb','Preencha nome e telefone','error'); return; }
+    showMsg('msg-mb','Salvando...','loading');
+    try {
+      await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:''}) });
+      document.getElementById('mb-nome').value = '';
+      document.getElementById('mb-tel').value = '';
+      showMsg('msg-mb','✅ Motorista adicionado!','success');
+      carregarMotoboysGerenciar();
+    } catch(e) { showMsg('msg-mb','Erro: '+e.message,'error'); }
+  }
+
+  async function excluirMotoboy(id) {
+    if (!confirm('Excluir este motorista?')) return;
+    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    toast('Motorista excluído');
+    carregarMotoboysGerenciar();
+  }
+
+  async function criarCliente() {
+    const codigo = document.getElementById('cc-codigo').value.trim();
+    const nome = document.getElementById('cc-nome').value.trim();
+    const horario = document.getElementById('cc-horario').value;
+    if (!codigo || !nome) { showMsg('msg-cc','Preencha código e nome','error'); return; }
+    showMsg('msg-cc','Salvando...','loading');
+    try {
+      await fetch(API + '/clientes-base', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:codigo, nome, horario:horario||'00:00'}) });
+      document.getElementById('cc-codigo').value = '';
+      document.getElementById('cc-nome').value = '';
+      document.getElementById('cc-horario').value = '';
+      showMsg('msg-cc','✅ Cliente criado na base!','success');
+    } catch(e) { showMsg('msg-cc','Erro: '+e.message,'error'); }
+  }
+
+  async function buscarCliente() {
+    const q = document.getElementById('busca-input').value.trim();
+    if (!q) return;
+    const el = document.getElementById('busca-resultado');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
+      const d = await r.json();
+      const ql = q.toLowerCase();
+      const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
+      if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
+      el.innerHTML = encontrados.slice(0,20).map(c => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${c.nome}</div>
+            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
+          </div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
+          <div class="list-item-actions">
+            <button class="btn btn-secondary" style="height:34px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover</button>
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  }
+
+  function abrirMover(id) {
+    clienteParaMover = id;
+    const sel = document.getElementById('nova-rota-select');
+    sel.innerHTML = '<option value="">Selecione a rota...</option>' + rotasDisponiveis.map(r => `<option value="${r}">${r}</option>`).join('');
+    document.getElementById('modal-mover').classList.remove('hidden');
+  }
+
+  async function confirmarMover() {
+    const rota = document.getElementById('nova-rota-select').value;
+    if (!rota || !clienteParaMover) return;
+    await fetch(API + '/mover-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:clienteParaMover, rota}) });
+    document.getElementById('modal-mover').classList.add('hidden');
+    toast('✓ Movido para ' + rota);
+    buscarCliente();
+  }
+
+  async function buscarParaAtivar() {
+    const q = document.getElementById('ativar-input').value.trim();
+    if (!q) return;
+    const el = document.getElementById('ativar-resultado');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
+      const d = await r.json();
+      const ql = q.toLowerCase();
+      const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
+      if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
+      el.innerHTML = encontrados.slice(0,20).map(c => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${c.nome}</div>
+            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
+            <span class="badge" style="${c.ativo ? 'background:#E1F5EE;color:#085041' : 'background:#FCEBEB;color:#791F1F'}">${c.ativo ? 'Ativo' : 'Inativo'}</span>
+          </div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
+          <div class="list-item-actions">
+            ${c.ativo
+              ? `<button class="btn btn-danger" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},0)">⛔ Desativar</button>`
+              : `<button class="btn btn-primary" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},1)">✅ Ativar</button>`}
+          </div>
+        </div>`).join('');
+    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  }
+
+  async function toggleAtivar(id, ativo) {
+    if (ativo) {
+      await fetch(API + '/reativar-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    } else {
+      await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+    }
+    toast(ativo ? '✅ Cliente ativado' : '⛔ Cliente desativado');
+    buscarParaAtivar();
+  }
+
+  async function fazerReset() {
+    if (!confirm('Tem certeza? Reseta TODOS os clientes.')) return;
+    showMsg('msg-reset','Resetando...','loading');
+    try {
+      const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+      const d = await r.json();
+      showMsg('msg-reset','✅ Reset feito! '+d.total+' clientes resetados.','success');
+    } catch(e) { showMsg('msg-reset','Erro: '+e.message,'error'); }
+  }
+
+  async function resetConfirmacoes() {
+    if (!confirm('Limpar todas as confirmações de hoje?')) return;
+    await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    showMsg('msg-reset-conf','✅ Confirmações limpas!','success');
+  }
+
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.innerHTML = (type==='loading'?'<span class="spinner"></span>':'')+text;
+    el.className = 'msg'+(type?' '+type:'');
   }
 
   function toast(msg) {
@@ -341,7 +928,8 @@
     setTimeout(() => el.classList.remove('show'), 2500);
   }
 
-  carregarRotas();
+  carregarPainel();
+  iniciarAutoRefresh();
 </script>
 </body>
 </html>
