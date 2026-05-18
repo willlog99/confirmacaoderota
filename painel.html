@@ -640,13 +640,19 @@
     }
   }
 
+  let rotaDetalheAtual = null;
+
   async function abrirDetalheRota(rota) {
+    rotaDetalheAtual = rota;
     pararAutoRefresh();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById('view-detalhe-rota').classList.add('active');
     document.getElementById('detalhe-titulo').textContent = rota;
     window.scrollTo(0,0);
+    await carregarDetalheRota(rota);
+  }
 
+  async function carregarDetalheRota(rota) {
     const listaEl = document.getElementById('detalhe-lista');
     const kpisEl = document.getElementById('detalhe-kpis');
     listaEl.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
@@ -670,18 +676,20 @@
       const renderC = c => {
         const feito = c.status === 'entregue';
         const bad = c.produtividade === 'improdutiva';
-        const chegou = !!c.horario_chegada && !feito;
-        const cls2 = feito ? (bad ? 'improdutivo' : 'feito') : (chegou ? 'chegou' : '');
-        const icls = feito ? (bad ? 'imp' : 'ok') : (chegou ? 'ch' : '');
-        const icon = feito ? (bad ? '✕' : '✓') : (chegou ? '📍' : '');
+        const cls2 = feito ? (bad ? 'improdutivo' : 'feito') : '';
+        const icls = feito ? (bad ? 'imp' : 'ok') : '';
+        const icon = feito ? (bad ? '✕' : '✓') : '';
         const saida = c.horario_entrega ? c.horario_entrega.split(' ').pop() : '';
-        return `<div class="cli-item ${cls2}">
+        return `<div class="cli-item ${cls2}" style="position:relative">
           <div class="cli-status ${icls}">${icon}</div>
           <div class="cli-info">
             <div class="cli-nome">${c.nome}</div>
-            <div class="cli-meta">Nº ${c.numero_cliente}${c.horario_chegada ? ' · 🟡 '+c.horario_chegada : ''}${saida ? ' · 🔵 '+saida : ''}${bad && c.motivo_improdutiva ? ' · '+c.motivo_improdutiva : ''}</div>
+            <div class="cli-meta">Nº ${c.numero_cliente}${saida ? ' · 🔵 '+saida : ''}${bad && c.motivo_improdutiva ? ' · '+c.motivo_improdutiva : ''}</div>
           </div>
-          <div class="cli-hora">${c.horario}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+            <div class="cli-hora">${c.horario}</div>
+            ${feito ? `<button onclick="voltarColeta(${c.id})" style="background:#FEF9EC;color:#92400E;border:1.5px solid #F2CC70;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">↩ Voltar</button>` : ''}
+          </div>
         </div>`;
       };
 
@@ -691,6 +699,21 @@
 
     } catch(e) {
       listaEl.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
+    }
+  }
+
+  async function voltarColeta(id) {
+    if (!confirm('Voltar esta coleta para pendente?')) return;
+    try {
+      await fetch(API + '/desticar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      toast('↩ Coleta voltou para pendente!');
+      await carregarDetalheRota(rotaDetalheAtual);
+    } catch(e) {
+      toast('Erro ao voltar coleta');
     }
   }
 
@@ -765,7 +788,7 @@
     const el = document.getElementById('lista-mb-ger');
     el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
     try {
-      const r = await fetch(API + '/motoboys?todos=1');
+      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
       const d = await r.json();
       if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
       el.innerHTML = d.motoboys.map(m => `
@@ -774,8 +797,9 @@
             <div class="list-item-name">${m.nome}</div>
             <div class="list-item-meta">📱 ${m.telefone}</div>
           </div>
+          ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:4px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:4px">Sem rotas</div>'}
           <div class="list-item-actions">
-            <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy(${m.id})">🗑 Excluir</button>
+            <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy('${m.telefone}')">🗑 Excluir</button>
           </div>
         </div>`).join('');
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
@@ -795,9 +819,9 @@
     } catch(e) { showMsg('msg-mb','Erro: '+e.message,'error'); }
   }
 
-  async function excluirMotoboy(id) {
-    if (!confirm('Excluir este motorista?')) return;
-    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
+  async function excluirMotoboy(telefone) {
+    if (!confirm('Excluir este motorista e todas as suas rotas?')) return;
+    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({telefone}) });
     toast('Motorista excluído');
     carregarMotoboysGerenciar();
   }
