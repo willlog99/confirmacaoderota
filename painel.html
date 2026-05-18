@@ -617,14 +617,11 @@
           const mins = a.minutos_atrasado % 60;
           const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
           const isPendente = a.tipo === 'pendente';
-          return `<div class="cliente-card" style="border-left:3px solid ${isPendente ? '#F59E0B' : '#DC2626'};background:${isPendente ? '#FEF9EC' : '#FCEBEB'}">
-            <div class="check-btn" style="background:${isPendente ? '#F59E0B' : '#DC2626'};color:#fff;border-color:${isPendente ? '#F59E0B' : '#DC2626'}">${isPendente ? '⏳' : '⏰'}</div>
-            <div class="cliente-info">
-              <div class="cliente-nome">${a.nome}</div>
-              <div class="cliente-meta">Nº ${a.numero_cliente} • ${a.rota}</div>
-              <div class="ts-info">
-                <span style="color:${isPendente ? '#92400E' : '#DC2626'}">${isPendente ? '⚠️ Pendente há' : '⏰ Entregue com'} ${tempoStr} de atraso</span>
-              </div>
+          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:${isPendente ? '#FEF9EC' : '#FCEBEB'};border:1px solid ${isPendente ? '#F2CC70' : '#F09595'};margin-bottom:5px">
+            <span style="font-size:13px">${isPendente ? '⚠️' : '⏰'}</span>
+            <div style="flex:1;min-width:0">
+              <span style="font-size:12px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${a.nome}</span>
+              <span style="font-size:11px;color:#5A7A8F">${a.rota} · ${a.horario} · <strong style="color:${isPendente ? '#92400E' : '#DC2626'}">${tempoStr} atraso</strong></span>
             </div>
           </div>`;
         }).join('');
