@@ -522,7 +522,7 @@
         })
       });
       const d = await r.json();
-      if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao criar');
+      if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao criar rota');
 
       document.getElementById('sucesso-msg').innerHTML = `Rota <strong>${nomeRota}</strong> criada com <strong>${d.inseridos} clientes</strong>.<br/>Motorista: <strong>${motoboySelected.nome}</strong>`;
       document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
