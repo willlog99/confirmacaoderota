@@ -109,8 +109,8 @@
   let telefoneSalvo = null;
   let nomeUsuario = null;
   let rotasDisponivel = [];
+  let rotasCarregadas = false;
 
-  // Carregar dados do localStorage
   window.addEventListener('load', async () => {
     telefoneSalvo = localStorage.getItem('telefone_temp');
     nomeUsuario = localStorage.getItem('nome_temp');
@@ -122,7 +122,11 @@
 
     document.getElementById('info-nome').textContent = nomeUsuario;
 
-    // Buscar rotas disponíveis
+    // Buscar rotas com retry
+    await carregarRotas();
+  });
+
+  async function carregarRotas() {
     try {
       const r = await fetch(API + '/login', {
         method: 'POST',
@@ -131,11 +135,14 @@
       });
       const d = await r.json();
       if (d.status === 'ok') {
-        // Usa rotas_info já filtradas pelo dia no worker
         rotasDisponivel = (d.rotas_info || []).filter(r => r.status !== 'travada');
+        rotasCarregadas = true;
       }
-    } catch(e) {}
-  });
+    } catch(e) {
+      // Tenta de novo após 2 segundos
+      setTimeout(carregarRotas, 2000);
+    }
+  }
 
   function abrirMotivo() {
     document.getElementById('obs-area').classList.add('visible');
@@ -158,8 +165,10 @@
       if (d.status === 'ok') {
         localStorage.setItem('motoboy_tel', telefoneSalvo);
         localStorage.setItem('motoboy_nome', nomeUsuario);
-        
         showMsg(resp === 'sim' ? '✓ Presença confirmada!' : '✗ Não confirmação registrada.', 'success');
+        
+        // Se rotas ainda não carregaram, tenta buscar agora
+        if (!rotasCarregadas) await carregarRotas();
         
         setTimeout(() => {
           if (rotasDisponivel.length > 0) {
@@ -168,15 +177,23 @@
             mostrarFim(resp === 'sim' ? 'Sua presença foi confirmada.' : 'Sua não confirmação foi registrada.');
           }
         }, 800);
+
       } else if (d.status === 'duplicado') {
-        showMsg('Sua presença já foi registrada. Fale com o organizador.', 'error');
+        // Já confirmou — mostra popup de rotas direto
+        showMsg('Presença já registrada!', 'success');
+        if (!rotasCarregadas) await carregarRotas();
+        setTimeout(() => {
+          if (rotasDisponivel.length > 0) mostrarSelecaoRotas();
+          else mostrarFim('Sua presença já foi registrada.');
+        }, 800);
       } else {
-        showMsg('Erro ao enviar.', 'error');
+        showMsg('Erro ao enviar. Tente novamente.', 'error');
+        setBtns(false);
       }
     } catch(e) {
-      showMsg('Erro de conexão.', 'error');
+      showMsg('Erro de conexão. Tente novamente.', 'error');
+      setBtns(false);
     }
-    setBtns(false);
   }
 
   function mostrarSelecaoRotas() {
