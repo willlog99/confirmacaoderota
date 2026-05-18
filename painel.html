@@ -497,7 +497,7 @@
       const confirmacoes = confRes.confirmacoes || [];
 
       const dadosRotas = await Promise.all(
-        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota)).then(res => res.json()))
+        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota) + '&todos_dias=1').then(res => res.json()))
       );
 
       let totalGeral = 0, feitasGeral = 0;
@@ -652,7 +652,7 @@
     listaEl.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
 
     try {
-      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota) + '&todos_dias=1');
       const d = await r.json();
       const cls = d.clientes || [];
       const ent = cls.filter(c => c.status === 'entregue');
