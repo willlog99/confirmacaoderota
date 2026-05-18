@@ -207,7 +207,7 @@
         <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
         <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
-        <button class="menu-item" onclick="setView('rotas-view',this)">🛣️ Rotas</button>
+
       </div>
     </div>
 
@@ -561,10 +561,15 @@
 
         const renderPrev = (c, tipo) => {
           const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
+          const btnVoltar = (tipo === 'feito' || tipo === 'imp') 
+            ? `<button onclick="event.stopPropagation();voltarColetaPreview(${c.id},'${r.rota.replace(/'/g,"\\'")}')" 
+                style="background:#FEF9EC;color:#92400E;border:1.5px solid #F2CC70;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩</button>`
+            : '';
           return `<div class="preview-cli ${tipo}">
             <div class="preview-cli-ico">${ico}</div>
             <div class="preview-cli-nome">${c.nome}</div>
             <div class="preview-cli-hora">${c.horario}</div>
+            ${btnVoltar}
           </div>`;
         };
 
@@ -712,6 +717,22 @@
       });
       toast('↩ Coleta voltou para pendente!');
       await carregarDetalheRota(rotaDetalheAtual);
+    } catch(e) {
+      toast('Erro ao voltar coleta');
+    }
+  }
+
+  async function voltarColetaPreview(id, rota) {
+    if (!confirm('Voltar esta coleta para pendente?')) return;
+    try {
+      await fetch(API + '/desticar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      toast('↩ Coleta voltou para pendente!');
+      cardExpandido = null;
+      await carregarPainel(false);
     } catch(e) {
       toast('Erro ao voltar coleta');
     }
