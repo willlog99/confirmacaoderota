@@ -152,15 +152,17 @@
   async function confirmarPresenca(resp) {
     const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
     setBtns(true);
-    showMsg('Enviando...', 'loading');
+    showMsg('Enviando... nome: ' + nomeUsuario, 'loading');
     
     try {
-      const r = await fetch(API, {
+      const r = await fetch(API + '/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ biocondutor: nomeUsuario, resposta: resp, obs })
       });
-      const d = await r.json();
+      const texto = await r.text();
+      let d;
+      try { d = JSON.parse(texto); } catch(e) { showMsg('Resposta inválida: ' + texto.slice(0,100), 'error'); setBtns(false); return; }
       
       if (d.status === 'ok') {
         localStorage.setItem('motoboy_tel', telefoneSalvo);
@@ -191,7 +193,7 @@
         setBtns(false);
       }
     } catch(e) {
-      showMsg('Erro de conexão. Tente novamente.', 'error');
+      showMsg('Erro: ' + e.message + ' | nome: ' + nomeUsuario, 'error');
       setBtns(false);
     }
   }
