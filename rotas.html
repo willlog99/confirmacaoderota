@@ -251,7 +251,7 @@
         <button class="btn-cancelar-edit" onclick="cancelarEditar(${i})">Cancelar</button>
       </div>`;
     } else {
-      // Modo visualização com botões mover e alterar horário
+      // Modo visualização com botões mover, alterar horário e excluir
       el.innerHTML = `<div class="cli-lista-view">
         ${clientes.map((c, idx) => `
           <div class="cli-row">
@@ -265,6 +265,18 @@
               <button class="btn-cli" style="background:#FCEBEB;color:#791F1F;border-color:#F09595" onclick="excluirCliente(${c.id},${i})">🗑</button>
             </div>
           </div>`).join('')}
+      </div>
+
+      <!-- ADICIONAR CLIENTE DA BASE -->
+      <div style="padding:.75rem 1.25rem;border-top:1px solid #EBF1F5;background:#F7FBFD">
+        <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">+ Adicionar cliente da base</div>
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="text" id="busca-base-${i}" placeholder="Nome ou código..." 
+            style="flex:1;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;font-size:13px;padding:0 10px;color:#0F4C7A;outline:none"
+            oninput="buscarClienteBase(${i})" onfocus="this.style.borderColor='#1E9FD9'" onblur="this.style.borderColor='#D6E5EE'"/>
+          <button onclick="limparBuscaBase(${i})" style="padding:0 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#94A8B8;font-size:13px;cursor:pointer">✕</button>
+        </div>
+        <div id="base-results-${i}" style="max-height:180px;overflow-y:auto;border-radius:8px;border:1px solid #EBF1F5;display:none"></div>
       </div>`;
     }
   }
@@ -454,6 +466,80 @@
     el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 2500);
   }
+
+  async function buscarClienteBase(rotaIdx) {
+    const q = document.getElementById('busca-base-' + rotaIdx).value.trim();
+    const el = document.getElementById('base-results-' + rotaIdx);
+    if (q.length < 2) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    el.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:#94A8B8">Buscando...</div>';
+    try {
+      const r = await fetch(API + '/clientes-base');
+      const d = await r.json();
+      const ql = q.toLowerCase();
+      const encontrados = (d.clientes || []).filter(c =>
+        c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q)
+      ).slice(0, 10);
+      if (!encontrados.length) {
+        el.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:#94A8B8">Nenhum cliente encontrado na base</div>';
+        return;
+      }
+      el.innerHTML = encontrados.map(c => `
+        <div onclick="adicionarClienteNaRota(${rotaIdx},${c.id},'${c.numero_cliente}','${c.nome.replace(/'/g,"\\'")}','${c.horario}')"
+          style="padding:10px 12px;border-bottom:1px solid #EBF1F5;cursor:pointer;display:flex;align-items:center;gap:10px;background:#fff;transition:background .1s"
+          onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-top:2px">Nº ${c.numero_cliente}</div>
+          </div>
+          <div style="font-size:13px;font-weight:700;color:#1E9FD9;flex-shrink:0">${c.horario}</div>
+          <div style="font-size:11px;font-weight:700;background:#E1F5EE;color:#085041;padding:3px 8px;border-radius:6px;flex-shrink:0">+ Add</div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div style="padding:8px 12px;font-size:12px;color:#A32D2D">Erro ao buscar</div>';
+    }
+  }
+
+  async function adicionarClienteNaRota(rotaIdx, idBase, numero, nome, horario) {
+    const rota = todasRotas[rotaIdx];
+    if (!confirm(`Adicionar "${nome}" (${horario}) à rota "${rota.rota}"?`)) return;
+    try {
+      await fetch(API + '/clientes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numero_cliente: numero,
+          nome,
+          horario,
+          rota: rota.rota,
+          tipo: 'normal',
+          dia_semana: rota.dia_semana || 'seg-sex',
+          obs: '',
+          dias_ativos: rota.dia_semana === 'sabado' ? 'sab' : rota.dia_semana === 'domingo' ? 'dom' : 'seg,ter,qua,qui,sex'
+        })
+      });
+      await fetch(API + '/clientes-base', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: idBase })
+      });
+      limparBuscaBase(rotaIdx);
+      delete clientesPorRota[rota.rota];
+      await carregarClientes(rotaIdx);
+      toast('✓ ' + nome + ' adicionado à rota!');
+    } catch(e) {
+      toast('Erro ao adicionar cliente');
+    }
+  }
+
+  function limparBuscaBase(rotaIdx) {
+    const input = document.getElementById('busca-base-' + rotaIdx);
+    const results = document.getElementById('base-results-' + rotaIdx);
+    if (input) input.value = '';
+    if (results) results.style.display = 'none';
+  }
+
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
 
   carregarRotas();
 </script>
