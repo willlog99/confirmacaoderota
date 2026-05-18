@@ -147,8 +147,8 @@
       const r = await fetch(API + '/');
       const d = await r.json();
       const confirmacoes = d.confirmacoes || [];
-      const hoje = new Date().toLocaleDateString('pt-BR');
-      return confirmacoes.some(c => c.data && c.data.startsWith(hoje));
+      // Verifica se ESTE biocondutor já confirmou hoje
+      return confirmacoes.some(c => c.biocondutor === nomeUsuario);
     } catch(e) {
       return false;
     }
