@@ -157,7 +157,7 @@
     if (clientesPorRota[rota]) { renderizarClientes(i, clientesPorRota[rota]); return; }
     
     try {
-      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota) + '&todos_dias=1');
       const d = await r.json();
       clientesPorRota[rota] = d.clientes || [];
       renderizarClientes(i, clientesPorRota[rota]);
