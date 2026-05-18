@@ -272,7 +272,10 @@
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">🛵 Rotas em operação <span class="panel-badge" id="rotas-badge">0</span></div>
-          <div class="panel-live"><div class="live-dot"></div>Live</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="filtro-dias" style="display:flex;gap:6px"></div>
+            <div class="panel-live"><div class="live-dot"></div>Live</div>
+          </div>
         </div>
         <div class="panel-body" id="painel-rotas">
           <div class="empty"><span class="spinner"></span> Carregando...</div>
@@ -424,6 +427,33 @@
   const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   document.getElementById('topbar-data').textContent = `${dias[agora.getDay()]}, ${agora.getDate()} ${meses[agora.getMonth()]} ${agora.getFullYear()}`;
 
+  // Filtro de dia: determinar dia atual
+  const diaSemanaAtual = agora.getDay(); // 0=dom, 1=seg...6=sab
+  let filtroDia = diaSemanaAtual === 0 ? 'domingo' : diaSemanaAtual === 6 ? 'sabado' : 'seg-sex';
+
+  function renderizarFiltroDias() {
+    const opcoes = [
+      { key: 'seg-sex', label: 'Seg-Sex' },
+      { key: 'sabado', label: 'Sábado' },
+      { key: 'domingo', label: 'Domingo' },
+      { key: 'todos', label: 'Todos' }
+    ];
+    document.getElementById('filtro-dias').innerHTML = opcoes.map(o => `
+      <button onclick="trocarFiltroDia('${o.key}')" id="filtro-btn-${o.key}"
+        style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .2s;
+        ${filtroDia===o.key ? 'background:#1E9FD9;color:#fff;border-color:#1E9FD9' : 'background:#fff;color:#5A7A8F;border-color:#D6E5EE'}">
+        ${o.label}
+      </button>`).join('');
+  }
+
+  function trocarFiltroDia(dia) {
+    filtroDia = dia;
+    renderizarFiltroDias();
+    carregarPainel();
+  }
+
+  renderizarFiltroDias();
+
   function abrirMenu() { document.getElementById('menu-overlay').classList.add('open'); }
   function fecharMenu() { document.getElementById('menu-overlay').classList.remove('open'); }
   function fecharMenuOverlay(e) { if (e.target === e.currentTarget) fecharMenu(); }
@@ -454,8 +484,9 @@
 
   async function carregarPainel(silent) {
     try {
+      const params = filtroDia === 'todos' ? '?todos_dias=1' : `?dia_semana=${filtroDia}`;
       const [rRes, mbRes, confRes] = await Promise.all([
-        fetch(API + '/rotas-disponiveis?todos_dias=1').then(r => r.json()),
+        fetch(API + '/rotas-disponiveis' + params).then(r => r.json()),
         fetch(API + '/motoboys?todos=1').then(r => r.json()),
         fetch(API + '/').then(r => r.json())
       ]);
