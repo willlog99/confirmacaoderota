@@ -14,7 +14,7 @@
 
     .container{padding:0 1.25rem;max-width:800px;margin:0 auto}
 
-    .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:1rem;flex-wrap:wrap}
+    .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:1rem}
     .btn-atualizar{padding:8px 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:600;color:#0F4C7A;cursor:pointer;display:flex;align-items:center;gap:6px}
     .btn-atualizar:hover{background:#E8F4FB;border-color:#1E9FD9}
 
@@ -23,12 +23,10 @@
     .rota-header:hover{background:#F7FBFD}
     .rota-info{flex:1;min-width:0}
     .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A}
-    .rota-meta{font-size:12px;color:#5A7A8F;margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    .dia-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:#E8F4FB;color:#0F7BB0}
-    .status-badge{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
-    .status-livre{background:#E1F5EE;color:#085041}
-    .status-andamento{background:#FEF9EC;color:#92400E}
-    .rota-stats{display:flex;gap:8px;font-size:12px;color:#5A7A8F;flex-shrink:0}
+    .rota-meta{font-size:12px;color:#5A7A8F;margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .dia-badge{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#E8F4FB;color:#0F7BB0}
+    .status-livre{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#E1F5EE;color:#085041}
+    .status-andamento{font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#FEF9EC;color:#92400E}
     .rota-expand-icon{font-size:14px;color:#94A8B8;transition:transform .2s;flex-shrink:0}
     .rota-card.open .rota-expand-icon{transform:rotate(180deg)}
 
@@ -46,17 +44,26 @@
     .rota-body{display:none;border-top:1px solid #EBF1F5}
     .rota-card.open .rota-body{display:block}
 
-    .cli-lista-edit{padding:.75rem 1.25rem}
-    .cli-drag{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1.5px solid #D6E5EE;display:flex;align-items:center;gap:10px;transition:all .2s;user-select:none}
-    .cli-drag.dragging{opacity:.5;border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.2)}
-    .cli-drag.drag-over{border-color:#1E9FD9;background:#E8F4FB;transform:translateY(2px)}
-    .drag-handle{cursor:grab;color:#94A8B8;font-size:16px;flex-shrink:0;padding:0 4px}
-    .drag-handle:active{cursor:grabbing}
-    .cli-drag-info{flex:1;min-width:0}
-    .cli-drag-nome{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cli-drag-meta{font-size:11px;color:#5A7A8F;margin-top:2px}
-    .cli-drag-hora{font-size:12px;font-weight:700;color:#1E9FD9;flex-shrink:0}
-    .cli-drag-pos{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .cli-lista-view{padding:.75rem 1.25rem}
+    .cli-row{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1.5px solid #D6E5EE;display:flex;align-items:center;gap:10px}
+    .cli-row.editing{background:#E8F4FB;border-color:#1E9FD9}
+    .cli-pos{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .cli-nome{font-size:13px;font-weight:700;color:#0F4C7A;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cli-num{font-size:11px;color:#5A7A8F;flex-shrink:0}
+    .cli-hora{font-size:13px;font-weight:700;color:#1E9FD9;flex-shrink:0}
+    .cli-actions{display:flex;gap:4px;flex-shrink:0}
+    .btn-cli{padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .1s}
+    .btn-mover-cli{background:#E8F4FB;color:#0F4C7A;border-color:#BFE0F0}
+    .btn-mover-cli:hover{background:#D0EAF8}
+    .btn-hora-cli{background:#FEF9EC;color:#92400E;border-color:#F2CC70}
+    .btn-hora-cli:hover{background:#FEF3C7}
+
+    /* DRAG */
+    .cli-drag-row{background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:6px;border:1.5px solid #D6E5EE;display:flex;align-items:center;gap:10px;cursor:grab;user-select:none}
+    .cli-drag-row:active{cursor:grabbing}
+    .cli-drag-row.dragging{opacity:.4;border-color:#1E9FD9}
+    .cli-drag-row.drag-over{border-color:#1E9FD9;background:#E8F4FB;transform:translateY(2px)}
+    .drag-handle{color:#94A8B8;font-size:16px;flex-shrink:0}
 
     .edit-actions{padding:.75rem 1.25rem;border-top:1px solid #EBF1F5;display:flex;gap:8px}
     .btn-salvar{flex:1;padding:10px;border-radius:10px;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-size:13px;font-weight:700;cursor:pointer;border:none}
@@ -67,9 +74,20 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
     .toast.show{opacity:1}
-    .msg-inline{font-size:12px;padding:6px 10px;border-radius:8px;margin:0 1.25rem .75rem;text-align:center}
-    .msg-inline.success{background:#E1F5EE;color:#085041;border:1px solid #5DCAA5}
-    .msg-inline.error{background:#FCEBEB;color:#791F1F;border:1px solid #F09595}
+
+    /* MODAL */
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:500px}
+    .modal h2{font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    .modal-field{margin-bottom:1rem}
+    .modal-field label{font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px;text-transform:uppercase}
+    .modal-field input,.modal-field select{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
+    .modal-field input:focus,.modal-field select:focus{border-color:#1E9FD9}
+    .modal-btns{display:flex;gap:8px;margin-top:1rem}
+    .modal-btns button{flex:1;padding:12px;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;border:none}
+    .modal-btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .modal-btn-secondary{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE !important;border:none}
   </style>
 </head>
 <body>
@@ -89,14 +107,59 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- MODAL MOVER CLIENTE -->
+<div class="modal-overlay hidden" id="modal-mover">
+  <div class="modal">
+    <h2>↔ Mover cliente</h2>
+    <div class="modal-field">
+      <label>Nova rota</label>
+      <select id="sel-nova-rota"><option value="">Selecione...</option></select>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-secondary" onclick="fecharModal('modal-mover')">Cancelar</button>
+      <button class="modal-btn-primary" onclick="confirmarMover()">Mover</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ALTERAR HORÁRIO -->
+<div class="modal-overlay hidden" id="modal-horario">
+  <div class="modal">
+    <h2>⏰ Alterar horário</h2>
+    <div class="modal-field">
+      <label>Cliente</label>
+      <div id="modal-horario-nome" style="font-size:14px;font-weight:700;color:#0F4C7A;padding:8px 0"></div>
+    </div>
+    <div class="modal-field">
+      <label>Novo horário</label>
+      <input type="time" id="input-horario"/>
+    </div>
+    <div class="modal-btns">
+      <button class="modal-btn-secondary" onclick="fecharModal('modal-horario')">Cancelar</button>
+      <button class="modal-btn-primary" onclick="confirmarHorario()">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let todasRotas = [];
   let clientesPorRota = {};
   let modoEditar = null;
   let dragSrc = null;
+  let clienteParaMover = null;
+  let clienteParaHorario = null;
+  let rotaDeClienteParaMover = null;
 
-  const diaLabels = { 'seg-sex': 'Seg-Sex', 'sabado': 'Sábado', 'domingo': 'Domingo' };
+  const diaLabels = { 'seg-sex': 'Seg-Sex', 'sabado': 'Sábado', 'domingo': 'Domingo', 'sabado': 'Sábado' };
+  
+  function getDiaLabel(dia) {
+    if (!dia) return '—';
+    if (dia === 'seg-sex') return 'Seg-Sex';
+    if (dia === 'sabado' || dia === 'sábado') return 'Sábado';
+    if (dia === 'domingo') return 'Domingo';
+    return dia;
+  }
 
   async function carregarRotas() {
     document.getElementById('lista-rotas').innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
@@ -119,17 +182,17 @@
           <div class="rota-info">
             <div class="rota-nome">${r.rota}</div>
             <div class="rota-meta">
-              <span class="dia-badge">${diaLabels[r.dia_semana] || r.dia_semana || '—'}</span>
+              <span class="dia-badge">${getDiaLabel(r.dia_semana)}</span>
               ${r.motoboy_aberto ? `<span>🏍️ ${r.motoboy_aberto}</span>` : ''}
-              <span class="${r.ativa ? 'status-badge status-andamento' : 'status-badge status-livre'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
+              <span class="${r.ativa ? 'status-andamento' : 'status-livre'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
             </div>
           </div>
           <div class="rota-expand-icon">▼</div>
         </div>
         <div class="rota-body" id="rota-body-${i}">
           <div class="rota-actions">
-            <button class="btn-action btn-editar" onclick="editarOrdem(${i})">↕ Reordenar coletas</button>
-            <button class="btn-action btn-trocar" onclick="trocarMotorista('${r.rota.replace(/'/g,"\\'")}')">⇄ Trocar motorista</button>
+            <button class="btn-action btn-editar" onclick="editarOrdem(${i})">↕ Reordenar</button>
+            <button class="btn-action btn-trocar" onclick="trocarMotorista('${r.rota.replace(/'/g,"\\'") }')">⇄ Motorista</button>
             <button class="btn-action btn-renomear" onclick="renomearRota('${r.rota.replace(/'/g,"\\'")}')">✎ Renomear</button>
             ${r.ativa ? `<button class="btn-action btn-trocar" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
             <button class="btn-action btn-excluir" onclick="excluirRota('${r.rota.replace(/'/g,"\\'")}')">🗑 Excluir</button>
@@ -142,10 +205,7 @@
   async function toggleRota(i) {
     const card = document.getElementById('rota-card-' + i);
     const isOpen = card.classList.contains('open');
-    
-    // Fechar todos
     document.querySelectorAll('.rota-card').forEach(c => c.classList.remove('open'));
-    
     if (!isOpen) {
       card.classList.add('open');
       await carregarClientes(i);
@@ -154,72 +214,62 @@
 
   async function carregarClientes(i) {
     const rota = todasRotas[i].rota;
-    if (clientesPorRota[rota]) { renderizarClientes(i, clientesPorRota[rota]); return; }
-    
     try {
       const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota) + '&todos_dias=1');
       const d = await r.json();
       clientesPorRota[rota] = d.clientes || [];
       renderizarClientes(i, clientesPorRota[rota]);
     } catch(e) {
-      document.getElementById('clientes-rota-' + i).innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar coletas</div>';
+      document.getElementById('clientes-rota-' + i).innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
     }
   }
 
   function renderizarClientes(i, clientes) {
     const el = document.getElementById('clientes-rota-' + i);
     if (!clientes.length) { el.innerHTML = '<div class="empty">Nenhum cliente nesta rota</div>'; return; }
-    
-    const emEdicao = modoEditar === i;
-    
-    if (emEdicao) {
-      el.innerHTML = `
-        <div class="cli-lista-edit" id="drag-lista-${i}">
-          ${clientes.map((c, idx) => `
-            <div class="cli-drag" draggable="true" data-id="${c.id}" data-idx="${idx}"
-              ondragstart="onDragStart(event,${i})"
-              ondragover="onDragOver(event)"
-              ondragenter="onDragEnter(event)"
-              ondragleave="onDragLeave(event)"
-              ondrop="onDrop(event,${i})"
-              ondragend="onDragEnd(event)">
-              <div class="drag-handle">⠿</div>
-              <div class="cli-drag-pos">${idx + 1}</div>
-              <div class="cli-drag-info">
-                <div class="cli-drag-nome">${c.nome}</div>
-                <div class="cli-drag-meta">Nº ${c.numero_cliente}</div>
-              </div>
-              <div class="cli-drag-hora">${c.horario}</div>
-            </div>`).join('')}
-        </div>
-        <div class="edit-actions">
-          <button class="btn-salvar" onclick="salvarOrdem(${i})">✓ Salvar ordem</button>
-          <button class="btn-cancelar-edit" onclick="cancelarEditar(${i})">Cancelar</button>
-        </div>`;
-    } else {
-      el.innerHTML = `<div class="cli-lista-edit">
+
+    if (modoEditar === i) {
+      // Modo drag and drop
+      el.innerHTML = `<div class="cli-lista-view" id="drag-lista-${i}">
         ${clientes.map((c, idx) => `
-          <div class="cli-drag" style="cursor:default">
-            <div class="cli-drag-pos">${idx + 1}</div>
-            <div class="cli-drag-info">
-              <div class="cli-drag-nome">${c.nome}</div>
-              <div class="cli-drag-meta">Nº ${c.numero_cliente} · ${c.status === 'entregue' ? (c.produtividade === 'produtiva' ? '✓ Produtiva' : '✕ Improdutiva') : '⏳ Pendente'}</div>
+          <div class="cli-drag-row" draggable="true" data-idx="${idx}"
+            ondragstart="onDragStart(event,${i})"
+            ondragover="onDragOver(event)"
+            ondragenter="onDragEnter(event)"
+            ondragleave="onDragLeave(event)"
+            ondrop="onDrop(event,${i})"
+            ondragend="onDragEnd(event)">
+            <div class="drag-handle">⠿</div>
+            <div class="cli-pos">${idx + 1}</div>
+            <div class="cli-nome">${c.nome}</div>
+            <div class="cli-num">Nº ${c.numero_cliente}</div>
+            <div class="cli-hora">${c.horario}</div>
+          </div>`).join('')}
+      </div>
+      <div class="edit-actions">
+        <button class="btn-salvar" onclick="salvarOrdem(${i})">✓ Salvar ordem</button>
+        <button class="btn-cancelar-edit" onclick="cancelarEditar(${i})">Cancelar</button>
+      </div>`;
+    } else {
+      // Modo visualização com botões mover e alterar horário
+      el.innerHTML = `<div class="cli-lista-view">
+        ${clientes.map((c, idx) => `
+          <div class="cli-row">
+            <div class="cli-pos">${idx + 1}</div>
+            <div class="cli-nome">${c.nome}</div>
+            <div class="cli-num">Nº ${c.numero_cliente}</div>
+            <div class="cli-hora">${c.horario}</div>
+            <div class="cli-actions">
+              <button class="btn-cli btn-hora-cli" onclick="abrirAlterarHorario(${c.id},'${c.nome.replace(/'/g,"\\'")}','${c.horario}')">⏰</button>
+              <button class="btn-cli btn-mover-cli" onclick="abrirMover(${c.id},'${todasRotas[i].rota.replace(/'/g,"\\'")}')">↔</button>
             </div>
-            <div class="cli-drag-hora">${c.horario}</div>
           </div>`).join('')}
       </div>`;
     }
   }
 
-  function editarOrdem(i) {
-    modoEditar = i;
-    renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []);
-  }
-
-  function cancelarEditar(i) {
-    modoEditar = null;
-    renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []);
-  }
+  function editarOrdem(i) { modoEditar = i; renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []); }
+  function cancelarEditar(i) { modoEditar = null; renderizarClientes(i, clientesPorRota[todasRotas[i].rota] || []); }
 
   // DRAG AND DROP
   function onDragStart(e, rotaIdx) {
@@ -228,45 +278,21 @@
     e.dataTransfer.setData('text/plain', dragSrc.dataset.idx);
     setTimeout(() => dragSrc.classList.add('dragging'), 0);
   }
-
-  function onDragOver(e) {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-    return false;
-  }
-
-  function onDragEnter(e) {
-    const target = e.currentTarget;
-    if (target !== dragSrc) target.classList.add('drag-over');
-  }
-
-  function onDragLeave(e) {
-    e.currentTarget.classList.remove('drag-over');
-  }
-
-  function onDragEnd(e) {
-    document.querySelectorAll('.cli-drag').forEach(el => {
-      el.classList.remove('dragging', 'drag-over');
-    });
-  }
-
+  function onDragOver(e) { e.preventDefault(); return false; }
+  function onDragEnter(e) { if (e.currentTarget !== dragSrc) e.currentTarget.classList.add('drag-over'); }
+  function onDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+  function onDragEnd(e) { document.querySelectorAll('.cli-drag-row').forEach(el => el.classList.remove('dragging','drag-over')); }
   function onDrop(e, rotaIdx) {
     e.preventDefault();
     const target = e.currentTarget;
     target.classList.remove('drag-over');
-    
     if (!dragSrc || dragSrc === target) return;
-    
     const rota = todasRotas[rotaIdx].rota;
     const clientes = clientesPorRota[rota];
-    
     const srcIdx = parseInt(dragSrc.dataset.idx);
     const tgtIdx = parseInt(target.dataset.idx);
-    
-    // Reordenar array
     const [removed] = clientes.splice(srcIdx, 1);
     clientes.splice(tgtIdx, 0, removed);
-    
     clientesPorRota[rota] = clientes;
     renderizarClientes(rotaIdx, clientes);
   }
@@ -275,64 +301,134 @@
     const rota = todasRotas[i].rota;
     const clientes = clientesPorRota[rota];
     const ordem = clientes.map((c, idx) => ({ id: c.id, ordem: idx + 1 }));
-    
     try {
-      await fetch(API + '/reordenar-clientes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rota, ordem })
-      });
+      await fetch(API + '/reordenar-clientes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota, ordem }) });
       modoEditar = null;
       renderizarClientes(i, clientes);
       toast('✓ Ordem salva!');
-    } catch(e) {
-      toast('Erro ao salvar ordem');
-    }
+    } catch(e) { toast('Erro ao salvar'); }
   }
 
+  // MOVER CLIENTE
+  async function abrirMover(id, rotaAtual) {
+    clienteParaMover = id;
+    rotaDeClienteParaMover = rotaAtual;
+    const sel = document.getElementById('sel-nova-rota');
+    sel.innerHTML = '<option value="">Carregando...</option>';
+    document.getElementById('modal-mover').classList.remove('hidden');
+    try {
+      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
+      const d = await r.json();
+      const outras = (d.rotas || []).filter(r => r.rota !== rotaAtual);
+      sel.innerHTML = '<option value="">Selecione a rota...</option>' + outras.map(r => `<option value="${r.rota}">${r.rota} (${getDiaLabel(r.dia_semana)})</option>`).join('');
+    } catch(e) { sel.innerHTML = '<option value="">Erro ao carregar</option>'; }
+  }
+
+  async function confirmarMover() {
+    const novaRota = document.getElementById('sel-nova-rota').value;
+    if (!novaRota || !clienteParaMover) return;
+    await fetch(API + '/mover-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: clienteParaMover, rota: novaRota }) });
+    fecharModal('modal-mover');
+    toast('✓ Cliente movido para ' + novaRota);
+    // Recarregar ambas as rotas
+    const i = todasRotas.findIndex(r => r.rota === rotaDeClienteParaMover);
+    if (i >= 0) await carregarClientes(i);
+  }
+
+  // ALTERAR HORÁRIO
+  function abrirAlterarHorario(id, nome, horarioAtual) {
+    clienteParaHorario = id;
+    document.getElementById('modal-horario-nome').textContent = nome;
+    document.getElementById('input-horario').value = horarioAtual || '';
+    document.getElementById('modal-horario').classList.remove('hidden');
+  }
+
+  async function confirmarHorario() {
+    const novoHorario = document.getElementById('input-horario').value;
+    if (!novoHorario || !clienteParaHorario) return;
+    try {
+      await fetch(API + '/clientes', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: clienteParaHorario, horario: novoHorario })
+      });
+      fecharModal('modal-horario');
+      toast('✓ Horário atualizado!');
+      // Recarregar rota aberta
+      const openCard = document.querySelector('.rota-card.open');
+      if (openCard) {
+        const i = parseInt(openCard.id.replace('rota-card-',''));
+        await carregarClientes(i);
+      }
+    } catch(e) { toast('Erro ao salvar'); }
+  }
+
+  // AÇÕES DE ROTA
   async function trocarMotorista(rota) {
-    const novoNome = prompt('Nome do novo motorista:');
-    if (!novoNome) return;
-    const novoTel = prompt('Telefone do novo motorista:');
-    if (!novoTel) return;
-    await fetch(API + '/trocar-motorista', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, nome_motoboy: novoNome, telefone_motoboy: novoTel.replace(/\D/g,'') })
-    });
-    toast('✓ Motorista trocado!');
-    carregarRotas();
+    const tel = prompt('Digite o telefone do novo motorista:');
+    if (!tel) return;
+    const telLimpo = tel.replace(/\D/g,'');
+    if (telLimpo.length < 10) { toast('Telefone inválido'); return; }
+    
+    // Busca motorista pelo telefone
+    try {
+      const r = await fetch(API + '/motoboys?todos=1');
+      const d = await r.json();
+      const motoboys = d.motoboys || [];
+      // Agrupar por telefone
+      const vistos = new Set();
+      const unicos = motoboys.filter(m => { 
+        if (vistos.has(m.telefone)) return false; 
+        vistos.add(m.telefone); 
+        return true; 
+      });
+      const encontrado = unicos.find(m => m.telefone === telLimpo);
+      
+      if (!encontrado) { toast('Motorista não encontrado'); return; }
+      
+      if (!confirm(`Trocar motorista da rota "${rota}" para:\n${encontrado.nome}\n📱 ${encontrado.telefone}`)) return;
+      
+      await fetch(API + '/trocar-motorista', { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({ rota, nome_motoboy: encontrado.nome, telefone_motoboy: telLimpo }) 
+      });
+      toast('✓ Motorista trocado para ' + encontrado.nome + '!');
+      clientesPorRota = {};
+      carregarRotas();
+    } catch(e) { toast('Erro ao trocar motorista'); }
   }
 
   async function renomearRota(rota) {
     const novoNome = prompt('Novo nome da rota:', rota);
     if (!novoNome || novoNome === rota) return;
-    await fetch(API + '/renomear-rota', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, novo_nome: novoNome.toUpperCase() })
-    });
-    toast('✓ Rota renomeada!');
-    carregarRotas();
+    try {
+      const r = await fetch(API + '/renomear-rota', { 
+        method:'POST', 
+        headers:{'Content-Type':'application/json'}, 
+        body: JSON.stringify({ rota_antiga: rota, rota_nova: novoNome.toUpperCase() }) 
+      });
+      const d = await r.json();
+      if (d.status === 'ok') { toast('✓ Rota renomeada!'); carregarRotas(); }
+      else toast('Erro: ' + (d.msg || 'Falha ao renomear'));
+    } catch(e) { toast('Erro ao renomear'); }
   }
 
   async function destravarRota(rota) {
     if (!confirm('Destravar rota "' + rota + '"?')) return;
-    await fetch(API + '/destravar-rota', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota })
-    });
+    await fetch(API + '/destravar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
     toast('✓ Rota destravada!');
     carregarRotas();
   }
 
   async function excluirRota(rota) {
     if (!confirm('Excluir rota "' + rota + '"? Os clientes voltam para a base.')) return;
-    await fetch(API + '/excluir-rota', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota })
-    });
+    await fetch(API + '/excluir-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
     toast('✓ Rota excluída!');
     carregarRotas();
   }
+
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
 
   function toast(msg) {
     const el = document.getElementById('toast');
