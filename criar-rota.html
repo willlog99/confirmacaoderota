@@ -539,16 +539,27 @@
     clientesEncontrados = [];
     clientesSelecionados.clear();
     clientesDias = {};
+    todosMotoboys = [];
     document.getElementById('busca-moto').value = '';
     document.getElementById('codigos-input').value = '';
     document.getElementById('nome-rota').value = '';
     document.querySelectorAll('.dia-opt').forEach(d => d.classList.remove('sel'));
     document.getElementById('bloco-busca').style.display = 'block';
     document.getElementById('bloco-motoboy-sel').style.display = 'none';
+    document.getElementById('busca-results').style.display = 'none';
+    document.getElementById('btn-novo-moto').style.display = 'none';
     document.getElementById('clientes-area').style.display = 'none';
+    document.getElementById('cli-lista').innerHTML = '';
+    ['msg1','msg2','msg3','msg3b','msg4'].forEach(id => showMsg(id,'',''));
+    document.getElementById('btn-et3').disabled = true;
+    document.getElementById('btn-criar').disabled = false;
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
     document.getElementById('card1').classList.add('ativa');
-    for (let i = 1; i <= 4; i++) { const et = document.getElementById('et' + i); et.classList.remove('ativa','completa'); if (i===1) et.classList.add('ativa'); }
+    for (let i = 1; i <= 4; i++) {
+      const et = document.getElementById('et' + i);
+      et.classList.remove('ativa','completa');
+      if (i === 1) et.classList.add('ativa');
+    }
     window.scrollTo(0, 0);
   }
 
