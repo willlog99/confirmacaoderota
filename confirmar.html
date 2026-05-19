@@ -368,6 +368,7 @@
     grupo.querySelectorAll('.opcao').forEach(o => o.className = 'opcao');
     el.classList.add(classe);
     respostas[campo] = valor;
+    salvarEstadoChecklist();
     atualizarProgresso();
   }
 
@@ -381,12 +382,51 @@
     document.getElementById('progress-fill').style.width = pct + '%';
   }
 
+  function salvarEstadoChecklist() {
+    const estado = {
+      respostas,
+      placa: document.getElementById('placa').value,
+      qtd_gelox: document.getElementById('qtd_gelox').value,
+      qtd_gelo_seco: document.getElementById('qtd_gelo_seco').value,
+      nomeUsuario,
+      timestamp: new Date().getTime()
+    };
+    localStorage.setItem('checklist_incompleto_' + nomeUsuario, JSON.stringify(estado));
+  }
+
+  function carregarEstadoChecklist() {
+    if (!nomeUsuario) return;
+    const salvo = localStorage.getItem('checklist_incompleto_' + nomeUsuario);
+    if (!salvo) return;
+    try {
+      const estado = JSON.parse(salvo);
+      const diasPassados = Math.floor((new Date().getTime() - estado.timestamp) / (1000*60*60*24));
+      if (diasPassados > 0) return;
+      
+      respostas = estado.respostas || {};
+      document.getElementById('placa').value = estado.placa || '';
+      document.getElementById('qtd_gelox').value = estado.qtd_gelox || '';
+      document.getElementById('qtd_gelo_seco').value = estado.qtd_gelo_seco || '';
+      
+      Object.keys(respostas).forEach(campo => {
+        const opcoes = document.querySelectorAll('.opcao');
+        opcoes.forEach(o => {
+          if (o.textContent.trim() === respostas[campo]) {
+            o.click();
+          }
+        });
+      });
+      atualizarProgresso();
+    } catch(e) { console.warn('Erro ao carregar checklist:', e); }
+  }
+
   // Listeners para inputs
   document.addEventListener('DOMContentLoaded', () => {
     ['placa','qtd_gelox','qtd_gelo_seco'].forEach(id => {
       const el = document.getElementById(id);
-      if (el) el.addEventListener('input', atualizarProgresso);
+      if (el) el.addEventListener('input', () => { salvarEstadoChecklist(); atualizarProgresso(); });
     });
+    carregarEstadoChecklist();
   });
 
   async function enviarChecklist() {
@@ -441,6 +481,7 @@
       const d = await r.json();
       if (d.status === 'ok') {
         showMsgChecklist('✓ Checklist enviado com sucesso!', 'success');
+        localStorage.removeItem('checklist_incompleto_' + nomeUsuario); // Limpar
         setTimeout(() => {
           if (!rotasCarregadas) carregarRotas();
           if (rotasDisponivel.length > 0) mostrarSelecaoRotas();
