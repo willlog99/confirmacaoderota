@@ -10,8 +10,8 @@
   "theme_color": "#1E9FD9",
   "icons": [
     {
-      "src": "HERMES PARDINI.png",
-      "sizes": "192x192",
+      "src": "hermes logo.png",
+      "sizes": "300x300",
       "type": "image/png",
       "purpose": "any maskable"
     },
