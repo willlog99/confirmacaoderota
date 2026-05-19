@@ -163,6 +163,19 @@
     document.getElementById('modal-opcoes').classList.add('hidden');
     localStorage.setItem('telefone_temp', telefoneSalvo);
     localStorage.setItem('nome_temp', nomeUsuario);
+    
+    // Verificar se tem checklist incompleto
+    const checklistIncompleto = localStorage.getItem('checklist_incompleto_' + nomeUsuario);
+    if (checklistIncompleto) {
+      // Perguntar se quer continuar
+      if (confirm('Você tem um checklist incompleto. Deseja continuar preenchendo?')) {
+        window.location.href = 'confirmar.html?continuar=true';
+        return;
+      } else {
+        localStorage.removeItem('checklist_incompleto_' + nomeUsuario);
+      }
+    }
+    
     window.location.href = 'confirmar.html';
   }
 
