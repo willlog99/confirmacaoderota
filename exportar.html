@@ -239,32 +239,47 @@
           body{font-family:Arial,sans-serif;font-size:12px;color:#111;margin:20px}
           .page{max-width:700px;margin:0 auto;page-break-after:always}
           .page:last-child{page-break-after:auto}
-          .header{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #1E9FD9;padding-bottom:10px;margin-bottom:14px}
-          .logos{display:flex;align-items:center;gap:16px}
-          .logo{height:36px}
-          .titulo{font-size:16px;font-weight:bold;color:#0F4C7A}
-          .info-row{display:flex;gap:20px;margin-bottom:12px;font-size:12px;color:#444}
-          .info-row span{font-weight:bold;color:#0F4C7A}
+          .header{text-align:center;border-bottom:3px solid #1E9FD9;padding-bottom:16px;margin-bottom:20px}
+          .logo-svg{height:120px;width:auto}
+          .info-row{display:flex;gap:0;margin-bottom:18px;border:1px solid #EBF1F5;border-radius:8px;overflow:hidden}
+          .info-item{flex:1;padding:10px 14px;border-right:1px solid #EBF1F5;background:#F7FBFD}
+          .info-item:last-child{border-right:none}
+          .info-label{font-size:9px;font-weight:bold;color:#94A8B8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+          .info-valor{font-size:13px;font-weight:bold;color:#0F4C7A}
           table{width:100%;border-collapse:collapse}
           tr:nth-child(even){background:#F7FBFD}
           td{padding:7px 10px;border-bottom:1px solid #EBF1F5;font-size:12px}
-          td:first-child{color:#5A7A8F;width:55%}
+          td:first-child{color:#5A7A8F;width:58%}
           td:last-child{font-weight:bold;text-align:right}
-          .ok{color:#085041} .nok{color:#991B1B} .neu{color:#0F4C7A}
+          .ok{color:#085041;background:#E1F5EE;padding:2px 8px;border-radius:5px}
+          .nok{color:#991B1B;background:#FCEBEB;padding:2px 8px;border-radius:5px}
+          .neu{color:#0F4C7A;background:#E8F4FB;padding:2px 8px;border-radius:5px}
+          .footer{margin-top:20px;padding-top:10px;border-top:1px solid #EBF1F5;display:flex;justify-content:space-between;align-items:center}
+          .footer-txt{font-size:10px;color:#94A8B8}
+          .assinatura{border-top:1px solid #0F4C7A;width:180px;padding-top:4px;font-size:10px;color:#5A7A8F;text-align:center}
         </style></head><body>
         ${lista.map(c => `
           <div class="page">
             <div class="header">
-              <div class="logos">
-                <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" class="logo" alt="Loglife"/>
-                <img src="HERMES PARDINI.png" class="logo" alt="Hermes Pardini"/>
-              </div>
-              <div class="titulo">Checklist do Veículo</div>
+              <svg class="logo-svg" xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'><text x='50' y='50' font-size='36' font-weight='bold' fill='%231E9FD9'>Loglife</text><text x='50' y='75' font-size='16' fill='%23DC2626'>Hermes Pardini</text></svg>
             </div>
             <div class="info-row">
-              <div>Biocondutor: <span>${c.biocondutor}</span></div>
-              <div>Rota: <span>${c.rota || '—'}</span></div>
-              <div>Data: <span>${c.data_checklist || '—'}</span></div>
+              <div class="info-item">
+                <div class="info-label">Biocondutor</div>
+                <div class="info-valor">${c.biocondutor}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Rota</div>
+                <div class="info-valor">${c.rota || '—'}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Data</div>
+                <div class="info-valor">${c.data_checklist || '—'}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Placa</div>
+                <div class="info-valor">${c.placa || '—'}</div>
+              </div>
             </div>
             <table>
               ${campos.map(f => {
@@ -275,6 +290,10 @@
                 return `<tr><td>${f.label}</td><td class="${cls}">${vStr}</td></tr>`;
               }).join('')}
             </table>
+            <div class="footer">
+              <div class="footer-txt">Loglife — Operação Loglife/Pardini · ${new Date().toLocaleDateString('pt-BR')}</div>
+              <div class="assinatura">Assinatura do Biocondutor</div>
+            </div>
           </div>`).join('')}
         </body></html>`;
 
