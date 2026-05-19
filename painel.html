@@ -206,6 +206,7 @@
         <button class="menu-item active" id="menu-painel" onclick="setView('painel',this)">🏠 Painel</button>
         <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
         <button class="menu-item" onclick="setView('checklist-view',this)">📋 Checklists</button>
+        <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
         <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
 
@@ -364,6 +365,13 @@
     </div>
   </div>
 
+  <div class="view" id="view-checklists-incompletos">
+    <div class="card">
+      <div class="card-title">⏳ Checklists Incompletos</div>
+      <div id="lista-checklists-incompletos"><div class="empty"><span class="spinner"></span></div></div>
+    </div>
+  </div>
+
   <div class="view" id="view-motoristas">
     <div class="card">
       <div class="card-title">👤 Motoristas cadastrados</div>
@@ -511,6 +519,7 @@
     if (id === 'motoristas') carregarMotoristasList();
     if (id === 'rotas-view') carregarRotasView();
     if (id === 'checklist-view') carregarChecklists();
+    if (id === 'checklists-incompletos') carregarChecklistsIncompletos();
     if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
   }
 
@@ -806,6 +815,42 @@
     } catch(e) {
       toast('Erro ao voltar coleta');
     }
+  }
+
+  function voltarChecklist(biocondutor) {
+    if (!confirm('Voltar checklist incompleto de ' + biocondutor + '?')) return;
+    localStorage.removeItem('checklist_incompleto_' + biocondutor);
+    toast('↩ Checklist voltado para pendente!');
+    carregarChecklistsIncompletos();
+  }
+
+  async function carregarChecklistsIncompletos() {
+    const el = document.getElementById('lista-checklists-incompletos');
+    if (!el) return;
+    
+    const incompletos = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key.startsWith('checklist_incompleto_')) {
+        const biocondutor = key.replace('checklist_incompleto_', '');
+        const estado = JSON.parse(localStorage.getItem(key));
+        incompletos.push({ biocondutor, estado });
+      }
+    }
+    
+    if (!incompletos.length) {
+      el.innerHTML = '<div class="empty">Nenhum checklist incompleto</div>';
+      return;
+    }
+    
+    el.innerHTML = incompletos.map(c => `
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#FEF9EC;border-radius:10px;border:1px solid #F2CC70;margin-bottom:6px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#92400E">${c.biocondutor}</div>
+          <div style="font-size:11px;color:#C79100">⏳ Aguardando conclusão</div>
+        </div>
+        <button onclick="voltarChecklist('${c.biocondutor.replace(/'/g,"\\'")}')" style="background:#F2CC70;color:#92400E;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">↩ Voltar</button>
+      </div>`).join('');
   }
 
   async function carregarConfirmacoes() {
