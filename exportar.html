@@ -187,11 +187,22 @@
 
     showMsg('msg-pdf', 'Buscando checklists...', 'loading');
     try {
-      let url = API + '/checklist?data=' + encodeURIComponent(data.split('-').reverse().join('/'));
-      if (rota) url += '&biocondutor=' + encodeURIComponent(rota);
+      // Converter data de YYYY-MM-DD para DD/MM/YYYY
+      const [ano, mes, dia] = data.split('-');
+      const dataFormatada = `${dia}/${mes}/${ano}`;
+      
+      let url = API + '/checklist?data=' + encodeURIComponent(dataFormatada);
+      // Se selecionou uma rota específica, não filtra por biocondutor
+      // A API vai retornar todos os checklists da data
+      
       const r = await fetch(url);
       const d = await r.json();
-      const lista = d.checklists || [];
+      let lista = d.checklists || [];
+      
+      // Filtro local por rota se selecionado
+      if (rota) {
+        lista = lista.filter(c => c.rota === rota);
+      }
 
       if (!lista.length) { showMsg('msg-pdf', 'Nenhum checklist encontrado.', 'error'); return; }
 
