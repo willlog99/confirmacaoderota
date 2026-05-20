@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Loglife — Exportar</title>
-  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:2rem 1rem}
@@ -25,30 +25,36 @@
     .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
     .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
     .info{font-size:12px;color:#5A7A8F;padding:10px;background:#F7FBFD;border-radius:8px;border-left:3px solid #1E9FD9;margin-top:1rem;line-height:1.6}
-
-    @media print {
-      body { background: white; padding: 0; }
-      .no-print { display: none !important; }
-      .print-area { display: block !important; }
-    }
-    .print-area { display: none; }
+    .stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem}
+    .stat{background:#F7FBFD;border-radius:10px;padding:12px;text-align:center;border:1px solid #D6E5EE}
+    .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
+    .stat-val.primary{color:#1E9FD9}
+    .stat-label{font-size:11px;color:#5A7A8F;margin-top:2px}
   </style>
 </head>
 <body>
-<div class="container no-print">
+<div class="container">
   <a class="back-link" href="painel.html">← Voltar</a>
 
   <!-- EXPORTAR IHP -->
   <div class="card">
     <h2>📊 Exportar Planilha IHP</h2>
-    <p class="subtitle">Gere relatório com dados de coletas e atrasos</p>
+    <p class="subtitle">Gere relatório com dados de coletas do dia</p>
+
     <div class="field">
       <label>Selecione o dia</label>
-      <select id="sel-dia-ihp"><option value="">Carregando...</option></select>
+      <input type="date" id="sel-dia-ihp"/>
     </div>
-    <button class="btn" onclick="exportarIHP()">📥 Gerar planilha IHP</button>
+
+    <div class="stat-row" id="stats">
+      <div class="stat"><div class="stat-val" id="s-total">—</div><div class="stat-label">coletas</div></div>
+      <div class="stat"><div class="stat-val primary" id="s-prod">—</div><div class="stat-label">produtivas</div></div>
+      <div class="stat"><div class="stat-val" id="s-imp">—</div><div class="stat-label">improdutivas</div></div>
+    </div>
+
+    <button class="btn" onclick="exportarIHP()">📥 Baixar Planilha IHP</button>
     <div class="msg" id="msg-ihp"></div>
-    <div class="info">ℹ️ Aba <strong>IHP</strong> — dados de coletas · Aba <strong>Atrasos</strong> — clientes em vermelho</div>
+    <div class="info">ℹ️ Preenche automaticamente: <strong>HORÁRIO REAL</strong>, <strong>STATUS</strong>, <strong>JUSTIFICATIVA</strong> e <strong>Data</strong> mantendo a formatação original.</div>
   </div>
 
   <!-- EXPORTAR CHECKLIST PDF -->
@@ -68,37 +74,36 @@
   </div>
 </div>
 
-<!-- ÁREA DE IMPRESSÃO DO CHECKLIST -->
-<div class="print-area" id="print-area"></div>
-
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  const TEMPLATE_URL = 'template_ihp.xlsx';
+
+  let historicoHoje = [];
 
   window.addEventListener('load', async () => {
-    await carregarDias();
-    await carregarRotas();
-    // Data padrão = hoje
     const hoje = new Date().toISOString().split('T')[0];
+    document.getElementById('sel-dia-ihp').value = hoje;
     document.getElementById('sel-data-pdf').value = hoje;
+    document.getElementById('sel-dia-ihp').addEventListener('change', carregarStats);
+    await carregarStats();
+    await carregarRotas();
   });
 
-  async function carregarDias() {
+  async function carregarStats() {
     try {
-      const sel = document.getElementById('sel-dia-ihp');
-      const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      const dia = document.getElementById('sel-dia-ihp').value;
+      if (!dia) return;
+      const [ano, mes, diaNum] = dia.split('-');
+      const dataFormatada = `${diaNum}/${mes}/${ano}`;
       
-      // Gerar últimos 30 dias
-      const dias = [];
-      for (let i = 0; i < 30; i++) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        dias.push(d.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' }));
-      }
+      const r = await fetch(API + '/historico?data=' + encodeURIComponent(dataFormatada));
+      const d = await r.json();
+      historicoHoje = d.historico || [];
       
-      sel.innerHTML = dias.map(d => `<option value="${d}"${d === hoje ? ' selected' : ''}>${d}</option>`).join('');
-    } catch(e) {
-      document.getElementById('sel-dia-ihp').innerHTML = '<option value="">Erro ao carregar</option>';
-    }
+      document.getElementById('s-total').textContent = historicoHoje.length;
+      document.getElementById('s-prod').textContent = historicoHoje.filter(h => h.produtividade === 'produtiva').length;
+      document.getElementById('s-imp').textContent = historicoHoje.filter(h => h.produtividade === 'improdutiva').length;
+    } catch(e) { console.error(e); }
   }
 
   async function carregarRotas() {
@@ -113,79 +118,90 @@
     }
   }
 
+  function showMsg(id, text, type) {
+    const el = document.getElementById(id);
+    el.innerHTML = text;
+    el.className = 'msg ' + type;
+  }
+
   async function exportarIHP() {
-    const dia = document.getElementById('sel-dia-ihp').value;
-    if (!dia) { showMsg('msg-ihp', 'Selecione um dia.', 'error'); return; }
-    
-    // Converter data de YYYY-MM-DD para DD/MM/YYYY
-    const [ano, mes, diaNum] = dia.split('-');
-    const dataFormatada = `${diaNum}/${mes}/${ano}`;
-    
     const btn = document.querySelector('.btn:not(.btn-pdf)');
     btn.disabled = true;
-    showMsg('msg-ihp', 'Gerando planilha...', 'loading');
+    showMsg('msg-ihp', 'Carregando planilha base...', 'loading');
+
     try {
-      const r = await fetch(API + '/historico?data=' + encodeURIComponent(dataFormatada));
-      const d = await r.json();
-      const historico = d.historico || [];
-      
-      // Carregar template
-      const templateResp = await fetch('template_ihp.xlsx');
-      const templateBuffer = await templateResp.arrayBuffer();
-      const wb = XLSX.read(templateBuffer, { type: 'array' });
-      
-      const porRota = {};
-      historico.forEach(h => { if (!porRota[h.rota]) porRota[h.rota] = []; porRota[h.rota].push(h); });
+      const respTpl = await fetch(TEMPLATE_URL);
+      if (!respTpl.ok) throw new Error('Template não encontrado');
+      const buffer = await respTpl.arrayBuffer();
 
-      // ABA IHP
-      const dadosIHP = [];
-      Object.keys(porRota).sort().forEach(rota => {
-        porRota[rota].forEach(h => {
-          dadosIHP.push({
-            'Rota': rota, 'Cliente': h.nome_cliente, 'Nº': h.numero_cliente,
-            'Horário': h.horario, 'Entrega': h.horario_entrega ? h.horario_entrega.split(' ').pop() : '—',
-            'Status': h.produtividade === 'produtiva' ? 'Produtiva' : h.produtividade === 'improdutiva' ? 'Improdutiva' : 'Pendente',
-            'Motivo': h.motivo_improdutiva || ''
-          });
-        });
-      });
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosIHP), 'IHP', true);
+      showMsg('msg-ihp', 'Preenchendo dados...', 'loading');
 
-      // ABA ATRASOS
-      const dadosAtrasos = [];
-      Object.keys(porRota).sort().forEach(rota => {
-        porRota[rota].forEach(h => {
-          if (h.horario_entrega && h.horario) {
-            const [hM, mM] = h.horario.split(':').map(Number);
-            const partes = h.horario_entrega.split(' ');
-            if (partes.length >= 2) {
-              const [hE, mE] = partes[partes.length-1].split(':').map(Number);
-              const minAtraso = (hE*60+mE) - (hM*60+mM);
-              if (minAtraso > 30) {
-                const horas = Math.floor(minAtraso/60);
-                const mins = minAtraso%60;
-                dadosAtrasos.push({
-                  'Rota': rota, 'Cliente': h.nome_cliente, 'Nº': h.numero_cliente,
-                  'Hora Marcada': h.horario, 'Hora Baixa': partes[partes.length-1],
-                  'Atraso': horas > 0 ? `${horas}h ${mins}min` : `${mins}min`
-                });
-              }
-            }
-          }
-        });
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(buffer);
+
+      const sheet = workbook.getWorksheet('PLANILHA IHP');
+      if (!sheet) throw new Error('Aba PLANILHA IHP não encontrada');
+
+      const porCodigoRota = {};
+      historicoHoje.forEach(h => {
+        const cod = String(h.numero_cliente || '').trim();
+        const rota = String(h.rota || '').trim();
+        const chave = `${cod}|${rota}`;
+        if (cod) porCodigoRota[chave] = h;
       });
-      const wsAtrasos = XLSX.utils.json_to_sheet(dadosAtrasos);
-      const range = XLSX.utils.decode_range(wsAtrasos['!ref'] || 'A1');
-      for (let R = range.s.r; R <= range.e.r; ++R) {
-        for (let C = range.s.c; C <= range.e.c; ++C) {
-          const addr = XLSX.utils.encode_col(C) + XLSX.utils.encode_row(R+1);
-          if (wsAtrasos[addr]) wsAtrasos[addr].s = { font: { color: { rgb: 'FFCC0000' }, bold: true } };
+
+      const diaSelecionado = document.getElementById('sel-dia-ihp').value;
+      const [anoSel, mesSel, diaSel] = diaSelecionado.split('-');
+      const dataSelecionada = `${diaSel}/${mesSel}/${anoSel}`;
+
+      const agora = new Date();
+      const horaAtual = agora.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+      const dataAtual = dataSelecionada;
+
+      let preenchidas = 0;
+
+      sheet.eachRow((row, rowNum) => {
+        if (rowNum === 1) return;
+        const codigo = String(row.getCell(1).value || '').trim();
+        const rotaPlanilha = String(row.getCell(2).value || '').trim();
+        if (!codigo) return;
+        const chave = `${codigo}|${rotaPlanilha}`;
+        const reg = porCodigoRota[chave];
+        if (!reg) return;
+
+        let horaReal = '';
+        if (reg.horario_entrega) {
+          const partes = String(reg.horario_entrega).split(' ');
+          horaReal = partes[partes.length - 1];
         }
-      }
-      XLSX.utils.book_append_sheet(wb, wsAtrasos, 'Atrasos', true);
-      XLSX.writeFile(wb, `IHP_${dia}.xlsx`);
-      showMsg('msg-ihp', '✓ Planilha gerada com sucesso!', 'success');
+
+        row.getCell(8).value  = horaAtual;
+        row.getCell(11).value = horaReal;
+        row.getCell(12).value = reg.produtividade === 'produtiva' ? 'PRODUTIVO' :
+                                 reg.produtividade === 'improdutiva' ? 'IMPRODUTIVO' : '';
+        row.getCell(13).value = reg.motivo_improdutiva || '';
+        row.getCell(15).value = dataAtual;
+
+        preenchidas++;
+      });
+
+      showMsg('msg-ihp', 'Gerando arquivo...', 'loading');
+
+      const out = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const nomeArquivo = `IHP_${dataAtual.replace(/\//g,'-')}.xlsx`;
+      a.href = url;
+      a.download = nomeArquivo;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      showMsg('msg-ihp', `✓ Planilha baixada com ${preenchidas} coleta${preenchidas!==1?'s':''} preenchida${preenchidas!==1?'s':''}!`, 'success');
     } catch(e) {
+      console.error(e);
       showMsg('msg-ihp', 'Erro: ' + e.message, 'error');
     }
     btn.disabled = false;
@@ -198,22 +214,15 @@
 
     showMsg('msg-pdf', 'Buscando checklists...', 'loading');
     try {
-      // Converter data de YYYY-MM-DD para DD/MM/YYYY
       const [ano, mes, dia] = data.split('-');
       const dataFormatada = `${dia}/${mes}/${ano}`;
       
       let url = API + '/checklist?data=' + encodeURIComponent(dataFormatada);
-      // Se selecionou uma rota específica, não filtra por biocondutor
-      // A API vai retornar todos os checklists da data
-      
       const r = await fetch(url);
       const d = await r.json();
       let lista = d.checklists || [];
       
-      // Filtro local por rota se selecionado
-      if (rota) {
-        lista = lista.filter(c => c.rota === rota);
-      }
+      if (rota) lista = lista.filter(c => c.rota === rota);
 
       if (!lista.length) { showMsg('msg-pdf', 'Nenhum checklist encontrado.', 'error'); return; }
 
@@ -236,13 +245,6 @@
         { key: 'amostras_pendentes', label: 'Há amostras pendentes do dia anterior no cooler?' },
         { key: 'bau_cadeado', label: 'Baú com cadeado?' },
       ];
-
-      const corValor = v => {
-        if (!v) return '#666';
-        if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(String(v))) return '#085041';
-        if (['Não Conforme','Não','Suja','Fora do padrão'].includes(String(v))) return '#991B1B';
-        return '#0F4C7A';
-      };
 
       const html = `
         <html><head><meta charset="UTF-8"/>
@@ -316,12 +318,6 @@
     } catch(e) {
       showMsg('msg-pdf', 'Erro: ' + e.message, 'error');
     }
-  }
-
-  function showMsg(id, text, type) {
-    const el = document.getElementById(id);
-    el.textContent = text;
-    el.className = 'msg ' + type;
   }
 </script>
 </body>
