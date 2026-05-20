@@ -115,11 +115,16 @@
   async function exportarIHP() {
     const dia = document.getElementById('sel-dia-ihp').value;
     if (!dia) { showMsg('msg-ihp', 'Selecione um dia.', 'error'); return; }
+    
+    // Converter data de YYYY-MM-DD para DD/MM/YYYY
+    const [ano, mes, diaNum] = dia.split('-');
+    const dataFormatada = `${diaNum}/${mes}/${ano}`;
+    
     const btn = document.querySelector('.btn:not(.btn-pdf)');
     btn.disabled = true;
     showMsg('msg-ihp', 'Gerando planilha...', 'loading');
     try {
-      const r = await fetch(API + '/historico?data=' + encodeURIComponent(dia));
+      const r = await fetch(API + '/historico?data=' + encodeURIComponent(dataFormatada));
       const d = await r.json();
       const historico = d.historico || [];
       const porRota = {};
