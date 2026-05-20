@@ -251,6 +251,19 @@
       const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
       const d = await r.json();
       clientes = d.clientes || [];
+      
+      // Verificar se a rota foi finalizada (se existe em rotas_ativas)
+      const rotasAtivas = await fetch(API + '/rotas-info?tel=' + encodeURIComponent(tel));
+      const rotasData = await rotasAtivas.json();
+      const rotaFinalizada = rotasData.rotas_info && rotasData.rotas_info.some(r => r.rota === rota && r.status === 'travada');
+      
+      // Desabilitar botão se rota foi finalizada
+      const btnFin = document.getElementById('btn-finalizar');
+      if (rotaFinalizada) {
+        btnFin.disabled = true;
+        btnFin.textContent = '✓ Rota finalizada';
+      }
+      
       renderizar();
     } catch(e) {
       document.getElementById('lista').innerHTML = `<p class="empty">Erro ao carregar.</p>`;
@@ -379,6 +392,13 @@
     }
     try { await fetch(API + '/finalizar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telefone: tel, rota }) }); } catch(e) {}
     renderizar();
+    
+    // Deixar botão permanentemente desabilitado
+    btn.disabled = true;
+    btn.textContent = '✓ Rota finalizada';
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    
     const total = clientes.length;
     document.getElementById('celebration-msg').textContent = `${total} coleta${total>1?'s':''} registrada${total>1?'s':''}. Rota liberada!`;
     document.getElementById('celebration').classList.remove('hidden');
