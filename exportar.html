@@ -127,9 +127,14 @@
       const r = await fetch(API + '/historico?data=' + encodeURIComponent(dataFormatada));
       const d = await r.json();
       const historico = d.historico || [];
+      
+      // Carregar template
+      const templateResp = await fetch('template_ihp.xlsx');
+      const templateBuffer = await templateResp.arrayBuffer();
+      const wb = XLSX.read(templateBuffer, { type: 'array' });
+      
       const porRota = {};
       historico.forEach(h => { if (!porRota[h.rota]) porRota[h.rota] = []; porRota[h.rota].push(h); });
-      const wb = XLSX.utils.book_new();
 
       // ABA IHP
       const dadosIHP = [];
@@ -143,7 +148,7 @@
           });
         });
       });
-      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosIHP), 'IHP');
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dadosIHP), 'IHP', true);
 
       // ABA ATRASOS
       const dadosAtrasos = [];
@@ -176,7 +181,7 @@
           if (wsAtrasos[addr]) wsAtrasos[addr].s = { font: { color: { rgb: 'FFCC0000' }, bold: true } };
         }
       }
-      XLSX.utils.book_append_sheet(wb, wsAtrasos, 'Atrasos');
+      XLSX.utils.book_append_sheet(wb, wsAtrasos, 'Atrasos', true);
       XLSX.writeFile(wb, `IHP_${dia}.xlsx`);
       showMsg('msg-ihp', '✓ Planilha gerada com sucesso!', 'success');
     } catch(e) {
