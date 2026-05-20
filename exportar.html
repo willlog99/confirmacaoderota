@@ -142,12 +142,10 @@
       const sheet = workbook.getWorksheet('PLANILHA IHP');
       if (!sheet) throw new Error('Aba PLANILHA IHP não encontrada');
 
-      const porCodigoRota = {};
+      const porCodigo = {};
       historicoHoje.forEach(h => {
         const cod = String(h.numero_cliente || '').trim();
-        const rota = String(h.rota || '').trim();
-        const chave = `${cod}|${rota}`;
-        if (cod) porCodigoRota[chave] = h;
+        if (cod) porCodigo[cod] = h;
       });
 
       const diaSelecionado = document.getElementById('sel-dia-ihp').value;
@@ -163,16 +161,15 @@
       sheet.eachRow((row, rowNum) => {
         if (rowNum === 1) return;
         const codigo = String(row.getCell(1).value || '').trim();
-        const rotaPlanilha = String(row.getCell(2).value || '').trim();
         if (!codigo) return;
-        const chave = `${codigo}|${rotaPlanilha}`;
-        const reg = porCodigoRota[chave];
+        const reg = porCodigo[codigo];
         if (!reg) return;
 
         let horaReal = '';
         if (reg.horario_entrega) {
-          const partes = String(reg.horario_entrega).split(' ');
-          horaReal = partes[partes.length - 1];
+          const str = String(reg.horario_entrega).replace(',', ' ');
+          const partes = str.split(' ').filter(p => p.includes(':'));
+          horaReal = partes[0] || '';
         }
 
         row.getCell(8).value  = horaReal;
