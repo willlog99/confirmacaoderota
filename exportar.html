@@ -170,10 +170,9 @@
         if (!reg) return;
 
         let horaReal = '';
-        if (reg.horario_entrega) {
-          const str = String(reg.horario_entrega).replace(',', ' ');
-          const partes = str.split(' ').filter(p => p.includes(':'));
-          horaReal = partes[0] || '';
+        if (reg.timestamp) {
+          const dt = new Date(reg.timestamp);
+          horaReal = dt.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
         }
 
         row.getCell(8).value  = horaReal;
