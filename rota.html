@@ -252,16 +252,20 @@
       const d = await r.json();
       clientes = d.clientes || [];
       
-      // Verificar se a rota foi finalizada (se existe em rotas_ativas)
-      const rotasAtivas = await fetch(API + '/rotas-info?tel=' + encodeURIComponent(tel));
-      const rotasData = await rotasAtivas.json();
-      const rotaFinalizada = rotasData.rotas_info && rotasData.rotas_info.some(r => r.rota === rota && r.status === 'travada');
+      // Verificar se a rota foi finalizada consultando o histórico
+      const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      const historico = await fetch(API + '/historico?data=' + encodeURIComponent(hoje.split('-').reverse().join('/')));
+      const histData = await historico.json();
+      const rotaFinalizada = histData.historico && histData.historico.some(h => h.rota === rota && h.nome_motoboy === nomeUsuario);
       
       // Desabilitar botão se rota foi finalizada
       const btnFin = document.getElementById('btn-finalizar');
       if (rotaFinalizada) {
         btnFin.disabled = true;
         btnFin.textContent = '✓ Rota finalizada';
+      } else {
+        btnFin.disabled = false;
+        btnFin.textContent = '🏁 Finalizar Rota';
       }
       
       renderizar();
