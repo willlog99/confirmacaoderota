@@ -263,7 +263,23 @@
       navigator.serviceWorker.register('/confirmacaoderota/sw.js')
         .catch(err => console.log('SW erro:', err));
     });
+    // Escuta sinal de refresh do admin
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'RELOAD') {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
+      }
+    });
   }
+  try {
+    const bc = new BroadcastChannel('loglife_refresh');
+    bc.onmessage = e => {
+      if (e.data && e.data.type === 'RELOAD') {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
+      }
+    };
+  } catch(e) {}
 </script>
 </body>
 </html>
