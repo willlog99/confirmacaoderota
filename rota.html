@@ -641,7 +641,20 @@
 <script>
   let chatRotaInterval = null;
   let chatRotaTotal = 0;
-  const chatRotaSom = new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACI/4//hf+S/4P/lf+B/5j/fv+b/3v/n/93/6P/cv+o/2z/rv9l/7T/Xf+8/1T/xP9K/87/P//Y/zL/4/8j/+//Ev/8/wH/Cv/u/hn/2v4o/8X+OP+w/kn/m/5b/4X+a/9w/n3/Wf6P/0L+ov8q/rT/E/7H//z9');
+  
+  function tocarSomChatRota() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 520;
+      g.gain.setValueAtTime(0.3, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      o.start(ctx.currentTime);
+      o.stop(ctx.currentTime + 0.3);
+    } catch(e) {}
+  }
   chatRotaSom.volume = 0.5;
   
   async function carregarChatRota() {
@@ -706,8 +719,8 @@
         badge.textContent = total > 99 ? '99+' : total;
         badge.style.display = 'flex';
         
-        if (total > chatRotaTotal && chatRotaTotal > 0) {
-          try { chatRotaSom.play().catch(() => {}); } catch(e) {}
+        if (total > chatRotaTotal && chatRotaTotal >= 0) {
+          tocarSomChatRota();
         }
         chatRotaTotal = total;
       } else {
@@ -729,7 +742,7 @@
     });
     
     if (!chatRotaInterval) {
-      chatRotaInterval = setInterval(carregarChatRota, 3000);
+      chatRotaInterval = setInterval(carregarChatRota, 5000);
     }
     setTimeout(atualizarBadgeRota, 500);
   }
@@ -742,8 +755,8 @@
     }
   }
   
-  setInterval(atualizarBadgeRota, 5000);
-  setTimeout(atualizarBadgeRota, 1000);
+  setInterval(atualizarBadgeRota, 10000);
+  setTimeout(atualizarBadgeRota, 2000);
 </script>
 
 </body>
