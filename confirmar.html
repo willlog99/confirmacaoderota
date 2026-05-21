@@ -447,11 +447,11 @@
 
     const rota = rotasDisponivel.length > 0 ? rotasDisponivel.map(r => r.rota).join(', ') : '';
     const agora = new Date();
-    // Formatar data manualmente para evitar problemas de encoding
-    const dia = String(agora.getUTCDate() - (agora.getUTCHours() < 3 ? 1 : 0)).padStart(2,'0');
-    const mes = String(agora.getUTCMonth() + 1).padStart(2,'0');
-    const ano = agora.getUTCFullYear();
+    // Calcular data/hora em São Paulo (UTC-3) de forma correta
     const agoraSP = new Date(agora.getTime() - 3*60*60*1000);
+    const dia = String(agoraSP.getUTCDate()).padStart(2,'0');
+    const mes = String(agoraSP.getUTCMonth() + 1).padStart(2,'0');
+    const ano = agoraSP.getUTCFullYear();
     const hh = String(agoraSP.getUTCHours()).padStart(2,'0');
     const mm = String(agoraSP.getUTCMinutes()).padStart(2,'0');
     const data = `${dia}/${mes}/${ano} ${hh}:${mm}`;
