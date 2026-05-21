@@ -116,6 +116,9 @@
     <button class="back-btn" onclick="sair()">←</button>
     <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
     <div style="display:flex;gap:6px">
+      <button class="back-btn" onclick="abrirChatRota()" title="Chat com admin" style="position:relative">💬
+        <span id="chat-badge-rota" style="position:absolute;top:-3px;right:-3px;background:#DC2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:1.5px solid #1E9FD9">0</span>
+      </button>
       <button class="back-btn" onclick="trocarRota()" title="Trocar de rota" id="btn-trocar-rota" style="display:none">🔄</button>
       <button class="back-btn" onclick="trocarUsuario()" title="Trocar de motoboy">👤</button>
     </div>
@@ -571,5 +574,131 @@
     if (!algumModalAberto) carregar();
   }, 2000);
 </script>
+<!-- CHAT OVERLAY ROTA -->
+<div id="chat-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#F0F4F8;z-index:99999;flex-direction:column">
+  <div style="background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px">
+    <button onclick="fecharChatRota()" style="background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 4px">←</button>
+    <div>
+      <div style="font-size:15px;font-weight:700">Admin Loglife</div>
+      <div style="font-size:11px;opacity:.9">● Online</div>
+    </div>
+  </div>
+  <div id="chat-rota-msgs" style="flex:1;overflow-y:auto;padding:14px;background:#F7FBFD;display:flex;flex-direction:column">
+    <div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
+  </div>
+  <div style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:flex;gap:8px">
+    <input id="chat-rota-input" placeholder="Mensagem..." style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:14px;outline:none" onkeydown="if(event.key==='Enter') enviarChatRota()"/>
+    <button onclick="enviarChatRota()" style="padding:0 18px;border-radius:20px;border:none;background:#1E9FD9;color:#fff;font-weight:600;cursor:pointer">➤</button>
+  </div>
+</div>
+
+<script>
+  let chatRotaInterval = null;
+  let chatRotaTotal = 0;
+  const chatRotaSom = new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACI/4//hf+S/4P/lf+B/5j/fv+b/3v/n/93/6P/cv+o/2z/rv9l/7T/Xf+8/1T/xP9K/87/P//Y/zL/4/8j/+//Ev/8/wH/Cv/u/hn/2v4o/8X+OP+w/kn/m/5b/4X+a/9w/n3/Wf6P/0L+ov8q/rT/E/7H//z9');
+  chatRotaSom.volume = 0.5;
+  
+  async function carregarChatRota() {
+    if (!tel) return;
+    try {
+      const r = await fetch(API + '/chat/mensagens?telefone=' + encodeURIComponent(tel));
+      const d = await r.json();
+      const msgs = d.mensagens || [];
+      
+      if (!msgs.length) {
+        document.getElementById('chat-rota-msgs').innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Envie uma mensagem para o admin</div>';
+        return;
+      }
+      
+      document.getElementById('chat-rota-msgs').innerHTML = msgs.map(m => {
+        const eu = m.remetente === 'motoboy';
+        const hora = new Date(m.timestamp).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+        return `<div style="margin-bottom:10px;display:flex;${eu ? 'justify-content:flex-end' : ''}">
+          <div>
+            <div style="max-width:75%;padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.4;${eu ? 'background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;border-bottom-right-radius:4px' : 'background:#fff;color:#0F4C7A;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.06)'}">${m.mensagem.replace(/</g,'&lt;')}</div>
+            <div style="font-size:10px;color:#94A8B8;margin-top:4px;${eu ? 'text-align:right' : ''}">${hora}</div>
+          </div>
+        </div>`;
+      }).join('');
+      
+      const msgs_div = document.getElementById('chat-rota-msgs');
+      msgs_div.scrollTop = msgs_div.scrollHeight;
+    } catch(e) {}
+  }
+  
+  async function enviarChatRota() {
+    const input = document.getElementById('chat-rota-input');
+    const texto = input.value.trim();
+    if (!texto || !tel) return;
+    input.value = '';
+    
+    try {
+      await fetch(API + '/chat/enviar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          telefone_motoboy: tel,
+          nome_motoboy: nomeUsuario || '',
+          remetente: 'motoboy',
+          mensagem: texto
+        })
+      });
+      await carregarChatRota();
+    } catch(e) {
+      input.value = texto;
+    }
+  }
+  
+  async function atualizarBadgeRota() {
+    if (!tel) return;
+    try {
+      const r = await fetch(API + '/chat/nao-lidas?telefone=' + encodeURIComponent(tel));
+      const d = await r.json();
+      const total = d.total || 0;
+      const badge = document.getElementById('chat-badge-rota');
+      if (total > 0) {
+        badge.textContent = total > 99 ? '99+' : total;
+        badge.style.display = 'flex';
+        
+        if (total > chatRotaTotal && chatRotaTotal > 0) {
+          try { chatRotaSom.play().catch(() => {}); } catch(e) {}
+        }
+        chatRotaTotal = total;
+      } else {
+        badge.style.display = 'none';
+        chatRotaTotal = 0;
+      }
+    } catch(e) {}
+  }
+  
+  function abrirChatRota() {
+    document.getElementById('chat-overlay').style.display = 'flex';
+    carregarChatRota();
+    
+    // Marcar como lidas
+    fetch(API + '/chat/marcar-lido', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone_motoboy: tel, remetente: 'admin' })
+    });
+    
+    if (!chatRotaInterval) {
+      chatRotaInterval = setInterval(carregarChatRota, 3000);
+    }
+    setTimeout(atualizarBadgeRota, 500);
+  }
+  
+  function fecharChatRota() {
+    document.getElementById('chat-overlay').style.display = 'none';
+    if (chatRotaInterval) {
+      clearInterval(chatRotaInterval);
+      chatRotaInterval = null;
+    }
+  }
+  
+  setInterval(atualizarBadgeRota, 5000);
+  setTimeout(atualizarBadgeRota, 1000);
+</script>
+
 </body>
 </html>
