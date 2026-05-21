@@ -3,1223 +3,646 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Centro de Controle</title>
-  <link rel="manifest" href="manifest-admin.json"/>
-  <meta name="theme-color" content="#1E9FD9"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <meta name="apple-mobile-web-app-title" content="Loglife Admin"/>
-  <link rel="apple-touch-icon" href="20050686-7618-4EE2-86F2-0E0E1EE012BE.png"/>
+  <title>Loglife — Minha Rota</title>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:0 0 6rem}
 
-    .topbar{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 2rem;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 20px rgba(15,75,122,0.25)}
-    .topbar-left{display:flex;align-items:center;gap:1.5rem}
-    .menu-btn{background:rgba(255,255,255,0.18);color:#fff;border:none;height:44px;padding:0 18px;border-radius:11px;font-size:15px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .2s}
-    .menu-btn:hover{background:rgba(255,255,255,0.28)}
-    .topbar-logo{height:70px;width:auto;filter:brightness(0) invert(1)}
-    .topbar-right{text-align:right;color:#fff}
-    .topbar-titulo{font-size:13px;opacity:.7;text-transform:uppercase;letter-spacing:.8px;font-weight:700}
-    .topbar-data{font-size:17px;font-weight:700;margin-top:2px}
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.25rem 1.25rem 1.5rem;color:#fff}
+    .header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+    .back-btn{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center}
+    .header-logo{height:32px;width:auto;filter:brightness(0) invert(1)}
+    .header-info{display:flex;align-items:center;gap:14px}
+    .header-mascote{width:56px;height:56px;border-radius:50%;border:2px solid rgba(255,255,255,0.4);object-fit:cover;flex-shrink:0}
+    .header-text h1{font-size:18px;font-weight:700;margin-bottom:2px}
+    .header-text .sub{font-size:12px;opacity:.85}
+    .rota-badge{display:inline-block;background:rgba(255,255,255,0.25);padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;margin-top:4px}
 
-    .menu-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.65);z-index:200;display:none}
-    .menu-overlay.open{display:flex}
-    .menu-side{background:#fff;width:300px;max-width:88vw;height:100%;display:flex;flex-direction:column;overflow-y:auto;box-shadow:4px 0 25px rgba(15,75,122,0.2)}
-    .menu-header{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);padding:1.5rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-    .menu-header img{height:40px;filter:brightness(0) invert(1)}
-    .menu-close{background:rgba(255,255,255,0.2);border:none;color:#fff;width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:17px}
-    .menu-cat{border-bottom:1px solid #EBF1F5}
-    .menu-cat-btn{width:100%;padding:13px 1.25rem;background:#F7FBFD;border:none;text-align:left;font-size:11px;font-weight:700;color:#5A7A8F;cursor:pointer;display:flex;align-items:center;justify-content:space-between;text-transform:uppercase;letter-spacing:.7px}
-    .menu-cat-btn:hover{background:#EBF1F5}
-    .menu-cat-items{display:none}
-    .menu-cat-items.open{display:block}
-    .menu-item{display:block;width:100%;padding:13px 1.5rem;background:#fff;border:none;text-align:left;font-size:14px;font-weight:500;color:#0F4C7A;cursor:pointer;border-left:3px solid transparent;transition:all .15s}
-    .menu-item:hover{background:#F7FBFD;border-left-color:#BFE0F0}
-    .menu-item.active{background:#E8F4FB;border-left-color:#1E9FD9;font-weight:700}
-    .menu-item.danger{color:#A32D2D}
-    .menu-item.danger:hover{background:#FCEBEB;border-left-color:#F09595}
+    .abas-rotas{display:flex;gap:8px;padding:1rem 1.25rem 0;overflow-x:auto;scroll-behavior:smooth;margin-bottom:.5rem}
+    .aba-rota{padding:10px 16px;border-radius:10px;border:1.5px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.15);color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .3s}
+    .aba-rota:hover{background:rgba(255,255,255,0.25)}
+    .aba-rota.ativa{background:rgba(255,255,255,0.95);color:#0F7BB0;border-color:rgba(255,255,255,0.95)}
 
-    .content{padding:2rem;max-width:1400px;margin:0 auto}
-    .view{display:none}
-    .view.active{display:block}
+    .stats-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:1rem 1.25rem 0}
+    .stat{background:#fff;border-radius:12px;padding:11px;text-align:center;box-shadow:0 1px 4px rgba(30,159,217,0.08)}
+    .stat-val{font-size:22px;font-weight:700;color:#0F4C7A}
+    .stat-val.primary{color:#1E9FD9}
+    .stat-val.muted{color:#94A8B8}
+    .stat-label{font-size:11px;color:#5A7A8F;margin-top:1px}
 
-    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-bottom:2rem}
-    .kpi{background:#fff;border-radius:16px;padding:1.5rem;text-align:center;box-shadow:0 2px 10px rgba(30,159,217,0.08);border-top:4px solid;transition:transform .2s,box-shadow .2s}
-    .kpi:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(30,159,217,0.15)}
-    .kpi.total{border-color:#1E9FD9}
-    .kpi.feitas{border-color:#0F9B78}
-    .kpi.pendentes{border-color:#F59E0B}
-    .kpi.motoboys{border-color:#7C3AED}
-    .kpi-icon{font-size:24px;margin-bottom:6px}
-    .kpi-val{font-size:42px;font-weight:800;line-height:1}
-    .kpi.total .kpi-val{color:#1E9FD9}
-    .kpi.feitas .kpi-val{color:#0F9B78}
-    .kpi.pendentes .kpi-val{color:#F59E0B}
-    .kpi.motoboys .kpi-val{color:#7C3AED}
-    .kpi-label{font-size:13px;color:#5A7A8F;margin-top:8px;text-transform:uppercase;letter-spacing:.5px;font-weight:700}
+    .progress-wrap{padding:.75rem 1.25rem 0}
+    .progress-bar{background:#D6E5EE;border-radius:99px;height:6px;overflow:hidden}
+    .progress-fill{background:linear-gradient(90deg,#1E9FD9,#0F7BB0);height:100%;border-radius:99px;transition:width .4s ease}
+    .progress-label{font-size:12px;color:#5A7A8F;text-align:right;margin-top:4px;font-weight:500}
 
-    .dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:1.5rem;align-items:start}
-    @media(max-width:980px){
-      .dash-grid{grid-template-columns:1fr}
-      .kpi-grid{grid-template-columns:repeat(2,1fr)}
-      .topbar-logo{height:48px}
-      .content{padding:1rem}
+    .toolbar{padding:.75rem 1.25rem 0;display:flex;gap:8px}
+    .search-bar{flex:1;background:#fff;border-radius:10px;border:1.5px solid #D6E5EE;height:40px;padding:0 12px;font-size:14px;color:#111}
+    .filter-btn{height:40px;padding:0 14px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:500;color:#5A7A8F;cursor:pointer;white-space:nowrap}
+    .filter-btn.active{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
+
+    .lista-container{perspective:1000px;position:relative;height:600px}
+    .lista{padding:.75rem 1.25rem 0;animation:flipIn .6s ease forwards}
+    .section-title{font-size:12px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.6rem;margin-top:.5rem}
+
+    @keyframes flipIn{
+      0%{opacity:0;transform:rotateY(90deg)}
+      100%{opacity:1;transform:rotateY(0deg)}
     }
 
-    .panel{background:#fff;border-radius:16px;box-shadow:0 2px 10px rgba(30,159,217,0.08);overflow:hidden}
-    .panel-header{padding:1.25rem 1.5rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;background:#F7FBFD}
-    .panel-title{font-size:15px;font-weight:800;color:#0F4C7A;display:flex;align-items:center;gap:8px}
-    .panel-badge{font-size:11px;background:#1E9FD9;color:#fff;padding:3px 9px;border-radius:99px;font-weight:700}
-    .panel-live{display:flex;align-items:center;gap:6px;font-size:11px;color:#0F9B78;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
-    .live-dot{width:8px;height:8px;border-radius:50%;background:#0F9B78;animation:pulse 1.5s ease-in-out infinite}
-    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-    .panel-body{padding:1rem 1.5rem;max-height:400px;overflow-y:auto}
+    .cliente-card{background:#fff;border-radius:14px;padding:.9rem 1rem;box-shadow:0 1px 4px rgba(30,159,217,0.08);margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer}
+    .cliente-card.chegou{background:#FEF9EC;border:1.5px solid #F2CC70}
+    .cliente-card.produtiva{background:#E8F4FB;border:1.5px solid #1E9FD9}
+    .cliente-card.improdutiva{background:#F0F4F8;border:1.5px solid #94A8B8}
+    .cliente-card.produtiva .cliente-nome,.cliente-card.improdutiva .cliente-nome{text-decoration:line-through;opacity:.7}
+    .cliente-card.produtiva{cursor:default}
+    .cliente-card.improdutiva{cursor:default}
 
-    .rota-card{background:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .2s;position:relative}
-    .rota-card:hover{border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.12)}
-    .rota-card.em-andamento{border-left:4px solid #1E9FD9}
-    .rota-card.completa{border-left:4px solid #0F9B78;background:#F0FAF7}
-    .rota-card.livre{border-left:4px solid #D6E5EE}
-    .rota-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A;flex:1}
-    .rota-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
-    .badge-andamento{background:#E8F4FB;color:#0F4C7A}
-    .badge-completa{background:#E1F5EE;color:#085041}
-    .badge-livre{background:#F0F4F8;color:#94A8B8}
-    .rota-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:#5A7A8F;margin-bottom:8px}
-    .rota-progress{display:flex;align-items:center;gap:10px}
-    .progress-bar{flex:1;height:8px;border-radius:99px;background:#EBF1F5;overflow:hidden}
-    .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
-    .rota-card.completa .progress-fill{background:linear-gradient(90deg,#0F9B78,#085041)}
-    .progress-txt{font-size:13px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:55px;text-align:right}
+    .check-btn{width:36px;height:36px;border-radius:10px;border:2px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;pointer-events:none}
+    .check-btn.chegou{background:#F2CC70;border-color:#F2CC70;color:#5A4400}
+    .check-btn.produtiva{background:#1E9FD9;border-color:#1E9FD9;color:#fff}
+    .check-btn.improdutiva{background:#5A7A8F;border-color:#5A7A8F;color:#fff}
 
-    .rota-preview{margin-top:10px;padding-top:10px;border-top:1px solid #EBF1F5;display:none;animation:fadeIn .2s}
-    .rota-card.expanded .rota-preview{display:block}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-    .preview-sec{font-size:10px;font-weight:800;color:#5A7A8F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-    .preview-cli{display:flex;align-items:center;gap:6px;padding:4px 8px;border-radius:6px;font-size:11px;margin-bottom:2px}
-    .preview-cli.feito{background:#E1F5EE;color:#085041}
-    .preview-cli.imp{background:#F0F4F8;color:#5A7A8F}
-    .preview-cli.pend{background:#FEF9EC;color:#92400E}
-    .preview-cli-ico{width:16px;height:16px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
-    .preview-cli.feito .preview-cli-ico{background:#0F9B78;color:#fff}
-    .preview-cli.imp .preview-cli-ico{background:#5A7A8F;color:#fff}
-    .preview-cli.pend .preview-cli-ico{background:#F59E0B;color:#fff}
-    .preview-cli-nome{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
-    .preview-cli-hora{font-weight:700;flex-shrink:0}
+    .cliente-info{flex:1;min-width:0}
+    .cliente-nome{font-size:17px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .cliente-meta{font-size:12px;color:#000;margin-top:2px;font-weight:500}
+    .ts-info{font-size:11px;font-weight:500;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap}
+    .ts-chegada{color:#92400E}
+    .ts-saida{color:#1E9FD9}
+    .ts-saida.improdutiva{color:#5A7A8F}
+    .motivo-txt{font-size:11px;color:#5A7A8F;margin-top:2px;font-style:italic;font-weight:500}
 
-    .conf-progress{padding:1rem 1.5rem;background:linear-gradient(135deg,#E8F4FB,#F0FAFD);border-bottom:1px solid #EBF1F5}
-    .conf-prog-val{font-size:32px;font-weight:800;color:#1E9FD9;line-height:1}
-    .conf-prog-lbl{font-size:13px;color:#5A7A8F;margin:6px 0}
-    .conf-bar{height:8px;border-radius:99px;background:#fff;overflow:hidden;border:1px solid #D6E5EE}
-    .conf-bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
-    .conf-list{padding:0.75rem 1.5rem}
-    .conf-row{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;margin-bottom:6px;border:1px solid;animation:slideIn .3s}
-    @keyframes slideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-    .conf-row.sim{background:#F0FAF7;border-color:#85DDBA}
-    .conf-row.nao{background:#FEF4F4;border-color:#F09595}
-    .conf-ico{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;flex-shrink:0}
-    .conf-row.sim .conf-ico{background:#0F9B78;color:#fff}
-    .conf-row.nao .conf-ico{background:#DC2626;color:#fff}
-    .conf-info{flex:1;min-width:0}
-    .conf-uni{font-size:13px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .conf-obs{font-size:11px;color:#5A7A8F;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .conf-hora{font-size:11px;color:#94A8B8;flex-shrink:0;font-weight:600}
+    .horario-badge{font-size:12px;font-weight:700;padding:3px 9px;border-radius:7px;white-space:nowrap;flex-shrink:0}
+    .horario-badge.normal{background:#F0F4F8;color:#0F4C7A}
+    .horario-badge.chegou{background:#F2CC70;color:#5A4400}
+    .horario-badge.produtiva{background:#1E9FD9;color:#fff}
+    .horario-badge.improdutiva{background:#5A7A8F;color:#fff}
+    .horario-badge.contra-pedido{background:#0F4C7A;color:#fff}
+    .horario-badge.sob-demanda{background:#5A7A8F;color:#fff}
 
-    .detalhe-header{display:flex;align-items:center;gap:12px;margin-bottom:1.5rem}
-    .detalhe-back{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;height:42px;padding:0 16px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px}
-    .detalhe-back:hover{background:#F7FBFD}
-    .detalhe-titulo{font-size:22px;font-weight:800;color:#0F4C7A;flex:1}
-    .cli-item{background:#fff;border-radius:12px;padding:12px 16px;margin-bottom:8px;border:1.5px solid #EBF1F5;display:flex;align-items:center;gap:12px;transition:all .15s}
-    .cli-item:hover{box-shadow:0 2px 8px rgba(30,159,217,0.08)}
-    .cli-item.feito{background:#F0FAF7;border-color:#85DDBA}
-    .cli-item.improdutivo{background:#F5F6F8;border-color:#C5D0DA}
-    .cli-item.chegou{background:#FEF9EC;border-color:#F2CC70}
-    .cli-status{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:#EBF1F5;color:#94A8B8;font-weight:800}
-    .cli-status.ok{background:#0F9B78;color:#fff}
-    .cli-status.imp{background:#5A7A8F;color:#fff}
-    .cli-status.ch{background:#F2CC70;color:#92400E}
-    .cli-info{flex:1;min-width:0}
-    .cli-nome{font-size:14px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .cli-meta{font-size:12px;color:#5A7A8F;margin-top:2px}
-    .cli-hora{font-size:14px;font-weight:800;color:#1E9FD9;flex-shrink:0}
-
-    .card{background:#fff;border-radius:14px;padding:1.5rem;box-shadow:0 2px 10px rgba(30,159,217,0.07);margin-bottom:1rem}
-    .card-title{font-size:17px;font-weight:800;color:#0F4C7A;margin-bottom:1rem}
-    .field{margin-bottom:.9rem}
-    .field label{display:block;font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
-    .field input,.field select{width:100%;height:44px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;outline:none}
-    .field input:focus,.field select:focus{border-color:#1E9FD9}
-    .btn{height:44px;border-radius:11px;font-size:14px;font-weight:700;cursor:pointer;border:none;padding:0 18px;display:inline-flex;align-items:center;gap:6px;transition:all .15s}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn-primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
-    .btn-secondary{background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE}
-    .btn-danger{background:#DC2626;color:#fff}
-    .btn-warning{background:#F59E0B;color:#fff}
-    .btn-block{width:100%;justify-content:center}
-    .list-item{padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;margin-bottom:8px;background:#fff}
-    .list-item-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-    .list-item-name{font-size:14px;font-weight:700;color:#0F4C7A;flex:1;min-width:0}
-    .list-item-meta{font-size:12px;color:#5A7A8F}
-    .list-item-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
-    .badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:700}
-    .search-row{display:flex;gap:8px;margin-bottom:1rem}
-    .search-row input{flex:1;height:44px;border-radius:10px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;color:#0F4C7A;outline:none}
-    .search-row input:focus{border-color:#1E9FD9}
-
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.5);z-index:300;display:flex;align-items:flex-end;justify-content:center}
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:200;display:flex;align-items:flex-end;justify-content:center}
     .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
-    .modal h2{font-size:17px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
-    .modal-btns{display:flex;gap:8px;margin-top:1rem}
-    .modal-btns .btn{flex:1;justify-content:center}
+    .modal{background:#fff;border-radius:20px 20px 0 0;padding:1.75rem 1.5rem 2rem;width:100%;max-width:480px}
+    .modal-cliente{font-size:13px;color:#94A8B8;margin-bottom:4px}
+    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1.25rem}
+    .modal-btns{display:flex;flex-direction:column;gap:10px}
+    .btn-cheguei{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#F2A536,#B45309);color:#fff}
+    .btn-produtiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .btn-improdutiva{padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:1.5px solid #94A8B8;background:#F0F4F8;color:#5A7A8F}
+    .btn-cancelar{padding:12px;border-radius:12px;font-size:14px;font-weight:500;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F}
+    .btn-confirmar-imp{padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:#0F4C7A;color:#fff}
 
-    .msg{padding:11px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-top:10px;display:none;text-align:center}
-    .msg.success{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #1E9FD9;display:block}
-    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
-    .msg.loading{background:#F7FBFD;color:#5A7A8F;border:1.5px solid #D6E5EE;display:block}
-    .spinner{display:inline-block;width:13px;height:13px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;margin-right:5px;vertical-align:middle}
-    @keyframes spin{to{transform:rotate(360deg)}}
-    .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:11px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(15,75,122,0.3)}
-    .toast.show{opacity:1}
-    .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
+    textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:none;height:90px;color:#111;margin-bottom:10px;background:#F7FBFD}
+
+    .footer-bar{position:fixed;bottom:0;left:0;right:0;padding:1rem 1.25rem;background:#fff;box-shadow:0 -2px 12px rgba(30,159,217,0.12);z-index:100}
+    .btn-finalizar{width:100%;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 12px rgba(30,159,217,0.3)}
+    .btn-finalizar:disabled{opacity:.5;cursor:not-allowed}
+
+    .celebration{position:fixed;inset:0;background:rgba(15,75,122,0.7);z-index:300;display:flex;align-items:center;justify-content:center}
+    .celebration.hidden{display:none}
+    .celebration-box{background:#fff;border-radius:20px;padding:2rem 1.75rem;text-align:center;max-width:300px;margin:1rem}
+    .celebration-mascote{width:110px;height:110px;border-radius:50%;margin:0 auto 1rem;object-fit:cover}
+    .celebration h2{font-size:20px;font-weight:700;color:#0F4C7A;margin-bottom:6px}
+    .celebration p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem}
+    .celebration-btn{width:100%;padding:13px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+
+    .empty{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
+    .loading-msg{text-align:center;padding:3rem;color:#94A8B8;font-size:14px}
   </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-left">
-    <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
-    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="topbar-logo"/>
+<div class="header">
+  <div class="header-top">
+    <button class="back-btn" onclick="sair()">←</button>
+    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="header-logo"/>
+    <div style="display:flex;gap:6px">
+      <button class="back-btn" onclick="abrirChatRota()" title="Chat com admin" style="position:relative">💬
+        <span id="chat-badge-rota" style="position:absolute;top:-3px;right:-3px;background:#DC2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:1.5px solid #1E9FD9">0</span>
+      </button>
+      <button class="back-btn" onclick="trocarRota()" title="Trocar de rota" id="btn-trocar-rota" style="display:none">🔄</button>
+      <button class="back-btn" onclick="trocarUsuario()" title="Trocar de motoboy">👤</button>
+    </div>
   </div>
-  <div class="topbar-right">
-    <div class="topbar-titulo">Centro de Controle</div>
-    <div class="topbar-data" id="topbar-data">—</div>
+  <div class="header-info">
+    <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="" class="header-mascote"/>
+    <div class="header-text">
+      <h1 id="header-nome">Minha Rota</h1>
+      <div class="sub" id="header-sub"></div>
+      <div class="rota-badge" id="header-rota">—</div>
+    </div>
   </div>
+
+  <div class="abas-rotas" id="abas-rotas"></div>
 </div>
 
-<div class="menu-overlay" id="menu-overlay" onclick="fecharMenuOverlay(event)">
-  <div class="menu-side" onclick="event.stopPropagation()">
-    <div class="menu-header">
-      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife"/>
-      <button class="menu-close" onclick="fecharMenu()">✕</button>
-    </div>
-
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">⚡ Operação <span>▼</span></button>
-      <div class="menu-cat-items open">
-        <button class="menu-item active" id="menu-painel" onclick="setView('painel',this)">🏠 Painel</button>
-        <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
-        <button class="menu-item" onclick="setView('checklist-view',this)">📋 Checklists</button>
-        <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
-        <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-        <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
-
-      </div>
-    </div>
-
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">⚙️ Configuração de OPS <span>▼</span></button>
-      <div class="menu-cat-items">
-        <button class="menu-item" onclick="window.location.href='criar-rota.html'">➕ Criar rota</button>
-        <button class="menu-item" onclick="window.location.href='rotas.html'">✏️ Alterar rota</button>
-        <button class="menu-item" onclick="setView('buscar',this)">🔎 Buscar/Mover cliente</button>
-        <button class="menu-item" onclick="setView('criar-cliente',this)">👤 Criar cliente</button>
-        <button class="menu-item" onclick="setView('gerenciar-motoboys',this)">➕➖ Adicionar/Excluir motoboy</button>
-        <button class="menu-item" onclick="setView('ativar-cliente',this)">🔁 Ativar/Desativar cliente</button>
-      </div>
-    </div>
-
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">📁 Importação e Registro <span>▼</span></button>
-      <div class="menu-cat-items">
-        <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar</button>
-        <button class="menu-item" onclick="window.location.href='atualizar-massa.html'">🔄 Atualização de Rota em Massa</button>
-        <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Exportar</button>
-        <button class="menu-item" onclick="window.location.href='base.html'">📋 Base de clientes</button>
-        <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
-      </div>
-    </div>
-
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">🔧 Sistema <span>▼</span></button>
-      <div class="menu-cat-items">
-        <button class="menu-item danger" onclick="setView('reset',this)">🔄 Reset</button>
-      </div>
-    </div>
-  </div>
+<div class="stats-bar">
+  <div class="stat"><div class="stat-val" id="cnt-total">—</div><div class="stat-label">total</div></div>
+  <div class="stat"><div class="stat-val primary" id="cnt-produtiva">—</div><div class="stat-label">produtivas</div></div>
+  <div class="stat"><div class="stat-val muted" id="cnt-pendente">—</div><div class="stat-label">pendentes</div></div>
 </div>
 
-<div class="content">
-
-  <div class="view active" id="view-painel" style="padding-bottom:1rem">
-
-    <!-- MASCOTE CENTRALIZADO NO TOPO -->
-    <div style="text-align:center;padding:1.5rem 0;display:flex;justify-content:center;align-items:center;width:100%">
-      <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="Mascote" style="height:120px;width:auto;filter:drop-shadow(0 4px 12px rgba(30,159,217,0.15))"/>
-    </div>
-
-    <div class="dash-grid">
-      <!-- COLUNA ESQUERDA -->
-      <div style="display:flex;flex-direction:column;gap:1rem">
-        <!-- ROTAS -->
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">🛵 Rotas em operação <span class="panel-badge" id="rotas-badge">0</span></div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div id="filtro-dias" style="display:flex;gap:6px"></div>
-              <div class="panel-live"><div class="live-dot"></div>Live</div>
-            </div>
-          </div>
-          <div class="panel-body" id="painel-rotas">
-            <div class="empty"><span class="spinner"></span> Carregando...</div>
-          </div>
-        </div>
-
-        <!-- 4 KPIs em 2x2 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div class="kpi total">
-            <div class="kpi-icon">📦</div>
-            <div class="kpi-val" id="kpi-total">—</div>
-            <div class="kpi-label">Total</div>
-          </div>
-          <div class="kpi feitas">
-            <div class="kpi-icon">✓</div>
-            <div class="kpi-val" id="kpi-feitas">—</div>
-            <div class="kpi-label">Coletadas</div>
-          </div>
-          <div class="kpi pendentes">
-            <div class="kpi-icon">⏳</div>
-            <div class="kpi-val" id="kpi-pendentes">—</div>
-            <div class="kpi-label">Pendentes</div>
-          </div>
-          <div class="kpi motoboys">
-            <div class="kpi-icon">🏍️</div>
-            <div class="kpi-val" id="kpi-motoboys">—</div>
-            <div class="kpi-label">Motoboys</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- COLUNA DIREITA -->
-      <div style="display:flex;flex-direction:column;gap:1rem">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">✓ Confirmações <span class="panel-badge" id="conf-badge-count">0</span></div>
-            <div class="panel-live"><div class="live-dot"></div>Live</div>
-          </div>
-          <div class="conf-progress">
-            <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:16px;color:#5A7A8F;font-weight:600">/ 37</span></div>
-            <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
-            <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
-          </div>
-          <div class="conf-list" id="conf-list-live">
-            <div class="empty"><span class="spinner"></span></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">📋 Checklist <span class="panel-badge" id="checklist-badge">0</span></div>
-            <div class="panel-live"><div class="live-dot"></div>Live</div>
-          </div>
-          <div class="panel-body" id="painel-checklist" style="max-height:200px">
-            <div class="empty"><span class="spinner"></span></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">⏰ Atrasos <span class="panel-badge" id="atrasos-badge">0</span></div>
-            <div class="panel-live"><div class="live-dot"></div>Live</div>
-          </div>
-          <div class="panel-body" id="painel-atrasos" style="max-height:200px">
-            <div class="empty">Nenhum atraso ✓</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="view" id="view-detalhe-rota">
-    <div class="detalhe-header">
-      <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
-      <div class="detalhe-titulo" id="detalhe-titulo">—</div>
-    </div>
-    <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
-    <div id="detalhe-lista"></div>
-  </div>
-
-  <div class="view" id="view-confirmacoes">
-    <div class="card">
-      <div class="card-title">✓ Confirmações de hoje</div>
-      <div id="lista-conf"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-checklist-view">
-    <div class="card" id="card-lista-checklists">
-      <div class="card-title">📋 Checklists de hoje</div>
-      <div id="lista-checklists"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-    <div class="card" id="card-detalhe-checklist" style="display:none">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-        <button onclick="voltarListaChecklists()" style="background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">← Voltar</button>
-        <div style="font-size:16px;font-weight:800;color:#0F4C7A" id="detalhe-checklist-titulo">—</div>
-      </div>
-      <div id="detalhe-checklist-conteudo"></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-checklists-incompletos">
-    <div class="card">
-      <div class="card-title">⏳ Checklists Incompletos</div>
-      <div id="lista-checklists-incompletos"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-motoristas">
-    <div class="card">
-      <div class="card-title">👤 Motoristas cadastrados</div>
-      <div id="lista-mb-view"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-rotas-view">
-    <div class="card">
-      <div class="card-title">🛣️ Rotas</div>
-      <div id="lista-rotas-view"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-buscar">
-    <div class="card">
-      <div class="card-title">🔎 Buscar cliente</div>
-      <div class="search-row">
-        <input type="text" id="busca-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarCliente()"/>
-        <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
-      </div>
-      <div id="busca-resultado"></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-criar-cliente">
-    <div class="card">
-      <div class="card-title">👤 Criar cliente</div>
-      <div class="field"><label>Código</label><input type="text" id="cc-codigo" placeholder="Ex: 22088"/></div>
-      <div class="field"><label>Nome</label><input type="text" id="cc-nome" placeholder="Nome do cliente"/></div>
-      <div class="field"><label>Horário</label><input type="time" id="cc-horario"/></div>
-      <button class="btn btn-primary btn-block" onclick="criarCliente()">+ Criar cliente</button>
-      <div class="msg" id="msg-cc"></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-gerenciar-motoboys">
-    <div class="card">
-      <div class="card-title">➕ Adicionar motorista</div>
-      <div class="field"><label>Nome</label><input type="text" id="mb-nome" placeholder="Nome completo"/></div>
-      <div class="field"><label>Telefone</label><input type="tel" id="mb-tel" placeholder="(11) 99999-0000"/></div>
-      <button class="btn btn-primary btn-block" onclick="adicionarMotoboy()">+ Adicionar</button>
-      <div class="msg" id="msg-mb"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Lista de motoristas</div>
-      <div id="lista-mb-ger"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-ativar-cliente">
-    <div class="card">
-      <div class="card-title">🔁 Ativar / Desativar cliente</div>
-      <div class="search-row">
-        <input type="text" id="ativar-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarParaAtivar()"/>
-        <button class="btn btn-primary" onclick="buscarParaAtivar()">Buscar</button>
-      </div>
-      <div id="ativar-resultado"></div>
-    </div>
-  </div>
-
-  <div class="view" id="view-reset">
-    <div class="card">
-      <div class="card-title">⚠️ Reset do sistema</div>
-      <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Reseta o status de todos os clientes e destrava todas as rotas.</p>
-      <button class="btn btn-danger btn-block" onclick="fazerReset()">⚠️ Fazer Reset agora</button>
-      <div class="msg" id="msg-reset"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🔄 Limpar confirmações</div>
-      <button class="btn btn-warning btn-block" onclick="resetConfirmacoes()">Limpar confirmações de hoje</button>
-      <div class="msg" id="msg-reset-conf"></div>
-    </div>
-  </div>
-
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div class="progress-label" id="progress-label">0%</div>
 </div>
 
-<div class="modal-overlay hidden" id="modal-mover">
+<div class="toolbar">
+  <input class="search-bar" type="text" id="busca" placeholder="Buscar cliente..." oninput="renderizar()"/>
+  <button class="filter-btn" id="filter-btn" onclick="toggleFiltro()">Pendentes</button>
+</div>
+
+<div class="lista-container">
+  <div class="lista" id="lista"><div class="loading-msg">Carregando...</div></div>
+</div>
+
+<div class="footer-bar">
+  <button class="btn-finalizar" id="btn-finalizar" onclick="abrirModalFinalizar()">🏁 Finalizar Rota</button>
+</div>
+
+
+
+<!-- MODAL PRODUTIVA / IMPRODUTIVA -->
+<div class="modal-overlay hidden" id="modal-prod">
   <div class="modal">
-    <h2>↔ Mover cliente</h2>
-    <div class="field"><label>Rota</label><select id="nova-rota-select"><option value="">Selecione a rota...</option></select></div>
+    <div class="modal-cliente" id="modal-cliente-nome"></div>
+    <h2>A coleta foi produtiva?</h2>
+    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem" id="modal-chegada-info"></p>
     <div class="modal-btns">
-      <button class="btn btn-secondary" onclick="fecharModal('modal-mover')">Cancelar</button>
-      <button class="btn btn-primary" onclick="confirmarMover()">Mover</button>
+      <button class="btn-produtiva" onclick="confirmarTique('produtiva')">✓ Produtiva</button>
+      <button class="btn-improdutiva" onclick="abrirModalMotivo()">✗ Improdutiva</button>
+      <button class="btn-cancelar" onclick="cancelarTique()">Cancelar</button>
     </div>
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<!-- MODAL MOTIVO -->
+<div class="modal-overlay hidden" id="modal-motivo">
+  <div class="modal">
+    <div class="modal-cliente" id="modal-motivo-cliente"></div>
+    <h2>Qual o motivo?</h2>
+    <textarea id="motivo-texto" placeholder="Ex: Cliente fechado, sem material, endereço errado..."></textarea>
+    <div class="modal-btns">
+      <button class="btn-confirmar-imp" onclick="confirmarImprodutiva()">Confirmar improdutiva</button>
+      <button class="btn-cancelar" onclick="voltarParaProd()">← Voltar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL TROCAR ROTA -->
+<div class="modal-overlay hidden" id="modal-trocar-rota">
+  <div class="modal">
+    <h2>🔄 Trocar de rota</h2>
+    <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Toque na rota para abrir:</p>
+    <div id="lista-rotas-trocar" style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem"></div>
+    <div class="modal-btns">
+      <button class="btn-cancelar" onclick="fecharModal('modal-trocar-rota')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FINALIZAR -->
+<div class="modal-overlay hidden" id="modal-fin">
+  <div class="modal">
+    <h2>Finalizar a rota?</h2>
+    <p id="modal-fin-msg" style="font-size:14px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5"></p>
+    <div class="modal-btns">
+      <button class="btn-produtiva" onclick="finalizarRota()">Sim, finalizar</button>
+      <button class="btn-cancelar" onclick="document.getElementById('modal-fin').classList.add('hidden')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="celebration hidden" id="celebration">
+  <div class="celebration-box">
+    <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="" class="celebration-mascote"/>
+    <h2>Rota finalizada! 🎉</h2>
+    <p id="celebration-msg">Bom trabalho!</p>
+    <button class="celebration-btn" onclick="aoFecharCelebracao()">Continuar</button>
+  </div>
+</div>
 
 <script>
-  const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  let clienteParaMover = null;
-  let autoRefreshInterval = null;
-  let cardExpandido = null;
-  let rotasDisponiveis = [];
+  const API  = 'https://confirmacaoderota.willlog99.workers.dev';
+  const nome = localStorage.getItem('motoboy_nome');
+  const rota = localStorage.getItem('motoboy_rota');
+  const tel  = localStorage.getItem('motoboy_tel');
 
-  const agora = new Date();
-  const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  document.getElementById('topbar-data').textContent = `${dias[agora.getDay()]}, ${agora.getDate()} ${meses[agora.getMonth()]} ${agora.getFullYear()}`;
+  if (!rota || !tel) window.location.href = 'index.html';
 
-  // Filtro de dia: determinar dia atual
-  const diaSemanaAtual = agora.getDay(); // 0=dom, 1=seg...6=sab
-  let filtroDia = diaSemanaAtual === 0 ? 'domingo' : diaSemanaAtual === 6 ? 'sabado' : 'seg-sex';
+  document.getElementById('header-nome').textContent = nome || 'Minha Rota';
+  document.getElementById('header-rota').textContent = rota || '—';
+  document.getElementById('header-sub').textContent  = 'Olá, ' + (nome || '').split(' ')[0] + '!';
 
-  function renderizarFiltroDias() {
-    const opcoes = [
-      { key: 'seg-sex', label: 'Seg-Sex' },
-      { key: 'sabado', label: 'Sábado' },
-      { key: 'domingo', label: 'Domingo' },
-      { key: 'todos', label: 'Todos' }
-    ];
-    document.getElementById('filtro-dias').innerHTML = opcoes.map(o => `
-      <button onclick="trocarFiltroDia('${o.key}')" id="filtro-btn-${o.key}"
-        style="padding:4px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:1.5px solid;transition:all .2s;
-        ${filtroDia===o.key ? 'background:#1E9FD9;color:#fff;border-color:#1E9FD9' : 'background:#fff;color:#5A7A8F;border-color:#D6E5EE'}">
-        ${o.label}
-      </button>`).join('');
-  }
-
-  function trocarFiltroDia(dia) {
-    filtroDia = dia;
-    renderizarFiltroDias();
-    carregarPainel();
-  }
-
-  renderizarFiltroDias();
-
-  function abrirMenu() { document.getElementById('menu-overlay').classList.add('open'); }
-  function fecharMenu() { document.getElementById('menu-overlay').classList.remove('open'); }
-  function fecharMenuOverlay(e) { if (e.target === e.currentTarget) fecharMenu(); }
-  function toggleCat(btn) { btn.nextElementSibling.classList.toggle('open'); }
-
-  function setView(id, el) {
-    pararAutoRefresh();
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
-    document.getElementById('view-' + id).classList.add('active');
-    if (el) el.classList.add('active');
-    fecharMenu();
-    window.scrollTo(0,0);
-    if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); }
-    if (id === 'confirmacoes') carregarConfirmacoes();
-    if (id === 'motoristas') carregarMotoristasList();
-    if (id === 'rotas-view') carregarRotasView();
-    if (id === 'checklist-view') carregarChecklists();
-    if (id === 'checklists-incompletos') carregarChecklistsIncompletos();
-    if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
-  }
-
-  function iniciarAutoRefresh() {
-    pararAutoRefresh();
-    autoRefreshInterval = setInterval(() => carregarPainel(true), 8000);
-  }
-  function pararAutoRefresh() {
-    if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
-  }
-
-  async function carregarPainel(silent) {
+  // Verificar se precisa preencher checklist
+  async function verificarChecklistPendente() {
+    if (!tel) return;
     try {
-      const params = filtroDia === 'todos' ? '?todos_dias=1' : `?dia_semana=${filtroDia}`;
-      const [rRes, mbRes, confRes] = await Promise.all([
-        fetch(API + '/rotas-disponiveis' + params).then(r => r.json()),
-        fetch(API + '/motoboys?todos=1').then(r => r.json()),
-        fetch(API + '/').then(r => r.json())
-      ]);
-
-      const rotas = rRes.rotas || [];
-      rotasDisponiveis = rotas.map(r => r.rota);
-      const motoboys = mbRes.motoboys || [];
-      const confirmacoes = confRes.confirmacoes || [];
-
-      const dadosRotas = await Promise.all(
-        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota) + '&todos_dias=1').then(res => res.json()))
-      );
-
-      let totalGeral = 0, feitasGeral = 0;
-      dadosRotas.forEach(d => {
-        const cls = d.clientes || [];
-        totalGeral += cls.length;
-        feitasGeral += cls.filter(c => c.status === 'entregue').length;
-      });
-
-      document.getElementById('kpi-total').textContent = totalGeral;
-      document.getElementById('kpi-feitas').textContent = feitasGeral;
-      document.getElementById('kpi-pendentes').textContent = totalGeral - feitasGeral;
-      document.getElementById('kpi-motoboys').textContent = motoboys.length;
-      document.getElementById('rotas-badge').textContent = rotas.length;
-
-      const totalUnidades = 37;
-      const conf = confirmacoes.length;
-      document.getElementById('conf-prog-val').textContent = conf;
-      document.getElementById('conf-prog-lbl').textContent = conf === 1 ? 'Biocondutor confirmado' : 'Biocondutores confirmados';
-      document.getElementById('conf-bar-fill').style.width = Math.min(100, Math.round(conf/totalUnidades*100)) + '%';
-
-      const confEl = document.getElementById('conf-list-live');
-      if (!confirmacoes.length) {
-        confEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
-      } else {
-        confEl.innerHTML = confirmacoes.slice(0, 15).map(c => {
-          const hora = c.data ? c.data.split(' ').pop() : '';
-          const rotasStr = c.rotas && c.rotas.length ? c.rotas.join(', ') : '';
-          return `<div class="conf-row ${c.resposta}">
-            <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
-            <div class="conf-info">
-              <div class="conf-uni">${c.biocondutor}</div>
-              ${rotasStr ? `<div style="font-size:11px;color:#5A7A8F;margin-top:2px">🛣️ ${rotasStr}</div>` : ''}
-              ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
-            </div>
-            <div class="conf-hora">${hora}</div>
-          </div>`;
-        }).join('');
+      const r = await fetch(API + '/checklist-status?telefone=' + encodeURIComponent(tel));
+      const d = await r.json();
+      if (d.precisa) {
+        mostrarModalChecklist();
       }
-
-      // Card Checklist — cruzar confirmações com checklists preenchidos
-      try {
-        const hoje = new Date().toLocaleDateString('pt-BR');
-        const chkRes = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
-        const chkData = await chkRes.json();
-        const checklists = chkData.checklists || [];
-        const preencheram = new Set(checklists.map(c => c.biocondutor));
-        const confirmaramSim = confirmacoes.filter(c => c.resposta === 'sim');
-        
-        document.getElementById('checklist-badge').textContent = preencheram.size;
-        
-        const chkEl = document.getElementById('painel-checklist');
-        if (!confirmaramSim.length) {
-          chkEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
-        } else {
-          chkEl.innerHTML = confirmaramSim.map(c => {
-            const preencheu = preencheram.has(c.biocondutor);
-            return `<div class="conf-row" style="background:${preencheu ? '#F0FAF7' : '#FEF9EC'};border-color:${preencheu ? '#85DDBA' : '#F2CC70'}">
-              <div class="conf-ico" style="background:${preencheu ? '#0F9B78' : '#F59E0B'};color:#fff">${preencheu ? '✓' : '⏳'}</div>
-              <div class="conf-info">
-                <div class="conf-uni">${c.biocondutor}</div>
-                <div style="font-size:11px;color:#5A7A8F;margin-top:2px">${preencheu ? '✓ Checklist preenchido' : '⏳ Aguardando checklist'}</div>
-              </div>
-            </div>`;
-          }).join('');
-        }
-      } catch(e) {
-        document.getElementById('painel-checklist').innerHTML = '<div class="empty">Erro ao carregar</div>';
-      }
-
-      const mbPorRota = {};
-      motoboys.forEach(m => { if (m.rota) { if (!mbPorRota[m.rota]) mbPorRota[m.rota] = []; mbPorRota[m.rota].push(m.nome); } });
-
-      const el = document.getElementById('painel-rotas');
-      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
-
-      el.innerHTML = rotas.map((r, i) => {
-        const cls = (dadosRotas[i] && dadosRotas[i].clientes) || [];
-        const total = cls.length;
-        const feitas = cls.filter(c => c.status === 'entregue').length;
-        const pct = total > 0 ? Math.round(feitas/total*100) : 0;
-        const completa = feitas === total && total > 0;
-        const emAndamento = r.ativa;
-        const status = completa ? 'completa' : emAndamento ? 'em-andamento' : 'livre';
-        const badgeLabel = completa ? '✓ Completa' : emAndamento ? '🔒 Em andamento' : 'Livre';
-        const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
-        const nomes = mbPorRota[r.rota] || [];
-        const motoStr = nomes.length ? nomes.join(', ') : 'Sem motorista';
-        const expandida = cardExpandido === r.rota ? 'expanded' : '';
-
-        const ent = cls.filter(c => c.status === 'entregue');
-        const pend = cls.filter(c => c.status !== 'entregue');
-
-        const renderPrev = (c, tipo) => {
-          const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
-          const btnVoltar = (tipo === 'feito' || tipo === 'imp') 
-            ? `<button onclick="event.stopPropagation();voltarColetaPreview(${c.id},'${r.rota.replace(/'/g,"\\'")}')" 
-                style="background:#FEF9EC;color:#92400E;border:1.5px solid #F2CC70;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩</button>`
-            : '';
-          return `<div class="preview-cli ${tipo}">
-            <div class="preview-cli-ico">${ico}</div>
-            <div class="preview-cli-nome">${c.nome}</div>
-            <div class="preview-cli-hora">${c.horario}</div>
-            ${btnVoltar}
-          </div>`;
-        };
-
-        const prodList = ent.filter(c => c.produtividade !== 'improdutiva').map(c => renderPrev(c, 'feito')).join('');
-        const impList = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
-        const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
-
-        return `
-          <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
-            <div class="rota-top">
-              <div class="rota-nome">${r.rota}</div>
-              <span class="rota-badge ${badgeCls}">${badgeLabel}</span>
-            </div>
-            <div class="rota-meta">
-              <span>🏍️ ${motoStr}</span>
-            </div>
-            <div class="rota-progress">
-              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-              <div class="progress-txt">${feitas}/${total}</div>
-            </div>
-            <div class="rota-preview">
-              ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
-              ${prodList ? `<div class="preview-sec" style="margin-top:8px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
-              ${impList ? `<div class="preview-sec" style="margin-top:8px">✕ Improdutivas</div>${impList}` : ''}
-              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')" style="margin-top:10px;background:#1E9FD9;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
-            </div>
-          </div>`;
-      }).join('');
-
-      // Carregar atrasos
-      const atrasoPromises = rotas.map(r => 
-        fetch(API + '/atraso?rota=' + encodeURIComponent(r.rota)).then(res => res.json()).catch(() => ({ atrasos: [] }))
-      );
-      const atrasoRes = await Promise.all(atrasoPromises);
-      const todosAtrasos = atrasoRes.flatMap(r => r.atrasos || []);
-      
-      document.getElementById('atrasos-badge').textContent = todosAtrasos.length;
-      
-      const atrasoEl = document.getElementById('painel-atrasos');
-      if (!todosAtrasos.length) {
-        atrasoEl.innerHTML = '<div class="empty">Nenhum cliente em atraso ✓</div>';
-      } else {
-        atrasoEl.innerHTML = todosAtrasos.map(a => {
-          const horas = Math.floor(a.minutos_atrasado / 60);
-          const mins = a.minutos_atrasado % 60;
-          const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
-          const isPendente = a.tipo === 'pendente';
-          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:${isPendente ? '#FEF9EC' : '#FCEBEB'};border:1px solid ${isPendente ? '#F2CC70' : '#F09595'};margin-bottom:5px">
-            <span style="font-size:13px">${isPendente ? '⚠️' : '⏰'}</span>
-            <div style="flex:1;min-width:0">
-              <span style="font-size:12px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${a.nome}</span>
-              <span style="font-size:11px;color:#5A7A8F">${a.rota} · ${a.horario} · <strong style="color:${isPendente ? '#92400E' : '#DC2626'}">${tempoStr} atraso</strong></span>
-            </div>
-          </div>`;
-        }).join('');
-      }
-
-    } catch(e) {
-      if (!silent) document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
-    }
+    } catch(e) {}
   }
 
-  function toggleRotaPreview(card, rota) {
-    if (cardExpandido === rota) {
-      cardExpandido = null;
-      card.classList.remove('expanded');
-    } else {
-      document.querySelectorAll('.rota-card.expanded').forEach(c => c.classList.remove('expanded'));
-      cardExpandido = rota;
-      card.classList.add('expanded');
-    }
-  }
-
-  let rotaDetalheAtual = null;
-
-  async function abrirDetalheRota(rota) {
-    rotaDetalheAtual = rota;
-    pararAutoRefresh();
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-detalhe-rota').classList.add('active');
-    document.getElementById('detalhe-titulo').textContent = rota;
-    window.scrollTo(0,0);
-    await carregarDetalheRota(rota);
-  }
-
-  async function carregarDetalheRota(rota) {
-    const listaEl = document.getElementById('detalhe-lista');
-    const kpisEl = document.getElementById('detalhe-kpis');
-    listaEl.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
-
-    try {
-      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota) + '&todos_dias=1');
-      const d = await r.json();
-      const cls = d.clientes || [];
-      const ent = cls.filter(c => c.status === 'entregue');
-      const pend = cls.filter(c => c.status !== 'entregue');
-      const prod = ent.filter(c => c.produtividade === 'produtiva').length;
-      const imp = ent.filter(c => c.produtividade === 'improdutiva').length;
-
-      kpisEl.innerHTML = `
-        <span class="badge" style="background:#F0F4F8;color:#0F4C7A;font-size:13px;padding:6px 12px">${cls.length} total</span>
-        <span class="badge" style="background:#E1F5EE;color:#085041;font-size:13px;padding:6px 12px">✓ ${prod} produtivas</span>
-        ${imp ? `<span class="badge" style="background:#F0F4F8;color:#5A7A8F;font-size:13px;padding:6px 12px">✕ ${imp} improdutivas</span>` : ''}
-        <span class="badge" style="background:#FEF9EC;color:#92400E;font-size:13px;padding:6px 12px">⏳ ${pend.length} pendentes</span>
-      `;
-
-      const renderC = c => {
-        const feito = c.status === 'entregue';
-        const bad = c.produtividade === 'improdutiva';
-        const cls2 = feito ? (bad ? 'improdutivo' : 'feito') : '';
-        const icls = feito ? (bad ? 'imp' : 'ok') : '';
-        const icon = feito ? (bad ? '✕' : '✓') : '';
-        const saida = c.horario_entrega ? c.horario_entrega.split(' ').pop() : '';
-        return `<div class="cli-item ${cls2}" style="position:relative">
-          <div class="cli-status ${icls}">${icon}</div>
-          <div class="cli-info">
-            <div class="cli-nome">${c.nome}</div>
-            <div class="cli-meta">Nº ${c.numero_cliente}${saida ? ' · 🔵 '+saida : ''}${bad && c.motivo_improdutiva ? ' · '+c.motivo_improdutiva : ''}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-            <div class="cli-hora">${c.horario}</div>
-            ${feito ? `<button onclick="voltarColeta(${c.id})" style="background:#FEF9EC;color:#92400E;border:1.5px solid #F2CC70;padding:5px 10px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap">↩ Voltar</button>` : ''}
-          </div>
-        </div>`;
-      };
-
-      listaEl.innerHTML = (pend.length ? `<div style="font-size:11px;font-weight:800;color:#92400E;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">⏳ Pendentes (${pend.length})</div>${pend.map(renderC).join('')}` : '') +
-        (ent.length ? `<div style="font-size:11px;font-weight:800;color:#1E9FD9;text-transform:uppercase;letter-spacing:.5px;margin:1rem 0 8px">✓ Registradas (${ent.length})</div>${ent.map(renderC).join('')}` : '') ||
-        '<div class="empty">Nenhum cliente nesta rota</div>';
-
-    } catch(e) {
-      listaEl.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>';
-    }
-  }
-
-  async function voltarColeta(id) {
-    if (!confirm('Voltar esta coleta para pendente?')) return;
-    try {
-      await fetch(API + '/desticar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      toast('↩ Coleta voltou para pendente!');
-      await carregarDetalheRota(rotaDetalheAtual);
-    } catch(e) {
-      toast('Erro ao voltar coleta');
-    }
-  }
-
-  async function voltarColetaPreview(id, rota) {
-    if (!confirm('Voltar esta coleta para pendente?')) return;
-    try {
-      await fetch(API + '/desticar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id })
-      });
-      toast('↩ Coleta voltou para pendente!');
-      cardExpandido = null;
-      await carregarPainel(false);
-    } catch(e) {
-      toast('Erro ao voltar coleta');
-    }
-  }
-
-  function voltarChecklist(biocondutor) {
-    if (!confirm('Voltar checklist incompleto de ' + biocondutor + '?')) return;
-    localStorage.removeItem('checklist_incompleto_' + biocondutor);
-    toast('↩ Checklist voltado para pendente!');
-    carregarChecklistsIncompletos();
-  }
-
-  async function carregarChecklistsIncompletos() {
-    const el = document.getElementById('lista-checklists-incompletos');
-    if (!el) return;
-    
-    const incompletos = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key.startsWith('checklist_incompleto_')) {
-        const biocondutor = key.replace('checklist_incompleto_', '');
-        const estado = JSON.parse(localStorage.getItem(key));
-        incompletos.push({ biocondutor, estado });
-      }
-    }
-    
-    if (!incompletos.length) {
-      el.innerHTML = '<div class="empty">Nenhum checklist incompleto</div>';
-      return;
-    }
-    
-    el.innerHTML = incompletos.map(c => `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:#FEF9EC;border-radius:10px;border:1px solid #F2CC70;margin-bottom:6px">
-        <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;color:#92400E">${c.biocondutor}</div>
-          <div style="font-size:11px;color:#C79100">⏳ Aguardando conclusão</div>
-        </div>
-        <button onclick="voltarChecklist('${c.biocondutor.replace(/'/g,"\\'")}')" style="background:#F2CC70;color:#92400E;border:none;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer">↩ Voltar</button>
-      </div>`).join('');
-  }
-
-  async function carregarConfirmacoes() {
-    const el = document.getElementById('lista-conf');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    try {
-      const r = await fetch(API + '/');
-      const d = await r.json();
-      const conf = d.confirmacoes || [];
-      if (!conf.length) { el.innerHTML = '<div class="empty">Nenhuma confirmação hoje</div>'; return; }
-      el.innerHTML = conf.map(c => `
-        <div class="conf-row ${c.resposta}">
-          <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
-          <div class="conf-info">
-            <div class="conf-uni">${c.biocondutor}</div>
-            ${c.rotas && c.rotas.length ? `<div style="font-size:11px;color:#5A7A8F;margin-top:2px">🛣️ ${c.rotas.join(', ')}</div>` : ''}
-            ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
-          </div>
-          <div class="conf-hora">${c.data ? c.data.split(' ').pop() : ''}</div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  async function carregarMotoristasList() {
-    const el = document.getElementById('lista-mb-view');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    try {
-      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
-      const d = await r.json();
-      if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
-      el.innerHTML = d.motoboys.map(m => `
-        <div class="list-item">
-          <div class="list-item-row">
-            <div class="list-item-name">${m.nome}</div>
-            <div class="list-item-meta">📱 ${m.telefone}</div>
-          </div>
-          ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:6px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:6px">Sem rotas</div>'}
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  async function carregarRotasView() {
-    const el = document.getElementById('lista-rotas-view');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    try {
-      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
-      const d = await r.json();
-      const rotas = d.rotas || [];
-      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
-      el.innerHTML = rotas.map(r => `
-        <div class="list-item">
-          <div class="list-item-row">
-            <div class="list-item-name">${r.rota}</div>
-            <span class="badge" style="${r.ativa ? 'background:#FEF3C7;color:#92400E' : 'background:#E1F5EE;color:#085041'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
-          </div>
-          ${r.motoboy_aberto ? `<div style="font-size:12px;color:#5A7A8F;margin-top:4px">🏍️ ${r.motoboy_aberto}</div>` : ''}
-          <div class="list-item-actions">
-            ${r.ativa ? `<button class="btn btn-warning" style="height:34px;font-size:12px" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
-          </div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  async function destravarRota(rota) {
-    if (!confirm('Destravar rota "' + rota + '"?')) return;
-    await fetch(API + '/destravar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({rota}) });
-    toast('Rota destravada');
-    carregarRotasView();
-  }
-
-  async function carregarMotoboysGerenciar() {
-    const el = document.getElementById('lista-mb-ger');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    try {
-      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
-      const d = await r.json();
-      if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
-      el.innerHTML = d.motoboys.map(m => `
-        <div class="list-item">
-          <div class="list-item-row">
-            <div class="list-item-name">${m.nome}</div>
-            <div class="list-item-meta">📱 ${m.telefone}</div>
-          </div>
-          ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:4px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:4px">Sem rotas</div>'}
-          <div class="list-item-actions">
-            <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy('${m.telefone}')">🗑 Excluir</button>
-          </div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  async function adicionarMotoboy() {
-    const nome = document.getElementById('mb-nome').value.trim();
-    const tel = document.getElementById('mb-tel').value.trim();
-    if (!nome || !tel) { showMsg('msg-mb','Preencha nome e telefone','error'); return; }
-    showMsg('msg-mb','Salvando...','loading');
-    try {
-      await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:''}) });
-      document.getElementById('mb-nome').value = '';
-      document.getElementById('mb-tel').value = '';
-      showMsg('msg-mb','✅ Motorista adicionado!','success');
-      carregarMotoboysGerenciar();
-    } catch(e) { showMsg('msg-mb','Erro: '+e.message,'error'); }
-  }
-
-  async function excluirMotoboy(telefone) {
-    if (!confirm('Excluir este motorista e todas as suas rotas?')) return;
-    await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({telefone}) });
-    toast('Motorista excluído');
-    carregarMotoboysGerenciar();
-  }
-
-  async function criarCliente() {
-    const codigo = document.getElementById('cc-codigo').value.trim();
-    const nome = document.getElementById('cc-nome').value.trim();
-    const horario = document.getElementById('cc-horario').value;
-    if (!codigo || !nome) { showMsg('msg-cc','Preencha código e nome','error'); return; }
-    showMsg('msg-cc','Salvando...','loading');
-    try {
-      await fetch(API + '/clientes-base', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:codigo, nome, horario:horario||'00:00'}) });
-      document.getElementById('cc-codigo').value = '';
-      document.getElementById('cc-nome').value = '';
-      document.getElementById('cc-horario').value = '';
-      showMsg('msg-cc','✅ Cliente criado na base!','success');
-    } catch(e) { showMsg('msg-cc','Erro: '+e.message,'error'); }
-  }
-
-  async function buscarCliente() {
-    const q = document.getElementById('busca-input').value.trim();
-    if (!q) return;
-    const el = document.getElementById('busca-resultado');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    try {
-      const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
-      const d = await r.json();
-      const ql = q.toLowerCase();
-      const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
-      if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
-      el.innerHTML = encontrados.slice(0,20).map(c => `
-        <div class="list-item">
-          <div class="list-item-row">
-            <div class="list-item-name">${c.nome}</div>
-            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
-          </div>
-          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
-          <div class="list-item-actions">
-            <button class="btn btn-secondary" style="height:34px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover</button>
-          </div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  function abrirMover(id) {
-    clienteParaMover = id;
-    const sel = document.getElementById('nova-rota-select');
-    sel.innerHTML = '<option value="">Selecione a rota...</option>' + rotasDisponiveis.map(r => `<option value="${r}">${r}</option>`).join('');
-    document.getElementById('modal-mover').classList.remove('hidden');
-  }
-
-  async function confirmarMover() {
-    const rota = document.getElementById('nova-rota-select').value;
-    if (!rota || !clienteParaMover) return;
-    await fetch(API + '/mover-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:clienteParaMover, rota}) });
-    document.getElementById('modal-mover').classList.add('hidden');
-    toast('✓ Movido para ' + rota);
-    buscarCliente();
-  }
-
-  async function buscarParaAtivar() {
-    const q = document.getElementById('ativar-input').value.trim();
-    if (!q) return;
-    const el = document.getElementById('ativar-resultado');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    try {
-      const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
-      const d = await r.json();
-      const ql = q.toLowerCase();
-      const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
-      if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
-      el.innerHTML = encontrados.slice(0,20).map(c => `
-        <div class="list-item">
-          <div class="list-item-row">
-            <div class="list-item-name">${c.nome}</div>
-            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
-            <span class="badge" style="${c.ativo ? 'background:#E1F5EE;color:#085041' : 'background:#FCEBEB;color:#791F1F'}">${c.ativo ? 'Ativo' : 'Inativo'}</span>
-          </div>
-          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
-          <div class="list-item-actions">
-            ${c.ativo
-              ? `<button class="btn btn-danger" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},0)">⛔ Desativar</button>`
-              : `<button class="btn btn-primary" style="height:34px;font-size:12px" onclick="toggleAtivar(${c.id},1)">✅ Ativar</button>`}
-          </div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  async function toggleAtivar(id, ativo) {
-    if (ativo) {
-      await fetch(API + '/reativar-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    } else {
-      await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id}) });
-    }
-    toast(ativo ? '✅ Cliente ativado' : '⛔ Cliente desativado');
-    buscarParaAtivar();
-  }
-
-  async function fazerReset() {
-    if (!confirm('Tem certeza? Reseta TODOS os clientes.')) return;
-    showMsg('msg-reset','Resetando...','loading');
-    try {
-      const r = await fetch(API + '/reset', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
-      const d = await r.json();
-      showMsg('msg-reset','✅ Reset feito! '+d.total+' clientes resetados.','success');
-    } catch(e) { showMsg('msg-reset','Erro: '+e.message,'error'); }
-  }
-
-  async function resetConfirmacoes() {
-    if (!confirm('Limpar todas as confirmações de hoje?')) return;
-    await fetch(API + '/reset-confirmacoes', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
-    showMsg('msg-reset-conf','✅ Confirmações limpas!','success');
-  }
-
-  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-  function showMsg(id, text, type) {
-    const el = document.getElementById(id);
-    if (!el) return;
-    el.innerHTML = (type==='loading'?'<span class="spinner"></span>':'')+text;
-    el.className = 'msg'+(type?' '+type:'');
-  }
-
-  function toast(msg) {
-    const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('show');
-    setTimeout(() => el.classList.remove('show'), 2500);
-  }
-
-  async function carregarChecklists() {
-    const el = document.getElementById('lista-checklists');
-    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
-    document.getElementById('card-lista-checklists').style.display = 'block';
-    document.getElementById('card-detalhe-checklist').style.display = 'none';
-    try {
-      const hoje = new Date().toLocaleDateString('pt-BR');
-      const r = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
-      const d = await r.json();
-      const lista = d.checklists || [];
-      if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum checklist hoje</div>'; return; }
-      el.innerHTML = lista.map(c => `
-        <div class="list-item" style="cursor:pointer" onclick="abrirDetalheChecklist(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-          <div class="list-item-row">
-            <div class="list-item-name">${c.biocondutor}</div>
-            <div class="list-item-meta">${c.data_checklist ? c.data_checklist.split(' ').pop() : ''}</div>
-          </div>
-          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">🛣️ ${c.rota || '—'} · 🚗 ${c.placa || '—'}</div>
-        </div>`).join('');
-    } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
-  }
-
-  function abrirDetalheChecklist(c) {
-    document.getElementById('card-lista-checklists').style.display = 'none';
-    document.getElementById('card-detalhe-checklist').style.display = 'block';
-    document.getElementById('detalhe-checklist-titulo').textContent = c.biocondutor;
-
-    const campos = [
-      { label: 'Placa', valor: c.placa },
-      { label: 'Conservação da Moto', valor: c.conservacao_moto },
-      { label: 'Pneu Dianteiro', valor: c.pneu_dianteiro },
-      { label: 'Pneu Traseiro', valor: c.pneu_traseiro },
-      { label: 'Bolsa Térmica — Limpeza', valor: c.bolsa_limpeza },
-      { label: 'Bolsa Térmica — Estado Geral', valor: c.bolsa_estado },
-      { label: 'Bolsa Térmica — Identificação', valor: c.bolsa_identificacao },
-      { label: 'Colete Refletivo', valor: c.colete },
-      { label: 'Documento do Veículo', valor: c.documento },
-      { label: 'Mata Cachorro', valor: c.mata_cachorro },
-      { label: 'Caixa Refrigerada', valor: c.caixa_refrigerada },
-      { label: 'Quantidade de Gelox', valor: c.qtd_gelox },
-      { label: 'Quantidade de Gelo Seco', valor: c.qtd_gelo_seco },
-      { label: 'Caixa Ambiente', valor: c.caixa_ambiente },
-      { label: 'Caixa Térmica tem Identificação?', valor: c.caixa_identificacao },
-      { label: 'Há amostras pendentes do dia anterior no cooler?', valor: c.amostras_pendentes },
-      { label: 'Baú com cadeado?', valor: c.bau_cadeado },
-    ];
-
-    const cor = v => {
-      if (!v) return '#94A8B8';
-      if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return '#085041';
-      if (['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return '#791F1F';
-      return '#0F4C7A';
-    };
-    const bg = v => {
-      if (!v) return '#F7FBFD';
-      if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return '#E1F5EE';
-      if (['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return '#FCEBEB';
-      return '#E8F4FB';
-    };
-
-    document.getElementById('detalhe-checklist-conteudo').innerHTML = `
-      <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">🛣️ ${c.rota || '—'} · 📅 ${c.data_checklist || '—'}</div>
-      ${campos.map(f => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5">
-          <div style="font-size:13px;color:#5A7A8F;font-weight:500">${f.label}</div>
-          <div style="font-size:13px;font-weight:700;padding:4px 10px;border-radius:7px;background:${bg(String(f.valor))};color:${cor(String(f.valor))}">${f.valor !== null && f.valor !== undefined && f.valor !== '' ? f.valor : '—'}</div>
-        </div>`).join('')}
-    `;
-  }
-
-  function voltarListaChecklists() {
-    document.getElementById('card-lista-checklists').style.display = 'block';
-    document.getElementById('card-detalhe-checklist').style.display = 'none';
-  }
-
-  carregarPainel();
-  iniciarAutoRefresh();
-</script>
-<!-- CHAT WIDGET ADMIN -->
-<div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 6px 20px rgba(30,159,217,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;cursor:pointer;z-index:9998">💬
-  <div id="chat-fab-badge" style="position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;border-radius:50%;width:24px;height:24px;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
-</div>
-
-<div id="chat-window" style="display:none;position:fixed;bottom:100px;right:24px;width:600px;max-width:calc(100vw - 48px);height:500px;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);overflow:hidden;z-index:9999;flex-direction:row">
-  <div style="width:230px;background:#F7FBFD;border-right:1px solid #EBF1F5;display:flex;flex-direction:column">
-    <div style="padding:14px 16px;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center">
-      💬 Conversas
-      <button onclick="fecharChat()" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer">×</button>
-    </div>
-    <div style="padding:8px">
-      <input id="chat-busca" placeholder="🔍 Buscar..." style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;font-size:12px;background:#fff" oninput="filtrarMotoboys()"/>
-    </div>
-    <div id="chat-lista" style="flex:1;overflow-y:auto">
-      <div style="padding:1rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
-    </div>
-  </div>
-  
-  <div style="flex:1;display:flex;flex-direction:column;background:#F0F4F8;min-width:0">
-    <div id="chat-conv-header" style="padding:14px 16px;background:#fff;border-bottom:1px solid #EBF1F5;display:none;align-items:center;gap:10px">
-      <div id="chat-conv-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5DCAA5,#0F9B78);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">--</div>
-      <div>
-        <div id="chat-conv-nome" style="font-size:14px;font-weight:700;color:#0F4C7A">--</div>
-        <div id="chat-conv-rota" style="font-size:11px;color:#0F9B78">--</div>
+  function mostrarModalChecklist() {
+    if (document.getElementById('modal-checklist-pendente')) return;
+    const modal = document.createElement('div');
+    modal.id = 'modal-checklist-pendente';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;padding:1rem';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center">
+        <div style="font-size:48px;margin-bottom:1rem">⚠️</div>
+        <h2 style="color:#92400E;font-size:18px;font-weight:700;margin-bottom:10px">Checklist Obrigatório</h2>
+        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Você precisa preencher o checklist do veículo antes de continuar a rota.</p>
+        <button onclick="window.location.href='confirmar.html?direto_checklist=1'" style="width:100%;padding:14px;background:linear-gradient(135deg,#F59E0B,#92400E);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(245,158,11,0.3)">📋 Preencher Checklist Agora</button>
       </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  verificarChecklistPendente();
+  setInterval(verificarChecklistPendente, 30000);
+
+  let clientes = [];
+  let somentePendentes = false;
+  let clienteSelecionado = null;
+  let todasAsRotas = [];
+  let rotaAtualIdx = 0;
+
+  function toggleFiltro() {
+    somentePendentes = !somentePendentes;
+    const btn = document.getElementById('filter-btn');
+    btn.textContent = somentePendentes ? 'Todos' : 'Pendentes';
+    btn.classList.toggle('active', somentePendentes);
+    renderizar();
+  }
+
+  function fecharModal(id) { document.getElementById(id).classList.add('hidden'); clienteSelecionado = null; }
+
+  async function carregar() {
+    try {
+      const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
+      const d = await r.json();
+      clientes = d.clientes || [];
+      
+      // Verificar se já tem coletas desse motoboy nessa rota hoje (significa que já finalizou)
+      const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+      const dataFormatada = hoje.split('-').reverse().join('/');
+      const historico = await fetch(API + '/historico?data=' + encodeURIComponent(dataFormatada));
+      const histData = await historico.json();
+      const jaFinalizou = histData.historico && histData.historico.some(h => 
+        h.rota === rota && h.telefone_motoboy === tel
+      );
+      
+      // Desabilitar botão se já finalizou
+      const btnFin = document.getElementById('btn-finalizar');
+      if (jaFinalizou) {
+        btnFin.disabled = true;
+        btnFin.textContent = '✓ Rota finalizada';
+        btnFin.style.opacity = '0.5';
+        btnFin.style.cursor = 'not-allowed';
+      } else {
+        btnFin.disabled = false;
+        btnFin.textContent = '🏁 Finalizar Rota';
+        btnFin.style.opacity = '1';
+        btnFin.style.cursor = 'pointer';
+      }
+      
+      renderizar();
+    } catch(e) {
+      document.getElementById('lista').innerHTML = `<p class="empty">Erro ao carregar.</p>`;
+    }
+  }
+
+
+
+
+
+  function abrirModalProd(id) {
+    const c = clientes.find(c => c.id === id);
+    if (!c || c.status === 'entregue') return;
+    clienteSelecionado = id;
+    document.getElementById('modal-cliente-nome').textContent = c.nome;
+    document.getElementById('modal-prod').classList.remove('hidden');
+  }
+  function cancelarTique() { clienteSelecionado = null; document.getElementById('modal-prod').classList.add('hidden'); }
+
+  function abrirModalMotivo() {
+    const c = clientes.find(c => c.id === clienteSelecionado);
+    document.getElementById('modal-prod').classList.add('hidden');
+    document.getElementById('modal-motivo-cliente').textContent = c ? c.nome : '';
+    document.getElementById('motivo-texto').value = '';
+    document.getElementById('modal-motivo').classList.remove('hidden');
+    document.getElementById('motivo-texto').focus();
+  }
+  function voltarParaProd() { document.getElementById('modal-motivo').classList.add('hidden'); document.getElementById('modal-prod').classList.remove('hidden'); }
+
+  async function confirmarTique(produtividade, motivo) {
+    const id = clienteSelecionado;
+    document.getElementById('modal-prod').classList.add('hidden');
+    document.getElementById('modal-motivo').classList.add('hidden');
+    clienteSelecionado = null;
+    try {
+      const r = await fetch(API + '/ticar', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, telefone_motoboy: tel, produtividade, motivo_improdutiva: motivo || '' })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        const c = clientes.find(c => c.id === id);
+        if (c) { c.status = 'entregue'; c.produtividade = produtividade; c.motivo_improdutiva = motivo || ''; c.horario_entrega = d.horario_entrega; }
+        renderizar();
+      }
+    } catch(e) {}
+  }
+
+  async function confirmarImprodutiva() {
+    const motivo = document.getElementById('motivo-texto').value.trim();
+    if (!motivo) { document.getElementById('motivo-texto').style.borderColor = '#0F4C7A'; document.getElementById('motivo-texto').placeholder = 'Por favor, informe o motivo!'; return; }
+    await confirmarTique('improdutiva', motivo);
+  }
+
+  function getTipoBadge(c) {
+    const tipo = (c.tipo || 'normal').toLowerCase();
+    if (c.status === 'entregue') {
+      if (c.produtividade === 'produtiva') return `<span class="horario-badge produtiva">✓ Produtiva</span>`;
+      if (c.produtividade === 'improdutiva') return `<span class="horario-badge improdutiva">✗ Improdutiva</span>`;
+    }
+    if (c.horario_chegada) return `<span class="horario-badge chegou">No local</span>`;
+    if (tipo === 'contra pedido') return `<span class="horario-badge contra-pedido">Contra Pedido</span>`;
+    if (tipo === 'sob demanda') return `<span class="horario-badge sob-demanda">Sob Demanda</span>`;
+    return `<span class="horario-badge normal">${c.horario || '—'}</span>`;
+  }
+
+  function extrairHoraSaida(c) {
+    if (!c.horario_entrega) return '';
+    const partes = String(c.horario_entrega).split(' ');
+    return partes[partes.length - 1];
+  }
+
+  function cardHTML(c) {
+    const entregue = c.status === 'entregue';
+    const prod = c.produtividade || '';
+
+    let cardClass = '', btnClass = '', btnIcon = '';
+    if (entregue) {
+      cardClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
+      btnClass = prod === 'improdutiva' ? 'improdutiva' : 'produtiva';
+      btnIcon = prod === 'improdutiva' ? '✕' : '✓';
+    }
+
+    const horaSaida = extrairHoraSaida(c);
+
+    return `
+      <div class="cliente-card ${cardClass}" data-id="${c.id}">
+        <div class="check-btn ${btnClass}">${btnIcon}</div>
+        <div class="cliente-info">
+          <div class="cliente-nome">${c.nome}</div>
+          <div class="cliente-meta">Nº ${c.numero_cliente}</div>
+          ${entregue && horaSaida ? `
+            <div class="ts-info">
+              <span class="ts-saida ${prod}">${prod === 'improdutiva' ? '🔘 Saída' : '🔵 Saída'}: ${horaSaida}</span>
+            </div>
+          ` : ''}
+          ${entregue && prod === 'improdutiva' && c.motivo_improdutiva ? `<div class="motivo-txt">↳ ${c.motivo_improdutiva}</div>` : ''}
+        </div>
+        ${getTipoBadge(c)}
+      </div>`;
+  }
+
+  function abrirModalFinalizar() {
+    const pendentes = clientes.filter(c => c.status !== 'entregue').length;
+    const total = clientes.length;
+    if (total === 0) return;
+    const msg = pendentes === 0
+      ? `Todas as ${total} coletas foram registradas. Deseja finalizar a rota?`
+      : `${total - pendentes} de ${total} registradas. Ainda há ${pendentes} pendente${pendentes>1?'s':''}. Ao finalizar a rota fica liberada.`;
+    document.getElementById('modal-fin-msg').textContent = msg;
+    document.getElementById('modal-fin').classList.remove('hidden');
+  }
+
+  async function finalizarRota() {
+    document.getElementById('modal-fin').classList.add('hidden');
+    const btn = document.getElementById('btn-finalizar');
+    btn.disabled = true;
+    btn.textContent = 'Finalizando...';
+    const pendentes = clientes.filter(c => c.status !== 'entregue');
+    for (const c of pendentes) {
+      try {
+        await fetch(API + '/ticar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id: c.id, telefone_motoboy: tel, produtividade: 'produtiva', motivo_improdutiva: '' }) });
+        c.status = 'entregue'; c.produtividade = 'produtiva';
+        c.horario_entrega = new Date().toLocaleString('pt-BR', { timeZone:'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      } catch(e) {}
+    }
+    try { await fetch(API + '/finalizar-rota', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ telefone: tel, rota }) }); } catch(e) {}
+    renderizar();
+    
+    // Deixar botão permanentemente desabilitado
+    btn.disabled = true;
+    btn.textContent = '✓ Rota finalizada';
+    btn.style.opacity = '0.5';
+    btn.style.cursor = 'not-allowed';
+    
+    const total = clientes.length;
+    document.getElementById('celebration-msg').textContent = `${total} coleta${total>1?'s':''} registrada${total>1?'s':''}. Rota liberada!`;
+    document.getElementById('celebration').classList.remove('hidden');
+  }
+
+  function aoFecharCelebracao() {
+    localStorage.removeItem('motoboy_nome');
+    localStorage.removeItem('motoboy_rota');
+    localStorage.removeItem('motoboy_tel');
+    window.location.href = 'index.html';
+  }
+
+  function renderizar() {
+    const busca = (document.getElementById('busca').value || '').toLowerCase();
+    const entregues  = clientes.filter(c => c.status === 'entregue');
+    const produtivas = clientes.filter(c => c.produtividade === 'produtiva');
+    const pendentes  = clientes.filter(c => c.status !== 'entregue');
+    document.getElementById('cnt-total').textContent     = clientes.length;
+    document.getElementById('cnt-produtiva').textContent = produtivas.length;
+    document.getElementById('cnt-pendente').textContent  = pendentes.length;
+    const pct = clientes.length ? Math.round(entregues.length / clientes.length * 100) : 0;
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-label').textContent = pct + '% concluído';
+    const btnFin = document.getElementById('btn-finalizar');
+    btnFin.innerHTML = pct === 100 ? '✓ Rota 100% — Finalizar' : `🏁 Finalizar Rota (${pendentes.length} pendente${pendentes.length!==1?'s':''})`;
+    btnFin.disabled = clientes.length === 0;
+    let fonte = somentePendentes ? pendentes : clientes;
+    if (busca) fonte = fonte.filter(c => c.nome.toLowerCase().includes(busca) || c.numero_cliente.toLowerCase().includes(busca));
+    if (fonte.length === 0) { document.getElementById('lista').innerHTML = `<p class="empty">${busca ? 'Nenhum cliente encontrado.' : somentePendentes ? '🎉 Todas as coletas registradas!' : 'Nenhum cliente nesta rota.'}</p>`; return; }
+    const pendFiltrados = fonte.filter(c => c.status !== 'entregue');
+    const entrFiltrados = fonte.filter(c => c.status === 'entregue');
+    let html = '';
+    if (pendFiltrados.length > 0) { if (!somentePendentes && entrFiltrados.length > 0) html += `<div class="section-title">Pendentes (${pendFiltrados.length})</div>`; html += pendFiltrados.map(c => cardHTML(c)).join(''); }
+    if (entrFiltrados.length > 0) { html += `<div class="section-title">Registradas (${entrFiltrados.length})</div>`; html += entrFiltrados.map(c => cardHTML(c)).join(''); }
+    document.getElementById('lista').innerHTML = html;
+
+    document.querySelectorAll('.cliente-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const id = parseInt(card.dataset.id);
+        const c = clientes.find(c => c.id === id);
+        if (!c || c.status === 'entregue') return;
+        abrirModalProd(id);
+      });
+    });
+  }
+
+  async function sair() {
+    if (!confirm('Sair desta rota? Ela continua reservada para você. Quando voltar, abre direto nela.')) return;
+    window.location.href = 'index.html';
+  }
+
+  function trocarUsuario() {
+    if (!confirm('Trocar de motoboy? Sua sessão será encerrada.')) return;
+    localStorage.removeItem('motoboy_nome');
+    localStorage.removeItem('motoboy_rota');
+    localStorage.removeItem('motoboy_tel');
+    window.location.href = 'index.html#trocar';
+  }
+
+  async function verificarOutrasRotas() {
+    try {
+      const r = await fetch(API + '/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefone: tel })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        todasAsRotas = (d.rotas_info || []).filter(r => r.status !== 'travada');
+        if (todasAsRotas.length > 1) {
+          document.getElementById('btn-trocar-rota').style.display = 'flex';
+          renderizarAbas();
+        }
+      }
+    } catch(e) {}
+  }
+
+  function renderizarAbas() {
+    const abas = document.getElementById('abas-rotas');
+    abas.innerHTML = todasAsRotas.map((r, idx) => {
+      const ativa = r.rota === rota ? 'ativa' : '';
+      return `<button class="aba-rota ${ativa}" onclick="mudarRota(${idx})">${r.rota}</button>`;
+    }).join('');
+  }
+
+  let mudandoRota = false; // Flag para evitar múltiplos cliques simultâneos
+
+  async function mudarRota(idx) {
+    if (mudandoRota) return; // Impede múltiplos cliques
+    if (idx === rotaAtualIdx) return;
+    
+    mudandoRota = true;
+    rotaAtualIdx = idx;
+    const novaRota = todasAsRotas[idx].rota;
+    
+    document.getElementById('lista').style.animation = 'none';
+    setTimeout(() => {
+      document.getElementById('lista').style.animation = 'flipIn .6s ease forwards';
+    }, 10);
+    
+    localStorage.setItem('motoboy_rota', novaRota);
+    document.getElementById('header-rota').textContent = novaRota;
+    document.getElementById('lista').innerHTML = '<div class="loading-msg">Carregando...</div>';
+    
+    let tentativas = 0;
+    const maxTentativas = 3;
+    
+    while (tentativas < maxTentativas) {
+      try {
+        const r = await fetch(API + '/rota?rota=' + encodeURIComponent(novaRota));
+        if (!r.ok) throw new Error('Status ' + r.status);
+        const d = await r.json();
+        if (!d.clientes) throw new Error('Sem clientes');
+        
+        clientes = d.clientes || [];
+        renderizar();
+        
+        // Renderizar abas sem erro
+        try {
+          renderizarAbas();
+        } catch(e) {
+          console.warn('Erro ao renderizar abas:', e);
+        }
+        
+        mudandoRota = false;
+        return;
+      } catch(e) {
+        tentativas++;
+        if (tentativas < maxTentativas) {
+          await new Promise(resolve => setTimeout(resolve, 500)); // Aguarda 500ms antes de retry
+        }
+      }
+    }
+    
+    // Se falhar todas as tentativas
+    document.getElementById('lista').innerHTML = '<p class="empty">Erro ao carregar rota. Tente novamente.</p>';
+    mudandoRota = false;
+  }
+
+  async function trocarRota() {
+    document.getElementById('modal-trocar-rota').classList.remove('hidden');
+  }
+
+  async function abrirOutraRota(novaRota) {
+    document.getElementById('modal-trocar-rota').classList.add('hidden');
+    const idx = todasAsRotas.findIndex(r => r.rota === novaRota);
+    if (idx >= 0) mudarRota(idx);
+  }
+
+  async function verificarChecklistAoAbrir() {
+    if (!nome) return;
+    try {
+      const r = await fetch(API + '/checklist/verificar?nome=' + encodeURIComponent(nome));
+      const d = await r.json();
+      if (d.precisa_preencher) {
+        alert('⚠️ Você precisa preencher seu checklist antes de continuar!');
+        window.location.href = 'confirmar.html?checklist_obrigatorio=true';
+      }
+    } catch(e) {}
+  }
+
+  // Chama ao carregar
+  setTimeout(verificarChecklistAoAbrir, 1500);
+
+  carregar();
+  verificarOutrasRotas();
+
+  // Auto-refresh a cada 8 segundos
+  setInterval(() => {
+    const algumModalAberto = 
+      !document.getElementById('modal-prod').classList.contains('hidden') ||
+      !document.getElementById('modal-motivo').classList.contains('hidden') ||
+      !document.getElementById('modal-fin').classList.contains('hidden');
+    if (!algumModalAberto) carregar();
+  }, 2000);
+</script>
+<!-- CHAT OVERLAY ROTA -->
+<div id="chat-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:#F0F4F8;z-index:99999;flex-direction:column">
+  <div style="background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:10px">
+    <button onclick="fecharChatRota()" style="background:transparent;border:none;color:#fff;font-size:22px;cursor:pointer;padding:0 4px">←</button>
+    <div>
+      <div style="font-size:15px;font-weight:700">Admin Loglife</div>
+      <div style="font-size:11px;opacity:.9">● Online</div>
     </div>
-    <div id="chat-conv-msgs" style="flex:1;overflow-y:auto;padding:14px;background:#F7FBFD;display:flex;flex-direction:column">
-      <div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Selecione um motoboy<br/>para iniciar uma conversa</div>
-    </div>
-    <div id="chat-conv-input" style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:none;gap:8px">
-      <input id="chat-input-text" placeholder="Digite uma mensagem..." style="flex:1;padding:9px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:13px;outline:none" onkeydown="if(event.key==='Enter') enviarChat()"/>
-      <button onclick="enviarChat()" style="padding:0 16px;border-radius:20px;border:none;background:#1E9FD9;color:#fff;cursor:pointer;font-weight:600;font-size:14px">➤</button>
-    </div>
+  </div>
+  <div id="chat-rota-msgs" style="flex:1;overflow-y:auto;padding:14px;background:#F7FBFD;display:flex;flex-direction:column">
+    <div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
+  </div>
+  <div style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:flex;gap:8px">
+    <input id="chat-rota-input" placeholder="Mensagem..." style="flex:1;padding:10px 14px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:14px;outline:none" onkeydown="if(event.key==='Enter') enviarChatRota()"/>
+    <button onclick="enviarChatRota()" style="padding:0 18px;border-radius:20px;border:none;background:#1E9FD9;color:#fff;font-weight:600;cursor:pointer">➤</button>
   </div>
 </div>
 
 <script>
-  let chatMotoboyAtual = null;
-  let chatLista = [];
-  let chatRefreshInterval = null;
-  let chatSomTotal = 0;
-  let chatUltimaMsg = 0; // timestamp da última mensagem carregada
+  let chatRotaInterval = null;
+  let chatRotaTotal = 0;
   
-  // Som de notificação (Web Audio API - sem arquivo externo)
-  function tocarSomChat() {
+  function tocarSomChatRota() {
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
       const o = ctx.createOscillator();
@@ -1232,190 +655,108 @@
       o.stop(ctx.currentTime + 0.3);
     } catch(e) {}
   }
+  chatRotaSom.volume = 0.5;
   
-  async function carregarChatLista() {
+  async function carregarChatRota() {
+    if (!tel) return;
     try {
-      const r = await fetch(API + '/chat/lista');
-      const d = await r.json();
-      const novaLista = d.lista || [];
-      
-      // Verificar se tem mensagem nova para tocar som
-      const totalNaoLidas = novaLista.reduce((acc, m) => acc + (m.nao_lidas || 0), 0);
-      if (totalNaoLidas > chatSomTotal && chatSomTotal >= 0) {
-        tocarSomChat();
-      }
-      chatSomTotal = totalNaoLidas;
-      
-      chatLista = novaLista;
-      renderChatLista();
-      
-      // Atualizar badge
-      const badge = document.getElementById('chat-fab-badge');
-      if (totalNaoLidas > 0) {
-        badge.textContent = totalNaoLidas > 99 ? '99+' : totalNaoLidas;
-        badge.style.display = 'flex';
-      } else {
-        badge.style.display = 'none';
-      }
-    } catch(e) {}
-  }
-  
-  function renderChatLista() {
-    const filtro = (document.getElementById('chat-busca').value || '').toLowerCase();
-    const lista = filtro ? chatLista.filter(m => 
-      m.nome.toLowerCase().includes(filtro) || m.rota.toLowerCase().includes(filtro)
-    ) : chatLista;
-    
-    if (!lista.length) {
-      document.getElementById('chat-lista').innerHTML = '<div style="padding:1rem;text-align:center;color:#94A8B8;font-size:13px">Nenhum motoboy</div>';
-      return;
-    }
-    
-    document.getElementById('chat-lista').innerHTML = lista.map(m => {
-      const iniciais = (m.nome || '').split(' ').slice(0,2).map(p => p[0] || '').join('').toUpperCase();
-      const ativa = chatMotoboyAtual === m.telefone ? 'background:#E8F4FB;border-left:3px solid #1E9FD9' : '';
-      const colors = ['linear-gradient(135deg,#5DCAA5,#0F9B78)','linear-gradient(135deg,#F2CC70,#92400E)','linear-gradient(135deg,#F09595,#991B1B)','linear-gradient(135deg,#BFE0F0,#0F7BB0)'];
-      const cor = colors[m.telefone.length % colors.length];
-      return `<div onclick="abrirConversa('${m.telefone}','${(m.nome||'').replace(/'/g,"\\'")}', '${(m.rota||'').replace(/'/g,"\\'")}')" style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;gap:10px;${ativa}">
-        <div style="width:38px;height:38px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0">${iniciais || '?'}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:600;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.nome || m.telefone}</div>
-          <div style="font-size:11px;color:#5A7A8F;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px">${m.ultima_msg || m.rota || '—'}</div>
-        </div>
-        ${m.nao_lidas > 0 ? `<div style="background:#DC2626;color:#fff;border-radius:50%;font-size:10px;font-weight:700;padding:2px 6px;min-width:18px;text-align:center">${m.nao_lidas}</div>` : ''}
-      </div>`;
-    }).join('');
-  }
-  
-  function filtrarMotoboys() { renderChatLista(); }
-  
-  async function abrirConversa(tel, nome, rota) {
-    chatMotoboyAtual = tel;
-    document.getElementById('chat-conv-header').style.display = 'flex';
-    document.getElementById('chat-conv-input').style.display = 'flex';
-    document.getElementById('chat-conv-nome').textContent = nome || tel;
-    document.getElementById('chat-conv-rota').textContent = rota || '—';
-    const iniciais = (nome || '').split(' ').slice(0,2).map(p => p[0] || '').join('').toUpperCase();
-    document.getElementById('chat-conv-avatar').textContent = iniciais || '?';
-    
-    // Marcar mensagens como lidas
-    await fetch(API + '/chat/marcar-lido', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telefone_motoboy: tel, remetente: 'motoboy' })
-    });
-    
-    carregarMensagens();
-    renderChatLista();
-    atualizarBadge();
-  }
-  
-  async function carregarMensagens() {
-    if (!chatMotoboyAtual) return;
-    try {
-      const r = await fetch(API + '/chat/mensagens?telefone=' + encodeURIComponent(chatMotoboyAtual));
+      const r = await fetch(API + '/chat/mensagens?telefone=' + encodeURIComponent(tel));
       const d = await r.json();
       const msgs = d.mensagens || [];
       
       if (!msgs.length) {
-        document.getElementById('chat-conv-msgs').innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Nenhuma mensagem ainda</div>';
+        document.getElementById('chat-rota-msgs').innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Envie uma mensagem para o admin</div>';
         return;
       }
       
-      document.getElementById('chat-conv-msgs').innerHTML = msgs.map(m => {
-        const eu = m.remetente === 'admin';
+      document.getElementById('chat-rota-msgs').innerHTML = msgs.map(m => {
+        const eu = m.remetente === 'motoboy';
         const hora = new Date(m.timestamp).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
         return `<div style="margin-bottom:10px;display:flex;${eu ? 'justify-content:flex-end' : ''}">
           <div>
-            <div style="max-width:300px;padding:8px 12px;border-radius:12px;font-size:13px;line-height:1.4;${eu ? 'background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;border-bottom-right-radius:4px' : 'background:#fff;color:#0F4C7A;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.06)'}">${m.mensagem.replace(/</g,'&lt;')}</div>
+            <div style="max-width:75%;padding:9px 13px;border-radius:14px;font-size:14px;line-height:1.4;${eu ? 'background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;border-bottom-right-radius:4px' : 'background:#fff;color:#0F4C7A;border-bottom-left-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,0.06)'}">${m.mensagem.replace(/</g,'&lt;')}</div>
             <div style="font-size:10px;color:#94A8B8;margin-top:4px;${eu ? 'text-align:right' : ''}">${hora}</div>
           </div>
         </div>`;
       }).join('');
       
-      const msgs_div = document.getElementById('chat-conv-msgs');
+      const msgs_div = document.getElementById('chat-rota-msgs');
       msgs_div.scrollTop = msgs_div.scrollHeight;
     } catch(e) {}
   }
   
-  async function enviarChat() {
-    const input = document.getElementById('chat-input-text');
+  async function enviarChatRota() {
+    const input = document.getElementById('chat-rota-input');
     const texto = input.value.trim();
-    if (!texto || !chatMotoboyAtual) return;
+    if (!texto || !tel) return;
     input.value = '';
-    
-    const motoboy = chatLista.find(m => m.telefone === chatMotoboyAtual);
     
     try {
       await fetch(API + '/chat/enviar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          telefone_motoboy: chatMotoboyAtual,
-          nome_motoboy: motoboy ? motoboy.nome : '',
-          remetente: 'admin',
+          telefone_motoboy: tel,
+          nome_motoboy: nome || '',
+          remetente: 'motoboy',
           mensagem: texto
         })
       });
-      await carregarMensagens();
-      await carregarChatLista();
+      await carregarChatRota();
     } catch(e) {
       input.value = texto;
     }
   }
   
-  async function atualizarBadge() {
+  async function atualizarBadgeRota() {
+    if (!tel) return;
     try {
-      const r = await fetch(API + '/chat/nao-lidas');
+      const r = await fetch(API + '/chat/nao-lidas?telefone=' + encodeURIComponent(tel));
       const d = await r.json();
       const total = d.total || 0;
-      const badge = document.getElementById('chat-fab-badge');
+      const badge = document.getElementById('chat-badge-rota');
       if (total > 0) {
         badge.textContent = total > 99 ? '99+' : total;
         badge.style.display = 'flex';
         
-        // Toca som se aumentou
-        if (total > chatSomTotal && chatSomTotal > 0) {
-          try { chatSom.play().catch(() => {}); } catch(e) {}
+        if (total > chatRotaTotal && chatRotaTotal >= 0) {
+          tocarSomChatRota();
         }
-        chatSomTotal = total;
+        chatRotaTotal = total;
       } else {
         badge.style.display = 'none';
-        chatSomTotal = 0;
+        chatRotaTotal = 0;
       }
     } catch(e) {}
   }
   
-  function abrirChat() {
-    document.getElementById('chat-window').style.display = 'flex';
-    carregarChatLista();
-    if (!chatRefreshInterval) {
-      chatRefreshInterval = setInterval(async () => {
-        await carregarChatLista(); // já atualiza badge também
-        if (chatMotoboyAtual) carregarMensagens();
-      }, 5000); // 5s em vez de 3s
-    }
-  }
-  
-  function fecharChat() {
-    document.getElementById('chat-window').style.display = 'none';
-    chatMotoboyAtual = null;
-    if (chatRefreshInterval) {
-      clearInterval(chatRefreshInterval);
-      chatRefreshInterval = null;
-    }
-  }
-  
-  // Verificar badge a cada 10s (mesmo com chat fechado)
-  setInterval(carregarChatLista, 10000);
-  setTimeout(carregarChatLista, 2000);
-  
-  // Registrar Service Worker para PWA
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+  function abrirChatRota() {
+    document.getElementById('chat-overlay').style.display = 'flex';
+    carregarChatRota();
+    
+    // Marcar como lidas
+    fetch(API + '/chat/marcar-lido', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone_motoboy: tel, remetente: 'admin' })
     });
+    
+    if (!chatRotaInterval) {
+      chatRotaInterval = setInterval(carregarChatRota, 5000);
+    }
+    setTimeout(atualizarBadgeRota, 500);
   }
+  
+  function fecharChatRota() {
+    document.getElementById('chat-overlay').style.display = 'none';
+    if (chatRotaInterval) {
+      clearInterval(chatRotaInterval);
+      chatRotaInterval = null;
+    }
+  }
+  
+  setInterval(atualizarBadgeRota, 10000);
+  setTimeout(atualizarBadgeRota, 2000);
 </script>
 
 </body>
