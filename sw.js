@@ -43,3 +43,14 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(e.request))
   );
 });
+
+// Escuta mensagem de refresh do admin
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'FORCE_REFRESH') {
+    self.clients.matchAll({ type: 'window' }).then(clients => {
+      clients.forEach(client => {
+        client.postMessage({ type: 'RELOAD' });
+      });
+    });
+  }
+});
