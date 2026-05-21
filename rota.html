@@ -780,11 +780,13 @@
     try {
       const r = await fetch(API + '/refresh-flag');
       const d = await r.json();
-      if (d.flag && Number(d.flag) > appAbriuEm) {
+      const flagNum = Number(d.flag || 0);
+      console.log('refresh-flag:', d.flag, 'appAbriuEm:', appAbriuEm, 'flag > app:', flagNum > appAbriuEm);
+      if (flagNum > appAbriuEm) {
         alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
         window.location.reload();
       }
-    } catch(e) {}
+    } catch(e) { console.error('refresh-flag erro:', e); }
   }
 
   setInterval(verificarRefreshFlag, 10000);
