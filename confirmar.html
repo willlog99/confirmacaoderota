@@ -427,6 +427,13 @@
       if (el) el.addEventListener('input', () => { salvarEstadoChecklist(); atualizarProgresso(); });
     });
     carregarEstadoChecklist();
+    
+    // Se vier ?direto_checklist=1, abre direto
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('direto_checklist') === '1' || params.get('checklist_obrigatorio') === 'true' || params.get('continuar') === 'true') {
+      // Aguardar carregamento das rotas
+      setTimeout(() => abrirChecklist(), 800);
+    }
   });
 
   async function enviarChecklist() {
