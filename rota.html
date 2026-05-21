@@ -775,18 +775,36 @@
   } catch(e) {}
 
   // Verificar flag de refresh do admin a cada 10s
-  const appAbriuEm = new Date().getTime();
+  let ultimaFlagVista = null;
   async function verificarRefreshFlag() {
     try {
       const r = await fetch(API + '/refresh-flag');
       const d = await r.json();
-      const flagNum = Number(d.flag || 0);
-      console.log('refresh-flag:', d.flag, 'appAbriuEm:', appAbriuEm, 'flag > app:', flagNum > appAbriuEm);
-      if (flagNum > appAbriuEm) {
-        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
-        window.location.reload();
+      if (!d.flag) return;
+      if (ultimaFlagVista === null) {
+        ultimaFlagVista = d.flag;
+        return;
       }
-    } catch(e) { console.error('refresh-flag erro:', e); }
+      if (d.flag !== ultimaFlagVista) {
+        ultimaFlagVista = d.flag;
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        await limparCacheERecarregar();
+      }
+    } catch(e) {}
+  }
+
+  async function limparCacheERecarregar() {
+    try {
+      // Limpar todos os caches
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+      // Desregistrar Service Workers
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+    } catch(e) {}
+    window.location.reload(true);
   }
 
   setInterval(verificarRefreshFlag, 10000);
