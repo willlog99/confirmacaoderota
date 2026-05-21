@@ -264,11 +264,13 @@
   }
   setInterval(verificarRefreshFlagIdx, 10000);
   setTimeout(verificarRefreshFlagIdx, 2000);
+
+  // Registrar Service Worker (PWA)
+  if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/confirmacaoderota/sw.js')
         .catch(err => console.log('SW erro:', err));
     });
-    // Escuta sinal de refresh do admin
     navigator.serviceWorker.addEventListener('message', e => {
       if (e.data && e.data.type === 'RELOAD') {
         alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
