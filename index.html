@@ -164,19 +164,35 @@
     localStorage.setItem('telefone_temp', telefoneSalvo);
     localStorage.setItem('nome_temp', nomeUsuario);
     
-    // Verificar se tem checklist incompleto
-    const checklistIncompleto = localStorage.getItem('checklist_incompleto_' + nomeUsuario);
-    if (checklistIncompleto) {
-      // Perguntar se quer continuar
-      if (confirm('Você tem um checklist incompleto. Deseja continuar preenchendo?')) {
-        window.location.href = 'confirmar.html?continuar=true';
+    // Verificar se precisa preencher checklist obrigatório (confirmou mas não preencheu)
+    verificarChecklistObrigatorio().then(precisa => {
+      if (precisa) {
+        alert('⚠️ Você confirmou presença mas ainda não preencheu seu checklist!\n\nVocê precisa preencher o checklist para continuar.');
+        window.location.href = 'confirmar.html?checklist_obrigatorio=true';
         return;
-      } else {
-        localStorage.removeItem('checklist_incompleto_' + nomeUsuario);
       }
-    }
-    
-    window.location.href = 'confirmar.html';
+      
+      // Verificar se tem checklist incompleto
+      const checklistIncompleto = localStorage.getItem('checklist_incompleto_' + nomeUsuario);
+      if (checklistIncompleto) {
+        if (confirm('Você tem um checklist incompleto. Deseja continuar preenchendo?')) {
+          window.location.href = 'confirmar.html?continuar=true';
+          return;
+        } else {
+          localStorage.removeItem('checklist_incompleto_' + nomeUsuario);
+        }
+      }
+      
+      window.location.href = 'confirmar.html';
+    });
+  }
+
+  async function verificarChecklistObrigatorio() {
+    try {
+      const r = await fetch(API + '/checklist/verificar?nome=' + encodeURIComponent(nomeUsuario));
+      const d = await r.json();
+      return d.precisa_preencher === true;
+    } catch(e) { return false; }
   }
 
   function mostrarSelecaoRotas(fluxo) {
@@ -207,10 +223,22 @@
     document.getElementById('modal-rotas').classList.remove('hidden');
   }
 
-  function irParaRota(rota) {
+  async function irParaRota(rota) {
     localStorage.setItem('motoboy_tel', telefoneSalvo);
     localStorage.setItem('motoboy_nome', nomeUsuario);
     localStorage.setItem('motoboy_rota', rota);
+    
+    // Verifica se precisa preencher checklist
+    try {
+      const r = await fetch('https://confirmacaoderota.willlog99.workers.dev/checklist-status?telefone=' + encodeURIComponent(telefoneSalvo));
+      const d = await r.json();
+      if (d.precisa) {
+        alert('⚠️ Você precisa preencher o checklist do veículo antes de continuar a rota.');
+        window.location.href = 'confirmar.html?direto_checklist=1';
+        return;
+      }
+    } catch(e) {}
+    
     window.location.href = 'rota.html';
   }
 
