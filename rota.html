@@ -755,6 +755,46 @@
     }
   }
   
+  // Escuta sinal de refresh do admin
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'RELOAD') {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
+      }
+    });
+  }
+  try {
+    const bc = new BroadcastChannel('loglife_refresh');
+    bc.onmessage = e => {
+      if (e.data && e.data.type === 'RELOAD') {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
+      }
+    };
+  } catch(e) {}
+
+  // Verificar flag de refresh do admin a cada 10s
+  let ultimoRefreshFlag = null;
+  async function verificarRefreshFlag() {
+    try {
+      const r = await fetch(API + '/refresh-flag');
+      const d = await r.json();
+      if (d.flag) {
+        if (ultimoRefreshFlag === null) {
+          ultimoRefreshFlag = d.flag; // primeira vez, só salva
+        } else if (d.flag !== ultimoRefreshFlag) {
+          ultimoRefreshFlag = d.flag;
+          alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+          window.location.reload();
+        }
+      }
+    } catch(e) {}
+  }
+
+  setInterval(verificarRefreshFlag, 10000);
+  setTimeout(verificarRefreshFlag, 2000);
+
   setInterval(atualizarBadgeRota, 10000);
   setTimeout(atualizarBadgeRota, 2000);
 </script>
