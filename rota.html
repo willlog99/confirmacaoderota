@@ -286,13 +286,13 @@
       const d = await r.json();
       clientes = d.clientes || [];
       
-      // Verificar se já tem coletas desse motoboy nessa rota hoje (significa que já finalizou)
+      // Verificar se a rota foi finalizada - se NÃO está em rotas_ativas = finalizada
       const hoje = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
       const dataFormatada = hoje.split('-').reverse().join('/');
       const historico = await fetch(API + '/historico?data=' + encodeURIComponent(dataFormatada));
       const histData = await historico.json();
       const jaFinalizou = histData.historico && histData.historico.some(h => 
-        h.rota === rota && h.telefone_motoboy === tel
+        h.rota === rota && (h.telefone_motoboy === tel || h.nome_motoboy === nome)
       );
       
       // Desabilitar botão se já finalizou
