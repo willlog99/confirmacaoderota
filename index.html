@@ -246,19 +246,14 @@
   }
 
   // Verificar flag de refresh do admin a cada 10s
-  let ultimoRefreshFlagIdx = null;
+  const appAbriuEmIdx = new Date().getTime();
   async function verificarRefreshFlagIdx() {
     try {
       const r = await fetch(API + '/refresh-flag');
       const d = await r.json();
-      if (d.flag) {
-        if (ultimoRefreshFlagIdx === null) {
-          ultimoRefreshFlagIdx = d.flag;
-        } else if (d.flag !== ultimoRefreshFlagIdx) {
-          ultimoRefreshFlagIdx = d.flag;
-          alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
-          window.location.reload();
-        }
+      if (d.flag && Number(d.flag) > appAbriuEmIdx) {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
       }
     } catch(e) {}
   }
