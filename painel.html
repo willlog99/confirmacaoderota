@@ -1216,19 +1216,47 @@
   let chatLista = [];
   let chatRefreshInterval = null;
   let chatSomTotal = 0;
+  let chatUltimaMsg = 0; // timestamp da última mensagem carregada
   
-  // Som de notificação (base64)
-  const chatSom = new Audio('data:audio/wav;base64,UklGRiQDAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQADAACI/4//hf+S/4P/lf+B/5j/fv+b/3v/n/93/6P/cv+o/2z/rv9l/7T/Xf+8/1T/xP9K/87/P//Y/zL/4/8j/+//Ev/8/wH/Cv/u/hn/2v4o/8X+OP+w/kn/m/5b/4X+a/9w/n3/Wf6P/0L+ov8q/rT/E/7H//z9'+
-    '2v/m/e7/zv0CANb9F gC8/SwAoQpAALV9SwBd/WMAR/16ADL9kgAd/akACP3BAA');
-  chatSom.volume = 0.5;
+  // Som de notificação (Web Audio API - sem arquivo externo)
+  function tocarSomChat() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 520;
+      g.gain.setValueAtTime(0.3, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      o.start(ctx.currentTime);
+      o.stop(ctx.currentTime + 0.3);
+    } catch(e) {}
+  }
   
   async function carregarChatLista() {
     try {
       const r = await fetch(API + '/chat/lista');
       const d = await r.json();
-      chatLista = d.lista || [];
+      const novaLista = d.lista || [];
+      
+      // Verificar se tem mensagem nova para tocar som
+      const totalNaoLidas = novaLista.reduce((acc, m) => acc + (m.nao_lidas || 0), 0);
+      if (totalNaoLidas > chatSomTotal && chatSomTotal >= 0) {
+        tocarSomChat();
+      }
+      chatSomTotal = totalNaoLidas;
+      
+      chatLista = novaLista;
       renderChatLista();
-      atualizarBadge();
+      
+      // Atualizar badge
+      const badge = document.getElementById('chat-fab-badge');
+      if (totalNaoLidas > 0) {
+        badge.textContent = totalNaoLidas > 99 ? '99+' : totalNaoLidas;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
     } catch(e) {}
   }
   
@@ -1362,10 +1390,10 @@
     document.getElementById('chat-window').style.display = 'flex';
     carregarChatLista();
     if (!chatRefreshInterval) {
-      chatRefreshInterval = setInterval(() => {
+      chatRefreshInterval = setInterval(async () => {
+        await carregarChatLista(); // já atualiza badge também
         if (chatMotoboyAtual) carregarMensagens();
-        carregarChatLista();
-      }, 3000);
+      }, 5000); // 5s em vez de 3s
     }
   }
   
@@ -1378,9 +1406,9 @@
     }
   }
   
-  // Atualizar badge a cada 5s mesmo com chat fechado
-  setInterval(atualizarBadge, 5000);
-  atualizarBadge();
+  // Verificar badge a cada 10s (mesmo com chat fechado)
+  setInterval(carregarChatLista, 10000);
+  setTimeout(carregarChatLista, 2000);
   
   // Registrar Service Worker para PWA
   if ('serviceWorker' in navigator) {
