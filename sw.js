@@ -1,4 +1,4 @@
-const CACHE_NAME = 'loglife-v1';
+const CACHE_NAME = 'loglife-v2';
 const ASSETS = [
   '/confirmacaoderota/index.html',
   '/confirmacaoderota/confirmar.html',
@@ -7,7 +7,12 @@ const ASSETS = [
   '/confirmacaoderota/rotas.html',
   '/confirmacaoderota/criar-rota.html',
   '/confirmacaoderota/exportar.html',
+  '/confirmacaoderota/importar.html',
+  '/confirmacaoderota/atualizar-massa.html',
+  '/confirmacaoderota/base.html',
+  '/confirmacaoderota/historico.html',
   '/confirmacaoderota/manifest.json',
+  '/confirmacaoderota/manifest-admin.json',
   '/confirmacaoderota/20050686-7618-4EE2-86F2-0E0E1EE012BE.png',
   '/confirmacaoderota/761B1410-BF55-4955-AD0E-BA388B9E6625.png',
   '/confirmacaoderota/HERMES PARDINI.png'
@@ -16,7 +21,9 @@ const ASSETS = [
 // Instala e faz cache dos arquivos
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => 
+      Promise.allSettled(ASSETS.map(url => cache.add(url).catch(() => null)))
+    ).then(() => self.skipWaiting())
   );
 });
 
