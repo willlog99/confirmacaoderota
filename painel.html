@@ -4,6 +4,12 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Loglife — Centro de Controle</title>
+  <link rel="manifest" href="manifest-admin.json"/>
+  <meta name="theme-color" content="#1E9FD9"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Loglife Admin"/>
+  <link rel="apple-touch-icon" href="20050686-7618-4EE2-86F2-0E0E1EE012BE.png"/>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
@@ -1375,6 +1381,13 @@
   // Atualizar badge a cada 5s mesmo com chat fechado
   setInterval(atualizarBadge, 5000);
   atualizarBadge();
+  
+  // Registrar Service Worker para PWA
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
 </script>
 
 </body>
