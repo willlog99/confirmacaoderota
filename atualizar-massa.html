@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atualização de Rota em Massa — Loglife</title>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;min-height:100vh;padding:2rem 1rem}
+    .container{width:100%;max-width:850px;margin:0 auto}
+    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.5rem;text-decoration:none;font-weight:500}
+    .card{background:#fff;border-radius:16px;padding:2rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1.5rem}
+    h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem}
+    .subtitle{font-size:13px;color:#5A7A8F;margin-bottom:1.5rem}
+    .upload-area{border:2px dashed #BFE0F0;background:#F7FBFD;border-radius:12px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s}
+    .upload-area:hover{border-color:#1E9FD9;background:#E8F4FB}
+    .upload-area input{display:none}
+    .upload-ico{font-size:42px;margin-bottom:10px;color:#1E9FD9}
+    .upload-txt{font-size:14px;color:#0F4C7A;font-weight:600;margin-bottom:4px}
+    .upload-hint{font-size:12px;color:#5A7A8F}
+    .btn{padding:13px 24px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .btn-danger{background:linear-gradient(135deg,#DC2626,#991B1B)}
+    .btn-success{background:linear-gradient(135deg,#0F9B78,#085041)}
+    .msg{border-radius:10px;padding:12px 16px;font-size:13px;text-align:center;margin-top:1rem;font-weight:500}
+    .msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
+    .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0}
+    .relatorio{margin-top:1.5rem}
+    .rel-section{margin-bottom:1rem;padding:14px;border-radius:10px}
+    .rel-success{background:#E1F5EE;border-left:4px solid #0F9B78}
+    .rel-warning{background:#FEF9EC;border-left:4px solid #F59E0B}
+    .rel-info{background:#E8F4FB;border-left:4px solid #1E9FD9}
+    .rel-title{font-weight:700;color:#0F4C7A;margin-bottom:8px;font-size:14px}
+    .rel-item{font-size:13px;color:#0F4C7A;padding:4px 0}
+    .table{width:100%;border-collapse:collapse;margin-top:10px}
+    .table th, .table td{padding:8px 12px;text-align:left;font-size:12px;border-bottom:1px solid #EBF1F5}
+    .table th{background:#F7FBFD;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px}
+    .badge{padding:3px 8px;border-radius:5px;font-size:11px;font-weight:600}
+    .badge-new{background:#E1F5EE;color:#085041}
+    .badge-update{background:#E8F4FB;color:#0F4C7A}
+    .badge-dup{background:#FEF9EC;color:#92400E}
+    .badge-error{background:#FCEBEB;color:#991B1B}
+    .modal-bg{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:none;align-items:center;justify-content:center;z-index:9999;padding:1rem}
+    .modal-bg.show{display:flex}
+    .modal{background:#fff;border-radius:14px;padding:1.5rem;max-width:500px;width:100%;max-height:80vh;overflow-y:auto}
+    .modal h3{font-size:16px;color:#0F4C7A;margin-bottom:10px}
+    .modal p{font-size:13px;color:#5A7A8F;margin-bottom:1rem}
+    .modal-buttons{display:flex;gap:8px;margin-top:1rem}
+    .modal-buttons button{flex:1;padding:10px;border-radius:8px;border:none;font-weight:600;cursor:pointer;font-size:13px}
+    .info{font-size:12px;color:#5A7A8F;padding:12px;background:#F7FBFD;border-radius:8px;border-left:3px solid #1E9FD9;margin-top:1rem;line-height:1.6}
+  </style>
+</head>
+<body>
+<div class="container">
+  <a class="back-link" href="painel.html">← Voltar</a>
+
+  <div class="card">
+    <h2>🔄 Atualização de Rota em Massa</h2>
+    <p class="subtitle">Suba um arquivo Excel para atualizar as rotas em lote</p>
+
+    <label class="upload-area" id="upload-area">
+      <input type="file" id="file-input" accept=".xlsx,.xls"/>
+      <div class="upload-ico">📤</div>
+      <div class="upload-txt">Clique para selecionar arquivo Excel</div>
+      <div class="upload-hint">Colunas: número, nome, horário, rota</div>
+    </label>
+
+    <div class="info">
+      <strong>ℹ️ Como funciona:</strong><br/>
+      • Cliente já existe na rota → atualiza horário<br/>
+      • Cliente existe em outra rota → mantém em ambas (mostra na lista de duplicidades)<br/>
+      • Cliente não existe → popup pergunta se quer criar<br/>
+      • Rota não existe → cria sem motorista (você atribui depois)
+    </div>
+
+    <div id="msg-status"></div>
+    <div id="preview" style="margin-top:1.5rem;display:none">
+      <h3 style="font-size:14px;color:#0F4C7A;margin-bottom:10px">📋 Pré-visualização: <span id="preview-count">0</span> registros</h3>
+      <div style="max-height:300px;overflow-y:auto;border:1px solid #EBF1F5;border-radius:8px">
+        <table class="table" id="preview-table">
+          <thead><tr><th>Nº</th><th>Nome</th><th>Horário</th><th>Rota</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button class="btn btn-success" style="margin-top:1rem" id="btn-processar" onclick="processar()">🚀 Processar Atualização</button>
+    </div>
+
+    <div id="relatorio" class="relatorio"></div>
+  </div>
+</div>
+
+<!-- Modal para cliente novo -->
+<div class="modal-bg" id="modal-cliente-novo">
+  <div class="modal">
+    <h3>⚠️ Cliente Novo Detectado</h3>
+    <p>O cliente abaixo não existe no banco. Deseja criar?</p>
+    <div id="modal-cliente-info" style="background:#F7FBFD;padding:12px;border-radius:8px;font-size:13px"></div>
+    <div class="modal-buttons">
+      <button onclick="autorizarCliente(false)" style="background:#FCEBEB;color:#991B1B">❌ Pular</button>
+      <button onclick="autorizarCliente(true)" style="background:#E1F5EE;color:#085041">✓ Criar</button>
+      <button onclick="autorizarTodos()" style="background:#E8F4FB;color:#0F4C7A">✓ Criar Todos</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let dadosArquivo = [];
+  let clientesParaCriar = [];
+  let indiceAtual = 0;
+  let criarTodos = false;
+  let resolverCliente = null;
+
+  document.getElementById('file-input').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const buffer = await file.arrayBuffer();
+    const wb = XLSX.read(buffer, { type: 'array' });
+    const sheet = wb.Sheets[wb.SheetNames[0]];
+    const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+    dadosArquivo = json.map(r => ({
+      numero: String(r['número'] || r['numero'] || r['Número'] || r['Numero'] || r['nº'] || r['Nº'] || '').trim(),
+      nome: String(r['nome'] || r['Nome'] || '').trim(),
+      horario: String(r['horário'] || r['horario'] || r['Horário'] || r['Horario'] || '').trim(),
+      rota: String(r['rota'] || r['Rota'] || '').trim().toUpperCase()
+    })).filter(r => r.numero && r.rota);
+
+    if (!dadosArquivo.length) {
+      mostrarMsg('Arquivo vazio ou colunas inválidas. Use: número, nome, horário, rota', 'error');
+      return;
+    }
+
+    document.getElementById('preview-count').textContent = dadosArquivo.length;
+    const tbody = document.querySelector('#preview-table tbody');
+    tbody.innerHTML = dadosArquivo.slice(0, 50).map(r => `
+      <tr><td>${r.numero}</td><td>${r.nome}</td><td>${r.horario || '—'}</td><td>${r.rota}</td></tr>
+    `).join('');
+    if (dadosArquivo.length > 50) {
+      tbody.innerHTML += `<tr><td colspan="4" style="text-align:center;color:#5A7A8F">... e mais ${dadosArquivo.length - 50} registros</td></tr>`;
+    }
+    document.getElementById('preview').style.display = 'block';
+  });
+
+  function mostrarMsg(texto, tipo) {
+    document.getElementById('msg-status').innerHTML = `<div class="msg ${tipo}">${texto}</div>`;
+  }
+
+  async function processar() {
+    document.getElementById('btn-processar').disabled = true;
+    mostrarMsg('🔍 Analisando arquivo...', 'loading');
+
+    try {
+      const r = await fetch(API + '/atualizar-massa-analise', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clientes: dadosArquivo })
+      });
+      const d = await r.json();
+
+      if (d.clientes_novos && d.clientes_novos.length) {
+        clientesParaCriar = [];
+        indiceAtual = 0;
+        criarTodos = false;
+        for (const c of d.clientes_novos) {
+          const autorizou = await perguntarCliente(c);
+          if (autorizou) clientesParaCriar.push(c);
+        }
+      }
+
+      mostrarMsg('⚙️ Aplicando atualizações...', 'loading');
+      const r2 = await fetch(API + '/atualizar-massa-aplicar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          clientes: dadosArquivo, 
+          clientes_novos_autorizados: clientesParaCriar 
+        })
+      });
+      const d2 = await r2.json();
+
+      mostrarMsg(`✓ Processado: ${d2.atualizados || 0} atualizados, ${d2.criados || 0} criados, ${d2.rotas_novas || 0} rotas novas`, 'success');
+      mostrarRelatorio(d2);
+    } catch(e) {
+      mostrarMsg('Erro: ' + e.message, 'error');
+    }
+    document.getElementById('btn-processar').disabled = false;
+  }
+
+  function perguntarCliente(c) {
+    return new Promise((resolve) => {
+      if (criarTodos) { resolve(true); return; }
+      document.getElementById('modal-cliente-info').innerHTML = `
+        <strong>Nº:</strong> ${c.numero}<br/>
+        <strong>Nome:</strong> ${c.nome || '(sem nome)'}<br/>
+        <strong>Horário:</strong> ${c.horario || '—'}<br/>
+        <strong>Rota:</strong> ${c.rota}
+      `;
+      document.getElementById('modal-cliente-novo').classList.add('show');
+      resolverCliente = resolve;
+    });
+  }
+
+  function autorizarCliente(criar) {
+    document.getElementById('modal-cliente-novo').classList.remove('show');
+    if (resolverCliente) resolverCliente(criar);
+  }
+
+  function autorizarTodos() {
+    criarTodos = true;
+    document.getElementById('modal-cliente-novo').classList.remove('show');
+    if (resolverCliente) resolverCliente(true);
+  }
+
+  function mostrarRelatorio(d) {
+    let html = '';
+    
+    if (d.duplicados && d.duplicados.length) {
+      html += `<div class="rel-section rel-warning">
+        <div class="rel-title">⚠️ Clientes Duplicados em Várias Rotas (${d.duplicados.length})</div>`;
+      d.duplicados.forEach(dup => {
+        const rotas = dup.rotas.map(r => `${r.rota} às ${r.horario}`).join(' e ');
+        html += `<div class="rel-item">• Cliente <strong>${dup.numero}</strong> ${dup.nome}: ${rotas}</div>`;
+      });
+      html += '</div>';
+    }
+
+    if (d.rotas_criadas && d.rotas_criadas.length) {
+      html += `<div class="rel-section rel-info">
+        <div class="rel-title">🆕 Rotas Criadas (${d.rotas_criadas.length})</div>`;
+      d.rotas_criadas.forEach(r => {
+        html += `<div class="rel-item">• ${r} <span class="badge badge-new">SEM MOTORISTA</span> — atribua um motorista</div>`;
+      });
+      html += '</div>';
+    }
+
+    if (d.criados && d.criados > 0) {
+      html += `<div class="rel-section rel-success">
+        <div class="rel-title">✓ Clientes Criados: ${d.criados}</div>
+      </div>`;
+    }
+
+    if (d.atualizados && d.atualizados > 0) {
+      html += `<div class="rel-section rel-success">
+        <div class="rel-title">✓ Clientes Atualizados: ${d.atualizados}</div>
+      </div>`;
+    }
+
+    if (d.erros && d.erros.length) {
+      html += `<div class="rel-section" style="background:#FCEBEB;border-left:4px solid #DC2626">
+        <div class="rel-title" style="color:#991B1B">❌ Erros (${d.erros.length})</div>`;
+      d.erros.forEach(e => {
+        html += `<div class="rel-item" style="color:#991B1B">• ${e}</div>`;
+      });
+      html += '</div>';
+    }
+
+    document.getElementById('relatorio').innerHTML = html;
+  }
+</script>
+</body>
+</html>
