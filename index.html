@@ -132,7 +132,16 @@
         const confirmouHoje = await verificarConfirmacao(tel);
         
         if (confirmouHoje) {
-          // Já confirmou → vai direto pro modal de seleção de rotas
+          // Já confirmou → verifica se preencheu checklist antes
+          const precisaChecklist = await verificarChecklistObrigatorio();
+          if (precisaChecklist) {
+            alert('⚠️ Você precisa preencher seu checklist antes de continuar!\n\nClique em OK para preencher.');
+            localStorage.setItem('telefone_temp', telefoneSalvo);
+            localStorage.setItem('nome_temp', nomeUsuario);
+            window.location.href = 'confirmar.html?checklist_obrigatorio=true';
+            return;
+          }
+          // Já confirmou e fez checklist → vai direto pro modal de seleção de rotas
           mostrarSelecaoRotas('acessar');
         } else {
           // Não confirmou → mostra opções (confirmar ou acessar)
