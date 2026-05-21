@@ -236,18 +236,6 @@
     localStorage.setItem('motoboy_tel', telefoneSalvo);
     localStorage.setItem('motoboy_nome', nomeUsuario);
     localStorage.setItem('motoboy_rota', rota);
-    
-    // Verifica se precisa preencher checklist
-    try {
-      const r = await fetch('https://confirmacaoderota.willlog99.workers.dev/checklist-status?telefone=' + encodeURIComponent(telefoneSalvo));
-      const d = await r.json();
-      if (d.precisa) {
-        alert('⚠️ Você precisa preencher o checklist do veículo antes de continuar a rota.');
-        window.location.href = 'confirmar.html?direto_checklist=1';
-        return;
-      }
-    } catch(e) {}
-    
     window.location.href = 'rota.html';
   }
 
