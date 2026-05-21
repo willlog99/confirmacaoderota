@@ -1174,6 +1174,9 @@
   carregarPainel();
   iniciarAutoRefresh();
 </script>
+  <!-- BOTÃO FORÇAR ATUALIZAÇÃO -->
+  <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
+
 <!-- CHAT WIDGET ADMIN -->
 <div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 6px 20px rgba(30,159,217,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;cursor:pointer;z-index:9998">💬
   <div id="chat-fab-badge" style="position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;border-radius:50%;width:24px;height:24px;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
@@ -1406,6 +1409,32 @@
     }
   }
   
+  // Forçar atualização em todos os apps
+  function confirmarRefresh() {
+    if (!confirm('🔄 Forçar atualização em todos os apps abertos?\n\nOs motoboys que estiverem com o app aberto irão ver um aviso e o app vai recarregar.')) return;
+    
+    // Envia via Service Worker (apps PWA abertos)
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({ type: 'FORCE_REFRESH' });
+    }
+    
+    // Envia via BroadcastChannel (apps no mesmo browser)
+    try {
+      const bc = new BroadcastChannel('loglife_refresh');
+      bc.postMessage({ type: 'RELOAD' });
+      bc.close();
+    } catch(e) {}
+    
+    // Salva flag no worker para apps que não estão abertos agora
+    fetch(API + '/refresh-flag', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ timestamp: new Date().getTime() })
+    }).catch(() => {});
+    
+    alert('✅ Sinal enviado! Apps abertos irão atualizar em instantes.');
+  }
+
   // Verificar badge a cada 10s (mesmo com chat fechado)
   setInterval(carregarChatLista, 10000);
   setTimeout(carregarChatLista, 2000);
