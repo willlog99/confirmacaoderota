@@ -126,7 +126,7 @@
       if (d.status === 'ok') {
         telefoneSalvo = tel;
         nomeUsuario = d.nome;
-        rotasDisponivel = (d.rotas_info || []).filter(r => r.status !== 'travada');
+        rotasDisponivel = d.rotas_info || [];
         
         // Verificar se já confirmou hoje
         const confirmouHoje = await verificarConfirmacao(tel);
