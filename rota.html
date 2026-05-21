@@ -233,6 +233,37 @@
   document.getElementById('header-rota').textContent = rota || '—';
   document.getElementById('header-sub').textContent  = 'Olá, ' + (nome || '').split(' ')[0] + '!';
 
+  // Verificar se precisa preencher checklist
+  async function verificarChecklistPendente() {
+    if (!tel) return;
+    try {
+      const r = await fetch(API + '/checklist-status?telefone=' + encodeURIComponent(tel));
+      const d = await r.json();
+      if (d.precisa) {
+        mostrarModalChecklist();
+      }
+    } catch(e) {}
+  }
+
+  function mostrarModalChecklist() {
+    if (document.getElementById('modal-checklist-pendente')) return;
+    const modal = document.createElement('div');
+    modal.id = 'modal-checklist-pendente';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);z-index:999999;display:flex;align-items:center;justify-content:center;padding:1rem';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:16px;padding:2rem;max-width:380px;width:100%;text-align:center">
+        <div style="font-size:48px;margin-bottom:1rem">⚠️</div>
+        <h2 style="color:#92400E;font-size:18px;font-weight:700;margin-bottom:10px">Checklist Obrigatório</h2>
+        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Você precisa preencher o checklist do veículo antes de continuar a rota.</p>
+        <button onclick="window.location.href='confirmar.html?direto_checklist=1'" style="width:100%;padding:14px;background:linear-gradient(135deg,#F59E0B,#92400E);color:#fff;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(245,158,11,0.3)">📋 Preencher Checklist Agora</button>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  verificarChecklistPendente();
+  setInterval(verificarChecklistPendente, 30000);
+
   let clientes = [];
   let somentePendentes = false;
   let clienteSelecionado = null;
@@ -561,6 +592,21 @@
     const idx = todasAsRotas.findIndex(r => r.rota === novaRota);
     if (idx >= 0) mudarRota(idx);
   }
+
+  async function verificarChecklistAoAbrir() {
+    if (!nome) return;
+    try {
+      const r = await fetch(API + '/checklist/verificar?nome=' + encodeURIComponent(nome));
+      const d = await r.json();
+      if (d.precisa_preencher) {
+        alert('⚠️ Você precisa preencher seu checklist antes de continuar!');
+        window.location.href = 'confirmar.html?checklist_obrigatorio=true';
+      }
+    } catch(e) {}
+  }
+
+  // Chama ao carregar
+  setTimeout(verificarChecklistAoAbrir, 1500);
 
   carregar();
   verificarOutrasRotas();
