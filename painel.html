@@ -1410,29 +1410,19 @@
   }
   
   // Forçar atualização em todos os apps
-  function confirmarRefresh() {
+  async function confirmarRefresh() {
     if (!confirm('🔄 Forçar atualização em todos os apps abertos?\n\nOs motoboys que estiverem com o app aberto irão ver um aviso e o app vai recarregar.')) return;
     
-    // Envia via Service Worker (apps PWA abertos)
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'FORCE_REFRESH' });
-    }
-    
-    // Envia via BroadcastChannel (apps no mesmo browser)
     try {
-      const bc = new BroadcastChannel('loglife_refresh');
-      bc.postMessage({ type: 'RELOAD' });
-      bc.close();
-    } catch(e) {}
-    
-    // Salva flag no worker para apps que não estão abertos agora
-    fetch(API + '/refresh-flag', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ timestamp: new Date().getTime() })
-    }).catch(() => {});
-    
-    alert('✅ Sinal enviado! Apps abertos irão atualizar em instantes.');
+      await fetch(API + '/refresh-flag', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ timestamp: new Date().getTime() })
+      });
+      alert('✅ Sinal enviado! Apps abertos irão atualizar em até 10 segundos.');
+    } catch(e) {
+      alert('❌ Erro ao enviar sinal. Tente novamente.');
+    }
   }
 
   // Verificar badge a cada 10s (mesmo com chat fechado)
