@@ -118,16 +118,44 @@
     if (!file) return;
 
     const buffer = await file.arrayBuffer();
-    const wb = XLSX.read(buffer, { type: 'array' });
+    const wb = XLSX.read(buffer, { type: 'array', cellDates: true, cellNF: false });
     const sheet = wb.Sheets[wb.SheetNames[0]];
-    const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    const json = XLSX.utils.sheet_to_json(sheet, { defval: '', raw: false });
 
-    dadosArquivo = json.map(r => ({
-      numero: String(r['número'] || r['numero'] || r['Número'] || r['Numero'] || r['nº'] || r['Nº'] || '').trim(),
-      nome: String(r['nome'] || r['Nome'] || '').trim(),
-      horario: String(r['horário'] || r['horario'] || r['Horário'] || r['Horario'] || '').trim(),
-      rota: String(r['rota'] || r['Rota'] || '').trim().toUpperCase()
-    })).filter(r => r.numero && r.rota);
+    dadosArquivo = json.map(r => {
+      // Aceitar qualquer capitalização das colunas
+      const keys = Object.keys(r);
+      const getVal = (...names) => {
+        for (const n of names) {
+          const key = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g,'') === n.toLowerCase().replace(/[^a-z0-9]/g,''));
+          if (key !== undefined && r[key] !== '' && r[key] !== null && r[key] !== undefined) return r[key];
+        }
+        return '';
+      };
+
+      const numero = String(getVal('numero','número','nº','n') || '').trim();
+      const nome   = String(getVal('nome') || '').trim();
+      const rota   = String(getVal('rota') || '').trim().toUpperCase();
+      
+      // Horário pode vir como objeto Date, string ou número
+      let horario = getVal('horario','horário','hora');
+      if (horario && typeof horario === 'object' && horario.__isTime) {
+        // SheetJS time object
+        const h = String(Math.floor(horario * 24)).padStart(2,'0');
+        const m = String(Math.floor((horario * 24 * 60) % 60)).padStart(2,'0');
+        horario = `${h}:${m}`;
+      } else if (typeof horario === 'number') {
+        // Número decimal (fração do dia)
+        const totalMin = Math.round(horario * 24 * 60);
+        const h = String(Math.floor(totalMin / 60)).padStart(2,'0');
+        const m = String(totalMin % 60).padStart(2,'0');
+        horario = `${h}:${m}`;
+      } else {
+        horario = String(horario || '').trim();
+      }
+
+      return { numero, nome, horario, rota };
+    }).filter(r => r.numero && r.rota);
 
     if (!dadosArquivo.length) {
       mostrarMsg('Arquivo vazio ou colunas inválidas. Use: número, nome, horário, rota', 'error');
