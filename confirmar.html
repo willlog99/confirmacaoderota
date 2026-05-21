@@ -335,8 +335,19 @@
         localStorage.setItem('motoboy_nome', nomeUsuario);
 
         if (resp === 'sim') {
-          // Vai para o checklist
           showMsg('', '');
+          
+          // Ativar rotas em segundo plano silenciosamente
+          for (const r of rotasDisponivel) {
+            try {
+              await fetch(API + '/abrir-rota', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ telefone: telefoneSalvo, rota: r.rota, nome: nomeUsuario })
+              });
+            } catch(e) {}
+          }
+          
           abrirChecklist();
         } else {
           // Não irei → volta para tela inicial
