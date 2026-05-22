@@ -382,6 +382,15 @@
   <div class="view" id="view-motoristas">
     <div class="card">
       <div class="card-title">👤 Motoristas cadastrados</div>
+      <div style="margin-bottom:1rem">
+        <label style="font-size:12px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Filtrar por dia</label>
+        <select id="filtro-dias-moto" onchange="filtrarMotoristasPlus(this.value)" style="width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;font-weight:600;cursor:pointer">
+          <option value="">📅 Todos os dias</option>
+          <option value="seg-sex">📆 Segunda a Sexta</option>
+          <option value="sabado">📆 Sábado</option>
+          <option value="domingo">📆 Domingo</option>
+        </select>
+      </div>
       <div id="lista-mb-view"><div class="empty"><span class="spinner"></span></div></div>
     </div>
   </div>
@@ -471,6 +480,39 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let filtroMotorostasDia = ''; // Filtro de dias para motoristas
+  let motoboysListaCompleta = []; // Guardar lista completa para filtro
+
+  function filtrarMotoristasPlus(dia) {
+    filtroMotorostasDia = dia;
+    renderizarMotoristasFiltrados();
+  }
+
+  function renderizarMotoristasFiltrados() {
+    const el = document.getElementById('lista-mb-view');
+    if (!motoboysListaCompleta.length) return;
+    
+    const motoboysF = filtroMotorostasDia
+      ? motoboysListaCompleta.filter(m => {
+          // Filtrar motoristas que têm rota com esse dia_semana
+          return m.rotas_info && m.rotas_info.some(r => r.dia_semana === filtroMotorostasDia);
+        })
+      : motoboysListaCompleta;
+    
+    if (!motoboysF.length) {
+      el.innerHTML = '<div class="empty">Nenhum motorista encontrado para este filtro</div>';
+      return;
+    }
+    
+    el.innerHTML = motoboysF.map(m => `
+      <div class="list-item">
+        <div class="list-item-row">
+          <div class="list-item-name">${m.nome}</div>
+          <div class="list-item-meta">📱 ${m.telefone}</div>
+        </div>
+        ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:6px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:6px">Sem rotas</div>'}
+      </div>`).join('');
+  }
   let clienteParaMover = null;
   let autoRefreshInterval = null;
   let cardExpandido = null;
@@ -887,15 +929,9 @@
     try {
       const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
       const d = await r.json();
-      if (!d.motoboys?.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
-      el.innerHTML = d.motoboys.map(m => `
-        <div class="list-item">
-          <div class="list-item-row">
-            <div class="list-item-name">${m.nome}</div>
-            <div class="list-item-meta">📱 ${m.telefone}</div>
-          </div>
-          ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:6px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:6px">Sem rotas</div>'}
-        </div>`).join('');
+      motoboysListaCompleta = d.motoboys || [];
+      if (!motoboysListaCompleta.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
+      renderizarMotoristasFiltrados();
     } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
   }
 
