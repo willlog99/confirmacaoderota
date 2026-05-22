@@ -100,6 +100,12 @@
 
 <div class="container">
   <div class="toolbar">
+    <select id="filtro-dias" onchange="filtrarRotasPorDia(this.value)" style="height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:13px;font-weight:600;color:#0F4C7A;background:#fff;cursor:pointer">
+      <option value="">📅 Todos os dias</option>
+      <option value="seg-sex">📆 Segunda a Sexta</option>
+      <option value="sabado">📆 Sábado</option>
+      <option value="domingo">📆 Domingo</option>
+    </select>
     <button class="btn-atualizar" onclick="carregarRotas()">🔄 Atualizar</button>
   </div>
   <div id="lista-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
@@ -150,6 +156,7 @@
   let clienteParaMover = null;
   let clienteParaHorario = null;
   let rotaDeClienteParaMover = null;
+  let filtroSelecionado = ''; // Filtro de dias
 
   const diaLabels = { 'seg-sex': 'Seg-Sex', 'sabado': 'Sábado', 'domingo': 'Domingo', 'sabado': 'Sábado' };
   
@@ -159,6 +166,11 @@
     if (dia === 'sabado' || dia === 'sábado') return 'Sábado';
     if (dia === 'domingo') return 'Domingo';
     return dia;
+  }
+
+  function filtrarRotasPorDia(dia) {
+    filtroSelecionado = dia;
+    renderizarRotas();
   }
 
   async function carregarRotas() {
@@ -176,7 +188,20 @@
   function renderizarRotas() {
     const el = document.getElementById('lista-rotas');
     if (!todasRotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
-    el.innerHTML = todasRotas.map((r, i) => `
+    
+    // Filtrar rotas se necessário
+    const rotasFiltradas = filtroSelecionado 
+      ? todasRotas.filter(r => r.dia_semana === filtroSelecionado)
+      : todasRotas;
+    
+    if (!rotasFiltradas.length) { 
+      el.innerHTML = '<div class="empty">Nenhuma rota encontrada para este filtro</div>'; 
+      return; 
+    }
+    
+    el.innerHTML = rotasFiltradas.map((r, origIdx) => {
+      const i = todasRotas.findIndex(rota => rota.rota === r.rota);
+      return `
       <div class="rota-card" id="rota-card-${i}">
         <div class="rota-header" onclick="toggleRota(${i})">
           <div class="rota-info">
@@ -403,10 +428,14 @@
       
       if (!confirm(`Trocar motorista da rota "${rota}" para:\n${encontrado.nome}\n📱 ${encontrado.telefone}`)) return;
       
+      // Achar dia_semana da rota
+      const rotaObj = todasRotas.find(r => r.rota === rota);
+      const dia = rotaObj ? rotaObj.dia_semana : 'seg-sex';
+      
       await fetch(API + '/trocar-motorista', { 
         method:'POST', 
         headers:{'Content-Type':'application/json'}, 
-        body: JSON.stringify({ rota, nome_motoboy: encontrado.nome, telefone_motoboy: telLimpo }) 
+        body: JSON.stringify({ rota, nome_motoboy: encontrado.nome, telefone_motoboy: telLimpo, dia_semana: dia }) 
       });
       toast('✓ Motorista trocado para ' + encontrado.nome + '!');
       clientesPorRota = {};
