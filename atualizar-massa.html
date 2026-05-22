@@ -67,6 +67,15 @@
       <div class="upload-hint">Colunas: número, nome, horário, rota</div>
     </label>
 
+    <div style="margin-top:1rem">
+      <label style="font-size:12px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Dia da Semana</label>
+      <select id="sel-dia-massa" style="width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#111;background:#F7FBFD">
+        <option value="seg-sex">Segunda a Sexta</option>
+        <option value="sabado">Sábado</option>
+        <option value="domingo">Domingo</option>
+      </select>
+    </div>
+
     <div class="info">
       <strong>ℹ️ Como funciona:</strong><br/>
       • Cliente já existe na rota → atualiza horário<br/>
@@ -178,14 +187,16 @@
   }
 
   async function processar() {
-    document.getElementById('btn-processar').disabled = true;
+    const btn = document.getElementById('btn-processar');
+    btn.disabled = true;
+    const diaSemana = document.getElementById('sel-dia-massa').value;
     mostrarMsg('🔍 Analisando arquivo...', 'loading');
 
     try {
       const r = await fetch(API + '/atualizar-massa-analise', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientes: dadosArquivo })
+        body: JSON.stringify({ clientes: dadosArquivo, dia_semana: diaSemana })
       });
       const d = await r.json();
 
@@ -200,11 +211,23 @@
       }
 
       mostrarMsg('⚙️ Aplicando atualizações...', 'loading');
+      
+      // Se tem rotas novas, perguntar os dias de cada uma
+      const diseRotasNovas = {};
+      if (d.rotas_novas_lista && d.rotas_novas_lista.length) {
+        for (const rotaNova of d.rotas_novas_lista) {
+          const dias = await perguntarDiasRota(rotaNova);
+          diseRotasNovas[rotaNova] = dias;
+        }
+      }
+      
       const r2 = await fetch(API + '/atualizar-massa-aplicar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          clientes: dadosArquivo, 
+          clientes: dadosArquivo,
+          dia_semana: diaSemana,
+          dias_rotas_novas: diseRotasNovas,
           clientes_novos_autorizados: clientesParaCriar 
         })
       });
@@ -229,6 +252,44 @@
       `;
       document.getElementById('modal-cliente-novo').classList.add('show');
       resolverCliente = resolve;
+    });
+  }
+
+  function perguntarDiasRota(rota) {
+    return new Promise((resolve) => {
+      const diasOpcoes = [
+        { valor: 'seg', label: 'Segunda' },
+        { valor: 'ter', label: 'Terça' },
+        { valor: 'qua', label: 'Quarta' },
+        { valor: 'qui', label: 'Quinta' },
+        { valor: 'sex', label: 'Sexta' },
+        { valor: 'sab', label: 'Sábado' },
+        { valor: 'dom', label: 'Domingo' },
+      ];
+
+      const modal = document.createElement('div');
+      modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1rem';
+      modal.innerHTML = `
+        <div style="background:#fff;border-radius:14px;padding:1.5rem;max-width:400px;width:100%">
+          <h3 style="font-size:16px;color:#0F4C7A;margin-bottom:6px">📅 Dias da Rota Nova</h3>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Rota: <strong>${rota}</strong><br/>Selecione os dias que esta rota ficará ativa:</p>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1.5rem">
+            ${diasOpcoes.map(d => `
+              <label style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;border:1.5px solid #D6E5EE;cursor:pointer;font-size:13px;font-weight:600;color:#0F4C7A">
+                <input type="checkbox" value="${d.valor}" class="dias-nova-rota" checked style="accent-color:#1E9FD9"/>
+                ${d.label}
+              </label>`).join('')}
+          </div>
+          <button id="btn-ok-dias" style="width:100%;padding:12px;border-radius:8px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:600;cursor:pointer;font-size:14px">✓ Confirmar Dias</button>
+        </div>`;
+      
+      document.body.appendChild(modal);
+      
+      document.getElementById('btn-ok-dias').onclick = () => {
+        const marcados = [...modal.querySelectorAll('.dias-nova-rota:checked')].map(c => c.value);
+        document.body.removeChild(modal);
+        resolve(marcados.length ? marcados.join(',') : 'seg,ter,qua,qui,sex');
+      };
     });
   }
 
