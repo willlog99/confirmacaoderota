@@ -176,12 +176,18 @@
   async function carregarRotas() {
     document.getElementById('lista-rotas').innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
     try {
-      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
+      
+      const r = await fetch(API + '/rotas-disponiveis?todos_dias=1', { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
       const d = await r.json();
       todasRotas = d.rotas || [];
       renderizarRotas();
     } catch(e) {
-      document.getElementById('lista-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao carregar</div>';
+      console.error('Erro ao carregar rotas:', e);
+      document.getElementById('lista-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">❌ Erro ao carregar. Tente recarregar a página.<br/><small>' + e.message + '</small></div>';
     }
   }
 
@@ -202,7 +208,7 @@
     el.innerHTML = rotasFiltradas.map((r, origIdx) => {
       const i = todasRotas.findIndex(rota => rota.rota === r.rota);
       return `
-      <div class="rota-card" id="rota-card-${i}">
+      <div class="rota-card" id="rota-card-${i}" data-rota="${r.rota}">
         <div class="rota-header" onclick="toggleRota(${i})">
           <div class="rota-info">
             <div class="rota-nome">${r.rota}</div>
@@ -240,7 +246,11 @@
   }
 
   async function carregarClientes(i) {
-    const rota = todasRotas[i].rota;
+    const card = document.getElementById('rota-card-' + i);
+    const rota = card?.dataset.rota;
+    
+    if (!rota) return;
+    
     try {
       const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota) + '&todos_dias=1');
       const d = await r.json();
