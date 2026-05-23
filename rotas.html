@@ -205,34 +205,33 @@
       return; 
     }
     
-    el.innerHTML = rotasFiltradas.map((r, origIdx) => {
+    el.innerHTML = rotasFiltradas.map(r => {
       const i = todasRotas.findIndex(rota => rota.rota === r.rota);
-      return `
-      <div class="rota-card" id="rota-card-${i}" data-rota="${r.rota}">
-        <div class="rota-header" onclick="toggleRota(${i})">
-          <div class="rota-info">
-            <div class="rota-nome">${r.rota}</div>
-            <div class="rota-meta">
-              <span class="dia-badge">${getDiaLabel(r.dia_semana)}</span>
-              ${r.motoboy_aberto ? `<span>🏍️ ${r.motoboy_aberto}</span>` : ''}
-              <span class="${r.ativa ? 'status-andamento' : 'status-livre'}">${r.ativa ? '🔒 Em uso' : 'Livre'}</span>
-            </div>
-          </div>
-          <div class="rota-expand-icon">▼</div>
-        </div>
-        <div class="rota-body" id="rota-body-${i}">
-          <div class="rota-actions">
-            <button class="btn-action btn-editar" onclick="editarOrdem(${i})">↕ Reordenar</button>
-            <button class="btn-action btn-trocar" onclick="trocarMotorista('${r.rota.replace(/'/g,"\\'") }')">⇄ Motorista</button>
-            <button class="btn-action btn-renomear" onclick="renomearRota('${r.rota.replace(/'/g,"\\'")}')">✎ Renomear</button>
-            <button class="btn-action btn-editar" onclick="alterarDiaRota('${r.rota.replace(/'/g,"\\'")}','${r.dia_semana}')">📅 Dia</button>
-            <button class="btn-action btn-trocar" onclick="clonarRota('${r.rota.replace(/'/g,"\\'")}')">🗂 Clonar</button>
-            ${r.ativa ? `<button class="btn-action btn-trocar" onclick="destravarRota('${r.rota.replace(/'/g,"\\'")}')">🔓 Destravar</button>` : ''}
-            <button class="btn-action btn-excluir" onclick="excluirRota('${r.rota.replace(/'/g,"\\'")}')">🗑 Excluir</button>
-          </div>
-          <div id="clientes-rota-${i}"><div class="empty"><span class="spinner"></span></div></div>
-        </div>
-      </div>`).join('');
+      const rotaEscapada = r.rota.replace(/'/g,"\\'");
+      return '<div class="rota-card" id="rota-card-' + i + '" data-rota="' + r.rota.replace(/"/g, '&quot;') + '">'
+        + '<div class="rota-header" onclick="toggleRota(' + i + ')">'
+        + '<div class="rota-info">'
+        + '<div class="rota-nome">' + r.rota + '</div>'
+        + '<div class="rota-meta">'
+        + '<span class="dia-badge">' + getDiaLabel(r.dia_semana) + '</span>'
+        + (r.motoboy_aberto ? '<span>🏍️ ' + r.motoboy_aberto + '</span>' : '')
+        + '<span class="' + (r.ativa ? 'status-andamento' : 'status-livre') + '">' + (r.ativa ? '🔒 Em uso' : 'Livre') + '</span>'
+        + '</div></div>'
+        + '<div class="rota-expand-icon">▼</div>'
+        + '</div>'
+        + '<div class="rota-body" id="rota-body-' + i + '">'
+        + '<div class="rota-actions">'
+        + '<button class="btn-action btn-editar" onclick="editarOrdem(' + i + ')">↕ Reordenar</button>'
+        + '<button class="btn-action btn-trocar" onclick="trocarMotorista(\'' + rotaEscapada + '\')">⇄ Motorista</button>'
+        + '<button class="btn-action btn-renomear" onclick="renomearRota(\'' + rotaEscapada + '\')">✎ Renomear</button>'
+        + '<button class="btn-action btn-editar" onclick="alterarDiaRota(\'' + rotaEscapada + '\',\'' + r.dia_semana + '\')">📅 Dia</button>'
+        + '<button class="btn-action btn-trocar" onclick="clonarRota(\'' + rotaEscapada + '\')">🗂 Clonar</button>'
+        + (r.ativa ? '<button class="btn-action btn-trocar" onclick="destravarRota(\'' + rotaEscapada + '\')">🔓 Destravar</button>' : '')
+        + '<button class="btn-action btn-excluir" onclick="excluirRota(\'' + rotaEscapada + '\')">🗑 Excluir</button>'
+        + '</div>'
+        + '<div id="clientes-rota-' + i + '"><div class="empty"><span class="spinner"></span></div></div>'
+        + '</div></div>';
+    }).join('');
   }
 
   async function toggleRota(i) {
