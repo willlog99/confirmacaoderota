@@ -513,8 +513,16 @@
           if (!rotasCarregadas) carregarRotas();
           if (rotasDisponivel.length > 0) mostrarSelecaoRotas();
           else {
-            showMsgChecklist('✓ Checklist concluído!\\n\\nVocê não tem rota cadastrada para hoje.', 'success');
-            setTimeout(() => voltarInicial(), 2000);
+            const semRota = new URLSearchParams(window.location.search).get('sem_rota') === '1';
+            if (semRota) {
+              localStorage.setItem('motoboy_tel', telefoneSalvo);
+              localStorage.setItem('motoboy_nome', nomeUsuario);
+              showMsgChecklist('✓ Tudo certo! Redirecionando...', 'success');
+              setTimeout(() => { window.location.href = 'semrota.html'; }, 1000);
+            } else {
+              showMsgChecklist('✓ Checklist concluído!\n\nVocê não tem rota cadastrada para hoje.', 'success');
+              setTimeout(() => voltarInicial(), 2000);
+            }
           }
         }, 1000);
       } else {
