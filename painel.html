@@ -215,6 +215,7 @@
         <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
         <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
+        <button class="menu-item" onclick="window.location.href='disparador.html'">📲 Disparador WhatsApp</button>
 
       </div>
     </div>
@@ -336,6 +337,22 @@
           </div>
           <div class="panel-body" id="painel-atrasos" style="max-height:200px">
             <div class="empty">Nenhum atraso ✓</div>
+          </div>
+        </div>
+
+        <!-- DISPARADOR WHATSAPP -->
+        <div class="panel">
+          <div class="panel-header">
+            <div class="panel-title">📲 Disparador WhatsApp</div>
+            <button onclick="abrirDisparador()" style="padding:4px 10px;border-radius:6px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-size:11px;font-weight:700;cursor:pointer">+ Novo</button>
+          </div>
+          <div class="panel-body" id="painel-disparador" style="max-height:300px">
+
+            <!-- Agendamentos ativos -->
+            <div id="lista-agendamentos">
+              <div class="empty"><span class="spinner"></span></div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -477,6 +494,66 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL DISPARADOR WHATSAPP -->
+<div id="modal-disparador" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;overflow-y:auto;padding:1rem">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:480px;margin:0 auto;margin-top:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+      <h3 style="font-size:16px;color:#0F4C7A;font-weight:700" id="disparador-titulo">📲 Novo agendamento</h3>
+      <button onclick="fecharDisparador()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+
+    <!-- Nome -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Nome do agendamento</label>
+      <input type="text" id="disp-nome" placeholder="Ex: Lembrete diário de confirmação" style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+
+    <!-- Dias -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:8px">Dias da semana</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="disp-dias">
+        <button onclick="toggleDia(this,'seg')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Seg</button>
+        <button onclick="toggleDia(this,'ter')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Ter</button>
+        <button onclick="toggleDia(this,'qua')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Qua</button>
+        <button onclick="toggleDia(this,'qui')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Qui</button>
+        <button onclick="toggleDia(this,'sex')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Sex</button>
+        <button onclick="toggleDia(this,'sab')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Sáb</button>
+        <button onclick="toggleDia(this,'dom')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Dom</button>
+      </div>
+    </div>
+
+    <!-- Horários -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:8px">Horários de disparo</label>
+      <div id="disp-horarios" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+      <button onclick="addHorario()" style="width:100%;padding:9px;border-radius:8px;border:1.5px dashed #1E9FD9;background:#F0F8FD;color:#1E9FD9;font-size:13px;font-weight:600;cursor:pointer">+ Adicionar horário</button>
+    </div>
+
+    <!-- Destinatários -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:8px">Destinatários</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <button onclick="toggleDest(this,'todos')" class="disp-dest-btn ativo" style="padding:6px 12px;border-radius:20px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:12px;font-weight:600;color:#0F4C7A;cursor:pointer">✅ Todos</button>
+        <button onclick="toggleDest(this,'seg-sex')" class="disp-dest-btn" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📆 Seg-Sex</button>
+        <button onclick="toggleDest(this,'sabado')" class="disp-dest-btn" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📆 Sábado</button>
+        <button onclick="toggleDest(this,'domingo')" class="disp-dest-btn" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📆 Domingo</button>
+      </div>
+    </div>
+
+    <!-- Mensagem -->
+    <div style="margin-bottom:1.2rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Mensagem</label>
+      <textarea id="disp-mensagem" rows="4" placeholder="Digite o recado para os motoboys..." style="width:100%;border-radius:8px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;resize:none;outline:none;color:#0F4C7A;font-family:inherit;line-height:1.5"></textarea>
+    </div>
+
+    <!-- Botões -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="salvarAgendamento()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;cursor:pointer">💾 Salvar agendamento</button>
+      <button onclick="dispararAgora()" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #25D366;background:#fff;color:#128C7E;font-weight:700;font-size:14px;cursor:pointer">📲 Disparar agora também</button>
+    </div>
+  </div>
+</div>
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
@@ -1146,6 +1223,165 @@
     el.innerHTML = (type==='loading'?'<span class="spinner"></span>':'')+text;
     el.className = 'msg'+(type?' '+type:'');
   }
+
+  // ===== DISPARADOR WHATSAPP =====
+  let agendamentos = JSON.parse(localStorage.getItem('disp_agendamentos') || '[]');
+  let editandoAgendamento = null;
+  let diasSelecionados = new Set();
+  let destSelecionado = 'todos';
+
+  function abrirDisparador(id) {
+    editandoAgendamento = id || null;
+    diasSelecionados = new Set();
+    destSelecionado = 'todos';
+
+    // Resetar form
+    document.getElementById('disp-nome').value = '';
+    document.getElementById('disp-mensagem').value = '';
+    document.getElementById('disp-horarios').innerHTML = '';
+    addHorario();
+
+    // Resetar dias
+    document.querySelectorAll('.disp-dia-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE';
+      b.style.background = '#fff';
+      b.style.color = '#5A7A8F';
+    });
+
+    // Resetar dest
+    document.querySelectorAll('.disp-dest-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE';
+      b.style.background = '#fff';
+      b.style.color = '#5A7A8F';
+    });
+    const btnTodos = document.querySelector('.disp-dest-btn');
+    if (btnTodos) { btnTodos.style.borderColor = '#1E9FD9'; btnTodos.style.background = '#E8F4FB'; btnTodos.style.color = '#0F4C7A'; }
+
+    // Se editando, preencher
+    if (id !== null && id !== undefined) {
+      const ag = agendamentos.find(a => a.id === id);
+      if (ag) {
+        document.getElementById('disp-nome').value = ag.nome;
+        document.getElementById('disp-mensagem').value = ag.mensagem;
+        document.getElementById('disp-horarios').innerHTML = '';
+        ag.horarios.forEach(h => addHorario(h));
+        diasSelecionados = new Set(ag.dias);
+        destSelecionado = ag.destinatarios;
+        document.querySelectorAll('.disp-dia-btn').forEach(b => {
+          if (diasSelecionados.has(b.dataset.dia || b.textContent.toLowerCase().replace('á','a'))) {
+            b.style.borderColor = '#1E9FD9'; b.style.background = '#E8F4FB'; b.style.color = '#0F4C7A';
+          }
+        });
+        document.getElementById('disparador-titulo').textContent = '✎ Editar agendamento';
+      }
+    } else {
+      document.getElementById('disparador-titulo').textContent = '📲 Novo agendamento';
+    }
+
+    document.getElementById('modal-disparador').style.display = 'block';
+  }
+
+  function fecharDisparador() {
+    document.getElementById('modal-disparador').style.display = 'none';
+  }
+
+  function toggleDia(btn, dia) {
+    if (diasSelecionados.has(dia)) {
+      diasSelecionados.delete(dia);
+      btn.style.borderColor = '#D6E5EE'; btn.style.background = '#fff'; btn.style.color = '#5A7A8F';
+    } else {
+      diasSelecionados.add(dia);
+      btn.style.borderColor = '#1E9FD9'; btn.style.background = '#E8F4FB'; btn.style.color = '#0F4C7A';
+    }
+  }
+
+  function toggleDest(btn, dest) {
+    destSelecionado = dest;
+    document.querySelectorAll('.disp-dest-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#1E9FD9'; btn.style.background = '#E8F4FB'; btn.style.color = '#0F4C7A';
+  }
+
+  function addHorario(valor) {
+    const div = document.createElement('div');
+    div.style.cssText = 'display:flex;align-items:center;gap:8px';
+    div.innerHTML = '<input type="time" value="' + (valor || '07:00') + '" style="flex:1;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;outline:none;color:#0F4C7A"/>'
+      + '<button onclick="this.parentElement.remove()" style="width:34px;height:34px;border-radius:8px;border:1.5px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:16px;cursor:pointer;flex-shrink:0">✕</button>';
+    document.getElementById('disp-horarios').appendChild(div);
+  }
+
+  function salvarAgendamento() {
+    const nome = document.getElementById('disp-nome').value.trim();
+    const mensagem = document.getElementById('disp-mensagem').value.trim();
+    const horarios = Array.from(document.querySelectorAll('#disp-horarios input[type=time]')).map(i => i.value);
+
+    if (!nome) { toast('⚠️ Digite um nome para o agendamento'); return; }
+    if (!mensagem) { toast('⚠️ Digite uma mensagem'); return; }
+    if (!diasSelecionados.size) { toast('⚠️ Selecione pelo menos um dia'); return; }
+    if (!horarios.length) { toast('⚠️ Adicione pelo menos um horário'); return; }
+
+    if (editandoAgendamento !== null) {
+      const idx = agendamentos.findIndex(a => a.id === editandoAgendamento);
+      if (idx > -1) agendamentos[idx] = { ...agendamentos[idx], nome, mensagem, dias: Array.from(diasSelecionados), horarios, destinatarios: destSelecionado };
+    } else {
+      agendamentos.push({ id: Date.now(), nome, mensagem, dias: Array.from(diasSelecionados), horarios, destinatarios: destSelecionado, ativo: true });
+    }
+
+    localStorage.setItem('disp_agendamentos', JSON.stringify(agendamentos));
+    fecharDisparador();
+    renderAgendamentos();
+    toast('✓ Agendamento salvo!');
+  }
+
+  function dispararAgora() {
+    toast('📲 Disparando mensagem... (integração Evolution API pendente)');
+    fecharDisparador();
+  }
+
+  function toggleAgendamento(id) {
+    const ag = agendamentos.find(a => a.id === id);
+    if (ag) { ag.ativo = !ag.ativo; localStorage.setItem('disp_agendamentos', JSON.stringify(agendamentos)); renderAgendamentos(); }
+  }
+
+  function excluirAgendamento(id) {
+    if (!confirm('Excluir este agendamento?')) return;
+    agendamentos = agendamentos.filter(a => a.id !== id);
+    localStorage.setItem('disp_agendamentos', JSON.stringify(agendamentos));
+    renderAgendamentos();
+    toast('✓ Agendamento excluído');
+  }
+
+  const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
+  const destLabels = { todos:'Todos', 'seg-sex':'Seg-Sex', sabado:'Sábado', domingo:'Domingo' };
+
+  function renderAgendamentos() {
+    const el = document.getElementById('lista-agendamentos');
+    if (!agendamentos.length) {
+      el.innerHTML = '<div class="empty" style="font-size:12px">Nenhum agendamento criado.<br/>Clique em "+ Novo" para criar.</div>';
+      return;
+    }
+    el.innerHTML = agendamentos.map(ag => {
+      const diasStr = ag.dias.map(d => diasLabels[d] || d).join(', ');
+      const horariosStr = ag.horarios.join(' · ');
+      return '<div style="padding:10px 0;border-bottom:1px solid #F0F4F8">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">'
+        + '<span style="font-size:13px;font-weight:700;color:#0F4C7A">' + ag.nome + '</span>'
+        + '<div style="display:flex;gap:5px;align-items:center">'
+        + '<button onclick="toggleAgendamento(' + ag.id + ')" style="padding:3px 8px;border-radius:20px;border:none;background:' + (ag.ativo ? '#E8F8F0' : '#F5F5F5') + ';color:' + (ag.ativo ? '#0F9B78' : '#94A8B8') + ';font-size:10px;font-weight:700;cursor:pointer">' + (ag.ativo ? '● Ativo' : '○ Pausado') + '</button>'
+        + '<button onclick="abrirDisparador(' + ag.id + ')" style="padding:3px 8px;border-radius:6px;border:1px solid #1E9FD9;background:#E8F4FB;color:#1E9FD9;font-size:10px;font-weight:700;cursor:pointer">✎</button>'
+        + '<button onclick="excluirAgendamento(' + ag.id + ')" style="padding:3px 8px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:10px;font-weight:700;cursor:pointer">🗑</button>'
+        + '</div></div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px">'
+        + '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#EEF6FF;color:#1E9FD9;font-weight:600">' + diasStr + '</span>'
+        + '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#F0FDF4;color:#0F9B78;font-weight:600">⏰ ' + horariosStr + '</span>'
+        + '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#FEF9EC;color:#92400E;font-weight:600">👥 ' + (destLabels[ag.destinatarios] || ag.destinatarios) + '</span>'
+        + '</div></div>';
+    }).join('');
+  }
+
+  renderAgendamentos();
+  // ===== FIM DISPARADOR =====
 
   function toast(msg) {
     const el = document.getElementById('toast');
