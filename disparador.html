@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>Loglife — Disparador WhatsApp</title>
+  <link rel="manifest" href="manifest-admin.json"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#F0F4F8;min-height:100vh}
+
+    .header{background:linear-gradient(135deg,#1E9FD9,#0F4C7A);padding:1rem 1.2rem;display:flex;align-items:center;gap:10px;color:#fff;position:sticky;top:0;z-index:100}
+    .btn-back{width:36px;height:36px;border-radius:10px;border:none;background:rgba(255,255,255,0.2);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .header h1{font-size:17px;font-weight:700;flex:1}
+
+    .tabs{display:flex;background:#fff;border-bottom:2px solid #EBF1F5;position:sticky;top:60px;z-index:99}
+    .tab{flex:1;padding:12px 8px;text-align:center;font-size:13px;font-weight:600;color:#5A7A8F;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
+    .tab.ativo{color:#1E9FD9;border-bottom-color:#1E9FD9}
+
+    .view{display:none;padding:1rem;max-width:520px;margin:0 auto}
+    .view.ativo{display:block}
+
+    .card{background:#fff;border-radius:14px;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,0.07)}
+    .card-title{font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
+
+    label.field-label{font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px}
+    input[type=text],input[type=time],textarea,select{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;font-family:inherit;background:#fff}
+    input[type=text]:focus,input[type=time]:focus,textarea:focus{border-color:#1E9FD9}
+    textarea{resize:none;line-height:1.5}
+
+    .field{margin-bottom:1rem}
+
+    .chips{display:flex;flex-wrap:wrap;gap:6px}
+    .chip{padding:7px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff;transition:all .2s}
+    .chip.on{border-color:#1E9FD9;background:#E8F4FB;color:#0F4C7A}
+
+    .horarios-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+    .horario-row{display:flex;align-items:center;gap:8px}
+    .horario-row input{flex:1;height:42px}
+    .btn-rem{width:36px;height:36px;border-radius:8px;border:1.5px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:16px;cursor:pointer;flex-shrink:0}
+    .btn-add-hora{width:100%;padding:10px;border-radius:8px;border:1.5px dashed #1E9FD9;background:#F0F8FD;color:#1E9FD9;font-size:13px;font-weight:600;cursor:pointer}
+
+    .upload-area{border:2px dashed #D6E5EE;border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
+    .upload-area:hover{border-color:#1E9FD9;background:#F0F8FD}
+    .upload-preview{width:100%;border-radius:8px;max-height:160px;object-fit:cover;margin-top:8px;display:none}
+
+    .resumo-box{background:#F0F8FD;border-radius:10px;padding:12px;border:1px solid #D6E5EE;margin-bottom:1rem}
+    .resumo-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
+    .resumo-row:last-child{margin-bottom:0}
+
+    .btn-green{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+    .btn-blue{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px}
+    .btn-outline{width:100%;padding:13px;border-radius:12px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:14px;cursor:pointer}
+
+    /* Agendamentos */
+    .ag-item{background:#F8FBFD;border-radius:12px;border:1.5px solid #D6E5EE;padding:12px;margin-bottom:10px}
+    .ag-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+    .ag-nome{font-size:13px;font-weight:700;color:#0F4C7A}
+    .ag-acoes{display:flex;gap:5px;align-items:center}
+    .ag-texto{font-size:12px;color:#5A7A8F;margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+    .ag-tags{display:flex;flex-wrap:wrap;gap:4px}
+    .tag{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600}
+    .tag-azul{background:#EEF6FF;color:#1E9FD9}
+    .tag-verde{background:#F0FDF4;color:#0F9B78}
+    .tag-amarelo{background:#FEF9EC;color:#92400E}
+    .tag-ativo{background:#E8F8F0;color:#0F9B78}
+    .tag-pausado{background:#F5F5F5;color:#94A8B8}
+
+    .toggle-btn{padding:3px 10px;border-radius:20px;border:none;font-size:10px;font-weight:700;cursor:pointer}
+    .btn-edit{padding:4px 10px;border-radius:6px;border:1px solid #1E9FD9;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;cursor:pointer}
+    .btn-del{padding:4px 8px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:11px;font-weight:700;cursor:pointer}
+
+    /* Histórico */
+    .hist-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #F0F4F8}
+    .hist-item:last-child{border-bottom:none}
+    .hist-icon{width:36px;height:36px;border-radius:50%;background:#E8F8F0;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+    .hist-nome{font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:2px}
+    .hist-meta{font-size:11px;color:#5A7A8F}
+
+    .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
+    .toast.show{opacity:1}
+
+    .empty{text-align:center;color:#94A8B8;font-size:13px;padding:1.5rem}
+    .spinner{width:18px;height:18px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <button class="btn-back" onclick="history.back()">←</button>
+  <h1>📲 Disparador WhatsApp</h1>
+</div>
+
+<div class="tabs">
+  <div class="tab ativo" onclick="mudarAba('manual',this)">📤 Manual</div>
+  <div class="tab" onclick="mudarAba('agendamentos',this)">⏰ Agendamentos</div>
+  <div class="tab" onclick="mudarAba('historico',this)">🕐 Histórico</div>
+</div>
+
+<!-- ABA MANUAL -->
+<div class="view ativo" id="view-manual">
+
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title">👥 Destinatários</div>
+    <div class="chips" id="dest-manual">
+      <button class="chip on" onclick="toggleDestManual(this,'todos')">✅ Todos</button>
+      <button class="chip" onclick="toggleDestManual(this,'seg-sex')">📆 Seg-Sex</button>
+      <button class="chip" onclick="toggleDestManual(this,'sabado')">📆 Sábado</button>
+      <button class="chip" onclick="toggleDestManual(this,'domingo')">📆 Domingo</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">✉️ Mensagem</div>
+    <div class="field">
+      <label class="field-label">Texto</label>
+      <textarea id="manual-texto" rows="5" placeholder="Digite o recado para os motoboys..."></textarea>
+      <div style="font-size:11px;color:#94A8B8;text-align:right;margin-top:4px" id="manual-contador">0 / 500</div>
+    </div>
+    <div class="field">
+      <label class="field-label">Imagem (opcional)</label>
+      <div class="upload-area" onclick="document.getElementById('manual-img').click()">
+        <span style="font-size:28px">🖼️</span>
+        <p style="font-size:13px;color:#5A7A8F;margin-top:4px">Clique para anexar imagem</p>
+        <small style="font-size:11px;color:#94A8B8">JPG, PNG até 5MB</small>
+        <img id="manual-img-preview" class="upload-preview"/>
+      </div>
+      <input type="file" id="manual-img" accept="image/*" style="display:none" onchange="previewImagem(this)"/>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📊 Resumo</div>
+    <div class="resumo-box">
+      <div class="resumo-row">
+        <span style="color:#5A7A8F">Destinatários</span>
+        <span style="color:#0F4C7A;font-weight:700" id="resumo-dest">Todos os motoboys</span>
+      </div>
+      <div class="resumo-row">
+        <span style="color:#5A7A8F">Tipo</span>
+        <span style="color:#0F4C7A;font-weight:700" id="resumo-tipo">Somente texto</span>
+      </div>
+      <div class="resumo-row">
+        <span style="color:#5A7A8F">Horário</span>
+        <span style="color:#0F4C7A;font-weight:700" id="resumo-hora">Agora</span>
+      </div>
+    </div>
+    <button class="btn-green" onclick="dispararManual()">
+      <span style="font-size:20px">📲</span> Disparar agora
+    </button>
+  </div>
+
+</div>
+
+<!-- ABA AGENDAMENTOS -->
+<div class="view" id="view-agendamentos">
+
+  <div style="padding-top:1rem">
+    <button class="btn-blue" onclick="abrirModalAg()">➕ Novo agendamento</button>
+  </div>
+
+  <div id="lista-ag">
+    <div class="empty">Nenhum agendamento criado ainda.</div>
+  </div>
+
+</div>
+
+<!-- ABA HISTÓRICO -->
+<div class="view" id="view-historico">
+  <div class="card" style="margin-top:1rem">
+    <div class="card-title">🕐 Últimos disparos</div>
+    <div id="lista-historico">
+      <div class="empty">Nenhum disparo registrado ainda.</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL AGENDAMENTO -->
+<div id="modal-ag" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;overflow-y:auto;padding:1rem">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto;margin-top:.5rem;margin-bottom:2rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+      <h3 style="font-size:16px;color:#0F4C7A;font-weight:700" id="modal-ag-titulo">➕ Novo agendamento</h3>
+      <button onclick="fecharModalAg()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Nome do agendamento</label>
+      <input type="text" id="ag-nome" placeholder="Ex: Lembrete diário de confirmação"/>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Dias da semana</label>
+      <div class="chips" id="ag-dias-chips">
+        <button class="chip" data-dia="seg" onclick="toggleDiaAg(this)">Seg</button>
+        <button class="chip" data-dia="ter" onclick="toggleDiaAg(this)">Ter</button>
+        <button class="chip" data-dia="qua" onclick="toggleDiaAg(this)">Qua</button>
+        <button class="chip" data-dia="qui" onclick="toggleDiaAg(this)">Qui</button>
+        <button class="chip" data-dia="sex" onclick="toggleDiaAg(this)">Sex</button>
+        <button class="chip" data-dia="sab" onclick="toggleDiaAg(this)">Sáb</button>
+        <button class="chip" data-dia="dom" onclick="toggleDiaAg(this)">Dom</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Horários de disparo</label>
+      <div class="horarios-lista" id="ag-horarios"></div>
+      <button class="btn-add-hora" onclick="addHorarioAg()">+ Adicionar horário</button>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Destinatários</label>
+      <div class="chips" id="ag-dest-chips">
+        <button class="chip on" data-dest="todos" onclick="toggleDestAg(this)">✅ Todos</button>
+        <button class="chip" data-dest="seg-sex" onclick="toggleDestAg(this)">📆 Seg-Sex</button>
+        <button class="chip" data-dest="sabado" onclick="toggleDestAg(this)">📆 Sábado</button>
+        <button class="chip" data-dest="domingo" onclick="toggleDestAg(this)">📆 Domingo</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Mensagem</label>
+      <textarea id="ag-mensagem" rows="5" placeholder="Digite a mensagem automática..."></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Imagem (opcional)</label>
+      <div class="upload-area" onclick="document.getElementById('ag-img').click()">
+        <span style="font-size:28px">🖼️</span>
+        <p style="font-size:13px;color:#5A7A8F;margin-top:4px">Clique para anexar imagem</p>
+        <small style="font-size:11px;color:#94A8B8">JPG, PNG até 5MB</small>
+        <img id="ag-img-preview" class="upload-preview"/>
+      </div>
+      <input type="file" id="ag-img" accept="image/*" style="display:none" onchange="previewImagemAg(this)"/>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:.5rem">
+      <button class="btn-blue" onclick="salvarAg()">💾 Salvar agendamento</button>
+      <button class="btn-green" onclick="salvarEDisparar()">📲 Salvar e disparar agora</button>
+      <button class="btn-outline" onclick="fecharModalAg()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  let agendamentos = JSON.parse(localStorage.getItem('loglife_agendamentos') || '[]');
+  let historico = JSON.parse(localStorage.getItem('loglife_hist_disparos') || '[]');
+  let editandoId = null;
+  let destManual = 'todos';
+  let destAg = 'todos';
+  let diasAg = new Set();
+
+  const destLabels = { todos: 'Todos os motoboys', 'seg-sex': 'Seg-Sex', sabado: 'Sábado', domingo: 'Domingo' };
+  const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
+
+  // ===== ABAS =====
+  function mudarAba(aba, btn) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('ativo'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    document.getElementById('view-' + aba).classList.add('ativo');
+    if (aba === 'historico') renderHistorico();
+  }
+
+  // ===== MANUAL =====
+  function toggleDestManual(btn, dest) {
+    destManual = dest;
+    document.querySelectorAll('#dest-manual .chip').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    document.getElementById('resumo-dest').textContent = destLabels[dest] || dest;
+  }
+
+  document.getElementById('manual-texto').addEventListener('input', function() {
+    const len = this.value.length;
+    document.getElementById('manual-contador').textContent = len + ' / 500';
+    const temImg = document.getElementById('manual-img-preview').style.display === 'block';
+    document.getElementById('resumo-tipo').textContent = temImg ? 'Texto + Imagem' : 'Somente texto';
+  });
+
+  function previewImagem(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('manual-img-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        document.getElementById('resumo-tipo').textContent = 'Texto + Imagem';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  setInterval(() => {
+    const agora = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', timeZone:'America/Sao_Paulo' });
+    document.getElementById('resumo-hora').textContent = 'Agora (' + agora + ')';
+  }, 1000);
+
+  async function dispararManual() {
+    const texto = document.getElementById('manual-texto').value.trim();
+    if (!texto) { toast('⚠️ Digite uma mensagem'); return; }
+
+    // Buscar números do servidor
+    try {
+      const r = await fetch(API + '/motoboys?todos=1');
+      const d = await r.json();
+      let motoboys = d.motoboys || [];
+
+      if (destManual !== 'todos') {
+        motoboys = motoboys.filter(m => {
+          if (!m.rotas_info || !m.rotas_info.length) return false;
+          return m.rotas_info.some(ri => ri.dia_semana === destManual);
+        });
+      }
+
+      const numeros = motoboys.map(m => m.telefone).filter(Boolean);
+      if (!numeros.length) { toast('⚠️ Nenhum destinatário encontrado'); return; }
+
+      // Registrar no histórico
+      const registro = {
+        id: Date.now(),
+        tipo: 'manual',
+        mensagem: texto,
+        destinatarios: destManual,
+        qtd: numeros.length,
+        data: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+        status: 'enviado'
+      };
+      historico.unshift(registro);
+      localStorage.setItem('loglife_hist_disparos', JSON.stringify(historico.slice(0, 50)));
+
+      toast('📲 Disparado para ' + numeros.length + ' motoboys! (Evolution API pendente)');
+      document.getElementById('manual-texto').value = '';
+    } catch(e) {
+      toast('Erro ao buscar destinatários');
+    }
+  }
+
+  // ===== AGENDAMENTOS =====
+  function abrirModalAg(id) {
+    editandoId = id || null;
+    diasAg = new Set();
+    destAg = 'todos';
+
+    document.getElementById('ag-nome').value = '';
+    document.getElementById('ag-mensagem').value = '';
+    document.getElementById('ag-horarios').innerHTML = '';
+    addHorarioAg();
+
+    document.querySelectorAll('#ag-dias-chips .chip').forEach(b => b.classList.remove('on'));
+    document.querySelectorAll('#ag-dest-chips .chip').forEach(b => b.classList.remove('on'));
+    document.querySelector('#ag-dest-chips .chip').classList.add('on');
+
+    if (id) {
+      const ag = agendamentos.find(a => a.id === id);
+      if (ag) {
+        document.getElementById('modal-ag-titulo').textContent = '✎ Editar agendamento';
+        document.getElementById('ag-nome').value = ag.nome;
+        document.getElementById('ag-mensagem').value = ag.mensagem;
+        document.getElementById('ag-horarios').innerHTML = '';
+        ag.horarios.forEach(h => addHorarioAg(h));
+        diasAg = new Set(ag.dias);
+        destAg = ag.destinatarios;
+        document.querySelectorAll('#ag-dias-chips .chip').forEach(b => {
+          if (diasAg.has(b.dataset.dia)) b.classList.add('on');
+        });
+        document.querySelectorAll('#ag-dest-chips .chip').forEach(b => {
+          b.classList.remove('on');
+          if (b.dataset.dest === destAg) b.classList.add('on');
+        });
+      }
+    } else {
+      document.getElementById('modal-ag-titulo').textContent = '➕ Novo agendamento';
+    }
+
+    document.getElementById('modal-ag').style.display = 'block';
+  }
+
+  function fecharModalAg() { 
+    document.getElementById('modal-ag').style.display = 'none';
+    document.getElementById('ag-img-preview').style.display = 'none';
+    document.getElementById('ag-img-preview').src = '';
+    document.getElementById('ag-img').value = '';
+  }
+
+  function toggleDiaAg(btn) {
+    const dia = btn.dataset.dia;
+    if (diasAg.has(dia)) { diasAg.delete(dia); btn.classList.remove('on'); }
+    else { diasAg.add(dia); btn.classList.add('on'); }
+  }
+
+  function toggleDestAg(btn) {
+    destAg = btn.dataset.dest;
+    document.querySelectorAll('#ag-dest-chips .chip').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+  }
+
+  function addHorarioAg(valor) {
+    const div = document.createElement('div');
+    div.className = 'horario-row';
+    div.innerHTML = '<input type="time" value="' + (valor || '07:00') + '"/>'
+      + '<button class="btn-rem" onclick="this.parentElement.remove()">✕</button>';
+    document.getElementById('ag-horarios').appendChild(div);
+  }
+
+  function previewImagemAg(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.getElementById('ag-img-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  function salvarAg(disparar) {
+    const nome = document.getElementById('ag-nome').value.trim();
+    const mensagem = document.getElementById('ag-mensagem').value.trim();
+    const horarios = Array.from(document.querySelectorAll('#ag-horarios input[type=time]')).map(i => i.value);
+    const imagem = document.getElementById('ag-img-preview').src || null;
+    const temImagem = document.getElementById('ag-img-preview').style.display === 'block';
+
+    if (!nome) { toast('⚠️ Digite um nome'); return; }
+    if (!mensagem) { toast('⚠️ Digite uma mensagem'); return; }
+    if (!diasAg.size) { toast('⚠️ Selecione pelo menos um dia'); return; }
+    if (!horarios.length) { toast('⚠️ Adicione pelo menos um horário'); return; }
+
+    if (editandoId) {
+      const idx = agendamentos.findIndex(a => a.id === editandoId);
+      if (idx > -1) agendamentos[idx] = Object.assign({}, agendamentos[idx], { nome, mensagem, dias: Array.from(diasAg), horarios, destinatarios: destAg, imagem: temImagem ? imagem : (agendamentos[idx].imagem || null) });
+    } else {
+      agendamentos.push({ id: Date.now(), nome, mensagem, dias: Array.from(diasAg), horarios, destinatarios: destAg, ativo: true, imagem: temImagem ? imagem : null });
+    }
+
+    localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
+    fecharModalAg();
+    renderAgendamentos();
+    toast(disparar ? '📲 Salvo e disparado!' : '✓ Agendamento salvo!');
+  }
+
+  function salvarEDisparar() { salvarAg(true); }
+
+  function toggleAg(id) {
+    const ag = agendamentos.find(a => a.id === id);
+    if (ag) { ag.ativo = !ag.ativo; localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos)); renderAgendamentos(); }
+  }
+
+  function excluirAg(id) {
+    if (!confirm('Excluir este agendamento?')) return;
+    agendamentos = agendamentos.filter(a => a.id !== id);
+    localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
+    renderAgendamentos();
+    toast('✓ Excluído');
+  }
+
+  function renderAgendamentos() {
+    const el = document.getElementById('lista-ag');
+    if (!agendamentos.length) { el.innerHTML = '<div class="empty">Nenhum agendamento criado ainda.</div>'; return; }
+    el.innerHTML = agendamentos.map(ag => {
+      const diasStr = ag.dias.map(d => diasLabels[d] || d).join(', ');
+      const horariosStr = ag.horarios.join(' · ');
+      return '<div class="ag-item">'
+        + '<div class="ag-header">'
+        + '<span class="ag-nome">' + ag.nome + '</span>'
+        + '<div class="ag-acoes">'
+        + '<button class="toggle-btn" onclick="toggleAg(' + ag.id + ')" style="background:' + (ag.ativo ? '#E8F8F0' : '#F5F5F5') + ';color:' + (ag.ativo ? '#0F9B78' : '#94A8B8') + '">' + (ag.ativo ? '● Ativo' : '○ Pausado') + '</button>'
+        + '<button class="btn-edit" onclick="abrirModalAg(' + ag.id + ')">✎</button>'
+        + '<button class="btn-del" onclick="excluirAg(' + ag.id + ')">🗑</button>'
+        + '</div></div>'
+        + '<div class="ag-texto">' + ag.mensagem + '</div>'
+        + '<div class="ag-tags">'
+        + '<span class="tag tag-azul">' + diasStr + '</span>'
+        + '<span class="tag tag-verde">⏰ ' + horariosStr + '</span>'
+        + '<span class="tag tag-amarelo">👥 ' + (destLabels[ag.destinatarios] || ag.destinatarios) + '</span>'
+        + (ag.imagem ? '<span class="tag tag-azul">🖼️ Com imagem</span>' : '')
+        + '</div></div>';
+    }).join('');
+  }
+
+  // ===== HISTÓRICO =====
+  function renderHistorico() {
+    const el = document.getElementById('lista-historico');
+    if (!historico.length) { el.innerHTML = '<div class="empty">Nenhum disparo registrado ainda.</div>'; return; }
+    el.innerHTML = historico.map(h => {
+      return '<div class="hist-item">'
+        + '<div class="hist-icon">' + (h.tipo === 'agendado' ? '⏰' : '📤') + '</div>'
+        + '<div style="flex:1">'
+        + '<div class="hist-nome">' + h.mensagem.substring(0, 50) + (h.mensagem.length > 50 ? '...' : '') + '</div>'
+        + '<div class="hist-meta">' + h.data + ' · ' + h.qtd + ' destinatários · <span style="color:#0F9B78;font-weight:700">✓ ' + h.status + '</span></div>'
+        + '</div></div>';
+    }).join('');
+  }
+
+  // ===== TOAST =====
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+
+  // Init
+  renderAgendamentos();
+</script>
+</body>
+</html>
