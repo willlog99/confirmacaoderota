@@ -262,7 +262,7 @@
   let destAg = 'todos';
   let diasAg = new Set();
 
-  const destLabels = { todos: 'Todos os motoboys', 'seg-sex': 'Seg-Sex', sabado: 'Sábado', domingo: 'Domingo' };
+  const destLabels = { todos: 'Todos os motoboys', 'seg-sex': 'Seg-Sex', sabado: 'Sábado', domingo: 'Domingo', individual: 'Individual' };
   const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
 
   // Carregar agendamentos do servidor
@@ -340,40 +340,44 @@
     const texto = document.getElementById('manual-texto').value.trim();
     if (!texto) { toast('⚠️ Digite uma mensagem'); return; }
 
-    // Buscar números do servidor
-    try {
-      const r = await fetch(API + '/motoboys?todos=1');
-      const d = await r.json();
-      let motoboys = d.motoboys || [];
+    let numeros = [];
 
-      if (destManual !== 'todos') {
-        motoboys = motoboys.filter(m => {
-          if (!m.rotas_info || !m.rotas_info.length) return false;
-          return m.rotas_info.some(ri => ri.dia_semana === destManual);
-        });
-      }
-
-      const numeros = motoboys.map(m => m.telefone).filter(Boolean);
-      if (!numeros.length) { toast('⚠️ Nenhum destinatário encontrado'); return; }
-
-      // Registrar no histórico
-      const registro = {
-        id: Date.now(),
-        tipo: 'manual',
-        mensagem: texto,
-        destinatarios: destManual,
-        qtd: numeros.length,
-        data: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
-        status: 'enviado'
-      };
-      historico.unshift(registro);
-      localStorage.setItem('loglife_hist_disparos', JSON.stringify(historico.slice(0, 50)));
-
-      toast('📲 Disparado para ' + numeros.length + ' motoboys! (Evolution API pendente)');
-      document.getElementById('manual-texto').value = '';
-    } catch(e) {
-      toast('Erro ao buscar destinatários');
+    if (destManual === 'individual') {
+      const sel = document.getElementById('motoboy-individual');
+      const tel = sel.value;
+      if (!tel) { toast('⚠️ Selecione um motoboy'); return; }
+      numeros = [tel];
+    } else {
+      try {
+        const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
+        const d = await r.json();
+        let motoboys = d.motoboys || [];
+        if (destManual !== 'todos') {
+          motoboys = motoboys.filter(m => 
+            !m.rotas_info || !m.rotas_info.length || 
+            m.rotas_info.some(ri => ri.dia_semana === destManual)
+          );
+        }
+        numeros = motoboys.map(m => m.telefone).filter(Boolean);
+      } catch(e) { toast('Erro ao buscar destinatários'); return; }
     }
+
+    if (!numeros.length) { toast('⚠️ Nenhum destinatário encontrado'); return; }
+
+    const registro = {
+      id: Date.now(),
+      tipo: 'manual',
+      mensagem: texto,
+      destinatarios: destManual,
+      qtd: numeros.length,
+      data: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+      status: 'enviado'
+    };
+    historico.unshift(registro);
+    localStorage.setItem('loglife_hist_disparos', JSON.stringify(historico.slice(0, 50)));
+
+    toast('📲 Disparado para ' + numeros.length + ' motoboy' + (numeros.length > 1 ? 's' : '') + '! (Evolution API pendente)');
+    document.getElementById('manual-texto').value = '';
   }
 
   // ===== AGENDAMENTOS =====
@@ -567,4 +571,3 @@
 </script>
 </body>
 </html>
-
