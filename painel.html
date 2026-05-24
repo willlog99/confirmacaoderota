@@ -741,20 +741,42 @@
       const atrasoEl = document.getElementById('painel-atrasos');
       if (!todosAtrasos.length) {
         atrasoEl.innerHTML = '<div class="empty">Nenhum cliente em atraso ✓</div>';
+        if (window._timerAtrasos) { clearInterval(window._timerAtrasos); window._timerAtrasos = null; }
       } else {
-        atrasoEl.innerHTML = todosAtrasos.map(a => {
-          const horas = Math.floor(a.minutos_atrasado / 60);
-          const mins = a.minutos_atrasado % 60;
-          const tempoStr = horas > 0 ? `${horas}h ${mins}min` : `${mins}min`;
-          const isPendente = a.tipo === 'pendente';
-          return `<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:${isPendente ? '#FEF9EC' : '#FCEBEB'};border:1px solid ${isPendente ? '#F2CC70' : '#F09595'};margin-bottom:5px">
-            <span style="font-size:13px">${isPendente ? '⚠️' : '⏰'}</span>
-            <div style="flex:1;min-width:0">
-              <span style="font-size:12px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">${a.nome}</span>
-              <span style="font-size:11px;color:#5A7A8F">${a.rota} · ${a.horario} · <strong style="color:${isPendente ? '#92400E' : '#DC2626'}">${tempoStr} atraso</strong></span>
-            </div>
-          </div>`;
-        }).join('');
+        // Salva atrasos globalmente para o timer atualizar
+        window._atrasosDados = todosAtrasos;
+
+        function renderAtrasos() {
+          const agora = new Date();
+          const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+          const minAgora = agoraSP.getUTCHours() * 60 + agoraSP.getUTCMinutes();
+
+          atrasoEl.innerHTML = (window._atrasosDados || []).map(a => {
+            const [h, m] = (a.horario || '00:00').split(':').map(Number);
+            const minMarcado = h * 60 + m;
+            const minAtrasado = Math.max(0, minAgora - minMarcado);
+            const horas = Math.floor(minAtrasado / 60);
+            const mins = minAtrasado % 60;
+            const tempoStr = horas > 0
+              ? horas + 'h ' + String(mins).padStart(2,'0') + 'min'
+              : '0:' + String(mins).padStart(2,'0');
+            const cor = minAtrasado > 60 ? '#DC2626' : '#92400E';
+            const bg = minAtrasado > 60 ? '#FCEBEB' : '#FEF9EC';
+            const brd = minAtrasado > 60 ? '#F09595' : '#F2CC70';
+            return '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;background:' + bg + ';border:1px solid ' + brd + ';margin-bottom:5px">'
+              + '<span style="font-size:13px">⏰</span>'
+              + '<div style="flex:1;min-width:0">'
+              + '<span style="font-size:12px;font-weight:700;color:#0F4C7A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block">' + a.nome + '</span>'
+              + '<span style="font-size:11px;color:#5A7A8F">' + a.rota + ' · ' + a.horario + ' · <strong style="color:' + cor + '">' + tempoStr + ' atraso</strong></span>'
+              + '</div></div>';
+          }).join('');
+        }
+
+        renderAtrasos();
+
+        // Timer que atualiza a cada segundo
+        if (window._timerAtrasos) clearInterval(window._timerAtrasos);
+        window._timerAtrasos = setInterval(renderAtrasos, 1000);
       }
 
     } catch(e) {
