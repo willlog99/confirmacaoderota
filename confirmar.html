@@ -318,6 +318,15 @@
   }
 
   async function confirmarPresenca(resp) {
+    // Se é "Não", motivo é obrigatório
+    if (resp === 'nao') {
+      const obs = (document.getElementById('obs-text').value || '').trim();
+      if (!obs) {
+        showMsg('⚠️ Por favor, descreva o motivo de sua ausência.', 'error');
+        return;
+      }
+    }
+    
     const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
     setBtns(true);
     showMsg('Enviando...', 'loading');
@@ -350,9 +359,9 @@
           
           abrirChecklist();
         } else {
-          // Não irei → volta para tela inicial
-          showMsg('✗ Não confirmação registrada.', 'success');
-          setTimeout(() => voltarInicial(), 1500);
+          // Não irei → volta para tela inicial com mensagem humana
+          showMsg('Entendido. Até a próxima! 👋', 'success');
+          setTimeout(() => voltarInicial(), 2000);
         }
       } else {
         showMsg('Erro ao enviar. Tente novamente.', 'error');
@@ -503,7 +512,10 @@
         setTimeout(() => {
           if (!rotasCarregadas) carregarRotas();
           if (rotasDisponivel.length > 0) mostrarSelecaoRotas();
-          else voltarInicial();
+          else {
+            showMsgChecklist('✓ Checklist concluído!\\n\\nVocê não tem rota cadastrada para hoje.', 'success');
+            setTimeout(() => voltarInicial(), 2000);
+          }
         }, 1000);
       } else {
         showMsgChecklist('Erro ao enviar. Tente novamente.', 'error');
