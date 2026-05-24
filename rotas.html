@@ -414,42 +414,61 @@
 
   // AÇÕES DE ROTA
   async function trocarMotorista(rota) {
-    const tel = prompt('Digite o telefone do novo motorista:');
-    if (!tel) return;
-    const telLimpo = tel.replace(/\D/g,'');
-    if (telLimpo.length < 10) { toast('Telefone inválido'); return; }
-    
-    // Busca motorista pelo telefone
-    try {
-      const r = await fetch(API + '/motoboys?todos=1');
-      const d = await r.json();
-      const motoboys = d.motoboys || [];
-      // Agrupar por telefone
-      const vistos = new Set();
-      const unicos = motoboys.filter(m => { 
-        if (vistos.has(m.telefone)) return false; 
-        vistos.add(m.telefone); 
-        return true; 
-      });
-      const encontrado = unicos.find(m => m.telefone === telLimpo);
-      
-      if (!encontrado) { toast('Motorista não encontrado'); return; }
-      
-      if (!confirm(`Trocar motorista da rota "${rota}" para:\n${encontrado.nome}\n📱 ${encontrado.telefone}`)) return;
-      
-      // Achar dia_semana da rota
-      const rotaObj = todasRotas.find(r => r.rota === rota);
-      const dia = rotaObj ? rotaObj.dia_semana : 'seg-sex';
-      
-      await fetch(API + '/trocar-motorista', { 
-        method:'POST', 
-        headers:{'Content-Type':'application/json'}, 
-        body: JSON.stringify({ rota, nome_motoboy: encontrado.nome, telefone_motoboy: telLimpo, dia_semana: dia }) 
-      });
-      toast('✓ Motorista trocado para ' + encontrado.nome + '!');
-      clientesPorRota = {};
-      carregarRotas();
-    } catch(e) { toast('Erro ao trocar motorista'); }
+    // Buscar motorista atual da rota
+    const rotaObj = todasRotas.find(r => r.rota === rota);
+    const motoAtual = rotaObj ? rotaObj.motoboy_aberto : null;
+
+    // Montar modal
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem';
+    modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'
+      + '<h3 style="font-size:16px;color:#0F4C7A;font-weight:700;margin-bottom:4px">⇄ Motorista</h3>'
+      + '<p style="font-size:13px;color:#5A7A8F;margin-bottom:1.2rem">Rota: <strong>' + rota + '</strong>'
+      + (motoAtual ? '<br/>Atual: <strong>' + motoAtual + '</strong>' : '<br/><span style="color:#94A8B8">Sem motorista</span>') + '</p>'
+      + '<div style="display:flex;flex-direction:column;gap:8px">'
+      + '<button id="btn-trocar-moto" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">⇄ Trocar motorista</button>'
+      + (motoAtual ? '<button id="btn-remover-moto" style="width:100%;padding:12px;border-radius:10px;border:none;background:#FCEBEB;color:#DC2626;font-weight:700;cursor:pointer;font-size:14px;border:1.5px solid #F09595">✕ Remover motorista</button>' : '')
+      + '<button id="btn-cancelar-moto" style="width:100%;padding:12px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">Cancelar</button>'
+      + '</div></div>';
+    document.body.appendChild(modal);
+
+    const fechar = () => document.body.removeChild(modal);
+
+    document.getElementById('btn-cancelar-moto').onclick = fechar;
+
+    document.getElementById('btn-trocar-moto').onclick = async () => {
+      fechar();
+      const tel = prompt('Digite o telefone do novo motorista:');
+      if (!tel) return;
+      const telLimpo = tel.replace(/\D/g,'');
+      if (telLimpo.length < 10) { toast('Telefone inválido'); return; }
+      try {
+        const r = await fetch(API + '/motoboys?todos=1');
+        const d = await r.json();
+        const encontrado = (d.motoboys || []).find(m => m.telefone === telLimpo);
+        if (!encontrado) { toast('Motorista não encontrado'); return; }
+        if (!confirm('Trocar motorista da rota "' + rota + '" para:\n' + encontrado.nome + '\n📱 ' + encontrado.telefone)) return;
+        const dia = rotaObj ? rotaObj.dia_semana : 'seg-sex';
+        await fetch(API + '/trocar-motorista', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota, nome_motoboy: encontrado.nome, telefone_motoboy: telLimpo, dia_semana: dia }) });
+        toast('✓ Motorista trocado para ' + encontrado.nome + '!');
+        clientesPorRota = {};
+        carregarRotas();
+      } catch(e) { toast('Erro ao trocar motorista'); }
+    };
+
+    const btnRemover = document.getElementById('btn-remover-moto');
+    if (btnRemover) {
+      btnRemover.onclick = async () => {
+        if (!confirm('Remover motorista da rota "' + rota + '"?\n\nA rota não será apagada.')) return;
+        fechar();
+        try {
+          await fetch(API + '/remover-motorista', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ rota }) });
+          toast('✓ Motorista removido da rota!');
+          clientesPorRota = {};
+          carregarRotas();
+        } catch(e) { toast('Erro ao remover motorista'); }
+      };
+    }
   }
 
   async function alterarDiaRota(rota, diaAtual) {
