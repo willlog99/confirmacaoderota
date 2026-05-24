@@ -147,6 +147,32 @@
           // Não confirmou → mostra opções (confirmar ou acessar)
           document.getElementById('modal-opcoes').classList.remove('hidden');
         }
+      } else if (d.status === 'sem_rota') {
+        // Motoboy existe mas não tem rota → vai para confirmação e depois chat
+        telefoneSalvo = tel;
+        nomeUsuario = d.nome;
+        rotasDisponivel = [];
+        localStorage.setItem('telefone_temp', tel);
+        localStorage.setItem('nome_temp', d.nome);
+        
+        // Verificar se já confirmou hoje
+        const confirmouHoje = await verificarConfirmacao(tel);
+        if (confirmouHoje) {
+          // Já confirmou → verifica checklist
+          const precisaChecklist = await verificarChecklistObrigatorio();
+          if (precisaChecklist) {
+            alert('⚠️ Você precisa preencher seu checklist antes de continuar!\n\nClique em OK para preencher.');
+            window.location.href = 'confirmar.html?checklist_obrigatorio=true&sem_rota=1';
+            return;
+          }
+          // Já fez tudo → vai para chat
+          localStorage.setItem('motoboy_tel', tel);
+          localStorage.setItem('motoboy_nome', d.nome);
+          window.location.href = 'semrota.html';
+        } else {
+          // Não confirmou → vai para confirmação de presença
+          window.location.href = 'confirmar.html?sem_rota=1';
+        }
       } else {
         showMsg('Telefone não encontrado. Fale com o organizador.', 'error');
       }
