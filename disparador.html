@@ -246,7 +246,7 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
-  let agendamentos = JSON.parse(localStorage.getItem('loglife_agendamentos') || '[]');
+  let agendamentos = [];
   let historico = JSON.parse(localStorage.getItem('loglife_hist_disparos') || '[]');
   let editandoId = null;
   let destManual = 'todos';
@@ -255,6 +255,16 @@
 
   const destLabels = { todos: 'Todos os motoboys', 'seg-sex': 'Seg-Sex', sabado: 'Sábado', domingo: 'Domingo' };
   const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
+
+  // Carregar agendamentos do servidor
+  async function carregarAgendamentos() {
+    try {
+      const r = await fetch(API + '/agendamentos');
+      const d = await r.json();
+      agendamentos = d.agendamentos || [];
+      renderAgendamentos();
+    } catch(e) { toast('Erro ao carregar agendamentos'); }
+  }
 
   // ===== ABAS =====
   function mudarAba(aba, btn) {
@@ -417,11 +427,21 @@
     }
   }
 
-  function salvarAg(disparar) {
+  async function uploadImagem(input) {
+    if (!input.files || !input.files[0]) return null;
+    const formData = new FormData();
+    formData.append('imagem', input.files[0]);
+    try {
+      const r = await fetch(API + '/upload-imagem', { method: 'POST', body: formData });
+      const d = await r.json();
+      return d.status === 'ok' ? d.url : null;
+    } catch(e) { return null; }
+  }
+
+  async function salvarAg(disparar) {
     const nome = document.getElementById('ag-nome').value.trim();
     const mensagem = document.getElementById('ag-mensagem').value.trim();
     const horarios = Array.from(document.querySelectorAll('#ag-horarios input[type=time]')).map(i => i.value);
-    const imagem = document.getElementById('ag-img-preview').src || null;
     const temImagem = document.getElementById('ag-img-preview').style.display === 'block';
 
     if (!nome) { toast('⚠️ Digite um nome'); return; }
@@ -429,32 +449,42 @@
     if (!diasAg.size) { toast('⚠️ Selecione pelo menos um dia'); return; }
     if (!horarios.length) { toast('⚠️ Adicione pelo menos um horário'); return; }
 
-    if (editandoId) {
-      const idx = agendamentos.findIndex(a => a.id === editandoId);
-      if (idx > -1) agendamentos[idx] = Object.assign({}, agendamentos[idx], { nome, mensagem, dias: Array.from(diasAg), horarios, destinatarios: destAg, imagem: temImagem ? imagem : (agendamentos[idx].imagem || null) });
-    } else {
-      agendamentos.push({ id: Date.now(), nome, mensagem, dias: Array.from(diasAg), horarios, destinatarios: destAg, ativo: true, imagem: temImagem ? imagem : null });
+    toast('💾 Salvando...');
+
+    // Upload imagem se tiver nova
+    let imagemUrl = editandoId ? (agendamentos.find(a => a.id === editandoId) || {}).imagem || null : null;
+    if (temImagem && document.getElementById('ag-img').files[0]) {
+      imagemUrl = await uploadImagem(document.getElementById('ag-img'));
+      if (!imagemUrl) toast('⚠️ Erro no upload da imagem, salvando sem ela');
     }
 
-    localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
-    fecharModalAg();
-    renderAgendamentos();
-    toast(disparar ? '📲 Salvo e disparado!' : '✓ Agendamento salvo!');
+    const payload = { nome, mensagem, dias: Array.from(diasAg), horarios, destinatarios: destAg, imagem: imagemUrl };
+    if (editandoId) payload.id = editandoId;
+
+    try {
+      await fetch(API + '/agendamentos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      fecharModalAg();
+      await carregarAgendamentos();
+      toast(disparar ? '📲 Salvo e disparado!' : '✓ Agendamento salvo!');
+    } catch(e) { toast('Erro ao salvar'); }
   }
 
   function salvarEDisparar() { salvarAg(true); }
 
-  function toggleAg(id) {
-    const ag = agendamentos.find(a => a.id === id);
-    if (ag) { ag.ativo = !ag.ativo; localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos)); renderAgendamentos(); }
+  async function toggleAg(id) {
+    try {
+      await fetch(API + '/agendamentos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      await carregarAgendamentos();
+    } catch(e) { toast('Erro ao atualizar'); }
   }
 
-  function excluirAg(id) {
+  async function excluirAg(id) {
     if (!confirm('Excluir este agendamento?')) return;
-    agendamentos = agendamentos.filter(a => a.id !== id);
-    localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
-    renderAgendamentos();
-    toast('✓ Excluído');
+    try {
+      await fetch(API + '/agendamentos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+      await carregarAgendamentos();
+      toast('✓ Excluído');
+    } catch(e) { toast('Erro ao excluir'); }
   }
 
   function renderAgendamentos() {
@@ -504,7 +534,8 @@
   }
 
   // Init
-  renderAgendamentos();
+  carregarAgendamentos();
+  renderHistorico();
 </script>
 </body>
 </html>
