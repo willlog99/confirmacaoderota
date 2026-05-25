@@ -491,7 +491,9 @@
   // ===== GRUPOS =====
   async function carregarGrupos() {
     try {
-      const r = await fetch(API + '/grupos-disparador');
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 5000);
+      const r = await fetch(API + '/grupos-disparador', { signal: controller.signal });
       if (r.ok) { const d = await r.json(); grupos = d.grupos || { clt: [], agr: [] }; }
     } catch(e) {
       grupos = JSON.parse(localStorage.getItem('loglife_grupos') || '{"clt":[],"agr":[]}');
@@ -687,7 +689,6 @@
       document.getElementById('prog-bar').style.width = pct + '%';
 
       // Atualizar box aba agendamentos
-      const eaBox = document.getElementById('envio-andamento-box');
       if (eaBox) {
         document.getElementById('ea-progresso').textContent = i + '/' + membros.length + ' · ' + pct + '%';
         document.getElementById('ea-barra').style.width = pct + '%';
@@ -713,7 +714,6 @@
     }
 
     const total = membros.length;
-    const pct = cancelarFlag ? Math.round((document.getElementById('prog-bar').style.width)) : 100;
     document.getElementById('prog-titulo-txt').textContent = cancelarFlag ? '⚠️ Cancelado' : '✓ Concluído! ' + total + '/' + total;
     document.getElementById('prog-pct').textContent = cancelarFlag ? '' : '100%';
     document.getElementById('prog-bar').style.width = cancelarFlag ? document.getElementById('prog-bar').style.width : '100%';
@@ -728,7 +728,6 @@
     disparando = false;
     document.getElementById('btn-disparar').disabled = false;
     document.getElementById('btn-cancelar').style.display = 'none';
-    const eaBox = document.getElementById('envio-andamento-box');
     if (eaBox) eaBox.style.display = 'none';
     if (!cancelarFlag) toast('✓ Disparado para ' + total + ' motoboys!');
   }
@@ -757,7 +756,9 @@
   // ===== AGENDAMENTOS =====
   async function carregarAgendamentos() {
     try {
-      const r = await fetch(API + '/agendamentos');
+      const controller = new AbortController();
+      setTimeout(() => controller.abort(), 5000);
+      const r = await fetch(API + '/agendamentos', { signal: controller.signal });
       const d = await r.json();
       agendamentos = d.agendamentos || [];
     } catch(e) { agendamentos = JSON.parse(localStorage.getItem('loglife_agendamentos') || '[]'); }
