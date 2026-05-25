@@ -616,10 +616,18 @@
       </button>`).join('');
   }
 
+  // Cache global de dados do painel
+  let cachePainel = null;
+
   function trocarFiltroDia(dia) {
     filtroDia = dia;
     renderizarFiltroDias();
-    carregarPainel();
+    // Se tem cache, renderiza imediatamente sem novo fetch
+    if (cachePainel) {
+      renderizarPainel(cachePainel);
+    } else {
+      carregarPainel();
+    }
   }
 
   renderizarFiltroDias();
@@ -678,25 +686,38 @@
 
   async function carregarPainel(silent) {
     try {
-      // Carregar histórico de disparos
       carregarHistoricoDisparos();
-
-      const params = filtroDia === 'todos' ? '?todos_dias=1' : '?dia_semana=' + filtroDia;
 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      // Um único fetch em vez de 40+
-      const res = await fetch(API + '/painel-dados' + params, { signal: controller.signal });
+      // Sempre busca todos os dias — filtra no frontend
+      const res = await fetch(API + '/painel-dados?todos_dias=1', { signal: controller.signal });
       clearTimeout(timeoutId);
       const data = await res.json();
 
-      const rotas = data.rotas || [];
-      const clientesPorRota = data.clientes_por_rota || {};
-      const motoboys = data.motoboys || [];
-      const confirmacoes = data.confirmacoes || [];
+      // Salvar em cache
+      cachePainel = data;
 
-      rotasDisponiveis = rotas.map(r => r.rota);
+      renderizarPainel(data);
+
+    } catch(e) {
+      if (!silent) document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
+    }
+  }
+
+  function renderizarPainel(data) {
+    const todasRotas = data.rotas || [];
+    const clientesPorRota = data.clientes_por_rota || {};
+    const motoboys = data.motoboys || [];
+    const confirmacoes = data.confirmacoes || [];
+
+    // Filtrar rotas pelo dia selecionado
+    const rotas = filtroDia === 'todos'
+      ? todasRotas
+      : todasRotas.filter(r => r.dia_semana === filtroDia);
+
+    rotasDisponiveis = rotas.map(r => r.rota);
 
       // KPIs
       let totalGeral = 0, feitasGeral = 0;
@@ -766,9 +787,6 @@
       } catch(e) {
         document.getElementById('painel-checklist').innerHTML = '<div class="empty">Erro ao carregar</div>';
       }
-
-      const mbPorRota = {};
-      motoboys.forEach(m => { if (m.rota) { if (!mbPorRota[m.rota]) mbPorRota[m.rota] = []; mbPorRota[m.rota].push(m.nome); } });
 
       const el = document.getElementById('painel-rotas');
       if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
@@ -896,10 +914,7 @@
         window._timerAtrasos = setInterval(renderAtrasos, 1000);
       }
 
-    } catch(e) {
-      if (!silent) document.getElementById('painel-rotas').innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
-    }
-  }
+  } // fim renderizarPainel
 
   function toggleRotaPreview(card, rota) {
     if (cardExpandido === rota) {
