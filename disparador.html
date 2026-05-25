@@ -198,6 +198,23 @@
         <div class="grupo-nome">Todos</div>
         <div class="grupo-qtd" id="qtd-todos">0 motoboys</div>
       </div>
+      <div class="grupo-card" id="gc-individual" style="border-color:#8B5CF6" onclick="selecionarGrupo('individual',this)">
+        <div class="grupo-check" style="background:#8B5CF6">✓</div>
+        <div class="grupo-icon">🏍️</div>
+        <div class="grupo-nome">Individual</div>
+        <div class="grupo-qtd">1 número</div>
+      </div>
+    </div>
+
+    <!-- Campo telefone individual -->
+    <div id="campo-individual" style="display:none;margin-top:10px">
+      <label class="field-label">Número do WhatsApp</label>
+      <div style="display:flex;gap:8px">
+        <input type="tel" id="tel-individual" placeholder="(11) 99999-9999" maxlength="15"
+          style="flex:1;height:42px;border-radius:10px;border:1.5px solid #8B5CF6;padding:0 12px;font-size:14px;outline:none;color:#0F4C7A"
+          oninput="this.value=this.value.replace(/\D/g,'').replace(/(\d{2})(\d{5})(\d{4})/,'($1) $2-$3')"/>
+        <div id="tel-preview" style="display:none;padding:8px 12px;border-radius:10px;background:#F3F0FF;border:1px solid #8B5CF6;font-size:12px;font-weight:600;color:#5B21B6;align-items:center"></div>
+      </div>
     </div>
   </div>
 
@@ -539,10 +556,11 @@
 
   function selecionarGrupo(tipo, el) {
     grupoSelecionado = tipo;
-    document.querySelectorAll('.grupo-card').forEach(c => {
-      c.classList.remove('on');
-    });
+    document.querySelectorAll('.grupo-card').forEach(c => c.classList.remove('on'));
     el.classList.add('on');
+    // Mostrar campo telefone só para individual
+    const campoIndividual = document.getElementById('campo-individual');
+    if (campoIndividual) campoIndividual.style.display = tipo === 'individual' ? 'block' : 'none';
     atualizarUI();
   }
 
@@ -551,16 +569,24 @@
     const agr = grupos.agr || [];
     const todosM = [...new Map([...clt,...agr].map(m=>[m.telefone,m])).values()];
     const mapa = { clt, agr, todos: todosM };
-    const membros = mapa[grupoSelecionado] || [];
-    const nomes = { clt:'CLT', agr:'Agregados', todos:'Todos' };
+    const nomes = { clt:'CLT', agr:'Agregados', todos:'Todos', individual:'Individual' };
 
-    document.getElementById('resumo-grupo').textContent = nomes[grupoSelecionado];
-    document.getElementById('resumo-qtd').textContent = membros.length + ' motoboys';
+    let qtd = 1;
+    if (grupoSelecionado === 'individual') {
+      qtd = 1;
+    } else {
+      qtd = (mapa[grupoSelecionado] || []).length;
+    }
+
+    document.getElementById('resumo-grupo').textContent = nomes[grupoSelecionado] || grupoSelecionado;
+    document.getElementById('resumo-qtd').textContent = grupoSelecionado === 'individual' ? '1 número' : qtd + ' motoboys';
     document.getElementById('resumo-intervalo').textContent = intervalo + 's entre cada';
-    document.getElementById('btn-disparar-txt').textContent = 'Disparar para ' + membros.length + ' motoboys';
+    document.getElementById('btn-disparar-txt').textContent = grupoSelecionado === 'individual'
+      ? 'Disparar para 1 número'
+      : 'Disparar para ' + qtd + ' motoboys';
 
-    const mins = Math.ceil((membros.length * intervalo) / 60);
-    document.getElementById('tempo-estimado').textContent = mins > 0 ? '~' + mins + ' minuto' + (mins>1?'s':'') : 'menos de 1 minuto';
+    const mins = Math.ceil((qtd * intervalo) / 60);
+    document.getElementById('tempo-estimado').textContent = grupoSelecionado === 'individual' ? 'imediato' : (mins > 0 ? '~' + mins + ' minuto' + (mins>1?'s':'') : 'menos de 1 minuto');
   }
 
   // ===== ADICIONAR MEMBRO =====
@@ -653,7 +679,15 @@
     const agr = grupos.agr || [];
     const todosM = [...new Map([...clt,...agr].map(m=>[m.telefone,m])).values()];
     const mapa = { clt, agr, todos: todosM };
-    const membros = mapa[grupoSelecionado] || [];
+
+    let membros = [];
+    if (grupoSelecionado === 'individual') {
+      const telInput = document.getElementById('tel-individual').value.replace(/\D/g,'');
+      if (telInput.length < 10) { toast('⚠️ Digite um número válido'); return; }
+      membros = [{ telefone: telInput, nome: 'Destinatário' }];
+    } else {
+      membros = mapa[grupoSelecionado] || [];
+    }
 
     if (!membros.length) { toast('⚠️ Nenhum motoboy no grupo'); return; }
 
@@ -733,20 +767,18 @@
   }
 
   async function enviarViaExtensao(telefone, mensagem) {
-    return new Promise(resolve => {
-      // Dispara evento para a extensão
-      const event = new CustomEvent('loglife-enviar', { detail: { telefone, mensagem } });
-      document.dispatchEvent(event);
-      // Aguarda resposta da extensão
+    return new Promise((resolve) => {
       const handler = (e) => {
-        if (e.detail.telefone === telefone) {
-          document.removeEventListener('loglife-enviado', handler);
-          resolve(e.detail.sucesso);
+        if (e.detail && e.detail.telefone === telefone) {
+          document.removeEventListener('loglife-progresso', handler);
+          resolve(e.detail.status === 'ok');
         }
       };
-      document.addEventListener('loglife-enviado', handler);
+      document.addEventListener('loglife-progresso', handler);
       // Timeout de 30s
-      setTimeout(() => { document.removeEventListener('loglife-enviado', handler); resolve(false); }, 30000);
+      setTimeout(() => { document.removeEventListener('loglife-progresso', handler); resolve(false); }, 30000);
+      // Disparar envio via content script
+      document.dispatchEvent(new CustomEvent('loglife-enviar-individual', { detail: { telefone, mensagem } }));
     });
   }
 
