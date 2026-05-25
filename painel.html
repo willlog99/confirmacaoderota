@@ -893,6 +893,47 @@
 
   } // fim renderizarPainel
 
+  function recalcularAtrasos(data) {
+    const todasRotas = data.rotas || [];
+    const clientesPorRota = data.clientes_por_rota || {};
+    const rotas = filtroDia === 'todos' ? todasRotas : todasRotas.filter(r => r.dia_semana === filtroDia);
+
+    const agora = new Date();
+    const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+    const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
+    const todosAtrasos = [];
+
+    rotas.forEach(r => {
+      if (!r.ativa) return;
+      if (r.motoboy_aberto && window._checklistFeitos && !window._checklistFeitos.has(r.motoboy_aberto)) return;
+      const cls = clientesPorRota[r.rota] || [];
+      cls.forEach(c => {
+        if (c.status === 'entregue') return;
+        const [h, m] = (c.horario || '00:00').split(':').map(Number);
+        const segsMarcado = h * 3600 + m * 60;
+        const segsAtrasado = segsAgora - segsMarcado;
+        if (segsAtrasado > 1800) {
+          todosAtrasos.push({ id: c.id, nome: c.nome, horario: c.horario, rota: r.rota, segsAtrasado });
+        }
+      });
+    });
+
+    document.getElementById('atrasos-badge').textContent = todosAtrasos.length;
+    window._atrasosDados = todosAtrasos;
+
+    const atrasoEl = document.getElementById('painel-atrasos');
+    if (!atrasoEl) return;
+    if (!todosAtrasos.length) {
+      atrasoEl.innerHTML = '<div class="empty">Nenhum cliente em atraso ✓</div>';
+      if (window._timerAtrasos) { clearInterval(window._timerAtrasos); window._timerAtrasos = null; }
+    } else if (!window._timerAtrasos) {
+      window._timerAtrasos = setInterval(() => {
+        const el2 = document.getElementById('painel-atrasos');
+        if (el2) el2.dispatchEvent(new Event('render-atrasos'));
+      }, 1000);
+    }
+  }
+
   async function carregarChecklist(confirmacoes) {
     try {
       const hoje = new Date().toLocaleDateString('pt-BR');
@@ -904,8 +945,8 @@
       // Salvar globalmente para o cálculo de atrasos usar
       window._checklistFeitos = preencheram;
 
-      // Re-renderizar atrasos agora que temos os checklists
-      if (cachePainel) renderizarPainel(cachePainel);
+      // Só recalcular atrasos sem re-renderizar o painel inteiro
+      if (cachePainel) recalcularAtrasos(cachePainel);
 
       const confirmaramSim = (confirmacoes || []).filter(c => c.resposta === 'sim');
       document.getElementById('checklist-badge').textContent = preencheram.size;
