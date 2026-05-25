@@ -682,11 +682,17 @@
       carregarHistoricoDisparos();
 
       const params = filtroDia === 'todos' ? '?todos_dias=1' : `?dia_semana=${filtroDia}`;
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+
       const [rRes, mbRes, confRes] = await Promise.all([
-        fetch(API + '/rotas-disponiveis' + params).then(r => r.json()),
-        fetch(API + '/motoboys?todos=1').then(r => r.json()),
-        fetch(API + '/').then(r => r.json())
+        fetch(API + '/rotas-disponiveis' + params, { signal: controller.signal }).then(r => r.json()).catch(() => ({ rotas: [] })),
+        fetch(API + '/motoboys?todos=1', { signal: controller.signal }).then(r => r.json()).catch(() => ({ motoboys: [] })),
+        fetch(API + '/', { signal: controller.signal }).then(r => r.json()).catch(() => ({ confirmacoes: [] }))
       ]);
+
+      clearTimeout(timeoutId);
 
       const rotas = rRes.rotas || [];
       rotasDisponiveis = rotas.map(r => r.rota);
@@ -694,7 +700,7 @@
       const confirmacoes = confRes.confirmacoes || [];
 
       const dadosRotas = await Promise.all(
-        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota) + '&todos_dias=1').then(res => res.json()))
+        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota) + '&todos_dias=1').then(res => res.json()).catch(() => ({ clientes: [] })))
       );
 
       let totalGeral = 0, feitasGeral = 0;
