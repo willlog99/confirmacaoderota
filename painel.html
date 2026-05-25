@@ -818,17 +818,21 @@
       }).join('');
       } // fim else rotas
 
-      // Calcular atrasos
+      // Calcular atrasos — só rotas ativas com checklist feito
       const agora = new Date();
       const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
       const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
       const todosAtrasos = [];
       rotas.forEach(r => {
-        // Só mostrar atrasos de rotas do dia filtrado
+        // Só dia filtrado
         if (filtroDia !== 'todos' && r.dia_semana !== filtroDia) return;
+        // Só rotas ativas (em andamento)
+        if (!r.ativa) return;
+        // Só motoboys que fizeram checklist
+        if (r.motoboy_aberto && window._checklistFeitos && !window._checklistFeitos.has(r.motoboy_aberto)) return;
         const cls = clientesPorRota[r.rota] || [];
         cls.forEach(c => {
-          if (c.status === 'entregue') return;
+          if (c.status === 'entregue') return; // já deu baixa — some
           const [h, m] = (c.horario || '00:00').split(':').map(Number);
           const segsMarcado = h * 3600 + m * 60;
           const segsAtrasado = segsAgora - segsMarcado;
@@ -896,8 +900,14 @@
       const chkData = await chkRes.json();
       const checklists = chkData.checklists || [];
       const preencheram = new Set(checklists.map(c => c.biocondutor));
-      const confirmaramSim = (confirmacoes || []).filter(c => c.resposta === 'sim');
 
+      // Salvar globalmente para o cálculo de atrasos usar
+      window._checklistFeitos = preencheram;
+
+      // Re-renderizar atrasos agora que temos os checklists
+      if (cachePainel) renderizarPainel(cachePainel);
+
+      const confirmaramSim = (confirmacoes || []).filter(c => c.resposta === 'sim');
       document.getElementById('checklist-badge').textContent = preencheram.size;
 
       const chkEl = document.getElementById('painel-checklist');
