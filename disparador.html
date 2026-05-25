@@ -8,50 +8,115 @@
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#F0F4F8;min-height:100vh}
-
     .header{background:linear-gradient(135deg,#1E9FD9,#0F4C7A);padding:1rem 1.2rem;display:flex;align-items:center;gap:10px;color:#fff;position:sticky;top:0;z-index:100}
     .btn-back{width:36px;height:36px;border-radius:10px;border:none;background:rgba(255,255,255,0.2);color:#fff;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .header h1{font-size:17px;font-weight:700;flex:1}
-
-    .tabs{display:flex;background:#fff;border-bottom:2px solid #EBF1F5;position:sticky;top:60px;z-index:99}
-    .tab{flex:1;padding:12px 8px;text-align:center;font-size:13px;font-weight:600;color:#5A7A8F;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s}
-    .tab.ativo{color:#1E9FD9;border-bottom-color:#1E9FD9}
-
+    .tabs{display:flex;background:#fff;border-bottom:2px solid #EBF1F5;position:sticky;top:60px;z-index:99;overflow-x:auto}
+    .tab{flex:1;padding:12px 6px;text-align:center;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap;min-width:80px}
+    .tab.ativo{color:#25D366;border-bottom-color:#25D366}
     .view{display:none;padding:1rem;max-width:520px;margin:0 auto}
     .view.ativo{display:block}
-
     .card{background:#fff;border-radius:14px;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 12px rgba(0,0,0,0.07)}
     .card-title{font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between}
-
-    label.field-label{font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px}
+    .field-label{font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:5px}
     input[type=text],input[type=time],textarea,select{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;font-family:inherit;background:#fff}
-    input[type=text]:focus,input[type=time]:focus,textarea:focus{border-color:#1E9FD9}
+    input[type=text]:focus,input[type=time]:focus,textarea:focus{border-color:#25D366}
     textarea{resize:none;line-height:1.5}
-
     .field{margin-bottom:1rem}
-
-    .chips{display:flex;flex-wrap:wrap;gap:6px}
-    .chip{padding:7px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff;transition:all .2s}
-    .chip.on{border-color:#1E9FD9;background:#E8F4FB;color:#0F4C7A}
-
-    .horarios-lista{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
-    .horario-row{display:flex;align-items:center;gap:8px}
-    .horario-row input{flex:1;height:42px}
-    .btn-rem{width:36px;height:36px;border-radius:8px;border:1.5px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:16px;cursor:pointer;flex-shrink:0}
-    .btn-add-hora{width:100%;padding:10px;border-radius:8px;border:1.5px dashed #1E9FD9;background:#F0F8FD;color:#1E9FD9;font-size:13px;font-weight:600;cursor:pointer}
-
+    /* Status extensão */
+    .status-ext{border-radius:12px;padding:12px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px}
+    .status-ext.online{background:#E8F8F0;border:1.5px solid #5DCAA5}
+    .status-ext.offline{background:#FEF9EC;border:1.5px solid #F2CC70}
+    .status-ext.sem-ext{background:#FCEBEB;border:1.5px solid #F09595}
+    .status-icon{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+    .si-online{background:#0F9B78;color:#fff}
+    .si-offline{background:#F59E0B;color:#fff}
+    .si-sem{background:#DC2626;color:#fff}
+    .status-badge{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;margin-left:auto;white-space:nowrap}
+    .sb-online{background:#E8F8F0;color:#0F9B78;border:1px solid #5DCAA5}
+    .sb-offline{background:#FEF9EC;color:#92400E;border:1px solid #F2CC70}
+    .sb-sem{background:#FCEBEB;color:#DC2626;border:1px solid #F09595}
+    /* Grupos */
+    .grupos{display:flex;gap:8px;margin-bottom:1rem}
+    .grupo-card{flex:1;border-radius:12px;border:2px solid #D6E5EE;padding:10px 6px;cursor:pointer;text-align:center;transition:all .2s;background:#fff;position:relative}
+    .grupo-card.on.clt{border-color:#1E9FD9;background:#E8F4FB}
+    .grupo-card.on.agr{border-color:#0F9B78;background:#E8F8F0}
+    .grupo-card.on.todos{border-color:#8B5CF6;background:#F3F0FF}
+    .grupo-icon{font-size:22px;margin-bottom:3px}
+    .grupo-nome{font-size:11px;font-weight:700;color:#0F4C7A}
+    .grupo-qtd{font-size:10px;color:#5A7A8F;margin-top:1px}
+    .grupo-check{position:absolute;top:5px;right:5px;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;display:none}
+    .grupo-card.on .grupo-check{display:flex}
+    .grupo-card.on.clt .grupo-check{background:#1E9FD9}
+    .grupo-card.on.agr .grupo-check{background:#0F9B78}
+    .grupo-card.on.todos .grupo-check{background:#8B5CF6}
+    /* Upload imagem */
     .upload-area{border:2px dashed #D6E5EE;border-radius:10px;padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
-    .upload-area:hover{border-color:#1E9FD9;background:#F0F8FD}
+    .upload-area:hover{border-color:#25D366;background:#F0FDF4}
     .upload-preview{width:100%;border-radius:8px;max-height:160px;object-fit:cover;margin-top:8px;display:none}
-
+    /* Preview mensagem */
+    .preview-msg{background:#E8F8F0;border-radius:12px;padding:12px;margin-bottom:1rem;border:1px solid #5DCAA5}
+    .preview-label{font-size:10px;font-weight:700;color:#0F9B78;text-transform:uppercase;margin-bottom:6px}
+    .preview-bubble{background:#fff;border-radius:10px;padding:10px 12px;font-size:13px;color:#0F4C7A;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+    /* Intervalo */
+    .intervalo-row{display:flex;gap:8px;align-items:center;margin-bottom:.5rem}
+    .int-btn{width:36px;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:20px;cursor:pointer;color:#0F4C7A;font-weight:700}
+    .int-val{flex:1;text-align:center;font-size:20px;font-weight:700;color:#0F4C7A}
+    /* Resumo */
     .resumo-box{background:#F0F8FD;border-radius:10px;padding:12px;border:1px solid #D6E5EE;margin-bottom:1rem}
     .resumo-row{display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px}
     .resumo-row:last-child{margin-bottom:0}
-
-    .btn-green{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+    /* Progresso */
+    .prog-box{background:#F0F8FD;border-radius:12px;padding:1rem;border:1.5px solid #D6E5EE;margin-bottom:1rem;display:none}
+    .prog-titulo{font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;justify-content:space-between}
+    .prog-bar-wrap{height:8px;background:#D6E5EE;border-radius:4px;margin-bottom:8px}
+    .prog-bar{height:100%;width:0%;background:linear-gradient(90deg,#25D366,#128C7E);border-radius:4px;transition:width .5s}
+    .prog-lista{max-height:160px;overflow-y:auto}
+    .prog-item{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #EBF1F5;font-size:12px}
+    .prog-item:last-child{border-bottom:none}
+    .ps{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+    .ps-ok{background:#E8F8F0;color:#0F9B78}
+    .ps-wait{background:#FEF9EC;color:#F59E0B}
+    .ps-pend{background:#F0F4F8;color:#94A8B8}
+    .ps-erro{background:#FCEBEB;color:#DC2626}
+    /* Botões */
+    .btn-green{width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#25D366,#128C7E);color:#fff;font-weight:700;font-size:15px;cursor:pointer;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(37,211,102,0.3)}
+    .btn-green:disabled{opacity:.5;cursor:not-allowed}
+    .btn-red{width:100%;padding:12px;border-radius:12px;border:1.5px solid #F09595;background:#FCEBEB;color:#DC2626;font-weight:700;font-size:14px;cursor:pointer;display:none}
     .btn-blue{width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px}
-    .btn-outline{width:100%;padding:13px;border-radius:12px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:14px;cursor:pointer}
-
+    .btn-outline{width:100%;padding:12px;border-radius:12px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:14px;cursor:pointer}
+    /* Gerenciar grupos */
+    .grupo-section{margin-bottom:1rem}
+    .grupo-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:10px;margin-bottom:6px;cursor:pointer}
+    .gh-clt{background:#E8F4FB;border:1.5px solid #1E9FD9}
+    .gh-agr{background:#E8F8F0;border:1.5px solid #0F9B78}
+    .gh-titulo{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+    .gh-titulo.clt{color:#0F4C7A}
+    .gh-titulo.agr{color:#085041}
+    .btn-add-grupo{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none}
+    .btn-add-clt{background:#1E9FD9;color:#fff}
+    .btn-add-agr{background:#0F9B78;color:#fff}
+    .membro-lista{background:#F8FBFD;border-radius:8px;border:1px solid #EBF1F5;overflow:hidden;margin-bottom:6px}
+    .membro-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #F0F4F8}
+    .membro-item:last-child{border-bottom:none}
+    .membro-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;font-weight:700;color:#fff}
+    .av-clt{background:linear-gradient(135deg,#1E9FD9,#0F7BB0)}
+    .av-agr{background:linear-gradient(135deg,#0F9B78,#085041)}
+    .membro-nome{font-size:12px;font-weight:600;color:#0F4C7A;flex:1}
+    .membro-tel{font-size:11px;color:#5A7A8F}
+    .btn-rem-membro{width:24px;height:24px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:12px;cursor:pointer;flex-shrink:0}
+    /* Modal */
+    .modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;overflow-y:auto;padding:1rem}
+    .modal-overlay.show{display:block}
+    .modal-box{background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto;margin-top:.5rem;margin-bottom:2rem}
+    .modal-titulo{font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center}
+    /* Tags */
+    .tag{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600}
+    .tag-clt{background:#E8F4FB;color:#1E9FD9}
+    .tag-agr{background:#E8F8F0;color:#0F9B78}
+    .tag-todos{background:#F3F0FF;color:#8B5CF6}
+    .tag-ativo{background:#E8F8F0;color:#0F9B78}
+    .tag-pausado{background:#F5F5F5;color:#94A8B8}
     /* Agendamentos */
     .ag-item{background:#F8FBFD;border-radius:12px;border:1.5px solid #D6E5EE;padding:12px;margin-bottom:10px}
     .ag-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -59,29 +124,28 @@
     .ag-acoes{display:flex;gap:5px;align-items:center}
     .ag-texto{font-size:12px;color:#5A7A8F;margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
     .ag-tags{display:flex;flex-wrap:wrap;gap:4px}
-    .tag{font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600}
-    .tag-azul{background:#EEF6FF;color:#1E9FD9}
-    .tag-verde{background:#F0FDF4;color:#0F9B78}
-    .tag-amarelo{background:#FEF9EC;color:#92400E}
-    .tag-ativo{background:#E8F8F0;color:#0F9B78}
-    .tag-pausado{background:#F5F5F5;color:#94A8B8}
-
-    .toggle-btn{padding:3px 10px;border-radius:20px;border:none;font-size:10px;font-weight:700;cursor:pointer}
-    .btn-edit{padding:4px 10px;border-radius:6px;border:1px solid #1E9FD9;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;cursor:pointer}
+    .btn-edit{padding:4px 8px;border-radius:6px;border:1px solid #1E9FD9;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;cursor:pointer}
     .btn-del{padding:4px 8px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:11px;font-weight:700;cursor:pointer}
-
+    .toggle-btn{padding:3px 8px;border-radius:20px;border:none;font-size:10px;font-weight:700;cursor:pointer}
     /* Histórico */
     .hist-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #F0F4F8}
     .hist-item:last-child{border-bottom:none}
     .hist-icon{width:36px;height:36px;border-radius:50%;background:#E8F8F0;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
     .hist-nome{font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:2px}
     .hist-meta{font-size:11px;color:#5A7A8F}
-
+    /* Chips agendamento */
+    .chips{display:flex;flex-wrap:wrap;gap:6px}
+    .chip{padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff}
+    .chip.on{border-color:#25D366;background:#E8F8F0;color:#0F9B78}
+    .horario-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .horario-row input{flex:1;height:40px}
+    .btn-rem-hora{width:34px;height:34px;border-radius:8px;border:1.5px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:16px;cursor:pointer;flex-shrink:0}
+    .btn-add-hora{width:100%;padding:9px;border-radius:8px;border:1.5px dashed #25D366;background:#F0FDF4;color:#0F9B78;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:1rem}
+    /* Toast */
     .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:10px 18px;border-radius:20px;font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap}
     .toast.show{opacity:1}
-
     .empty{text-align:center;color:#94A8B8;font-size:13px;padding:1.5rem}
-    .spinner{width:18px;height:18px;border:2px solid #D6E5EE;border-top-color:#1E9FD9;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
+    .spinner{width:18px;height:18px;border:2px solid #D6E5EE;border-top-color:#25D366;border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:6px}
     @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
@@ -93,39 +157,64 @@
 </div>
 
 <div class="tabs">
-  <div class="tab ativo" onclick="mudarAba('manual',this)">📤 Manual</div>
+  <div class="tab ativo" onclick="mudarAba('disparar',this)">📤 Disparar</div>
+  <div class="tab" onclick="mudarAba('grupos',this)">👥 Grupos</div>
   <div class="tab" onclick="mudarAba('agendamentos',this)">⏰ Agendamentos</div>
   <div class="tab" onclick="mudarAba('historico',this)">🕐 Histórico</div>
 </div>
 
-<!-- ABA MANUAL -->
-<div class="view ativo" id="view-manual">
+<!-- ABA DISPARAR -->
+<div class="view ativo" id="view-disparar">
 
-  <div class="card" style="margin-top:1rem">
-    <div class="card-title">👥 Destinatários</div>
-    <div class="chips" id="dest-manual">
-      <button class="chip on" onclick="toggleDestManual(this,'todos')">✅ Todos</button>
-      <button class="chip" onclick="toggleDestManual(this,'seg-sex')">📆 Seg-Sex</button>
-      <button class="chip" onclick="toggleDestManual(this,'sabado')">📆 Sábado</button>
-      <button class="chip" onclick="toggleDestManual(this,'domingo')">📆 Domingo</button>
-      <button class="chip" onclick="toggleDestManual(this,'individual')">🏍️ Individual</button>
+  <!-- STATUS EXTENSÃO -->
+  <div id="status-ext-box" class="status-ext sem-ext" style="margin-top:1rem">
+    <div class="status-icon si-sem" id="status-ext-icon">⚠️</div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:700;color:#0F4C7A" id="status-ext-titulo">Extensão não detectada</div>
+      <div style="font-size:11px;color:#5A7A8F" id="status-ext-desc">Instale a extensão Loglife para disparar</div>
     </div>
+    <span class="status-badge sb-sem" id="status-ext-badge">● Offline</span>
+  </div>
 
-    <!-- Seletor de motoboy individual -->
-    <div id="select-individual" style="display:none;margin-top:10px">
-      <label class="field-label">Selecionar motoboy</label>
-      <select id="motoboy-individual" style="width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;outline:none;color:#0F4C7A">
-        <option value="">Carregando...</option>
-      </select>
+  <!-- GRUPOS -->
+  <div class="card">
+    <div class="card-title">👥 Para quem vai?</div>
+    <div class="grupos">
+      <div class="grupo-card on clt" id="gc-clt" onclick="selecionarGrupo('clt',this)">
+        <div class="grupo-check">✓</div>
+        <div class="grupo-icon">👔</div>
+        <div class="grupo-nome">CLT</div>
+        <div class="grupo-qtd" id="qtd-clt">0 motoboys</div>
+      </div>
+      <div class="grupo-card agr" id="gc-agr" onclick="selecionarGrupo('agr',this)">
+        <div class="grupo-check">✓</div>
+        <div class="grupo-icon">🤝</div>
+        <div class="grupo-nome">Agregados</div>
+        <div class="grupo-qtd" id="qtd-agr">0 motoboys</div>
+      </div>
+      <div class="grupo-card todos" id="gc-todos" onclick="selecionarGrupo('todos',this)">
+        <div class="grupo-check">✓</div>
+        <div class="grupo-icon">👥</div>
+        <div class="grupo-nome">Todos</div>
+        <div class="grupo-qtd" id="qtd-todos">0 motoboys</div>
+      </div>
     </div>
   </div>
 
+  <!-- MENSAGEM -->
   <div class="card">
     <div class="card-title">✉️ Mensagem</div>
     <div class="field">
-      <label class="field-label">Texto</label>
-      <textarea id="manual-texto" rows="5" placeholder="Digite o recado para os motoboys..."></textarea>
+      <label class="field-label">Texto do comunicado</label>
+      <textarea id="manual-texto" rows="4" placeholder="Digite o comunicado..." oninput="atualizarPreview()"></textarea>
       <div style="font-size:11px;color:#94A8B8;text-align:right;margin-top:4px" id="manual-contador">0 / 500</div>
+    </div>
+    <div class="preview-msg">
+      <div class="preview-label">📱 Como vai aparecer</div>
+      <div class="preview-bubble" id="preview-bubble">
+        Bom dia, <strong>NOME</strong>! 👋<br/>
+        <span id="preview-texto" style="color:#94A8B8">Digite sua mensagem acima...</span>
+      </div>
     </div>
     <div class="field">
       <label class="field-label">Imagem (opcional)</label>
@@ -135,118 +224,172 @@
         <small style="font-size:11px;color:#94A8B8">JPG, PNG até 5MB</small>
         <img id="manual-img-preview" class="upload-preview"/>
       </div>
-      <input type="file" id="manual-img" accept="image/*" style="display:none" onchange="previewImagem(this)"/>
+      <input type="file" id="manual-img" accept="image/*" style="display:none" onchange="previewImagem(this,'manual-img-preview')"/>
+    </div>
+    <div class="field">
+      <label class="field-label">Intervalo entre envios</label>
+      <div class="intervalo-row">
+        <button class="int-btn" onclick="ajustarIntervalo(-1)">−</button>
+        <div style="flex:1;text-align:center">
+          <div class="int-val"><span id="intervalo-val">10</span>s</div>
+          <div style="font-size:11px;color:#5A7A8F">entre cada motoboy</div>
+        </div>
+        <button class="int-btn" onclick="ajustarIntervalo(1)">+</button>
+      </div>
+      <div style="font-size:12px;color:#5A7A8F;background:#F0F4F8;border-radius:8px;padding:8px;text-align:center">
+        ⏱️ Tempo estimado: <strong id="tempo-estimado">~0 minutos</strong>
+      </div>
     </div>
   </div>
 
+  <!-- PROGRESSO -->
+  <div class="prog-box" id="prog-box">
+    <div class="prog-titulo">
+      <span id="prog-titulo-txt">📤 Iniciando...</span>
+      <span id="prog-pct" style="color:#0F9B78;font-weight:700">0%</span>
+    </div>
+    <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
+    <div class="prog-lista" id="prog-lista"></div>
+  </div>
+
+  <!-- RESUMO + BOTÃO -->
   <div class="card">
     <div class="card-title">📊 Resumo</div>
     <div class="resumo-box">
       <div class="resumo-row">
+        <span style="color:#5A7A8F">Grupo</span>
+        <span id="resumo-grupo" style="color:#0F4C7A;font-weight:700">CLT</span>
+      </div>
+      <div class="resumo-row">
         <span style="color:#5A7A8F">Destinatários</span>
-        <span style="color:#0F4C7A;font-weight:700" id="resumo-dest">Todos os motoboys</span>
+        <span id="resumo-qtd" style="color:#0F4C7A;font-weight:700">0 motoboys</span>
       </div>
       <div class="resumo-row">
-        <span style="color:#5A7A8F">Tipo</span>
-        <span style="color:#0F4C7A;font-weight:700" id="resumo-tipo">Somente texto</span>
-      </div>
-      <div class="resumo-row">
-        <span style="color:#5A7A8F">Horário</span>
-        <span style="color:#0F4C7A;font-weight:700" id="resumo-hora">Agora</span>
+        <span style="color:#5A7A8F">Intervalo</span>
+        <span id="resumo-intervalo" style="color:#0F4C7A;font-weight:700">10s entre cada</span>
       </div>
     </div>
-    <button class="btn-green" onclick="dispararManual()">
-      <span style="font-size:20px">📲</span> Disparar agora
+    <button class="btn-green" id="btn-disparar" onclick="dispararManual()">
+      <span style="font-size:20px">📲</span> <span id="btn-disparar-txt">Disparar para 0 motoboys</span>
     </button>
+    <button class="btn-red" id="btn-cancelar" onclick="cancelarDisparo()">✕ Cancelar disparo</button>
+  </div>
+
+</div>
+
+<!-- ABA GRUPOS -->
+<div class="view" id="view-grupos">
+
+  <div style="padding-top:1rem;margin-bottom:1rem">
+    <div style="font-size:13px;color:#5A7A8F;background:#fff;border-radius:10px;padding:10px 12px;border-left:3px solid #1E9FD9">
+      ℹ️ Defina quais motoboys pertencem a cada grupo para enviar mensagens segmentadas.
+    </div>
+  </div>
+
+  <!-- Grupo CLT -->
+  <div class="card">
+    <div class="card-title">
+      <span>👔 CLT <span class="tag tag-clt" id="badge-clt">0</span></span>
+      <button class="btn-add-grupo btn-add-clt" onclick="abrirModalAdicionarMembro('clt')">+ Adicionar</button>
+    </div>
+    <div id="lista-clt"><div class="empty">Nenhum motoboy no grupo CLT</div></div>
+  </div>
+
+  <!-- Grupo Agregados -->
+  <div class="card">
+    <div class="card-title">
+      <span>🤝 Agregados <span class="tag tag-agr" id="badge-agr">0</span></span>
+      <button class="btn-add-grupo btn-add-agr" onclick="abrirModalAdicionarMembro('agr')">+ Adicionar</button>
+    </div>
+    <div id="lista-agr"><div class="empty">Nenhum motoboy no grupo Agregados</div></div>
   </div>
 
 </div>
 
 <!-- ABA AGENDAMENTOS -->
 <div class="view" id="view-agendamentos">
-
   <div style="padding-top:1rem">
     <button class="btn-blue" onclick="abrirModalAg()">➕ Novo agendamento</button>
   </div>
-
-  <div id="lista-ag">
-    <div class="empty">Nenhum agendamento criado ainda.</div>
-  </div>
-
+  <div id="lista-ag"><div class="empty">Nenhum agendamento criado ainda.</div></div>
 </div>
 
 <!-- ABA HISTÓRICO -->
 <div class="view" id="view-historico">
   <div class="card" style="margin-top:1rem">
     <div class="card-title">🕐 Últimos disparos</div>
-    <div id="lista-historico">
-      <div class="empty">Nenhum disparo registrado ainda.</div>
+    <div id="lista-historico"><div class="empty">Nenhum disparo registrado ainda.</div></div>
+  </div>
+</div>
+
+<!-- MODAL ADICIONAR MEMBRO -->
+<div class="modal-overlay" id="modal-membro">
+  <div class="modal-box">
+    <div class="modal-titulo">
+      <span id="modal-membro-titulo">➕ Adicionar ao grupo</span>
+      <button onclick="fecharModal('modal-membro')" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
     </div>
+    <div class="field">
+      <label class="field-label">Buscar motoboy</label>
+      <input type="text" id="busca-membro" placeholder="Digite o nome..." oninput="filtrarMembros()"/>
+    </div>
+    <div id="lista-membro-busca" style="max-height:300px;overflow-y:auto;border:1px solid #EBF1F5;border-radius:10px"></div>
+    <button class="btn-outline" style="margin-top:1rem" onclick="fecharModal('modal-membro')">Fechar</button>
   </div>
 </div>
 
 <!-- MODAL AGENDAMENTO -->
-<div id="modal-ag" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;overflow-y:auto;padding:1rem">
-  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto;margin-top:.5rem;margin-bottom:2rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
-      <h3 style="font-size:16px;color:#0F4C7A;font-weight:700" id="modal-ag-titulo">➕ Novo agendamento</h3>
-      <button onclick="fecharModalAg()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+<div class="modal-overlay" id="modal-ag">
+  <div class="modal-box">
+    <div class="modal-titulo">
+      <span id="modal-ag-titulo">➕ Novo agendamento</span>
+      <button onclick="fecharModal('modal-ag')" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
     </div>
-
     <div class="field">
       <label class="field-label">Nome do agendamento</label>
-      <input type="text" id="ag-nome" placeholder="Ex: Lembrete diário de confirmação"/>
+      <input type="text" id="ag-nome" placeholder="Ex: Lembrete diário"/>
     </div>
-
+    <div class="field">
+      <label class="field-label">Grupo destinatário</label>
+      <div class="chips" id="ag-grupo-chips">
+        <button class="chip on" data-grupo="clt" onclick="toggleChip(this,'ag-grupo-chips')">👔 CLT</button>
+        <button class="chip" data-grupo="agr" onclick="toggleChip(this,'ag-grupo-chips')">🤝 Agregados</button>
+        <button class="chip" data-grupo="todos" onclick="toggleChip(this,'ag-grupo-chips')">👥 Todos</button>
+      </div>
+    </div>
     <div class="field">
       <label class="field-label">Dias da semana</label>
       <div class="chips" id="ag-dias-chips">
-        <button class="chip" data-dia="seg" onclick="toggleDiaAg(this)">Seg</button>
-        <button class="chip" data-dia="ter" onclick="toggleDiaAg(this)">Ter</button>
-        <button class="chip" data-dia="qua" onclick="toggleDiaAg(this)">Qua</button>
-        <button class="chip" data-dia="qui" onclick="toggleDiaAg(this)">Qui</button>
-        <button class="chip" data-dia="sex" onclick="toggleDiaAg(this)">Sex</button>
-        <button class="chip" data-dia="sab" onclick="toggleDiaAg(this)">Sáb</button>
-        <button class="chip" data-dia="dom" onclick="toggleDiaAg(this)">Dom</button>
+        <button class="chip" data-dia="seg" onclick="toggleChipMulti(this)">Seg</button>
+        <button class="chip" data-dia="ter" onclick="toggleChipMulti(this)">Ter</button>
+        <button class="chip" data-dia="qua" onclick="toggleChipMulti(this)">Qua</button>
+        <button class="chip" data-dia="qui" onclick="toggleChipMulti(this)">Qui</button>
+        <button class="chip" data-dia="sex" onclick="toggleChipMulti(this)">Sex</button>
+        <button class="chip" data-dia="sab" onclick="toggleChipMulti(this)">Sáb</button>
+        <button class="chip" data-dia="dom" onclick="toggleChipMulti(this)">Dom</button>
       </div>
     </div>
-
     <div class="field">
       <label class="field-label">Horários de disparo</label>
-      <div class="horarios-lista" id="ag-horarios"></div>
+      <div id="ag-horarios"></div>
       <button class="btn-add-hora" onclick="addHorarioAg()">+ Adicionar horário</button>
     </div>
-
-    <div class="field">
-      <label class="field-label">Destinatários</label>
-      <div class="chips" id="ag-dest-chips">
-        <button class="chip on" data-dest="todos" onclick="toggleDestAg(this)">✅ Todos</button>
-        <button class="chip" data-dest="seg-sex" onclick="toggleDestAg(this)">📆 Seg-Sex</button>
-        <button class="chip" data-dest="sabado" onclick="toggleDestAg(this)">📆 Sábado</button>
-        <button class="chip" data-dest="domingo" onclick="toggleDestAg(this)">📆 Domingo</button>
-      </div>
-    </div>
-
     <div class="field">
       <label class="field-label">Mensagem</label>
-      <textarea id="ag-mensagem" rows="5" placeholder="Digite a mensagem automática..."></textarea>
+      <textarea id="ag-mensagem" rows="4" placeholder="Digite a mensagem automática..."></textarea>
     </div>
-
     <div class="field">
       <label class="field-label">Imagem (opcional)</label>
       <div class="upload-area" onclick="document.getElementById('ag-img').click()">
-        <span style="font-size:28px">🖼️</span>
-        <p style="font-size:13px;color:#5A7A8F;margin-top:4px">Clique para anexar imagem</p>
-        <small style="font-size:11px;color:#94A8B8">JPG, PNG até 5MB</small>
+        <span style="font-size:24px">🖼️</span>
+        <p style="font-size:12px;color:#5A7A8F;margin-top:3px">Clique para anexar</p>
         <img id="ag-img-preview" class="upload-preview"/>
       </div>
-      <input type="file" id="ag-img" accept="image/*" style="display:none" onchange="previewImagemAg(this)"/>
+      <input type="file" id="ag-img" accept="image/*" style="display:none" onchange="previewImagem(this,'ag-img-preview')"/>
     </div>
-
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:.5rem">
       <button class="btn-blue" onclick="salvarAg()">💾 Salvar agendamento</button>
-      <button class="btn-green" onclick="salvarEDisparar()">📲 Salvar e disparar agora</button>
-      <button class="btn-outline" onclick="fecharModalAg()">Cancelar</button>
+      <button class="btn-outline" onclick="fecharModal('modal-ag')">Cancelar</button>
     </div>
   </div>
 </div>
@@ -255,24 +398,60 @@
 
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
+
+  // Estado
+  let grupoSelecionado = 'clt';
+  let intervalo = 10;
+  let disparando = false;
+  let cancelarFlag = false;
   let agendamentos = [];
-  let historico = JSON.parse(localStorage.getItem('loglife_hist_disparos') || '[]');
-  let editandoId = null;
-  let destManual = 'todos';
-  let destAg = 'todos';
-  let diasAg = new Set();
+  let historico = JSON.parse(localStorage.getItem('loglife_hist') || '[]');
+  let editandoAgId = null;
+  let grupoAdicionando = null;
+  let todosMotoboys = [];
 
-  const destLabels = { todos: 'Todos os motoboys', 'seg-sex': 'Seg-Sex', sabado: 'Sábado', domingo: 'Domingo', individual: 'Individual' };
-  const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
+  // Grupos salvos no KV
+  let grupos = { clt: [], agr: [] };
 
-  // Carregar agendamentos do servidor
-  async function carregarAgendamentos() {
-    try {
-      const r = await fetch(API + '/agendamentos');
-      const d = await r.json();
-      agendamentos = d.agendamentos || [];
-      renderAgendamentos();
-    } catch(e) { toast('Erro ao carregar agendamentos'); }
+  // ===== INIT =====
+  async function init() {
+    await carregarGrupos();
+    await carregarMotoboys();
+    await carregarAgendamentos();
+    verificarExtensao();
+    atualizarUI();
+    renderHistorico();
+  }
+
+  // ===== EXTENSÃO =====
+  function verificarExtensao() {
+    // Verifica se extensão está instalada via elemento injetado
+    const ext = document.getElementById('loglife-ext-status');
+    const box = document.getElementById('status-ext-box');
+    const icon = document.getElementById('status-ext-icon');
+    const titulo = document.getElementById('status-ext-titulo');
+    const desc = document.getElementById('status-ext-desc');
+    const badge = document.getElementById('status-ext-badge');
+
+    if (ext) {
+      const status = ext.dataset.status;
+      const numero = ext.dataset.numero || '';
+      if (status === 'online') {
+        box.className = 'status-ext online';
+        icon.className = 'status-icon si-online'; icon.textContent = '✓';
+        titulo.textContent = 'Extensão conectada';
+        desc.textContent = 'WhatsApp Web ativo · ' + numero;
+        badge.className = 'status-badge sb-online'; badge.textContent = '● Online';
+      } else {
+        box.className = 'status-ext offline';
+        icon.className = 'status-icon si-offline'; icon.textContent = '📵';
+        titulo.textContent = 'WhatsApp deslogado';
+        desc.textContent = 'Abra o WhatsApp Web em outra aba';
+        badge.className = 'status-badge sb-offline'; badge.textContent = '● Desconectado';
+      }
+    }
+    // Verificar a cada 5s
+    setTimeout(verificarExtensao, 5000);
   }
 
   // ===== ABAS =====
@@ -281,119 +460,275 @@
     document.querySelectorAll('.view').forEach(v => v.classList.remove('ativo'));
     btn.classList.add('ativo');
     document.getElementById('view-' + aba).classList.add('ativo');
-    if (aba === 'historico') renderHistorico();
   }
 
-  // ===== MANUAL =====
-  async function toggleDestManual(btn, dest) {
-    destManual = dest;
-    document.querySelectorAll('#dest-manual .chip').forEach(b => b.classList.remove('on'));
-    btn.classList.add('on');
-    document.getElementById('resumo-dest').textContent = destLabels[dest] || dest;
-
-    const selectDiv = document.getElementById('select-individual');
-    if (dest === 'individual') {
-      selectDiv.style.display = 'block';
-      // Carregar motoboys
-      try {
-        const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
-        const d = await r.json();
-        const sel = document.getElementById('motoboy-individual');
-        sel.innerHTML = '<option value="">Selecione um motoboy...</option>'
-          + (d.motoboys || []).map(m => '<option value="' + m.telefone + '">' + m.nome + '</option>').join('');
-        sel.onchange = () => {
-          const nome = sel.options[sel.selectedIndex]?.text || '';
-          document.getElementById('resumo-dest').textContent = nome || 'Individual';
-        };
-      } catch(e) {}
-    } else {
-      selectDiv.style.display = 'none';
+  // ===== GRUPOS =====
+  async function carregarGrupos() {
+    try {
+      const r = await fetch(API + '/grupos-disparador');
+      if (r.ok) { const d = await r.json(); grupos = d.grupos || { clt: [], agr: [] }; }
+    } catch(e) {
+      grupos = JSON.parse(localStorage.getItem('loglife_grupos') || '{"clt":[],"agr":[]}');
     }
+    renderGrupos();
   }
 
-  document.getElementById('manual-texto').addEventListener('input', function() {
-    const len = this.value.length;
-    document.getElementById('manual-contador').textContent = len + ' / 500';
-    const temImg = document.getElementById('manual-img-preview').style.display === 'block';
-    document.getElementById('resumo-tipo').textContent = temImg ? 'Texto + Imagem' : 'Somente texto';
-  });
+  async function salvarGrupos() {
+    localStorage.setItem('loglife_grupos', JSON.stringify(grupos));
+    try { await fetch(API + '/grupos-disparador', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ grupos }) }); } catch(e) {}
+  }
 
-  function previewImagem(input) {
+  function renderGrupos() {
+    const clt = grupos.clt || [];
+    const agr = grupos.agr || [];
+    const todos = [...new Set([...clt.map(m=>m.telefone), ...agr.map(m=>m.telefone)])];
+
+    // Atualizar contadores
+    document.getElementById('qtd-clt').textContent = clt.length + ' motoboys';
+    document.getElementById('qtd-agr').textContent = agr.length + ' motoboys';
+    document.getElementById('qtd-todos').textContent = todos.length + ' motoboys';
+    document.getElementById('badge-clt').textContent = clt.length;
+    document.getElementById('badge-agr').textContent = agr.length;
+
+    // Listas
+    renderListaGrupo('lista-clt', clt, 'clt');
+    renderListaGrupo('lista-agr', agr, 'agr');
+
+    atualizarUI();
+  }
+
+  function renderListaGrupo(elId, membros, tipo) {
+    const el = document.getElementById(elId);
+    if (!membros.length) { el.innerHTML = '<div class="empty">Nenhum motoboy neste grupo</div>'; return; }
+    el.innerHTML = '<div class="membro-lista">'
+      + membros.map(m => '<div class="membro-item">'
+        + '<div class="membro-avatar av-' + tipo + '">' + (m.nome||'?')[0] + '</div>'
+        + '<div style="flex:1"><div class="membro-nome">' + m.nome + '</div><div class="membro-tel">📱 ' + formatarTel(m.telefone) + '</div></div>'
+        + '<button class="btn-rem-membro" onclick="removerMembro(\'' + tipo + '\',\'' + m.telefone + '\')">✕</button>'
+        + '</div>').join('')
+      + '</div>';
+  }
+
+  function selecionarGrupo(tipo, el) {
+    grupoSelecionado = tipo;
+    document.querySelectorAll('.grupo-card').forEach(c => {
+      c.classList.remove('on');
+    });
+    el.classList.add('on');
+    atualizarUI();
+  }
+
+  function atualizarUI() {
+    const clt = grupos.clt || [];
+    const agr = grupos.agr || [];
+    const todosM = [...new Map([...clt,...agr].map(m=>[m.telefone,m])).values()];
+    const mapa = { clt, agr, todos: todosM };
+    const membros = mapa[grupoSelecionado] || [];
+    const nomes = { clt:'CLT', agr:'Agregados', todos:'Todos' };
+
+    document.getElementById('resumo-grupo').textContent = nomes[grupoSelecionado];
+    document.getElementById('resumo-qtd').textContent = membros.length + ' motoboys';
+    document.getElementById('resumo-intervalo').textContent = intervalo + 's entre cada';
+    document.getElementById('btn-disparar-txt').textContent = 'Disparar para ' + membros.length + ' motoboys';
+
+    const mins = Math.ceil((membros.length * intervalo) / 60);
+    document.getElementById('tempo-estimado').textContent = mins > 0 ? '~' + mins + ' minuto' + (mins>1?'s':'') : 'menos de 1 minuto';
+  }
+
+  // ===== ADICIONAR MEMBRO =====
+  async function carregarMotoboys() {
+    try {
+      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
+      const d = await r.json();
+      todosMotoboys = d.motoboys || [];
+    } catch(e) {}
+  }
+
+  function abrirModalAdicionarMembro(tipo) {
+    grupoAdicionando = tipo;
+    document.getElementById('modal-membro-titulo').textContent = '➕ Adicionar ao grupo ' + (tipo === 'clt' ? 'CLT 👔' : 'Agregados 🤝');
+    document.getElementById('busca-membro').value = '';
+    filtrarMembros();
+    document.getElementById('modal-membro').classList.add('show');
+  }
+
+  function filtrarMembros() {
+    const busca = document.getElementById('busca-membro').value.toLowerCase();
+    const jaNoGrupo = (grupos[grupoAdicionando] || []).map(m => m.telefone);
+    const filtrados = todosMotoboys.filter(m =>
+      (!busca || m.nome.toLowerCase().includes(busca)) && !jaNoGrupo.includes(m.telefone)
+    );
+    const el = document.getElementById('lista-membro-busca');
+    if (!filtrados.length) { el.innerHTML = '<div class="empty">Nenhum encontrado</div>'; return; }
+    el.innerHTML = filtrados.map(m =>
+      '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #F0F4F8;cursor:pointer" onclick="adicionarMembro(\'' + m.telefone + '\',\'' + m.nome.replace(/'/g,"\\'") + '\')">'
+      + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#0F4C7A">' + m.nome + '</div>'
+      + '<div style="font-size:11px;color:#5A7A8F">📱 ' + formatarTel(m.telefone) + '</div></div>'
+      + '<span style="font-size:20px;color:#0F9B78">+</span></div>'
+    ).join('');
+  }
+
+  async function adicionarMembro(tel, nome) {
+    if (!grupos[grupoAdicionando]) grupos[grupoAdicionando] = [];
+    grupos[grupoAdicionando].push({ telefone: tel, nome });
+    await salvarGrupos();
+    renderGrupos();
+    filtrarMembros();
+    toast('✓ ' + nome + ' adicionado!');
+  }
+
+  async function removerMembro(tipo, tel) {
+    grupos[tipo] = (grupos[tipo] || []).filter(m => m.telefone !== tel);
+    await salvarGrupos();
+    renderGrupos();
+    toast('✓ Removido do grupo');
+  }
+
+  // ===== DISPARAR =====
+  function atualizarPreview() {
+    const texto = document.getElementById('manual-texto').value;
+    document.getElementById('manual-contador').textContent = texto.length + ' / 500';
+    document.getElementById('preview-texto').textContent = texto || '';
+    document.getElementById('preview-texto').style.color = texto ? '#0F4C7A' : '#94A8B8';
+  }
+
+  function ajustarIntervalo(delta) {
+    intervalo = Math.max(5, Math.min(30, intervalo + delta));
+    document.getElementById('intervalo-val').textContent = intervalo;
+    atualizarUI();
+  }
+
+  function previewImagem(input, previewId) {
     if (input.files && input.files[0]) {
       const reader = new FileReader();
       reader.onload = e => {
-        const img = document.getElementById('manual-img-preview');
+        const img = document.getElementById(previewId);
         img.src = e.target.result;
         img.style.display = 'block';
-        document.getElementById('resumo-tipo').textContent = 'Texto + Imagem';
       };
       reader.readAsDataURL(input.files[0]);
     }
   }
 
-  setInterval(() => {
-    const agora = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', timeZone:'America/Sao_Paulo' });
-    document.getElementById('resumo-hora').textContent = 'Agora (' + agora + ')';
-  }, 1000);
-
   async function dispararManual() {
     const texto = document.getElementById('manual-texto').value.trim();
     if (!texto) { toast('⚠️ Digite uma mensagem'); return; }
 
-    let numeros = [];
+    const clt = grupos.clt || [];
+    const agr = grupos.agr || [];
+    const todosM = [...new Map([...clt,...agr].map(m=>[m.telefone,m])).values()];
+    const mapa = { clt, agr, todos: todosM };
+    const membros = mapa[grupoSelecionado] || [];
 
-    if (destManual === 'individual') {
-      const sel = document.getElementById('motoboy-individual');
-      const tel = sel.value;
-      if (!tel) { toast('⚠️ Selecione um motoboy'); return; }
-      numeros = [tel];
-    } else {
-      try {
-        const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
-        const d = await r.json();
-        let motoboys = d.motoboys || [];
-        if (destManual !== 'todos') {
-          motoboys = motoboys.filter(m => 
-            !m.rotas_info || !m.rotas_info.length || 
-            m.rotas_info.some(ri => ri.dia_semana === destManual)
-          );
-        }
-        numeros = motoboys.map(m => m.telefone).filter(Boolean);
-      } catch(e) { toast('Erro ao buscar destinatários'); return; }
+    if (!membros.length) { toast('⚠️ Nenhum motoboy no grupo'); return; }
+
+    // Verificar extensão
+    const ext = document.getElementById('loglife-ext-status');
+    if (!ext) { toast('⚠️ Extensão não instalada'); return; }
+
+    disparando = true;
+    cancelarFlag = false;
+    document.getElementById('btn-disparar').disabled = true;
+    document.getElementById('btn-cancelar').style.display = 'block';
+    document.getElementById('prog-box').style.display = 'block';
+
+    // Renderizar lista de progresso
+    document.getElementById('prog-lista').innerHTML = membros.map(m =>
+      '<div class="prog-item" id="prog-' + m.telefone + '">'
+      + '<div class="ps ps-pend" id="ps-' + m.telefone + '">•</div>'
+      + '<div style="flex:1"><span style="font-size:12px;font-weight:600;color:#0F4C7A">' + m.nome + '</span></div>'
+      + '<span style="font-size:10px;color:#94A8B8" id="ph-' + m.telefone + '">Aguardando</span>'
+      + '</div>'
+    ).join('');
+
+    for (let i = 0; i < membros.length; i++) {
+      if (cancelarFlag) break;
+      const m = membros[i];
+      const pct = Math.round(((i) / membros.length) * 100);
+
+      document.getElementById('prog-titulo-txt').textContent = '📤 Enviando... ' + i + '/' + membros.length;
+      document.getElementById('prog-pct').textContent = pct + '%';
+      document.getElementById('prog-bar').style.width = pct + '%';
+
+      const ps = document.getElementById('ps-' + m.telefone);
+      const ph = document.getElementById('ph-' + m.telefone);
+      if (ps) { ps.className = 'ps ps-wait'; ps.textContent = '⏳'; }
+      if (ph) ph.textContent = 'Enviando...';
+
+      // Enviar via extensão
+      const msgFinal = 'Bom dia, ' + m.nome.split(' ')[0] + '! 👋\n' + texto;
+      const sucesso = await enviarViaExtensao(m.telefone, msgFinal);
+
+      const hora = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit', second:'2-digit', timeZone:'America/Sao_Paulo' });
+      if (ps) { ps.className = 'ps ' + (sucesso ? 'ps-ok' : 'ps-erro'); ps.textContent = sucesso ? '✓' : '✗'; }
+      if (ph) ph.textContent = sucesso ? hora : 'Erro';
+
+      if (i < membros.length - 1 && !cancelarFlag) {
+        await sleep(intervalo * 1000);
+      }
     }
 
-    if (!numeros.length) { toast('⚠️ Nenhum destinatário encontrado'); return; }
+    const total = membros.length;
+    const pct = cancelarFlag ? Math.round((document.getElementById('prog-bar').style.width)) : 100;
+    document.getElementById('prog-titulo-txt').textContent = cancelarFlag ? '⚠️ Cancelado' : '✓ Concluído! ' + total + '/' + total;
+    document.getElementById('prog-pct').textContent = cancelarFlag ? '' : '100%';
+    document.getElementById('prog-bar').style.width = cancelarFlag ? document.getElementById('prog-bar').style.width : '100%';
 
-    const registro = {
-      id: Date.now(),
-      tipo: 'manual',
-      mensagem: texto,
-      destinatarios: destManual,
-      qtd: numeros.length,
-      data: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
-      status: 'enviado'
-    };
-    historico.unshift(registro);
-    localStorage.setItem('loglife_hist_disparos', JSON.stringify(historico.slice(0, 50)));
+    // Registrar histórico
+    if (!cancelarFlag) {
+      const nomes = { clt:'CLT', agr:'Agregados', todos:'Todos' };
+      historico.unshift({ id: Date.now(), mensagem: texto, grupo: grupoSelecionado, grupoNome: nomes[grupoSelecionado], qtd: total, data: new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'}), status:'enviado' });
+      localStorage.setItem('loglife_hist', JSON.stringify(historico.slice(0,50)));
+    }
 
-    toast('📲 Disparado para ' + numeros.length + ' motoboy' + (numeros.length > 1 ? 's' : '') + '! (Evolution API pendente)');
-    document.getElementById('manual-texto').value = '';
+    disparando = false;
+    document.getElementById('btn-disparar').disabled = false;
+    document.getElementById('btn-cancelar').style.display = 'none';
+    if (!cancelarFlag) toast('✓ Disparado para ' + total + ' motoboys!');
   }
 
-  // ===== AGENDAMENTOS =====
-  function abrirModalAg(id) {
-    editandoId = id || null;
-    diasAg = new Set();
-    destAg = 'todos';
+  async function enviarViaExtensao(telefone, mensagem) {
+    return new Promise(resolve => {
+      // Dispara evento para a extensão
+      const event = new CustomEvent('loglife-enviar', { detail: { telefone, mensagem } });
+      document.dispatchEvent(event);
+      // Aguarda resposta da extensão
+      const handler = (e) => {
+        if (e.detail.telefone === telefone) {
+          document.removeEventListener('loglife-enviado', handler);
+          resolve(e.detail.sucesso);
+        }
+      };
+      document.addEventListener('loglife-enviado', handler);
+      // Timeout de 30s
+      setTimeout(() => { document.removeEventListener('loglife-enviado', handler); resolve(false); }, 30000);
+    });
+  }
 
+  function cancelarDisparo() { cancelarFlag = true; toast('⚠️ Cancelando...'); }
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  // ===== AGENDAMENTOS =====
+  async function carregarAgendamentos() {
+    try {
+      const r = await fetch(API + '/agendamentos');
+      const d = await r.json();
+      agendamentos = d.agendamentos || [];
+    } catch(e) { agendamentos = JSON.parse(localStorage.getItem('loglife_agendamentos') || '[]'); }
+    renderAgendamentos();
+  }
+
+  function abrirModalAg(id) {
+    editandoAgId = id || null;
     document.getElementById('ag-nome').value = '';
     document.getElementById('ag-mensagem').value = '';
     document.getElementById('ag-horarios').innerHTML = '';
     addHorarioAg();
-
     document.querySelectorAll('#ag-dias-chips .chip').forEach(b => b.classList.remove('on'));
-    document.querySelectorAll('#ag-dest-chips .chip').forEach(b => b.classList.remove('on'));
-    document.querySelector('#ag-dest-chips .chip').classList.add('on');
+    document.querySelectorAll('#ag-grupo-chips .chip').forEach(b => b.classList.remove('on'));
+    document.querySelector('#ag-grupo-chips .chip').classList.add('on');
+    document.getElementById('ag-img-preview').style.display = 'none';
+    document.getElementById('ag-img').value = '';
 
     if (id) {
       const ag = agendamentos.find(a => a.id === id);
@@ -403,142 +738,96 @@
         document.getElementById('ag-mensagem').value = ag.mensagem;
         document.getElementById('ag-horarios').innerHTML = '';
         ag.horarios.forEach(h => addHorarioAg(h));
-        diasAg = new Set(ag.dias);
-        destAg = ag.destinatarios;
-        document.querySelectorAll('#ag-dias-chips .chip').forEach(b => {
-          if (diasAg.has(b.dataset.dia)) b.classList.add('on');
-        });
-        document.querySelectorAll('#ag-dest-chips .chip').forEach(b => {
-          b.classList.remove('on');
-          if (b.dataset.dest === destAg) b.classList.add('on');
-        });
+        document.querySelectorAll('#ag-dias-chips .chip').forEach(b => { if ((ag.dias||[]).includes(b.dataset.dia)) b.classList.add('on'); });
+        document.querySelectorAll('#ag-grupo-chips .chip').forEach(b => { b.classList.remove('on'); if (b.dataset.grupo === ag.grupo) b.classList.add('on'); });
       }
-    } else {
-      document.getElementById('modal-ag-titulo').textContent = '➕ Novo agendamento';
-    }
-
-    document.getElementById('modal-ag').style.display = 'block';
+    } else { document.getElementById('modal-ag-titulo').textContent = '➕ Novo agendamento'; }
+    document.getElementById('modal-ag').classList.add('show');
   }
 
-  function fecharModalAg() { 
-    document.getElementById('modal-ag').style.display = 'none';
-    document.getElementById('ag-img-preview').style.display = 'none';
-    document.getElementById('ag-img-preview').src = '';
-    document.getElementById('ag-img').value = '';
-  }
-
-  function toggleDiaAg(btn) {
-    const dia = btn.dataset.dia;
-    if (diasAg.has(dia)) { diasAg.delete(dia); btn.classList.remove('on'); }
-    else { diasAg.add(dia); btn.classList.add('on'); }
-  }
-
-  function toggleDestAg(btn) {
-    destAg = btn.dataset.dest;
-    document.querySelectorAll('#ag-dest-chips .chip').forEach(b => b.classList.remove('on'));
+  function toggleChip(btn, groupId) {
+    document.querySelectorAll('#' + groupId + ' .chip').forEach(b => b.classList.remove('on'));
     btn.classList.add('on');
+  }
+
+  function toggleChipMulti(btn) {
+    btn.classList.toggle('on');
   }
 
   function addHorarioAg(valor) {
     const div = document.createElement('div');
     div.className = 'horario-row';
-    div.innerHTML = '<input type="time" value="' + (valor || '07:00') + '"/>'
-      + '<button class="btn-rem" onclick="this.parentElement.remove()">✕</button>';
+    div.innerHTML = '<input type="time" value="' + (valor||'07:00') + '"/><button class="btn-rem-hora" onclick="this.parentElement.remove()">✕</button>';
     document.getElementById('ag-horarios').appendChild(div);
   }
 
-  function previewImagemAg(input) {
-    if (input.files && input.files[0]) {
-      const reader = new FileReader();
-      reader.onload = e => {
-        const img = document.getElementById('ag-img-preview');
-        img.src = e.target.result;
-        img.style.display = 'block';
-      };
-      reader.readAsDataURL(input.files[0]);
-    }
-  }
-
-  async function uploadImagem(input) {
-    if (!input.files || !input.files[0]) return null;
-    const formData = new FormData();
-    formData.append('imagem', input.files[0]);
-    try {
-      const r = await fetch(API + '/upload-imagem', { method: 'POST', body: formData });
-      const d = await r.json();
-      return d.status === 'ok' ? d.url : null;
-    } catch(e) { return null; }
-  }
-
-  async function salvarAg(disparar) {
+  async function salvarAg() {
     const nome = document.getElementById('ag-nome').value.trim();
     const mensagem = document.getElementById('ag-mensagem').value.trim();
     const horarios = Array.from(document.querySelectorAll('#ag-horarios input[type=time]')).map(i => i.value);
-    const temImagem = document.getElementById('ag-img-preview').style.display === 'block';
+    const dias = Array.from(document.querySelectorAll('#ag-dias-chips .chip.on')).map(b => b.dataset.dia);
+    const grupo = document.querySelector('#ag-grupo-chips .chip.on')?.dataset.grupo || 'todos';
 
     if (!nome) { toast('⚠️ Digite um nome'); return; }
     if (!mensagem) { toast('⚠️ Digite uma mensagem'); return; }
-    if (!diasAg.size) { toast('⚠️ Selecione pelo menos um dia'); return; }
+    if (!dias.length) { toast('⚠️ Selecione pelo menos um dia'); return; }
     if (!horarios.length) { toast('⚠️ Adicione pelo menos um horário'); return; }
 
-    toast('💾 Salvando...');
+    const payload = { nome, mensagem, dias, horarios, grupo, ativo: true };
+    if (editandoAgId) payload.id = editandoAgId;
 
-    // Upload imagem se tiver nova
-    let imagemUrl = editandoId ? (agendamentos.find(a => a.id === editandoId) || {}).imagem || null : null;
-    if (temImagem && document.getElementById('ag-img').files[0]) {
-      imagemUrl = await uploadImagem(document.getElementById('ag-img'));
-      if (!imagemUrl) toast('⚠️ Erro no upload da imagem, salvando sem ela');
+    try {
+      await fetch(API + '/agendamentos', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    } catch(e) {
+      if (!editandoAgId) { payload.id = Date.now(); agendamentos.push(payload); }
+      else { const idx = agendamentos.findIndex(a => a.id === editandoAgId); if (idx > -1) agendamentos[idx] = Object.assign({}, agendamentos[idx], payload); }
+      localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
     }
 
-    const payload = { nome, mensagem, dias: Array.from(diasAg), horarios, destinatarios: destAg, imagem: imagemUrl };
-    if (editandoId) payload.id = editandoId;
-
-    try {
-      await fetch(API + '/agendamentos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-      fecharModalAg();
-      await carregarAgendamentos();
-      toast(disparar ? '📲 Salvo e disparado!' : '✓ Agendamento salvo!');
-    } catch(e) { toast('Erro ao salvar'); }
+    await carregarAgendamentos();
+    fecharModal('modal-ag');
+    toast('✓ Agendamento salvo!');
   }
 
-  function salvarEDisparar() { salvarAg(true); }
-
   async function toggleAg(id) {
-    try {
-      await fetch(API + '/agendamentos/toggle', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      await carregarAgendamentos();
-    } catch(e) { toast('Erro ao atualizar'); }
+    const ag = agendamentos.find(a => a.id === id);
+    if (!ag) return;
+    ag.ativo = !ag.ativo;
+    try { await fetch(API + '/agendamentos/toggle', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) }); } catch(e) {}
+    localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
+    renderAgendamentos();
   }
 
   async function excluirAg(id) {
     if (!confirm('Excluir este agendamento?')) return;
-    try {
-      await fetch(API + '/agendamentos', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
-      await carregarAgendamentos();
-      toast('✓ Excluído');
-    } catch(e) { toast('Erro ao excluir'); }
+    try { await fetch(API + '/agendamentos', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) }); } catch(e) {}
+    agendamentos = agendamentos.filter(a => a.id !== id);
+    localStorage.setItem('loglife_agendamentos', JSON.stringify(agendamentos));
+    renderAgendamentos();
+    toast('✓ Excluído');
   }
+
+  const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
+  const grupoLabels = { clt:'👔 CLT', agr:'🤝 Agregados', todos:'👥 Todos' };
 
   function renderAgendamentos() {
     const el = document.getElementById('lista-ag');
     if (!agendamentos.length) { el.innerHTML = '<div class="empty">Nenhum agendamento criado ainda.</div>'; return; }
     el.innerHTML = agendamentos.map(ag => {
-      const diasStr = ag.dias.map(d => diasLabels[d] || d).join(', ');
-      const horariosStr = ag.horarios.join(' · ');
+      const diasStr = (ag.dias||[]).map(d => diasLabels[d]||d).join(', ');
+      const horariosStr = (ag.horarios||[]).join(' · ');
       return '<div class="ag-item">'
-        + '<div class="ag-header">'
-        + '<span class="ag-nome">' + ag.nome + '</span>'
+        + '<div class="ag-header"><span class="ag-nome">' + ag.nome + '</span>'
         + '<div class="ag-acoes">'
-        + '<button class="toggle-btn" onclick="toggleAg(' + ag.id + ')" style="background:' + (ag.ativo ? '#E8F8F0' : '#F5F5F5') + ';color:' + (ag.ativo ? '#0F9B78' : '#94A8B8') + '">' + (ag.ativo ? '● Ativo' : '○ Pausado') + '</button>'
+        + '<button class="toggle-btn" onclick="toggleAg(' + ag.id + ')" style="background:' + (ag.ativo?'#E8F8F0':'#F5F5F5') + ';color:' + (ag.ativo?'#0F9B78':'#94A8B8') + '">' + (ag.ativo?'● Ativo':'○ Pausado') + '</button>'
         + '<button class="btn-edit" onclick="abrirModalAg(' + ag.id + ')">✎</button>'
         + '<button class="btn-del" onclick="excluirAg(' + ag.id + ')">🗑</button>'
         + '</div></div>'
         + '<div class="ag-texto">' + ag.mensagem + '</div>'
         + '<div class="ag-tags">'
-        + '<span class="tag tag-azul">' + diasStr + '</span>'
-        + '<span class="tag tag-verde">⏰ ' + horariosStr + '</span>'
-        + '<span class="tag tag-amarelo">👥 ' + (destLabels[ag.destinatarios] || ag.destinatarios) + '</span>'
-        + (ag.imagem ? '<span class="tag tag-azul">🖼️ Com imagem</span>' : '')
+        + '<span class="tag tag-' + (ag.grupo||'todos').replace('agr','agr') + '">' + (grupoLabels[ag.grupo]||'👥 Todos') + '</span>'
+        + '<span class="tag" style="background:#EEF6FF;color:#1E9FD9">' + diasStr + '</span>'
+        + '<span class="tag" style="background:#F0FDF4;color:#0F9B78">⏰ ' + horariosStr + '</span>'
         + '</div></div>';
     }).join('');
   }
@@ -547,27 +836,27 @@
   function renderHistorico() {
     const el = document.getElementById('lista-historico');
     if (!historico.length) { el.innerHTML = '<div class="empty">Nenhum disparo registrado ainda.</div>'; return; }
-    el.innerHTML = historico.map(h => {
-      return '<div class="hist-item">'
-        + '<div class="hist-icon">' + (h.tipo === 'agendado' ? '⏰' : '📤') + '</div>'
-        + '<div style="flex:1">'
-        + '<div class="hist-nome">' + h.mensagem.substring(0, 50) + (h.mensagem.length > 50 ? '...' : '') + '</div>'
-        + '<div class="hist-meta">' + h.data + ' · ' + h.qtd + ' destinatários · <span style="color:#0F9B78;font-weight:700">✓ ' + h.status + '</span></div>'
-        + '</div></div>';
-    }).join('');
+    el.innerHTML = historico.map(h =>
+      '<div class="hist-item">'
+      + '<div class="hist-icon">📤</div>'
+      + '<div style="flex:1">'
+      + '<div class="hist-nome">' + h.mensagem.substring(0,50) + (h.mensagem.length>50?'...':'') + '</div>'
+      + '<div class="hist-meta">' + h.data + ' · ' + h.grupoNome + ' · ' + h.qtd + ' motoboys · <span style="color:#0F9B78;font-weight:700">✓ enviado</span></div>'
+      + '</div></div>'
+    ).join('');
   }
 
-  // ===== TOAST =====
+  // ===== UTILS =====
+  function fecharModal(id) { document.getElementById(id).classList.remove('show'); }
+  function formatarTel(t) { if (!t) return ''; const s = String(t); return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t; }
   function toast(msg) {
     const el = document.getElementById('toast');
-    el.textContent = msg;
-    el.classList.add('show');
+    el.textContent = msg; el.classList.add('show');
     setTimeout(() => el.classList.remove('show'), 3000);
   }
 
   // Init
-  carregarAgendamentos();
-  renderHistorico();
+  init();
 </script>
 </body>
 </html>
