@@ -308,9 +308,32 @@
 
 <!-- ABA AGENDAMENTOS -->
 <div class="view" id="view-agendamentos">
-  <div style="padding-top:1rem">
+
+  <!-- ENVIO EM ANDAMENTO -->
+  <div id="envio-andamento-box" style="display:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);border-radius:14px;padding:1rem;margin-top:1rem;margin-bottom:1rem;color:#fff">
+    <div style="font-size:13px;font-weight:700;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+      <span>📤 Envio em andamento...</span>
+      <span id="ea-progresso">0/0</span>
+    </div>
+    <div style="height:6px;background:rgba(255,255,255,0.2);border-radius:3px;margin-bottom:8px">
+      <div id="ea-barra" style="height:100%;width:0%;background:#5DCAA5;border-radius:3px;transition:width .5s"></div>
+    </div>
+    <div id="ea-info" style="font-size:12px;opacity:.85;margin-bottom:8px"></div>
+    <button onclick="cancelarDisparo()" style="padding:7px 14px;border-radius:8px;border:1.5px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.1);color:#fff;font-size:12px;font-weight:700;cursor:pointer">✕ Cancelar envio agora</button>
+  </div>
+
+  <!-- BOTÃO NOVO + FILTROS -->
+  <div style="padding-top:1rem;margin-bottom:.8rem">
     <button class="btn-blue" onclick="abrirModalAg()">➕ Novo agendamento</button>
   </div>
+
+  <!-- FILTROS -->
+  <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap" id="filtros-ag">
+    <button onclick="filtrarAg('todos',this)" style="padding:6px 14px;border-radius:20px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:12px;font-weight:600;color:#0F4C7A;cursor:pointer" class="filtro-ag-btn ativo">Todos</button>
+    <button onclick="filtrarAg('ativo',this)" style="padding:6px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer" class="filtro-ag-btn">● Ativos</button>
+    <button onclick="filtrarAg('pausado',this)" style="padding:6px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer" class="filtro-ag-btn">○ Pausados</button>
+  </div>
+
   <div id="lista-ag"><div class="empty">Nenhum agendamento criado ainda.</div></div>
 </div>
 
@@ -331,7 +354,7 @@
     </div>
     <div class="field">
       <label class="field-label">Buscar motoboy</label>
-      <input type="text" id="busca-membro" placeholder="Digite o nome..." oninput="filtrarMembros()"/>
+      <input type="text" id="busca-membro" placeholder="Digite o nome ou telefone..." oninput="filtrarMembros()"/>
     </div>
     <div id="lista-membro-busca" style="max-height:300px;overflow-y:auto;border:1px solid #EBF1F5;border-radius:10px"></div>
     <button class="btn-outline" style="margin-top:1rem" onclick="fecharModal('modal-membro')">Fechar</button>
@@ -553,17 +576,24 @@
   }
 
   function filtrarMembros() {
-    const busca = document.getElementById('busca-membro').value.toLowerCase();
+    const busca = document.getElementById('busca-membro').value.toLowerCase().replace(/\D/g,'');
+    const buscaTxt = document.getElementById('busca-membro').value.toLowerCase();
     const jaNoGrupo = (grupos[grupoAdicionando] || []).map(m => m.telefone);
     const filtrados = todosMotoboys.filter(m =>
-      (!busca || m.nome.toLowerCase().includes(busca)) && !jaNoGrupo.includes(m.telefone)
+      !jaNoGrupo.includes(m.telefone) && (
+        !buscaTxt ||
+        m.nome.toLowerCase().includes(buscaTxt) ||
+        m.telefone.replace(/\D/g,'').includes(busca)
+      )
     );
     const el = document.getElementById('lista-membro-busca');
     if (!filtrados.length) { el.innerHTML = '<div class="empty">Nenhum encontrado</div>'; return; }
     el.innerHTML = filtrados.map(m =>
       '<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #F0F4F8;cursor:pointer" onclick="adicionarMembro(\'' + m.telefone + '\',\'' + m.nome.replace(/'/g,"\\'") + '\')">'
-      + '<div style="flex:1"><div style="font-size:13px;font-weight:600;color:#0F4C7A">' + m.nome + '</div>'
-      + '<div style="font-size:11px;color:#5A7A8F">📱 ' + formatarTel(m.telefone) + '</div></div>'
+      + '<div style="flex:1">'
+      + '<div style="font-size:13px;font-weight:600;color:#0F4C7A">' + m.nome + '</div>'
+      + '<div style="font-size:11px;color:#5A7A8F">📱 ' + formatarTel(m.telefone) + '</div>'
+      + '</div>'
       + '<span style="font-size:20px;color:#0F9B78">+</span></div>'
     ).join('');
   }
@@ -631,6 +661,9 @@
     document.getElementById('btn-disparar').disabled = true;
     document.getElementById('btn-cancelar').style.display = 'block';
     document.getElementById('prog-box').style.display = 'block';
+    // Mostrar box na aba agendamentos
+    const eaBox = document.getElementById('envio-andamento-box');
+    if (eaBox) eaBox.style.display = 'block';
 
     // Renderizar lista de progresso
     document.getElementById('prog-lista').innerHTML = membros.map(m =>
@@ -649,6 +682,14 @@
       document.getElementById('prog-titulo-txt').textContent = '📤 Enviando... ' + i + '/' + membros.length;
       document.getElementById('prog-pct').textContent = pct + '%';
       document.getElementById('prog-bar').style.width = pct + '%';
+
+      // Atualizar box aba agendamentos
+      const eaBox = document.getElementById('envio-andamento-box');
+      if (eaBox) {
+        document.getElementById('ea-progresso').textContent = i + '/' + membros.length + ' · ' + pct + '%';
+        document.getElementById('ea-barra').style.width = pct + '%';
+        document.getElementById('ea-info').textContent = 'Enviando para: ' + m.nome.split(' ')[0];
+      }
 
       const ps = document.getElementById('ps-' + m.telefone);
       const ph = document.getElementById('ph-' + m.telefone);
@@ -684,6 +725,8 @@
     disparando = false;
     document.getElementById('btn-disparar').disabled = false;
     document.getElementById('btn-cancelar').style.display = 'none';
+    const eaBox = document.getElementById('envio-andamento-box');
+    if (eaBox) eaBox.style.display = 'none';
     if (!cancelarFlag) toast('✓ Disparado para ' + total + ' motoboys!');
   }
 
@@ -810,25 +853,88 @@
   const diasLabels = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
   const grupoLabels = { clt:'👔 CLT', agr:'🤝 Agregados', todos:'👥 Todos' };
 
+  let filtroAg = 'todos';
+
+  function filtrarAg(tipo, btn) {
+    filtroAg = tipo;
+    document.querySelectorAll('.filtro-ag-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE';
+      b.style.background = '#fff';
+      b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#1E9FD9';
+    btn.style.background = '#E8F4FB';
+    btn.style.color = '#0F4C7A';
+    renderAgendamentos();
+  }
+
+  function proximoEnvio(ag) {
+    const diasMap = { seg:1, ter:2, qua:3, qui:4, sex:5, sab:6, dom:0 };
+    const agora = new Date();
+    const hoje = agora.getDay();
+    const horaAgora = agora.getHours() * 60 + agora.getMinutes();
+    let menorDiff = Infinity;
+    let proximoLabel = '';
+
+    (ag.horarios || []).forEach(hor => {
+      const [h, m] = hor.split(':').map(Number);
+      const minHor = h * 60 + m;
+      (ag.dias || []).forEach(dia => {
+        const diaNum = diasMap[dia];
+        let diff = (diaNum - hoje + 7) % 7;
+        if (diff === 0 && minHor <= horaAgora) diff = 7;
+        const totalMins = diff * 1440 + minHor;
+        if (totalMins < menorDiff) {
+          menorDiff = totalMins;
+          const nomesDias = { seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado', dom:'Domingo' };
+          proximoLabel = diff === 0 ? 'Hoje às ' + hor : (diff === 1 ? 'Amanhã às ' + hor : nomesDias[dia] + ' às ' + hor);
+        }
+      });
+    });
+    return proximoLabel || '—';
+  }
+
   function renderAgendamentos() {
     const el = document.getElementById('lista-ag');
     if (!agendamentos.length) { el.innerHTML = '<div class="empty">Nenhum agendamento criado ainda.</div>'; return; }
-    el.innerHTML = agendamentos.map(ag => {
+
+    const filtrados = filtroAg === 'todos' ? agendamentos
+      : filtroAg === 'ativo' ? agendamentos.filter(a => a.ativo)
+      : agendamentos.filter(a => !a.ativo);
+
+    // Atualizar contadores nos filtros
+    const btns = document.querySelectorAll('.filtro-ag-btn');
+    if (btns[0]) btns[0].textContent = 'Todos (' + agendamentos.length + ')';
+    if (btns[1]) btns[1].textContent = '● Ativos (' + agendamentos.filter(a=>a.ativo).length + ')';
+    if (btns[2]) btns[2].textContent = '○ Pausados (' + agendamentos.filter(a=>!a.ativo).length + ')';
+
+    if (!filtrados.length) { el.innerHTML = '<div class="empty">Nenhum agendamento nesta categoria</div>'; return; }
+
+    el.innerHTML = filtrados.map(ag => {
       const diasStr = (ag.dias||[]).map(d => diasLabels[d]||d).join(', ');
       const horariosStr = (ag.horarios||[]).join(' · ');
-      return '<div class="ag-item">'
-        + '<div class="ag-header"><span class="ag-nome">' + ag.nome + '</span>'
-        + '<div class="ag-acoes">'
-        + '<button class="toggle-btn" onclick="toggleAg(' + ag.id + ')" style="background:' + (ag.ativo?'#E8F8F0':'#F5F5F5') + ';color:' + (ag.ativo?'#0F9B78':'#94A8B8') + '">' + (ag.ativo?'● Ativo':'○ Pausado') + '</button>'
-        + '<button class="btn-edit" onclick="abrirModalAg(' + ag.id + ')">✎</button>'
-        + '<button class="btn-del" onclick="excluirAg(' + ag.id + ')">🗑</button>'
+      const prox = ag.ativo ? proximoEnvio(ag) : null;
+      const borderCor = ag.ativo ? '#0F9B78' : '#D6E5EE';
+      const opacidade = ag.ativo ? '1' : '0.7';
+
+      return '<div style="background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 6px rgba(0,0,0,0.06);border-left:4px solid ' + borderCor + ';opacity:' + opacidade + '">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+        + '<span style="font-size:13px;font-weight:700;color:#0F4C7A">' + ag.nome + '</span>'
+        + '<div style="display:flex;gap:5px;align-items:center">'
+        + '<button onclick="toggleAg(' + ag.id + ')" style="padding:4px 10px;border-radius:20px;border:none;background:' + (ag.ativo?'#E8F8F0':'#F5F5F5') + ';color:' + (ag.ativo?'#0F9B78':'#94A8B8') + ';font-size:11px;font-weight:700;cursor:pointer">' + (ag.ativo?'● Ativo':'○ Pausado') + '</button>'
+        + '<button onclick="abrirModalAg(' + ag.id + ')" style="padding:4px 8px;border-radius:6px;border:1px solid #1E9FD9;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;cursor:pointer">✎</button>'
+        + '<button onclick="excluirAg(' + ag.id + ')" style="padding:4px 8px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:11px;font-weight:700;cursor:pointer">🗑</button>'
         + '</div></div>'
-        + '<div class="ag-texto">' + ag.mensagem + '</div>'
-        + '<div class="ag-tags">'
-        + '<span class="tag tag-' + (ag.grupo||'todos').replace('agr','agr') + '">' + (grupoLabels[ag.grupo]||'👥 Todos') + '</span>'
-        + '<span class="tag" style="background:#EEF6FF;color:#1E9FD9">' + diasStr + '</span>'
-        + '<span class="tag" style="background:#F0FDF4;color:#0F9B78">⏰ ' + horariosStr + '</span>'
-        + '</div></div>';
+        + '<div style="font-size:12px;color:#5A7A8F;margin-bottom:6px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">' + ag.mensagem + '</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px">'
+        + '<span class="tag tag-' + (ag.grupo||'todos') + '">' + (grupoLabels[ag.grupo]||'👥 Todos') + '</span>'
+        + '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#EEF6FF;color:#1E9FD9;font-weight:600">' + diasStr + '</span>'
+        + '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#F0FDF4;color:#0F9B78;font-weight:600">⏰ ' + horariosStr + '</span>'
+        + (ag.imagem ? '<span style="font-size:10px;padding:2px 7px;border-radius:20px;background:#F3F0FF;color:#8B5CF6;font-weight:600">🖼️ Imagem</span>' : '')
+        + '</div>'
+        + (ag.ativo && prox ? '<div style="font-size:11px;color:#5A7A8F">🕐 Próximo envio: <strong style="color:#0F9B78">' + prox + '</strong></div>' : '')
+        + (!ag.ativo ? '<div style="font-size:11px;color:#94A8B8">⏸ Pausado — toque em "○ Pausado" para reativar</div>' : '')
+        + '</div>';
     }).join('');
   }
 
