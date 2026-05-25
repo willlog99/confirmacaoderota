@@ -438,12 +438,15 @@
 
   // ===== INIT =====
   async function init() {
-    await carregarGrupos();
-    await carregarMotoboys();
-    await carregarAgendamentos();
-    verificarExtensao();
+    // Renderizar UI imediatamente sem esperar servidor
     atualizarUI();
     renderHistorico();
+    verificarExtensao();
+
+    // Carregar dados em paralelo sem travar
+    carregarGrupos().catch(() => {});
+    carregarMotoboys().catch(() => {});
+    carregarAgendamentos().catch(() => {});
   }
 
   // ===== EXTENSÃO =====
