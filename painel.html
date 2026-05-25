@@ -729,7 +729,7 @@
       document.getElementById('kpi-total').textContent = totalGeral;
       document.getElementById('kpi-feitas').textContent = feitasGeral;
       document.getElementById('kpi-pendentes').textContent = totalGeral - feitasGeral;
-      document.getElementById('kpi-motoboys').textContent = motoboys.length;
+      document.getElementById('kpi-motoboys').textContent = rotas.filter(r => r.motoboy_aberto).length;
       document.getElementById('rotas-badge').textContent = rotas.length;
 
       const totalUnidades = 37;
@@ -757,73 +757,43 @@
         }).join('');
       }
 
-      // Card Checklist — cruzar confirmações com checklists preenchidos
-      try {
-        const hoje = new Date().toLocaleDateString('pt-BR');
-        const chkRes = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
-        const chkData = await chkRes.json();
-        const checklists = chkData.checklists || [];
-        const preencheram = new Set(checklists.map(c => c.biocondutor));
-        const confirmaramSim = confirmacoes.filter(c => c.resposta === 'sim');
-        
-        document.getElementById('checklist-badge').textContent = preencheram.size;
-        
-        const chkEl = document.getElementById('painel-checklist');
-        if (!confirmaramSim.length) {
-          chkEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
-        } else {
-          chkEl.innerHTML = confirmaramSim.map(c => {
-            const preencheu = preencheram.has(c.biocondutor);
-            return `<div class="conf-row" style="background:${preencheu ? '#F0FAF7' : '#FEF9EC'};border-color:${preencheu ? '#85DDBA' : '#F2CC70'}">
-              <div class="conf-ico" style="background:${preencheu ? '#0F9B78' : '#F59E0B'};color:#fff">${preencheu ? '✓' : '⏳'}</div>
-              <div class="conf-info">
-                <div class="conf-uni">${c.biocondutor}</div>
-                <div style="font-size:11px;color:#5A7A8F;margin-top:2px">${preencheu ? '✓ Checklist preenchido' : '⏳ Aguardando checklist'}</div>
-              </div>
-            </div>`;
-          }).join('');
-        }
-      } catch(e) {
-        document.getElementById('painel-checklist').innerHTML = '<div class="empty">Erro ao carregar</div>';
-      }
-
+      // Renderizar rotas PRIMEIRO — sem esperar checklist
       const el = document.getElementById('painel-rotas');
-      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
+      if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; }
+      else {
+        el.innerHTML = rotas.map((r, i) => {
+          const cls = clientesPorRota[r.rota] || [];
+          const total = cls.length;
+          const feitas = cls.filter(c => c.status === 'entregue').length;
+          const pct = total > 0 ? Math.round(feitas/total*100) : 0;
+          const completa = feitas === total && total > 0;
+          const emAndamento = r.ativa;
+          const status = completa ? 'completa' : emAndamento ? 'em-andamento' : 'livre';
+          const badgeLabel = completa ? '✓ Completa' : emAndamento ? '🔒 Em andamento' : 'Livre';
+          const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
+          const motoStr = r.motoboy_aberto || 'Sem motorista';
+          const expandida = cardExpandido === r.rota ? 'expanded' : '';
 
-      el.innerHTML = rotas.map((r, i) => {
-        const cls = clientesPorRota[r.rota] || [];
-        const total = cls.length;
-        const feitas = cls.filter(c => c.status === 'entregue').length;
-        const pct = total > 0 ? Math.round(feitas/total*100) : 0;
-        const completa = feitas === total && total > 0;
-        const emAndamento = r.ativa;
-        const status = completa ? 'completa' : emAndamento ? 'em-andamento' : 'livre';
-        const badgeLabel = completa ? '✓ Completa' : emAndamento ? '🔒 Em andamento' : 'Livre';
-        const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
-        const nomes = mbPorRota[r.rota] || [];
-        const motoStr = nomes.length ? nomes.join(', ') : 'Sem motorista';
-        const expandida = cardExpandido === r.rota ? 'expanded' : '';
+          const ent = cls.filter(c => c.status === 'entregue');
+          const pend = cls.filter(c => c.status !== 'entregue');
 
-        const ent = cls.filter(c => c.status === 'entregue');
-        const pend = cls.filter(c => c.status !== 'entregue');
+          const renderPrev = (c, tipo) => {
+            const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
+            const btnVoltar = (tipo === 'feito' || tipo === 'imp')
+              ? `<button onclick="event.stopPropagation();voltarColetaPreview(${c.id},'${r.rota.replace(/'/g,"\\'")}')"
+                  style="background:#FEF9EC;color:#92400E;border:1.5px solid #F2CC70;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩</button>`
+              : '';
+            return `<div class="preview-cli ${tipo}">
+              <div class="preview-cli-ico">${ico}</div>
+              <div class="preview-cli-nome">${c.nome}</div>
+              <div class="preview-cli-hora">${c.horario}</div>
+              ${btnVoltar}
+            </div>`;
+          };
 
-        const renderPrev = (c, tipo) => {
-          const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
-          const btnVoltar = (tipo === 'feito' || tipo === 'imp') 
-            ? `<button onclick="event.stopPropagation();voltarColetaPreview(${c.id},'${r.rota.replace(/'/g,"\\'")}')" 
-                style="background:#FEF9EC;color:#92400E;border:1.5px solid #F2CC70;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">↩</button>`
-            : '';
-          return `<div class="preview-cli ${tipo}">
-            <div class="preview-cli-ico">${ico}</div>
-            <div class="preview-cli-nome">${c.nome}</div>
-            <div class="preview-cli-hora">${c.horario}</div>
-            ${btnVoltar}
-          </div>`;
-        };
-
-        const prodList = ent.filter(c => c.produtividade !== 'improdutiva').map(c => renderPrev(c, 'feito')).join('');
-        const impList = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
-        const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
+          const prodList = ent.filter(c => c.produtividade !== 'improdutiva').map(c => renderPrev(c, 'feito')).join('');
+          const impList = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
+          const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
 
         return `
           <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
@@ -846,8 +816,9 @@
             </div>
           </div>`;
       }).join('');
+      } // fim else rotas
 
-      // Calcular atrasos direto dos clientes já carregados
+      // Calcular atrasos
       const agora = new Date();
       const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
       const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
@@ -913,7 +884,41 @@
         window._timerAtrasos = setInterval(renderAtrasos, 1000);
       }
 
+      // Checklist carrega DEPOIS das rotas — sem bloquear
+      carregarChecklist(confirmacoes);
+
   } // fim renderizarPainel
+
+  async function carregarChecklist(confirmacoes) {
+    try {
+      const hoje = new Date().toLocaleDateString('pt-BR');
+      const chkRes = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
+      const chkData = await chkRes.json();
+      const checklists = chkData.checklists || [];
+      const preencheram = new Set(checklists.map(c => c.biocondutor));
+      const confirmaramSim = (confirmacoes || []).filter(c => c.resposta === 'sim');
+
+      document.getElementById('checklist-badge').textContent = preencheram.size;
+
+      const chkEl = document.getElementById('painel-checklist');
+      if (!confirmaramSim.length) {
+        chkEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
+      } else {
+        chkEl.innerHTML = confirmaramSim.map(c => {
+          const preencheu = preencheram.has(c.biocondutor);
+          return `<div class="conf-row" style="background:${preencheu ? '#F0FAF7' : '#FEF9EC'};border-color:${preencheu ? '#85DDBA' : '#F2CC70'}">
+            <div class="conf-ico" style="background:${preencheu ? '#0F9B78' : '#F59E0B'};color:#fff">${preencheu ? '✓' : '⏳'}</div>
+            <div class="conf-info">
+              <div class="conf-uni">${c.biocondutor}</div>
+              <div style="font-size:11px;color:#5A7A8F;margin-top:2px">${preencheu ? '✓ Checklist preenchido' : '⏳ Aguardando checklist'}</div>
+            </div>
+          </div>`;
+        }).join('');
+      }
+    } catch(e) {
+      document.getElementById('painel-checklist').innerHTML = '<div class="empty">Erro ao carregar</div>';
+    }
+  }
 
   function toggleRotaPreview(card, rota) {
     if (cardExpandido === rota) {
@@ -1411,6 +1416,7 @@
 
   function renderAgendamentos() {
     const el = document.getElementById('lista-agendamentos');
+    if (!el) return; // elemento não existe nesta página
     if (!agendamentos.length) {
       el.innerHTML = '<div class="empty" style="font-size:12px">Nenhum agendamento criado.<br/>Clique em "+ Novo" para criar.</div>';
       return;
