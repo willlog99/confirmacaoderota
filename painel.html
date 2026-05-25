@@ -648,7 +648,7 @@
 
   function iniciarAutoRefresh() {
     pararAutoRefresh();
-    autoRefreshInterval = setInterval(() => carregarPainel(true), 8000);
+    autoRefreshInterval = setInterval(() => carregarPainel(true), 30000);
   }
   function pararAutoRefresh() {
     if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
@@ -681,31 +681,27 @@
       // Carregar histórico de disparos
       carregarHistoricoDisparos();
 
-      const params = filtroDia === 'todos' ? '?todos_dias=1' : `?dia_semana=${filtroDia}`;
-      
+      const params = filtroDia === 'todos' ? '?todos_dias=1' : '?dia_semana=' + filtroDia;
+
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-      const [rRes, mbRes, confRes] = await Promise.all([
-        fetch(API + '/rotas-disponiveis' + params, { signal: controller.signal }).then(r => r.json()).catch(() => ({ rotas: [] })),
-        fetch(API + '/motoboys?todos=1', { signal: controller.signal }).then(r => r.json()).catch(() => ({ motoboys: [] })),
-        fetch(API + '/', { signal: controller.signal }).then(r => r.json()).catch(() => ({ confirmacoes: [] }))
-      ]);
-
+      // Um único fetch em vez de 40+
+      const res = await fetch(API + '/painel-dados' + params, { signal: controller.signal });
       clearTimeout(timeoutId);
+      const data = await res.json();
 
-      const rotas = rRes.rotas || [];
+      const rotas = data.rotas || [];
+      const clientesPorRota = data.clientes_por_rota || {};
+      const motoboys = data.motoboys || [];
+      const confirmacoes = data.confirmacoes || [];
+
       rotasDisponiveis = rotas.map(r => r.rota);
-      const motoboys = mbRes.motoboys || [];
-      const confirmacoes = confRes.confirmacoes || [];
 
-      const dadosRotas = await Promise.all(
-        rotas.map(r => fetch(API + '/rota?rota=' + encodeURIComponent(r.rota) + '&todos_dias=1').then(res => res.json()).catch(() => ({ clientes: [] })))
-      );
-
+      // KPIs
       let totalGeral = 0, feitasGeral = 0;
-      dadosRotas.forEach(d => {
-        const cls = d.clientes || [];
+      rotas.forEach(r => {
+        const cls = clientesPorRota[r.rota] || [];
         totalGeral += cls.length;
         feitasGeral += cls.filter(c => c.status === 'entregue').length;
       });
@@ -778,7 +774,7 @@
       if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
 
       el.innerHTML = rotas.map((r, i) => {
-        const cls = (dadosRotas[i] && dadosRotas[i].clientes) || [];
+        const cls = clientesPorRota[r.rota] || [];
         const total = cls.length;
         const feitas = cls.filter(c => c.status === 'entregue').length;
         const pct = total > 0 ? Math.round(feitas/total*100) : 0;
@@ -834,12 +830,25 @@
           </div>`;
       }).join('');
 
-      // Carregar atrasos
-      const atrasoPromises = rotas.map(r => 
-        fetch(API + '/atraso?rota=' + encodeURIComponent(r.rota)).then(res => res.json()).catch(() => ({ atrasos: [] }))
-      );
-      const atrasoRes = await Promise.all(atrasoPromises);
-      const todosAtrasos = atrasoRes.flatMap(r => r.atrasos || []);
+      // Calcular atrasos direto dos clientes já carregados
+      const agora = new Date();
+      const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+      const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
+      const todosAtrasos = [];
+      rotas.forEach(r => {
+        // Só mostrar atrasos de rotas do dia filtrado
+        if (filtroDia !== 'todos' && r.dia_semana !== filtroDia) return;
+        const cls = clientesPorRota[r.rota] || [];
+        cls.forEach(c => {
+          if (c.status === 'entregue') return;
+          const [h, m] = (c.horario || '00:00').split(':').map(Number);
+          const segsMarcado = h * 3600 + m * 60;
+          const segsAtrasado = segsAgora - segsMarcado;
+          if (segsAtrasado > 1800) {
+            todosAtrasos.push({ id: c.id, nome: c.nome, horario: c.horario, rota: r.rota, segsAtrasado });
+          }
+        });
+      });
       
       document.getElementById('atrasos-badge').textContent = todosAtrasos.length;
       
@@ -852,14 +861,14 @@
         window._atrasosDados = todosAtrasos;
 
         function renderAtrasos() {
-          const agora = new Date();
-          const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
-          const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
+          const agora2 = new Date();
+          const agoraSP2 = new Date(agora2.getTime() - 3 * 60 * 60 * 1000);
+          const segsAgora2 = agoraSP2.getUTCHours() * 3600 + agoraSP2.getUTCMinutes() * 60 + agoraSP2.getUTCSeconds();
 
           atrasoEl.innerHTML = (window._atrasosDados || []).map(a => {
             const [h, m] = (a.horario || '00:00').split(':').map(Number);
             const segsMarcado = h * 3600 + m * 60;
-            const segsAtrasado = Math.max(0, segsAgora - segsMarcado);
+            const segsAtrasado = Math.max(0, segsAgora2 - segsMarcado);
             const horas = Math.floor(segsAtrasado / 3600);
             const mins = Math.floor((segsAtrasado % 3600) / 60);
             const secs = segsAtrasado % 60;
