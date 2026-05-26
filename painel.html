@@ -1820,176 +1820,165 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     const W = 210; const M = 15; const CW = W - M * 2;
+    const AZUL   = [15, 76, 122];
+    const AZUL_M = [30, 159, 217];
+    const VERDE  = [8, 80, 65];
+    const VERDE_B= [225, 245, 238];
+    const VERM   = [153, 27, 27];
+    const VERM_B = [252, 235, 235];
+    const ROXO   = [91, 33, 182];
+    const ROXO_B = [243, 240, 255];
+    const AZUL_B = [232, 244, 251];
+    const CINZA  = [247, 251, 253];
+    const CINZA_T= [90, 122, 143];
+    const CINZA_L= [235, 241, 245];
+    const CINZA_9= [148, 168, 184];
 
-    const AZUL    = [15, 76, 122];
-    const AZUL_M  = [30, 159, 217];
-    const VERDE   = [8, 80, 65];
-    const VERDE_B = [225, 245, 238];
-    const VERM    = [153, 27, 27];
-    const VERM_B  = [252, 235, 235];
-    const ROXO    = [91, 33, 182];
-    const ROXO_B  = [243, 240, 255];
-    const CINZA   = [247, 251, 253];
-    const CINZA_T = [90, 122, 143];
-    const CINZA_L = [235, 241, 245];
-
-    // Logo
     try {
-      const logoUrl = 'https://raw.githubusercontent.com/willlog99/confirmacaoderota/main/20050686-7618-4EE2-86F2-0E0E1EE012BE.png';
-      doc.addImage(logoUrl, 'PNG', M, 12, 22.5, 15);
+      doc.addImage('https://raw.githubusercontent.com/willlog99/confirmacaoderota/main/20050686-7618-4EE2-86F2-0E0E1EE012BE.png', 'PNG', M, 12, 15, 10);
     } catch(e) {}
 
-    // Título
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(15);
+    doc.setFontSize(14);
     doc.setTextColor(...AZUL);
-    doc.text('Relatório de Auditoria Operacional', W - M, 17, { align: 'right' });
+    doc.text('Relatorio de Auditoria Operacional', W - M, 17, { align: 'right' });
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setTextColor(...CINZA_T);
-    doc.text('Loglife Logística', W - M, 23, { align: 'right' });
-
-    // Linha azul
+    doc.text('Loglife Logistica', W - M, 22, { align: 'right' });
     doc.setDrawColor(...AZUL_M);
     doc.setLineWidth(0.8);
-    doc.line(M, 30, W - M, 30);
+    doc.line(M, 27, W - M, 27);
 
-    // Info grid
-    let y = 35;
-    const cells = [
-      ['MOTORISTA', payload.motorista],
-      ['AUDITOR', payload.auditor],
-      ['UNIDADE', payload.unidade],
-      ['DATA / HORA', payload.dataHora],
-      ['TIPO DE VEÍCULO', payload.tipo],
-      ['PLACA', payload.placa || '—'],
-      ['RESULTADO', payload.resultado.toUpperCase()],
-      ['PERCENTUAL', payload.score + '%'],
-    ];
+    let y = 31;
     const cw4 = CW / 4;
+    const cells = [
+      ['MOTORISTA', payload.motorista || ''],
+      ['AUDITOR', payload.auditor || ''],
+      ['UNIDADE', payload.unidade || ''],
+      ['DATA / HORA', payload.dataHora || ''],
+      ['TIPO DE VEICULO', payload.tipo || ''],
+      ['PLACA', payload.placa || '—'],
+      ['RESULTADO', (payload.resultado || '').toUpperCase()],
+      ['SCORE', (payload.score || 0) + '%'],
+    ];
     for (let row = 0; row < 2; row++) {
       for (let col = 0; col < 4; col++) {
         const idx = row * 4 + col;
         const x = M + col * cw4;
         doc.setFillColor(...CINZA);
-        doc.rect(x, y, cw4, 14, 'F');
+        doc.rect(x, y, cw4, 15, 'F');
         doc.setDrawColor(...CINZA_L);
         doc.setLineWidth(0.2);
-        doc.rect(x, y, cw4, 14);
+        doc.rect(x, y, cw4, 15);
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(7);
-        doc.setTextColor(...CINZA_T);
-        doc.text(cells[idx][0], x + 3, y + 4.5);
+        doc.setTextColor(...CINZA_9);
+        doc.text(cells[idx][0], x + 3, y + 5);
         doc.setFont('helvetica', 'bold');
-        doc.setFontSize(9);
+        doc.setFontSize(8.5);
         doc.setTextColor(...AZUL);
-        doc.text(String(cells[idx][1]).substring(0, 22), x + 3, y + 10);
+        const vLines = doc.splitTextToSize(String(cells[idx][1]), cw4 - 5);
+        doc.text(vLines[0] || '', x + 3, y + 10);
+        if (vLines[1]) doc.text(vLines[1], x + 3, y + 13.5);
       }
-      y += 14;
+      y += 15;
     }
     y += 4;
 
-    // Status bar
-    const n_conf = payload.itens.filter(i => i.resposta === 'conf').length;
+    const n_conf  = payload.itens.filter(i => i.resposta === 'conf').length;
     const n_nconf = payload.itens.filter(i => i.resposta === 'nconf').length;
-    const n_res = payload.itens.filter(i => i.resposta === 'ressalva').length;
-    const barW = CW / 4;
-
+    const n_res   = payload.itens.filter(i => i.resposta === 'ressalva').length;
+    const bw = CW / 4;
     [[VERDE_B, VERDE, '● ' + n_conf + ' Conformes'],
-     [VERM_B, VERM, '✗ ' + n_nconf + ' Não conformes'],
-     [ROXO_B, ROXO, '! ' + n_res + ' Ressalvas'],
+     [VERM_B,  VERM,  '✗ ' + n_nconf + ' Nao conformes'],
+     [ROXO_B,  ROXO,  '! ' + n_res + ' Ressalvas'],
      [payload.score >= 70 ? VERDE_B : VERM_B, payload.score >= 70 ? VERDE : VERM, 'SCORE: ' + payload.score + '%']
     ].forEach(([bg, tc, txt], i) => {
       doc.setFillColor(...bg);
-      doc.rect(M + i * barW, y, barW - 1, 8, 'F');
+      doc.rect(M + i * bw, y, bw - 1, 8, 'F');
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(...tc);
-      doc.text(txt, M + i * barW + 3, y + 5.5);
+      doc.text(txt, M + i * bw + 3, y + 5.5);
     });
     y += 12;
 
-    // Seção itens
-    doc.setFillColor(...[232, 244, 251]);
+    doc.setFillColor(...AZUL_B);
     doc.rect(M, y, CW, 7, 'F');
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(...AZUL_M);
     doc.text('ITENS DE AUDITORIA', M + 3, y + 5);
     y += 10;
 
     payload.itens.forEach((item, idx) => {
-      if (y > 260) { doc.addPage(); y = 20; }
-      if (idx % 2 === 0) {
-        doc.setFillColor(...CINZA);
-        doc.rect(M, y, CW, 7, 'F');
-      }
+      if (y > 255) { doc.addPage(); y = 20; }
+      const labelLines = doc.splitTextToSize(item.label, CW - 36);
+      const h = Math.max(8, labelLines.length * 4.5 + 4);
+      if (idx % 2 === 0) { doc.setFillColor(...CINZA); doc.rect(M, y, CW, h, 'F'); }
       doc.setDrawColor(...CINZA_L);
       doc.setLineWidth(0.15);
-      doc.rect(M, y, CW, 7);
-
+      doc.rect(M, y, CW, h);
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(68, 68, 68);
-      doc.text(item.label.substring(0, 58), M + 3, y + 5);
-
+      doc.text(labelLines, M + 3, y + 5);
       const resp = item.resposta;
       const [bg, tc, txt] = resp === 'conf' ? [VERDE_B, VERDE, 'Conforme'] :
-                             resp === 'nconf' ? [VERM_B, VERM, 'Não conforme'] :
+                             resp === 'nconf' ? [VERM_B, VERM, 'Nao conforme'] :
                              [ROXO_B, ROXO, 'Ressalva'];
-      const bx = W - M - 32;
+      const bx = W - M - 30;
       doc.setFillColor(...bg);
-      doc.roundedRect(bx, y + 1, 30, 5, 1, 1, 'F');
+      doc.roundedRect(bx, y + h/2 - 3, 28, 6, 1, 1, 'F');
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
+      doc.setFontSize(7.5);
       doc.setTextColor(...tc);
-      doc.text(txt, bx + 15, y + 4.8, { align: 'center' });
-      y += 7;
+      doc.text(txt, bx + 14, y + h/2 + 1.5, { align: 'center' });
+      y += h;
     });
-
     y += 5;
 
-    // Observações
     if (payload.obs) {
-      if (y > 250) { doc.addPage(); y = 20; }
-      doc.setFillColor(...[232, 244, 251]);
+      if (y > 248) { doc.addPage(); y = 20; }
+      doc.setFillColor(...AZUL_B);
       doc.rect(M, y, CW, 7, 'F');
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(...AZUL_M);
-      doc.text('OBSERVAÇÕES', M + 3, y + 5);
-      y += 10;
-      doc.setFillColor(...CINZA);
+      doc.text('OBSERVACOES', M + 3, y + 5);
+      y += 9;
       const obsLines = doc.splitTextToSize(payload.obs, CW - 6);
       const obsH = obsLines.length * 5 + 6;
+      doc.setFillColor(...CINZA);
       doc.rect(M, y, CW, obsH, 'F');
       doc.setFont('helvetica', 'normal');
-      doc.setFontSize(9);
+      doc.setFontSize(8.5);
       doc.setTextColor(...AZUL);
       doc.text(obsLines, M + 3, y + 5);
-      y += obsH + 5;
     }
 
-    // Rodapé
-    const pageH = doc.internal.pageSize.height;
+    const pH = doc.internal.pageSize.height;
     doc.setDrawColor(...CINZA_L);
-    doc.line(M, pageH - 20, W - M, pageH - 20);
+    doc.line(M, pH - 20, W - M, pH - 20);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...CINZA_T);
-    doc.text('Loglife Logística — Relatório de Auditoria Operacional', M, pageH - 15);
-    doc.text('Gerado em ' + payload.dataHora + ' — Documento gerado automaticamente', M, pageH - 11);
+    doc.setFontSize(7.5);
+    doc.setTextColor(...CINZA_9);
+    doc.text('Loglife Logistica — Relatorio de Auditoria Operacional', M, pH - 15);
+    doc.text('Gerado em ' + (payload.dataHora || '') + ' — Documento gerado automaticamente', M, pH - 11);
     doc.setDrawColor(...AZUL);
-    doc.line(W - M - 50, pageH - 12, W - M, pageH - 12);
-    doc.setFontSize(8);
+    doc.line(W - M - 52, pH - 12, W - M, pH - 12);
+    doc.setFontSize(7.5);
     doc.setTextColor(...CINZA_T);
-    doc.text('Assinatura do Auditor', W - M - 25, pageH - 9, { align: 'center' });
+    doc.text('Assinatura do Auditor', W - M - 26, pH - 9, { align: 'center' });
 
     if (baixar) {
-      doc.save('Auditoria_' + payload.motorista.replace(/ /g,'_') + '_' + payload.dataHora.split(',')[0].replace(/\//g,'-') + '.pdf');
+      const nomeArq = 'Auditoria_' + (payload.motorista||'').replace(/ /g,'_') + '_' + (payload.dataHora||'').split(',')[0].replace(/\//g,'-') + '.pdf';
+      doc.save(nomeArq);
     }
-    return doc.output('datauristring').split(',')[1]; // base64
+    return doc.output('datauristring').split(',')[1];
   }
+
 
   async function salvarAuditoria() {
     const motorista = document.getElementById('aud-motorista').value;
