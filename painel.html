@@ -1731,13 +1731,6 @@
   carregarPainel();
   iniciarAutoRefresh();
 
-  // Abrir aba gestor direto se vier do app
-  if (window.location.hash === '#gestor') {
-    const btnGestor = document.querySelector('[onclick="setView(\'gestor\',this)"]');
-    setView('gestor', btnGestor);
-    history.replaceState(null, '', window.location.pathname);
-  }
-
   // =============================================
   // GESTOR — AUDITORIA
   // =============================================
@@ -2287,6 +2280,13 @@
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     });
+  }
+
+  // Abrir aba gestor direto se vier do app — deve ficar no final
+  if (window.location.hash === '#gestor') {
+    const btnGestor = document.querySelector('[onclick="setView(\'gestor\',this)"]');
+    setView('gestor', btnGestor);
+    history.replaceState(null, '', window.location.pathname);
   }
 </script>
 
