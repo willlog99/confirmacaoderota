@@ -788,6 +788,19 @@
     if (id === 'checklist-view') carregarChecklists();
     if (id === 'checklists-incompletos') carregarChecklistsIncompletos();
     if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
+    if (id === 'gestor') {
+      renderItensAuditoria();
+      const sel = document.getElementById('aud-motorista');
+      if (sel && sel.options.length <= 1) {
+        fetch(API + '/motoboys?todos=1').then(r => r.json()).then(d => {
+          (d.motoboys || []).forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.nome; opt.textContent = m.nome;
+            sel.appendChild(opt);
+          });
+        }).catch(() => {});
+      }
+    }
   }
 
   function iniciarAutoRefresh() {
@@ -1715,6 +1728,13 @@
   carregarPainel();
   iniciarAutoRefresh();
 
+  // Abrir aba gestor direto se vier do app
+  if (window.location.hash === '#gestor') {
+    const btnGestor = document.querySelector('[onclick="setView(\'gestor\',this)"]');
+    setView('gestor', btnGestor);
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   // =============================================
   // GESTOR — AUDITORIA
   // =============================================
@@ -2001,25 +2021,6 @@
     carregarChecklistsGestor(filtro);
   }
 
-  // Inicializar gestor quando abrir
-  const origSetView = setView;
-  function setView(id, btn) {
-    origSetView(id, btn);
-    if (id === 'gestor') {
-      renderItensAuditoria();
-      // Carregar lista de motoboys para select
-      const sel = document.getElementById('aud-motorista');
-      if (sel && sel.options.length <= 1) {
-        fetch(API + '/motoboys?todos=1').then(r => r.json()).then(d => {
-          (d.motoboys || []).forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m.nome; opt.textContent = m.nome;
-            sel.appendChild(opt);
-          });
-        }).catch(() => {});
-      }
-    }
-  }
 </script>
   <!-- BOTÃO FORÇAR ATUALIZAÇÃO -->
   <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
