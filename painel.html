@@ -185,6 +185,7 @@
     .toast.show{opacity:1}
     .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
 
@@ -1815,6 +1816,181 @@
     renderItensAuditoria();
   }
 
+  function gerarPDFAuditoria(payload, baixar = false) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210; const M = 15; const CW = W - M * 2;
+
+    const AZUL    = [15, 76, 122];
+    const AZUL_M  = [30, 159, 217];
+    const VERDE   = [8, 80, 65];
+    const VERDE_B = [225, 245, 238];
+    const VERM    = [153, 27, 27];
+    const VERM_B  = [252, 235, 235];
+    const ROXO    = [91, 33, 182];
+    const ROXO_B  = [243, 240, 255];
+    const CINZA   = [247, 251, 253];
+    const CINZA_T = [90, 122, 143];
+    const CINZA_L = [235, 241, 245];
+
+    // Logo
+    try {
+      const logoUrl = 'https://raw.githubusercontent.com/willlog99/confirmacaoderota/main/20050686-7618-4EE2-86F2-0E0E1EE012BE.png';
+      doc.addImage(logoUrl, 'PNG', M, 12, 22.5, 15);
+    } catch(e) {}
+
+    // Título
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(15);
+    doc.setTextColor(...AZUL);
+    doc.text('Relatório de Auditoria Operacional', W - M, 17, { align: 'right' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(...CINZA_T);
+    doc.text('Loglife Logística', W - M, 23, { align: 'right' });
+
+    // Linha azul
+    doc.setDrawColor(...AZUL_M);
+    doc.setLineWidth(0.8);
+    doc.line(M, 30, W - M, 30);
+
+    // Info grid
+    let y = 35;
+    const cells = [
+      ['MOTORISTA', payload.motorista],
+      ['AUDITOR', payload.auditor],
+      ['UNIDADE', payload.unidade],
+      ['DATA / HORA', payload.dataHora],
+      ['TIPO DE VEÍCULO', payload.tipo],
+      ['PLACA', payload.placa || '—'],
+      ['RESULTADO', payload.resultado.toUpperCase()],
+      ['PERCENTUAL', payload.score + '%'],
+    ];
+    const cw4 = CW / 4;
+    for (let row = 0; row < 2; row++) {
+      for (let col = 0; col < 4; col++) {
+        const idx = row * 4 + col;
+        const x = M + col * cw4;
+        doc.setFillColor(...CINZA);
+        doc.rect(x, y, cw4, 14, 'F');
+        doc.setDrawColor(...CINZA_L);
+        doc.setLineWidth(0.2);
+        doc.rect(x, y, cw4, 14);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7);
+        doc.setTextColor(...CINZA_T);
+        doc.text(cells[idx][0], x + 3, y + 4.5);
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(9);
+        doc.setTextColor(...AZUL);
+        doc.text(String(cells[idx][1]).substring(0, 22), x + 3, y + 10);
+      }
+      y += 14;
+    }
+    y += 4;
+
+    // Status bar
+    const n_conf = payload.itens.filter(i => i.resposta === 'conf').length;
+    const n_nconf = payload.itens.filter(i => i.resposta === 'nconf').length;
+    const n_res = payload.itens.filter(i => i.resposta === 'ressalva').length;
+    const barW = CW / 4;
+
+    [[VERDE_B, VERDE, '● ' + n_conf + ' Conformes'],
+     [VERM_B, VERM, '✗ ' + n_nconf + ' Não conformes'],
+     [ROXO_B, ROXO, '! ' + n_res + ' Ressalvas'],
+     [payload.score >= 70 ? VERDE_B : VERM_B, payload.score >= 70 ? VERDE : VERM, 'SCORE: ' + payload.score + '%']
+    ].forEach(([bg, tc, txt], i) => {
+      doc.setFillColor(...bg);
+      doc.rect(M + i * barW, y, barW - 1, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...tc);
+      doc.text(txt, M + i * barW + 3, y + 5.5);
+    });
+    y += 12;
+
+    // Seção itens
+    doc.setFillColor(...[232, 244, 251]);
+    doc.rect(M, y, CW, 7, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(...AZUL_M);
+    doc.text('ITENS DE AUDITORIA', M + 3, y + 5);
+    y += 10;
+
+    payload.itens.forEach((item, idx) => {
+      if (y > 260) { doc.addPage(); y = 20; }
+      if (idx % 2 === 0) {
+        doc.setFillColor(...CINZA);
+        doc.rect(M, y, CW, 7, 'F');
+      }
+      doc.setDrawColor(...CINZA_L);
+      doc.setLineWidth(0.15);
+      doc.rect(M, y, CW, 7);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(68, 68, 68);
+      doc.text(item.label.substring(0, 58), M + 3, y + 5);
+
+      const resp = item.resposta;
+      const [bg, tc, txt] = resp === 'conf' ? [VERDE_B, VERDE, 'Conforme'] :
+                             resp === 'nconf' ? [VERM_B, VERM, 'Não conforme'] :
+                             [ROXO_B, ROXO, 'Ressalva'];
+      const bx = W - M - 32;
+      doc.setFillColor(...bg);
+      doc.roundedRect(bx, y + 1, 30, 5, 1, 1, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(...tc);
+      doc.text(txt, bx + 15, y + 4.8, { align: 'center' });
+      y += 7;
+    });
+
+    y += 5;
+
+    // Observações
+    if (payload.obs) {
+      if (y > 250) { doc.addPage(); y = 20; }
+      doc.setFillColor(...[232, 244, 251]);
+      doc.rect(M, y, CW, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(...AZUL_M);
+      doc.text('OBSERVAÇÕES', M + 3, y + 5);
+      y += 10;
+      doc.setFillColor(...CINZA);
+      const obsLines = doc.splitTextToSize(payload.obs, CW - 6);
+      const obsH = obsLines.length * 5 + 6;
+      doc.rect(M, y, CW, obsH, 'F');
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.setTextColor(...AZUL);
+      doc.text(obsLines, M + 3, y + 5);
+      y += obsH + 5;
+    }
+
+    // Rodapé
+    const pageH = doc.internal.pageSize.height;
+    doc.setDrawColor(...CINZA_L);
+    doc.line(M, pageH - 20, W - M, pageH - 20);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...CINZA_T);
+    doc.text('Loglife Logística — Relatório de Auditoria Operacional', M, pageH - 15);
+    doc.text('Gerado em ' + payload.dataHora + ' — Documento gerado automaticamente', M, pageH - 11);
+    doc.setDrawColor(...AZUL);
+    doc.line(W - M - 50, pageH - 12, W - M, pageH - 12);
+    doc.setFontSize(8);
+    doc.setTextColor(...CINZA_T);
+    doc.text('Assinatura do Auditor', W - M - 25, pageH - 9, { align: 'center' });
+
+    if (baixar) {
+      doc.save('Auditoria_' + payload.motorista.replace(/ /g,'_') + '_' + payload.dataHora.split(',')[0].replace(/\//g,'-') + '.pdf');
+    }
+    return doc.output('datauristring').split(',')[1]; // base64
+  }
+
   async function salvarAuditoria() {
     const motorista = document.getElementById('aud-motorista').value;
     const auditor = document.getElementById('aud-auditor').value.trim();
@@ -1832,33 +2008,81 @@
     if (naoRespondidos.length > 0) { msg.textContent = '⚠️ Responda todos os itens'; msg.style.color = '#DC2626'; return; }
 
     const vals = itensFiltrados.map(i => respostasAuditoria[i.id]);
-    const nconf = vals.filter(v => v === 'nconf').length;
-    const ressalva = vals.filter(v => v === 'ressalva').length;
-    const resultado = (nconf > 0 || ressalva > 0) ? 'Não conforme' : 'Conforme';
+    const n_conf = vals.filter(v => v === 'conf').length;
+    const n_nconf = vals.filter(v => v === 'nconf').length;
+    const n_res = vals.filter(v => v === 'ressalva').length;
+    const score = Math.round((n_conf * 100 + n_res * 50) / (itensFiltrados.length * 100) * 100);
+    const resultado = (n_nconf > 0 || n_res > 0) ? 'Não conforme' : 'Conforme';
     const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
 
     const payload = {
-      motorista, auditor, placa, tipo, unidade, obs, resultado, dataHora,
+      motorista, auditor, placa, tipo, unidade, obs, resultado, score, dataHora,
       itens: itensFiltrados.map(i => ({ label: i.label, resposta: respostasAuditoria[i.id] }))
     };
 
-    msg.textContent = '⏳ Salvando e enviando...'; msg.style.color = '#1E9FD9';
+    msg.textContent = '⏳ Gerando PDF...'; msg.style.color = '#1E9FD9';
+
+    // Gerar PDF e baixar automaticamente
+    const pdfBase64 = gerarPDFAuditoria(payload, true);
+
+    msg.textContent = '⏳ Salvando e enviando e-mail...'; msg.style.color = '#1E9FD9';
     try {
       const r = await fetch(API + '/auditoria', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify({ ...payload, pdfBase64 })
       });
       const d = await r.json();
       if (d.status === 'ok') {
-        msg.textContent = '✓ Auditoria salva e e-mail enviado!'; msg.style.color = '#0F9B78';
+        msg.textContent = '✓ Auditoria salva, PDF baixado e e-mail enviado!'; msg.style.color = '#0F9B78';
         limparAuditoria();
       } else {
-        msg.textContent = '✗ Erro: ' + (d.error || 'Tente novamente'); msg.style.color = '#DC2626';
+        msg.textContent = '✗ PDF gerado mas erro ao salvar: ' + (d.error || ''); msg.style.color = '#DC2626';
       }
     } catch(e) {
-      msg.textContent = '✗ Erro de conexão'; msg.style.color = '#DC2626';
+      msg.textContent = '✓ PDF baixado! (erro de conexão ao salvar)'; msg.style.color = '#F59E0B';
     }
+  }
+
+  async function reenviarAuditoria(id, btn) {
+    const txt = btn.textContent;
+    btn.textContent = '⏳';
+    btn.disabled = true;
+    try {
+      const r = await fetch(API + '/auditorias?id=' + id);
+      const d = await r.json();
+      const a = (d.auditorias || []).find(x => x.id === id);
+      if (!a) { toast('⚠️ Auditoria não encontrada'); return; }
+      const n_conf = a.itens.filter(i => i.resposta === 'conf').length;
+      const n_res  = a.itens.filter(i => i.resposta === 'ressalva').length;
+      const score  = Math.round((n_conf * 100 + n_res * 50) / (a.itens.length * 100) * 100);
+      const pdfBase64 = gerarPDFAuditoria({ ...a, score }, false);
+      const re = await fetch(API + '/auditoria-reenviar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...a, score, pdfBase64 })
+      });
+      const rd = await re.json();
+      if (rd.status === 'ok') { toast('✓ E-mail reenviado!'); btn.textContent = '✓'; }
+      else { toast('✗ Erro ao reenviar'); btn.textContent = txt; }
+    } catch(e) {
+      toast('✗ Erro de conexão');
+      btn.textContent = txt;
+    }
+    btn.disabled = false;
+  }
+
+  async function baixarPDFAuditoria(id) {
+    try {
+      const r = await fetch(API + '/auditorias?id=' + id);
+      const d = await r.json();
+      const a = (d.auditorias || []).find(x => x.id === id) || d.auditoria;
+      if (!a) { toast('⚠️ Auditoria não encontrada'); return; }
+      const n_conf = a.itens.filter(i => i.resposta === 'conf').length;
+      const n_res  = a.itens.filter(i => i.resposta === 'ressalva').length;
+      const score  = Math.round((n_conf * 100 + n_res * 50) / (a.itens.length * 100) * 100);
+      gerarPDFAuditoria({ ...a, score }, true);
+    } catch(e) { toast('✗ Erro ao gerar PDF'); }
   }
 
   function mudarSubGestor(sub, btn) {
@@ -1956,8 +2180,14 @@
         return `<div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px;cursor:pointer"
           onclick="this.querySelector('.aud-detalhe').style.display=this.querySelector('.aud-detalhe').style.display==='none'?'block':'none'">
           <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-            <span style="font-size:13px;font-weight:700;color:#0F4C7A">${a.motorista}</span>
-            <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:${conf?'#E8F8F0':'#FCEBEB'};color:${conf?'#0F9B78':'#DC2626'}">${conf?'✓ Conforme':'⚠️ Não conforme'}</span>
+            <div class="lista-nome">${a.motorista}</div>
+            <div style="display:flex;align-items:center;gap:6px">
+              <span class="badge ${conf?'badge-conf':'badge-nconf'}">${conf?'✓ Conforme':'⚠️ Não conforme'}</span>
+              <button onclick="event.stopPropagation();baixarPDFAuditoria(${a.id})"
+                style="padding:3px 8px;border-radius:6px;border:1px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">📥 PDF</button>
+              <button onclick="event.stopPropagation();reenviarAuditoria(${a.id},this)"
+                style="padding:3px 8px;border-radius:6px;border:1px solid #1E9FD9;background:#E8F4FB;color:#0F4C7A;font-size:11px;font-weight:700;cursor:pointer">📧 Reenviar</button>
+            </div>
           </div>
           <div style="font-size:11px;color:#5A7A8F">${a.unidade} · ${a.tipo} · ${a.placa||'—'} · ${a.dataHora} · Auditor: ${a.auditor}</div>
           <div class="aud-detalhe" style="display:none;margin-top:8px;border-top:1px solid #F0F4F8;padding-top:8px">
