@@ -791,15 +791,18 @@
     if (id === 'gestor') {
       renderItensAuditoria();
       const sel = document.getElementById('aud-motorista');
-      if (sel && sel.options.length <= 1) {
-        fetch(API + '/motoboys?todos=1').then(r => r.json()).then(d => {
-          (d.motoboys || []).forEach(m => {
-            const opt = document.createElement('option');
-            opt.value = m.nome; opt.textContent = m.nome;
-            sel.appendChild(opt);
-          });
-        }).catch(() => {});
-      }
+      // Sempre recarregar motoristas
+      sel.innerHTML = '<option value="">Selecione...</option>';
+      fetch(API + '/motoboys?todos=1&agrupado=1').then(r => r.json()).then(d => {
+        const lista = d.motoboys || [];
+        // Nomes únicos ordenados
+        const nomes = [...new Set(lista.map(m => m.nome))].sort();
+        nomes.forEach(nome => {
+          const opt = document.createElement('option');
+          opt.value = nome; opt.textContent = nome;
+          sel.appendChild(opt);
+        });
+      }).catch(() => {});
     }
   }
 
@@ -1757,10 +1760,12 @@
   let respostasAuditoria = {};
 
   function renderItensAuditoria() {
-    const tipo = document.getElementById('aud-tipo').value;
+    const tipoEl = document.getElementById('aud-tipo');
+    const listaEl = document.getElementById('itens-auditoria-lista');
+    if (!tipoEl || !listaEl) return; // view ainda não visível
+    const tipo = tipoEl.value || 'moto';
     const itensFiltrados = ITENS_AUDITORIA.filter(i => i.todos || i.somente === tipo);
-    const el = document.getElementById('itens-auditoria-lista');
-    el.innerHTML = itensFiltrados.map(item => {
+    listaEl.innerHTML = itensFiltrados.map(item => {
       const r = respostasAuditoria[item.id] || '';
       return `<div style="border-radius:10px;background:#F8FBFD;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px">
         <div style="font-size:13px;color:#0F4C7A;font-weight:600;margin-bottom:8px">${item.label}</div>
