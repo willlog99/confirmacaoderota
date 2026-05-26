@@ -301,10 +301,10 @@
     modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'
       + '<div style="font-size:44px;margin-bottom:1rem">👋</div>'
       + '<h3 style="font-size:17px;color:#0F4C7A;margin-bottom:8px;font-weight:700">Olá, ' + nome + '!</h3>'
-      + '<p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Como deseja entrar?</p>'
+      + '<p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">O que deseja fazer?</p>'
       + '<div style="display:flex;flex-direction:column;gap:10px">'
-      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'painel.html\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;cursor:pointer;font-size:14px">👔 Área do Gestor</button>'
-      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'confirmar.html\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">🏍️ Minhas Rotas</button>'
+      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'painel.html\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">📊 Abrir Painel</button>'
+      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'painel.html#gestor\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;cursor:pointer;font-size:14px">📝 Fazer Auditoria</button>'
       + '<button onclick="localStorage.clear();window.location.href=\'index.html\'" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">🚪 Sair</button>'
       + '</div></div>';
     document.body.appendChild(modal);
