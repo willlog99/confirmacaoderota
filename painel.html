@@ -215,6 +215,7 @@
         <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
         <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
+        <button class="menu-item" onclick="setView('gestor',this)">👔 Gestor / Auditoria</button>
         <button class="menu-item" onclick="window.location.href='disparador.html'">📲 Disparador WhatsApp</button>
 
       </div>
@@ -474,6 +475,141 @@
       <div class="card-title">🔄 Limpar confirmações</div>
       <button class="btn btn-warning btn-block" onclick="resetConfirmacoes()">Limpar confirmações de hoje</button>
       <div class="msg" id="msg-reset-conf"></div>
+    </div>
+  </div>
+
+  <!-- VIEW GESTOR -->
+  <div class="view" id="view-gestor">
+    <div style="padding:1rem;max-width:540px;margin:0 auto">
+
+      <!-- Sub tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
+        <button id="gestor-sub-btn-nova" onclick="mudarSubGestor('nova',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">📝 Nova Auditoria</button>
+        <button id="gestor-sub-btn-auditorias" onclick="mudarSubGestor('auditorias',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🔍 Auditorias</button>
+        <button id="gestor-sub-btn-checklists" onclick="mudarSubGestor('checklists',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">✅ Checklists</button>
+        <button id="gestor-sub-btn-gestores" onclick="mudarSubGestor('gestores',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⚙️ Gestores</button>
+      </div>
+
+      <!-- NOVA AUDITORIA -->
+      <div id="gestor-sub-nova">
+        <div class="card">
+          <div class="card-title">📝 Nova Auditoria</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo de Veículo</label>
+              <select id="aud-tipo" onchange="renderItensAuditoria()" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+                <option value="moto">Moto</option>
+                <option value="carro">Carro</option>
+                <option value="van">Van</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Unidade</label>
+              <select id="aud-unidade" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+                <option>GOIAS</option>
+                <option>SÃO PAULO</option>
+                <option>RIO DE JANEIRO</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Auditor</label>
+              <input type="text" id="aud-auditor" placeholder="Seu nome" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+            </div>
+            <div>
+              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Placa</label>
+              <input type="text" id="aud-placa" placeholder="ABC-1234" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+            </div>
+          </div>
+
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Motorista</label>
+            <select id="aud-motorista" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+              <option value="">Selecione...</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">🔍 Itens de Auditoria</div>
+          <div id="itens-auditoria-lista"></div>
+          <div style="margin-top:.5rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Observações</label>
+            <textarea id="aud-obs" rows="3" placeholder="Descreva observações..."
+              style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;resize:none;font-family:inherit"></textarea>
+          </div>
+        </div>
+
+        <!-- Resultado -->
+        <div id="aud-resultado-box" style="border-radius:12px;padding:12px;text-align:center;margin-bottom:1rem;background:#F0F4F8;border:1.5px solid #D6E5EE">
+          <div id="aud-resultado-txt" style="font-size:15px;font-weight:700;color:#5A7A8F">Preencha os itens acima</div>
+          <div id="aud-resultado-meta" style="font-size:12px;color:#94A8B8;margin-top:4px">0 conformes · 0 não conformes · 0 ressalvas</div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:6px;padding:8px 12px;border-radius:8px;background:#E8F4FB;border:1px solid #1E9FD9;font-size:12px;color:#0F4C7A;margin-bottom:1rem">
+          <span style="font-size:16px">📧</span>
+          <span>Relatório será enviado para <strong>qualidade@loglifelogistica.com.br</strong></span>
+        </div>
+
+        <button onclick="salvarAuditoria()"
+          style="width:100%;padding:14px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 14px rgba(139,92,246,0.3);margin-bottom:8px">
+          <span style="font-size:18px">📤</span> Finalizar e Enviar Relatório
+        </button>
+        <button onclick="limparAuditoria()"
+          style="width:100%;padding:12px;border-radius:12px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:14px;cursor:pointer">
+          Limpar
+        </button>
+        <div id="msg-auditoria" class="msg"></div>
+      </div>
+
+      <!-- AUDITORIAS RESPONDIDAS -->
+      <div id="gestor-sub-auditorias" style="display:none">
+        <div class="card">
+          <div class="card-title">🔍 Auditorias Respondidas</div>
+          <div id="lista-auditorias"><div class="empty">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- CHECKLISTS RESPONDIDOS -->
+      <div id="gestor-sub-checklists" style="display:none">
+        <div class="card">
+          <div class="card-title">✅ Checklists Respondidos</div>
+          <div style="display:flex;gap:6px;margin-bottom:.8rem">
+            <button onclick="filtrarChkGestor('hoje',this)"
+              style="padding:5px 12px;border-radius:20px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:11px;font-weight:700;color:#0F4C7A;cursor:pointer">Hoje</button>
+            <button onclick="filtrarChkGestor('semana',this)"
+              style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:11px;font-weight:700;color:#5A7A8F;cursor:pointer">Semana</button>
+          </div>
+          <div id="lista-checklists-gestor"><div class="empty">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- GESTORES -->
+      <div id="gestor-sub-gestores" style="display:none">
+        <div class="card">
+          <div class="card-title">⚙️ Gestores cadastrados</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+            <input type="text" id="novo-gestor-nome" placeholder="Nome completo"
+              style="border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;width:100%"/>
+            <input type="tel" id="novo-gestor-tel" placeholder="(11) 99999-9999"
+              style="border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;width:100%"/>
+          </div>
+          <button onclick="adicionarGestor()"
+            style="width:100%;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:1rem">
+            ➕ Adicionar Gestor
+          </button>
+          <div id="msg-gestor" class="msg" style="margin-bottom:.5rem"></div>
+          <div id="lista-gestores"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1578,6 +1714,312 @@
 
   carregarPainel();
   iniciarAutoRefresh();
+
+  // =============================================
+  // GESTOR — AUDITORIA
+  // =============================================
+
+  const ITENS_AUDITORIA = [
+    { id: 'limpeza', label: 'Limpeza geral do veículo (interna e externa)', todos: true },
+    { id: 'bau_limpo', label: 'Baú limpo, íntegro e sem odores', todos: true },
+    { id: 'bau_cadeado', label: 'Baú com cadeado', todos: true },
+    { id: 'bau_vedacao', label: 'Vedação e piso do baú', todos: true },
+    { id: 'uniforme', label: 'Uniforme completo e crachá', todos: true },
+    { id: 'epi', label: 'Kit EPI (quando aplicável)', todos: true },
+    { id: 'extintor', label: 'Extintor, triângulo e estepe', todos: false, somente: 'carro' },
+    { id: 'volumes', label: 'Conferência dos volumes na coleta/entrega', todos: true },
+    { id: 'acondicionamento', label: 'Acondicionamento correto da carga', todos: true },
+    { id: 'comunicacao', label: 'Comunicação com a base', todos: true },
+    { id: 'sistema', label: 'Utilização correta do sistema', todos: true },
+    { id: 'documentacao', label: 'Documentação do veículo e motorista', todos: true }
+  ];
+
+  let respostasAuditoria = {};
+
+  function renderItensAuditoria() {
+    const tipo = document.getElementById('aud-tipo').value;
+    const itensFiltrados = ITENS_AUDITORIA.filter(i => i.todos || i.somente === tipo);
+    const el = document.getElementById('itens-auditoria-lista');
+    el.innerHTML = itensFiltrados.map(item => {
+      const r = respostasAuditoria[item.id] || '';
+      return `<div style="border-radius:10px;background:#F8FBFD;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px">
+        <div style="font-size:13px;color:#0F4C7A;font-weight:600;margin-bottom:8px">${item.label}</div>
+        <div style="display:flex;gap:5px">
+          <button onclick="marcarAuditoria('${item.id}','conf')"
+            style="flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid ${r==='conf'?'#0F9B78':'#D6E5EE'};background:${r==='conf'?'#E8F8F0':'#fff'};font-size:11px;font-weight:700;cursor:pointer;color:${r==='conf'?'#0F9B78':'#5A7A8F'}">✓ Conforme</button>
+          <button onclick="marcarAuditoria('${item.id}','nconf')"
+            style="flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid ${r==='nconf'?'#DC2626':'#D6E5EE'};background:${r==='nconf'?'#FCEBEB':'#fff'};font-size:11px;font-weight:700;cursor:pointer;color:${r==='nconf'?'#DC2626':'#5A7A8F'}">✗ Não conforme</button>
+          <button onclick="marcarAuditoria('${item.id}','ressalva')"
+            style="flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid ${r==='ressalva'?'#8B5CF6':'#D6E5EE'};background:${r==='ressalva'?'#F3F0FF':'#fff'};font-size:11px;font-weight:700;cursor:pointer;color:${r==='ressalva'?'#8B5CF6':'#5A7A8F'}">! Ressalva</button>
+        </div>
+      </div>`;
+    }).join('');
+    calcularResultadoAuditoria(itensFiltrados);
+  }
+
+  function marcarAuditoria(id, valor) {
+    respostasAuditoria[id] = valor;
+    renderItensAuditoria();
+  }
+
+  function calcularResultadoAuditoria(itensFiltrados) {
+    const tipo = document.getElementById('aud-tipo').value;
+    const itens = itensFiltrados || ITENS_AUDITORIA.filter(i => i.todos || i.somente === tipo);
+    const vals = itens.map(i => respostasAuditoria[i.id] || '');
+    const conf = vals.filter(v => v === 'conf').length;
+    const nconf = vals.filter(v => v === 'nconf').length;
+    const ressalva = vals.filter(v => v === 'ressalva').length;
+    const box = document.getElementById('aud-resultado-box');
+    const txt = document.getElementById('aud-resultado-txt');
+    const meta = document.getElementById('aud-resultado-meta');
+    meta.textContent = conf + ' conformes · ' + nconf + ' não conformes · ' + ressalva + ' ressalvas';
+    if (nconf > 0 || ressalva > 0) {
+      box.style.background = '#FCEBEB'; box.style.borderColor = '#F09595';
+      txt.textContent = '⚠️ Resultado: Não conforme'; txt.style.color = '#DC2626';
+      meta.style.color = '#DC2626';
+    } else if (conf > 0 && nconf === 0 && ressalva === 0) {
+      box.style.background = '#E8F8F0'; box.style.borderColor = '#5DCAA5';
+      txt.textContent = '✓ Resultado: Conforme'; txt.style.color = '#0F9B78';
+      meta.style.color = '#0F9B78';
+    } else {
+      box.style.background = '#F0F4F8'; box.style.borderColor = '#D6E5EE';
+      txt.textContent = 'Preencha os itens acima'; txt.style.color = '#5A7A8F';
+      meta.style.color = '#94A8B8';
+    }
+  }
+
+  function limparAuditoria() {
+    respostasAuditoria = {};
+    document.getElementById('aud-auditor').value = '';
+    document.getElementById('aud-placa').value = '';
+    document.getElementById('aud-obs').value = '';
+    document.getElementById('aud-motorista').value = '';
+    renderItensAuditoria();
+  }
+
+  async function salvarAuditoria() {
+    const motorista = document.getElementById('aud-motorista').value;
+    const auditor = document.getElementById('aud-auditor').value.trim();
+    const placa = document.getElementById('aud-placa').value.trim();
+    const tipo = document.getElementById('aud-tipo').value;
+    const unidade = document.getElementById('aud-unidade').value;
+    const obs = document.getElementById('aud-obs').value.trim();
+    const msg = document.getElementById('msg-auditoria');
+
+    if (!motorista) { msg.textContent = '⚠️ Selecione o motorista'; msg.style.color = '#DC2626'; return; }
+    if (!auditor) { msg.textContent = '⚠️ Informe o nome do auditor'; msg.style.color = '#DC2626'; return; }
+
+    const itensFiltrados = ITENS_AUDITORIA.filter(i => i.todos || i.somente === tipo);
+    const naoRespondidos = itensFiltrados.filter(i => !respostasAuditoria[i.id]);
+    if (naoRespondidos.length > 0) { msg.textContent = '⚠️ Responda todos os itens'; msg.style.color = '#DC2626'; return; }
+
+    const vals = itensFiltrados.map(i => respostasAuditoria[i.id]);
+    const nconf = vals.filter(v => v === 'nconf').length;
+    const ressalva = vals.filter(v => v === 'ressalva').length;
+    const resultado = (nconf > 0 || ressalva > 0) ? 'Não conforme' : 'Conforme';
+    const dataHora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+
+    const payload = {
+      motorista, auditor, placa, tipo, unidade, obs, resultado, dataHora,
+      itens: itensFiltrados.map(i => ({ label: i.label, resposta: respostasAuditoria[i.id] }))
+    };
+
+    msg.textContent = '⏳ Salvando e enviando...'; msg.style.color = '#1E9FD9';
+    try {
+      const r = await fetch(API + '/auditoria', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        msg.textContent = '✓ Auditoria salva e e-mail enviado!'; msg.style.color = '#0F9B78';
+        limparAuditoria();
+      } else {
+        msg.textContent = '✗ Erro: ' + (d.error || 'Tente novamente'); msg.style.color = '#DC2626';
+      }
+    } catch(e) {
+      msg.textContent = '✗ Erro de conexão'; msg.style.color = '#DC2626';
+    }
+  }
+
+  function mudarSubGestor(sub, btn) {
+    ['nova','auditorias','checklists','gestores'].forEach(s => {
+      document.getElementById('gestor-sub-' + s).style.display = s === sub ? 'block' : 'none';
+      const b = document.getElementById('gestor-sub-btn-' + s);
+      if (b) {
+        b.style.borderColor = s === sub ? '#8B5CF6' : '#D6E5EE';
+        b.style.background = s === sub ? '#F3F0FF' : '#fff';
+        b.style.color = s === sub ? '#5B21B6' : '#5A7A8F';
+      }
+    });
+    if (sub === 'auditorias') carregarAuditorias();
+    if (sub === 'checklists') carregarChecklistsGestor('hoje');
+    if (sub === 'gestores') carregarGestores();
+  }
+
+  async function carregarGestores() {
+    const el = document.getElementById('lista-gestores');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/gestores');
+      const d = await r.json();
+      const lista = d.gestores || [];
+      if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum gestor cadastrado</div>'; return; }
+      el.innerHTML = lista.map(g => `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0F4F8">
+          <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${g.nome[0]}</div>
+          <div style="flex:1">
+            <div style="font-size:13px;font-weight:700;color:#0F4C7A">${g.nome}</div>
+            <div style="font-size:11px;color:#5A7A8F">📱 ${formatarTelefone(g.telefone)}</div>
+          </div>
+          <button onclick="removerGestor('${g.telefone}','${g.nome.replace(/'/g,"\\'")}' )"
+            style="width:28px;height:28px;border-radius:8px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:13px;cursor:pointer;flex-shrink:0">✕</button>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="empty" style="color:#DC2626">Erro ao carregar</div>';
+    }
+  }
+
+  async function adicionarGestor() {
+    const nome = document.getElementById('novo-gestor-nome').value.trim().toUpperCase();
+    const tel = document.getElementById('novo-gestor-tel').value.replace(/\D/g,'');
+    const msg = document.getElementById('msg-gestor');
+    if (!nome) { msg.textContent = '⚠️ Informe o nome'; msg.style.color = '#DC2626'; return; }
+    if (tel.length < 10) { msg.textContent = '⚠️ Telefone inválido'; msg.style.color = '#DC2626'; return; }
+    msg.textContent = '⏳ Salvando...'; msg.style.color = '#1E9FD9';
+    try {
+      const r = await fetch(API + '/gestores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, telefone: tel })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        msg.textContent = '✓ Gestor adicionado!'; msg.style.color = '#0F9B78';
+        document.getElementById('novo-gestor-nome').value = '';
+        document.getElementById('novo-gestor-tel').value = '';
+        carregarGestores();
+      } else {
+        msg.textContent = '✗ Erro ao salvar'; msg.style.color = '#DC2626';
+      }
+    } catch(e) {
+      msg.textContent = '✗ Erro de conexão'; msg.style.color = '#DC2626';
+    }
+  }
+
+  async function removerGestor(telefone, nome) {
+    if (!confirm('Remover gestor ' + nome + '?')) return;
+    try {
+      await fetch(API + '/gestores', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefone })
+      });
+      carregarGestores();
+    } catch(e) { alert('Erro ao remover'); }
+  }
+
+  function formatarTelefone(t) {
+    const s = String(t||'').replace(/\D/g,'');
+    return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
+  }
+
+  async function carregarAuditorias() {
+    const el = document.getElementById('lista-auditorias');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const r = await fetch(API + '/auditorias');
+      const d = await r.json();
+      const lista = d.auditorias || [];
+      if (!lista.length) { el.innerHTML = '<div class="empty">Nenhuma auditoria registrada</div>'; return; }
+      el.innerHTML = lista.map(a => {
+        const conf = a.resultado === 'Conforme';
+        return `<div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px;cursor:pointer"
+          onclick="this.querySelector('.aud-detalhe').style.display=this.querySelector('.aud-detalhe').style.display==='none'?'block':'none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:700;color:#0F4C7A">${a.motorista}</span>
+            <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:${conf?'#E8F8F0':'#FCEBEB'};color:${conf?'#0F9B78':'#DC2626'}">${conf?'✓ Conforme':'⚠️ Não conforme'}</span>
+          </div>
+          <div style="font-size:11px;color:#5A7A8F">${a.unidade} · ${a.tipo} · ${a.placa||'—'} · ${a.dataHora} · Auditor: ${a.auditor}</div>
+          <div class="aud-detalhe" style="display:none;margin-top:8px;border-top:1px solid #F0F4F8;padding-top:8px">
+            ${(a.itens||[]).map(i => {
+              const ico = i.resposta === 'conf' ? '✓' : i.resposta === 'nconf' ? '✗' : '!';
+              const cor = i.resposta === 'conf' ? '#0F9B78' : i.resposta === 'nconf' ? '#DC2626' : '#8B5CF6';
+              const bg = i.resposta === 'conf' ? '#E8F8F0' : i.resposta === 'nconf' ? '#FCEBEB' : '#F3F0FF';
+              return `<div style="display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px">
+                <div style="width:20px;height:20px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${cor};flex-shrink:0">${ico}</div>
+                <span style="color:#0F4C7A">${i.label}</span>
+              </div>`;
+            }).join('')}
+            ${a.obs ? `<div style="font-size:12px;color:#5A7A8F;margin-top:6px;padding-top:6px;border-top:1px solid #F0F4F8">📝 ${a.obs}</div>` : ''}
+          </div>
+        </div>`;
+      }).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="empty" style="color:#DC2626">Erro ao carregar</div>';
+    }
+  }
+
+  async function carregarChecklistsGestor(filtro) {
+    const el = document.getElementById('lista-checklists-gestor');
+    el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+    try {
+      const hoje = new Date().toLocaleDateString('pt-BR');
+      const r = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
+      const d = await r.json();
+      const lista = d.checklists || [];
+      if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum checklist respondido</div>'; return; }
+      el.innerHTML = lista.map(c => `
+        <div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px;cursor:pointer"
+          onclick="this.querySelector('.chk-detalhe').style.display=this.querySelector('.chk-detalhe').style.display==='none'?'block':'none'">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:700;color:#0F4C7A">${c.biocondutor}</span>
+            <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✓ Completo</span>
+          </div>
+          <div style="font-size:11px;color:#5A7A8F">${c.data || hoje}</div>
+          <div class="chk-detalhe" style="display:none;margin-top:8px;border-top:1px solid #F0F4F8;padding-top:8px">
+            ${Object.entries(c.respostas||{}).map(([k,v]) => {
+              const ok = v === 'sim' || v === 'ok' || v === 'conforme';
+              return `<div style="display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px">
+                <div style="width:20px;height:20px;border-radius:50%;background:${ok?'#E8F8F0':'#FCEBEB'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${ok?'#0F9B78':'#DC2626'};flex-shrink:0">${ok?'✓':'✗'}</div>
+                <span style="color:#0F4C7A">${k}</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>`).join('');
+    } catch(e) {
+      el.innerHTML = '<div class="empty" style="color:#DC2626">Erro ao carregar</div>';
+    }
+  }
+
+  function filtrarChkGestor(filtro, btn) {
+    document.querySelectorAll('#gestor-sub-checklists button').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#1E9FD9'; btn.style.background = '#E8F4FB'; btn.style.color = '#0F4C7A';
+    carregarChecklistsGestor(filtro);
+  }
+
+  // Inicializar gestor quando abrir
+  const origSetView = setView;
+  function setView(id, btn) {
+    origSetView(id, btn);
+    if (id === 'gestor') {
+      renderItensAuditoria();
+      // Carregar lista de motoboys para select
+      const sel = document.getElementById('aud-motorista');
+      if (sel && sel.options.length <= 1) {
+        fetch(API + '/motoboys?todos=1').then(r => r.json()).then(d => {
+          (d.motoboys || []).forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.nome; opt.textContent = m.nome;
+            sel.appendChild(opt);
+          });
+        }).catch(() => {});
+      }
+    }
+  }
 </script>
   <!-- BOTÃO FORÇAR ATUALIZAÇÃO -->
   <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
