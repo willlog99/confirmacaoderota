@@ -491,6 +491,10 @@
           style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🔍 Auditorias</button>
         <button id="gestor-sub-btn-checklists" onclick="mudarSubGestor('checklists',this)"
           style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">✅ Checklists</button>
+        <button id="gestor-sub-btn-uniformes" onclick="mudarSubGestor('uniformes',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🧥 Uniformes</button>
+        <button id="gestor-sub-btn-patrimonios" onclick="mudarSubGestor('patrimonios',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📦 Patrimônios</button>
         <button id="gestor-sub-btn-gestores" onclick="mudarSubGestor('gestores',this)"
           style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⚙️ Gestores</button>
       </div>
@@ -592,7 +596,172 @@
         </div>
       </div>
 
-      <!-- GESTORES -->
+      <!-- UNIFORMES -->
+      <div id="gestor-sub-uniformes" style="display:none">
+
+        <!-- Alertas -->
+        <div id="alertas-uniformes"></div>
+
+        <!-- Resumo -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="unif-total" style="font-size:22px;font-weight:800;color:#8B5CF6">0</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Em estoque</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="unif-distrib" style="font-size:22px;font-weight:800;color:#0F9B78">0</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Distribuídos</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="unif-alertas" style="font-size:22px;font-weight:800;color:#DC2626">0</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Alertas</div>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1rem">
+          <button onclick="filtrarUnif('todos',this)" class="unif-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">Todos</button>
+          <button onclick="filtrarUnif('cmc',this)" class="unif-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">👕 C.Curta</button>
+          <button onclick="filtrarUnif('cml',this)" class="unif-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">👕 C.Longa</button>
+          <button onclick="filtrarUnif('colete',this)" class="unif-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🦺 Colete</button>
+          <button onclick="filtrarUnif('jaqueta',this)" class="unif-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🧥 Jaqueta</button>
+        </div>
+
+        <div id="lista-uniformes"></div>
+
+        <button onclick="abrirModalDistribuirUnif()"
+          style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px">
+          📤 Distribuir Uniforme para Motoboy
+        </button>
+      </div>
+
+      <!-- PATRIMÔNIOS -->
+      <div id="gestor-sub-patrimonios" style="display:none">
+
+        <div style="margin-bottom:.8rem">
+          <button onclick="abrirModalCadPat()"
+            style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer">
+            ➕ Cadastrar Patrimônio
+          </button>
+        </div>
+
+        <!-- Resumo -->
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="pat-total" style="font-size:22px;font-weight:800;color:#8B5CF6">0</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Cadastrados</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="pat-disp" style="font-size:22px;font-weight:800;color:#0F9B78">0</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Disponíveis</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="pat-uso" style="font-size:22px;font-weight:800;color:#1E9FD9">0</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Em uso</div>
+          </div>
+        </div>
+
+        <!-- Filtros -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
+          <button onclick="filtrarPat('todos',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">Todos</button>
+          <button onclick="filtrarPat('bau',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🛵 Baú</button>
+          <button onclick="filtrarPat('cooler_g',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">❄️ Cooler G</button>
+          <button onclick="filtrarPat('cooler_p',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">❄️ Cooler P</button>
+          <button onclick="filtrarPat('cartao',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⛽ Cartão</button>
+          <button onclick="filtrarPat('rastreador',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📡 Rastreador</button>
+          <button onclick="filtrarPat('craca',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🪪 Crachá</button>
+          <button onclick="filtrarPat('colete',this)" class="pat-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🦺 Colete</button>
+        </div>
+
+        <!-- Busca -->
+        <input type="text" id="busca-pat" placeholder="🔍 Buscar por código ou motoboy..."
+          style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A;margin-bottom:.8rem"
+          oninput="renderPatrimonios()"/>
+
+        <div id="lista-patrimonios"><div class="empty"><span class="spinner"></span></div></div>
+      </div>
+
+      <!-- MODAL DISTRIBUIR UNIFORME -->
+      <div id="modal-dist-unif" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+            📤 Distribuir Uniforme
+            <button onclick="document.getElementById('modal-dist-unif').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Motoboy</label>
+            <select id="dist-motoboy" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"></select>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Peça</label>
+            <select id="dist-peca" onchange="atualizarTamanhosUnif()" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+              <option value="">Selecione...</option>
+              <option value="cmc">👕 Camiseta Manga Curta</option>
+              <option value="cml">👕 Camiseta Manga Longa</option>
+              <option value="colete">🦺 Colete</option>
+              <option value="jaqueta">🧥 Jaqueta</option>
+            </select>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tamanho</label>
+            <div style="display:flex;gap:8px" id="dist-tamanhos">
+              <div onclick="selecionarTam(this,'P')" class="tam-unif-btn" style="flex:1;padding:10px 4px;border-radius:8px;border:1.5px solid #D6E5EE;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">P</div>
+              <div onclick="selecionarTam(this,'M')" class="tam-unif-btn" style="flex:1;padding:10px 4px;border-radius:8px;border:1.5px solid #D6E5EE;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">M</div>
+              <div onclick="selecionarTam(this,'G')" class="tam-unif-btn" style="flex:1;padding:10px 4px;border-radius:8px;border:1.5px solid #D6E5EE;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">G</div>
+              <div onclick="selecionarTam(this,'GG')" class="tam-unif-btn" style="flex:1;padding:10px 4px;border-radius:8px;border:1.5px solid #D6E5EE;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">GG</div>
+            </div>
+          </div>
+          <div id="dist-unif-preview" style="display:none;background:#F3F0FF;border-radius:10px;padding:10px 12px;margin-bottom:1rem;border:1px solid #8B5CF6;font-size:13px;color:#0F4C7A"></div>
+          <div id="msg-dist-unif" class="msg" style="margin-bottom:.5rem"></div>
+          <button onclick="confirmarDistribuicaoUnif()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar Distribuição</button>
+          <button onclick="document.getElementById('modal-dist-unif').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- MODAL CADASTRAR PATRIMÔNIO -->
+      <div id="modal-cad-pat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+            ➕ Cadastrar Patrimônio
+            <button onclick="document.getElementById('modal-cad-pat').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo</label>
+            <select id="pat-tipo" onchange="atualizarCamposPat()" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+              <option value="">Selecione...</option>
+              <option value="bau">🛵 Baú</option>
+              <option value="cooler_g">❄️ Cooler G</option>
+              <option value="cooler_p">❄️ Cooler P</option>
+              <option value="cartao">⛽ Cartão Combustível</option>
+              <option value="rastreador">📡 Rastreador</option>
+              <option value="craca">🪪 Crachá</option>
+              <option value="colete">🦺 Colete</option>
+            </select>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código identificador</label>
+            <input type="text" id="pat-codigo" placeholder="Ex: BAU-001, CLG-003..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+          </div>
+          <div id="campo-subtipo-pat" style="display:none;margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo do Cartão</label>
+            <div style="display:flex;gap:8px">
+              <button onclick="selecionarSubtipo(this,'Definitivo')" class="subtipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Definitivo</button>
+              <button onclick="selecionarSubtipo(this,'Provisório')" class="subtipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Provisório</button>
+            </div>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estado</label>
+            <div style="display:flex;gap:8px">
+              <button onclick="selecionarEstado(this,'Novo')" class="estado-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #0F9B78;background:#E8F8F0;font-size:13px;font-weight:700;cursor:pointer;color:#0F9B78">Novo</button>
+              <button onclick="selecionarEstado(this,'Bom')" class="estado-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Bom</button>
+              <button onclick="selecionarEstado(this,'Danificado')" class="estado-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Danificado</button>
+            </div>
+          </div>
+          <div id="msg-cad-pat" class="msg" style="margin-bottom:.5rem"></div>
+          <button onclick="salvarPatrimonio()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Cadastrar</button>
+          <button onclick="document.getElementById('modal-cad-pat').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>
       <div id="gestor-sub-gestores" style="display:none">
         <div class="card">
           <div class="card-title">⚙️ Gestores cadastrados</div>
@@ -1733,8 +1902,336 @@
   iniciarAutoRefresh();
 
   // =============================================
-  // GESTOR — AUDITORIA
+  // UNIFORMES E PATRIMÔNIOS
   // =============================================
+
+  const TIPOS_UNIF = [
+    { id: 'cmc',    icon: '👕', nome: 'Camiseta Manga Curta' },
+    { id: 'cml',    icon: '👕', nome: 'Camiseta Manga Longa' },
+    { id: 'colete', icon: '🦺', nome: 'Colete' },
+    { id: 'jaqueta',icon: '🧥', nome: 'Jaqueta' },
+  ];
+  const TAMANHOS = ['P','M','G','GG'];
+  const TIPOS_PAT = {
+    bau:       { icon: '🛵', nome: 'Baú',               codigo: true  },
+    cooler_g:  { icon: '❄️', nome: 'Cooler G',           codigo: true  },
+    cooler_p:  { icon: '❄️', nome: 'Cooler P',           codigo: true  },
+    cartao:    { icon: '⛽', nome: 'Cartão Combustível', codigo: true  },
+    rastreador:{ icon: '📡', nome: 'Rastreador',         codigo: true  },
+    craca:     { icon: '🪪', nome: 'Crachá',             codigo: false },
+    colete:    { icon: '🦺', nome: 'Colete',             codigo: false },
+  };
+
+  let estoqueUnif = {};
+  let patrimonios = [];
+  let filtroUnifAtual = 'todos';
+  let filtroPatAtual = 'todos';
+  let tamSelecionado = '';
+  let estadoSelecionado = 'Novo';
+  let subtipoPat = '';
+
+  // ─── UNIFORMES ───────────────────────────────────────
+
+  async function carregarUniformes() {
+    try {
+      const r = await fetch(API + '/uniformes');
+      const d = await r.json();
+      estoqueUnif = d.estoque || {};
+    } catch(e) {
+      estoqueUnif = JSON.parse(localStorage.getItem('loglife_uniformes') || '{}');
+    }
+    renderUniformes();
+  }
+
+  async function salvarEstoqueUnif() {
+    localStorage.setItem('loglife_uniformes', JSON.stringify(estoqueUnif));
+    try { await fetch(API + '/uniformes', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ estoque: estoqueUnif }) }); } catch(e) {}
+  }
+
+  function renderUniformes() {
+    const el = document.getElementById('lista-uniformes');
+    if (!el) return;
+    let totalEstoque = 0, totalDistrib = 0, nAlertas = 0;
+    const alertasEl = document.getElementById('alertas-uniformes');
+    let alertasHtml = '';
+
+    const tiposFiltrados = filtroUnifAtual === 'todos' ? TIPOS_UNIF : TIPOS_UNIF.filter(t => t.id === filtroUnifAtual);
+
+    el.innerHTML = tiposFiltrados.map(tipo => {
+      const tamanhosCells = TAMANHOS.map(tam => {
+        const qtd = (estoqueUnif[tipo.id] && estoqueUnif[tipo.id][tam]) || 0;
+        const distrib = (estoqueUnif[tipo.id + '_distrib'] && estoqueUnif[tipo.id + '_distrib'][tam]) || 0;
+        totalEstoque += qtd;
+        totalDistrib += distrib;
+        let cls = '';
+        if (qtd === 0) { cls = 'zerado'; nAlertas++; alertasHtml += `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;background:#FCEBEB;border:1px solid #F09595;margin-bottom:5px;font-size:12px;color:#DC2626">🚫 <b>${tipo.nome}</b> tamanho <b>${tam}</b> — estoque zerado</div>`; }
+        else if (qtd <= 2) { cls = 'baixo'; nAlertas++; alertasHtml += `<div style="display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;background:#FEF9EC;border:1px solid #F2CC70;margin-bottom:5px;font-size:12px;color:#92400E">⚠️ <b>${tipo.nome}</b> tamanho <b>${tam}</b> — apenas ${qtd} unidade${qtd>1?'s':''}</div>`; }
+        return `<div style="text-align:center;border-radius:8px;padding:8px 4px;border:1.5px solid ${cls==='zerado'?'#F09595':cls==='baixo'?'#F2CC70':'#EBF1F5'};background:${cls==='zerado'?'#FCEBEB':cls==='baixo'?'#FEF9EC':'#fff'}">
+          <div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase">${tam}</div>
+          <div style="font-size:18px;font-weight:800;color:${cls==='zerado'?'#DC2626':cls==='baixo'?'#92400E':'#0F4C7A'};line-height:1.2">${qtd}</div>
+        </div>`;
+      }).join('');
+      return `<div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between">
+          <span>${tipo.icon} ${tipo.nome}</span>
+          <button onclick="abrirModalEntradaUnif('${tipo.id}')" style="padding:4px 10px;border-radius:6px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:11px;font-weight:700;cursor:pointer">+ Entrada</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${tamanhosCells}</div>
+      </div>`;
+    }).join('');
+
+    if (alertasEl) alertasEl.innerHTML = alertasHtml ? `<div style="margin-bottom:1rem">${alertasHtml}</div>` : '';
+    const el1 = document.getElementById('unif-total'); if (el1) el1.textContent = totalEstoque;
+    const el2 = document.getElementById('unif-distrib'); if (el2) el2.textContent = totalDistrib;
+    const el3 = document.getElementById('unif-alertas'); if (el3) el3.textContent = nAlertas;
+  }
+
+  function filtrarUnif(tipo, btn) {
+    filtroUnifAtual = tipo;
+    document.querySelectorAll('.unif-filtro').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#8B5CF6'; btn.style.background = '#F3F0FF'; btn.style.color = '#5B21B6';
+    renderUniformes();
+  }
+
+  function abrirModalEntradaUnif(tipoId) {
+    document.getElementById('dist-peca').value = tipoId;
+    atualizarTamanhosUnif();
+    document.getElementById('modal-dist-unif').style.display = 'block';
+  }
+
+  function abrirModalDistribuirUnif() {
+    // Preencher motoboys
+    const sel = document.getElementById('dist-motoboy');
+    if (sel && sel.options.length <= 1) {
+      fetch(API + '/motoboys?todos=1&agrupado=1').then(r => r.json()).then(d => {
+        const nomes = [...new Set((d.motoboys||[]).map(m => m.nome))].sort();
+        nomes.forEach(nome => {
+          const opt = document.createElement('option');
+          opt.value = nome; opt.textContent = nome;
+          sel.appendChild(opt);
+        });
+      }).catch(() => {});
+    }
+    document.getElementById('modal-dist-unif').style.display = 'block';
+  }
+
+  function selecionarTam(btn, tam) {
+    document.querySelectorAll('.tam-unif-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#8B5CF6'; btn.style.background = '#F3F0FF'; btn.style.color = '#5B21B6';
+    tamSelecionado = tam;
+    atualizarPreviewDist();
+  }
+
+  function atualizarTamanhosUnif() {
+    const peca = document.getElementById('dist-peca').value;
+    tamSelecionado = '';
+    document.querySelectorAll('.tam-unif-btn').forEach((btn, i) => {
+      const tam = TAMANHOS[i];
+      const qtd = (estoqueUnif[peca] && estoqueUnif[peca][tam]) || 0;
+      btn.style.borderColor = '#D6E5EE'; btn.style.background = '#fff'; btn.style.color = '#5A7A8F';
+      btn.innerHTML = tam + (qtd > 0 ? `<br/><span style="font-size:9px;color:#94A8B8">${qtd} un</span>` : `<br/><span style="font-size:9px;color:#DC2626">0 un</span>`);
+      btn.style.opacity = qtd === 0 ? '0.4' : '1';
+      btn.style.cursor = qtd === 0 ? 'not-allowed' : 'pointer';
+    });
+  }
+
+  function atualizarPreviewDist() {
+    const peca = document.getElementById('dist-peca');
+    const moto = document.getElementById('dist-motoboy');
+    const prev = document.getElementById('dist-unif-preview');
+    if (!peca.value || !tamSelecionado || !moto.value) { prev.style.display = 'none'; return; }
+    const tipo = TIPOS_UNIF.find(t => t.id === peca.value);
+    const qtdAtual = (estoqueUnif[peca.value] && estoqueUnif[peca.value][tamSelecionado]) || 0;
+    prev.style.display = 'block';
+    prev.innerHTML = `<div style="font-size:11px;font-weight:700;color:#8B5CF6;margin-bottom:4px">RESUMO</div>
+      <div style="font-size:13px;color:#0F4C7A;font-weight:600">1x ${tipo.icon} ${tipo.nome} tamanho ${tamSelecionado}</div>
+      <div style="font-size:11px;color:#5A7A8F;margin-top:2px">Para: ${moto.value} · Estoque: ${qtdAtual} → ${qtdAtual-1}</div>`;
+  }
+
+  async function confirmarDistribuicaoUnif() {
+    const peca = document.getElementById('dist-peca').value;
+    const motoboy = document.getElementById('dist-motoboy').value;
+    const msg = document.getElementById('msg-dist-unif');
+    if (!peca) { msg.textContent = '⚠️ Selecione a peça'; msg.style.color = '#DC2626'; return; }
+    if (!tamSelecionado) { msg.textContent = '⚠️ Selecione o tamanho'; msg.style.color = '#DC2626'; return; }
+    if (!motoboy) { msg.textContent = '⚠️ Selecione o motoboy'; msg.style.color = '#DC2626'; return; }
+    const qtdAtual = (estoqueUnif[peca] && estoqueUnif[peca][tamSelecionado]) || 0;
+    if (qtdAtual <= 0) { msg.textContent = '⚠️ Estoque zerado'; msg.style.color = '#DC2626'; return; }
+
+    if (!estoqueUnif[peca]) estoqueUnif[peca] = {};
+    estoqueUnif[peca][tamSelecionado] = qtdAtual - 1;
+    if (!estoqueUnif[peca + '_distrib']) estoqueUnif[peca + '_distrib'] = {};
+    estoqueUnif[peca + '_distrib'][tamSelecionado] = ((estoqueUnif[peca + '_distrib'] && estoqueUnif[peca + '_distrib'][tamSelecionado]) || 0) + 1;
+
+    await salvarEstoqueUnif();
+    renderUniformes();
+    document.getElementById('modal-dist-unif').style.display = 'none';
+    toast('✓ Uniforme distribuído para ' + motoboy + '!');
+  }
+
+  // ─── PATRIMÔNIOS ──────────────────────────────────────
+
+  async function carregarPatrimonios() {
+    try {
+      const r = await fetch(API + '/patrimonios');
+      const d = await r.json();
+      patrimonios = d.patrimonios || [];
+    } catch(e) {
+      patrimonios = JSON.parse(localStorage.getItem('loglife_patrimonios') || '[]');
+    }
+    renderPatrimonios();
+  }
+
+  async function salvarPatrimonioLocal() {
+    localStorage.setItem('loglife_patrimonios', JSON.stringify(patrimonios));
+  }
+
+  function renderPatrimonios() {
+    const el = document.getElementById('lista-patrimonios');
+    if (!el) return;
+    const busca = (document.getElementById('busca-pat') || {}).value || '';
+    const filtrados = patrimonios.filter(p => {
+      if (filtroPatAtual !== 'todos' && p.tipo !== filtroPatAtual) return false;
+      if (busca && !p.codigo?.toLowerCase().includes(busca.toLowerCase()) && !p.motoboy?.toLowerCase().includes(busca.toLowerCase())) return false;
+      return true;
+    });
+
+    const total = patrimonios.length;
+    const disp = patrimonios.filter(p => !p.motoboy).length;
+    const uso = total - disp;
+    const el1 = document.getElementById('pat-total'); if (el1) el1.textContent = total;
+    const el2 = document.getElementById('pat-disp'); if (el2) el2.textContent = disp;
+    const el3 = document.getElementById('pat-uso'); if (el3) el3.textContent = uso;
+
+    if (!filtrados.length) { el.innerHTML = '<div class="empty">Nenhum patrimônio encontrado</div>'; return; }
+
+    el.innerHTML = filtrados.map(p => {
+      const tipo = TIPOS_PAT[p.tipo] || { icon: '📦', nome: p.tipo };
+      const estadoCor = p.estado === 'Novo' ? '#0F9B78' : p.estado === 'Bom' ? '#1E9FD9' : '#DC2626';
+      const estadoBg = p.estado === 'Novo' ? '#E8F8F0' : p.estado === 'Bom' ? '#E8F4FB' : '#FCEBEB';
+      const subtipo = p.subtipo ? ` · ${p.subtipo}` : '';
+      return `<div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700;color:#0F4C7A">${tipo.icon} ${tipo.nome}${subtipo}</span>
+          ${p.codigo ? `<span style="font-size:11px;font-weight:700;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>` : ''}
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div>
+            ${p.motoboy
+              ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A">👤 ${p.motoboy}</div>
+                 <div style="font-size:11px;color:#5A7A8F">Entregue ${p.dataEntrega||''} · <span style="font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;background:${estadoBg};color:${estadoCor}">${p.estado}</span></div>`
+              : `<div style="font-size:12px;font-weight:700;color:#0F9B78">✓ Disponível</div>
+                 <div style="font-size:11px"><span style="font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;background:${estadoBg};color:${estadoCor}">${p.estado}</span></div>`
+            }
+          </div>
+          ${p.motoboy
+            ? `<button onclick="devolverPatrimonio(${p.id})" style="padding:4px 8px;border-radius:6px;border:1px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:10px;font-weight:700;cursor:pointer">↩ Devolver</button>`
+            : `<button onclick="entregarPatrimonio(${p.id})" style="padding:4px 10px;border-radius:6px;border:none;background:#E8F8F0;color:#0F9B78;font-size:11px;font-weight:700;cursor:pointer">📤 Entregar</button>`
+          }
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  function filtrarPat(tipo, btn) {
+    filtroPatAtual = tipo;
+    document.querySelectorAll('.pat-filtro').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#8B5CF6'; btn.style.background = '#F3F0FF'; btn.style.color = '#5B21B6';
+    renderPatrimonios();
+  }
+
+  function abrirModalCadPat() {
+    estadoSelecionado = 'Novo'; subtipoPat = '';
+    document.getElementById('pat-tipo').value = '';
+    document.getElementById('pat-codigo').value = '';
+    document.getElementById('campo-subtipo-pat').style.display = 'none';
+    document.querySelectorAll('.estado-btn').forEach((b,i) => {
+      b.style.borderColor = i===0?'#0F9B78':'#D6E5EE';
+      b.style.background = i===0?'#E8F8F0':'#fff';
+      b.style.color = i===0?'#0F9B78':'#5A7A8F';
+    });
+    document.getElementById('modal-cad-pat').style.display = 'block';
+  }
+
+  function atualizarCamposPat() {
+    const tipo = document.getElementById('pat-tipo').value;
+    const subtipo = document.getElementById('campo-subtipo-pat');
+    subtipo.style.display = tipo === 'cartao' ? 'block' : 'none';
+    const codigoField = document.getElementById('pat-codigo');
+    codigoField.placeholder = tipo === 'bau' ? 'Ex: BAU-001' : tipo === 'cooler_g' ? 'Ex: CLG-001' : tipo === 'cooler_p' ? 'Ex: CLP-001' : tipo === 'cartao' ? 'Ex: CC-001' : tipo === 'rastreador' ? 'Ex: RAST-001' : 'Opcional';
+  }
+
+  function selecionarEstado(btn, estado) {
+    estadoSelecionado = estado;
+    document.querySelectorAll('.estado-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    const cor = estado==='Novo'?'#0F9B78':estado==='Bom'?'#1E9FD9':'#DC2626';
+    const bg = estado==='Novo'?'#E8F8F0':estado==='Bom'?'#E8F4FB':'#FCEBEB';
+    btn.style.borderColor = cor; btn.style.background = bg; btn.style.color = cor;
+  }
+
+  function selecionarSubtipo(btn, subtipo) {
+    subtipoPat = subtipo;
+    document.querySelectorAll('.subtipo-btn').forEach(b => {
+      b.style.borderColor = '#D6E5EE'; b.style.background = '#fff'; b.style.color = '#5A7A8F';
+    });
+    btn.style.borderColor = '#8B5CF6'; btn.style.background = '#F3F0FF'; btn.style.color = '#5B21B6';
+  }
+
+  async function salvarPatrimonio() {
+    const tipo = document.getElementById('pat-tipo').value;
+    const codigo = document.getElementById('pat-codigo').value.trim().toUpperCase();
+    const msg = document.getElementById('msg-cad-pat');
+    if (!tipo) { msg.textContent = '⚠️ Selecione o tipo'; msg.style.color = '#DC2626'; return; }
+    if (tipo === 'cartao' && !subtipoPat) { msg.textContent = '⚠️ Selecione Definitivo ou Provisório'; msg.style.color = '#DC2626'; return; }
+
+    const novo = { id: Date.now(), tipo, codigo: codigo || null, subtipo: subtipoPat || null, estado: estadoSelecionado, motoboy: null, dataEntrega: null };
+    patrimonios.push(novo);
+    salvarPatrimonioLocal();
+
+    try {
+      await fetch(API + '/patrimonios', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ patrimonio: novo }) });
+    } catch(e) {}
+
+    renderPatrimonios();
+    document.getElementById('modal-cad-pat').style.display = 'none';
+    toast('✓ Patrimônio cadastrado!');
+  }
+
+  async function entregarPatrimonio(id) {
+    const p = patrimonios.find(x => x.id === id);
+    if (!p) return;
+
+    // Buscar motoboys para select
+    const motoboys = await fetch(API + '/motoboys?todos=1&agrupado=1').then(r => r.json()).then(d => [...new Set((d.motoboys||[]).map(m => m.nome))].sort()).catch(() => []);
+    const nome = prompt('Entregar para qual motoboy?\n' + motoboys.slice(0,5).join(', ') + (motoboys.length > 5 ? '...' : ''));
+    if (!nome) return;
+
+    p.motoboy = nome.toUpperCase();
+    p.dataEntrega = new Date().toLocaleDateString('pt-BR');
+    salvarPatrimonioLocal();
+    try { await fetch(API + '/patrimonios/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ motoboy: p.motoboy, dataEntrega: p.dataEntrega }) }); } catch(e) {}
+    renderPatrimonios();
+    toast('✓ Entregue para ' + p.motoboy);
+  }
+
+  async function devolverPatrimonio(id) {
+    if (!confirm('Confirmar devolução?')) return;
+    const p = patrimonios.find(x => x.id === id);
+    if (!p) return;
+    p.motoboy = null; p.dataEntrega = null;
+    salvarPatrimonioLocal();
+    try { await fetch(API + '/patrimonios/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ motoboy: null, dataEntrega: null }) }); } catch(e) {}
+    renderPatrimonios();
+    toast('✓ Devolvido ao estoque!');
+  }
 
   const ITENS_AUDITORIA = [
     { id: 'limpeza', label: 'Limpeza geral do veículo (interna e externa)', todos: true },
@@ -2075,8 +2572,9 @@
   }
 
   function mudarSubGestor(sub, btn) {
-    ['nova','auditorias','checklists','gestores'].forEach(s => {
-      document.getElementById('gestor-sub-' + s).style.display = s === sub ? 'block' : 'none';
+    ['nova','auditorias','checklists','gestores','uniformes','patrimonios'].forEach(s => {
+      const el = document.getElementById('gestor-sub-' + s);
+      if (el) el.style.display = s === sub ? 'block' : 'none';
       const b = document.getElementById('gestor-sub-btn-' + s);
       if (b) {
         b.style.borderColor = s === sub ? '#8B5CF6' : '#D6E5EE';
@@ -2087,6 +2585,8 @@
     if (sub === 'auditorias') carregarAuditorias();
     if (sub === 'checklists') carregarChecklistsGestor('hoje');
     if (sub === 'gestores') carregarGestores();
+    if (sub === 'uniformes') carregarUniformes();
+    if (sub === 'patrimonios') carregarPatrimonios();
   }
 
   async function carregarGestores() {
