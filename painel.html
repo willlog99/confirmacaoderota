@@ -186,6 +186,8 @@
     .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -217,6 +219,7 @@
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
         <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
         <button class="menu-item" onclick="setView('estoque-view',this)">📦 Estoque</button>
+        <button class="menu-item" onclick="setView('ponto-rh',this)">📋 Ponto RH</button>
         <button class="menu-item" onclick="setView('gestor',this)">👔 Gestor / Auditoria</button>
         <button class="menu-item" onclick="window.location.href='disparador.html'">📲 Disparador WhatsApp</button>
 
@@ -733,7 +736,154 @@
     </div>
   </div>
 
-  <div class="view" id="view-gestor">
+  <!-- VIEW PONTO RH -->
+  <div class="view" id="view-ponto-rh">
+    <div style="padding:1rem;max-width:540px;margin:0 auto">
+
+      <!-- Sub tabs -->
+      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
+        <button id="ponto-tab-btn-upload" onclick="mudarTabPonto('upload',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">📤 Planilha</button>
+        <button id="ponto-tab-btn-avisos" onclick="mudarTabPonto('avisos',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🔔 Avisos</button>
+        <button id="ponto-tab-btn-banco" onclick="mudarTabPonto('banco',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⏳ Banco Hrs</button>
+        <button id="ponto-tab-btn-home" onclick="mudarTabPonto('home',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🏠 Home Off.</button>
+        <button id="ponto-tab-btn-historico" onclick="mudarTabPonto('historico',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📅 Histórico</button>
+        <button id="ponto-tab-btn-config" onclick="mudarTabPonto('config',this)"
+          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⚙️ Config</button>
+      </div>
+
+      <!-- UPLOAD -->
+      <div id="ponto-tab-upload">
+        <div id="ponto-status-mes" style="display:none;background:#E8F8F0;border:1px solid #5DCAA5;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#0F9B78"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem" id="ponto-kpis" style="display:none">
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="ponto-k-total" style="font-size:20px;font-weight:800;color:#1E9FD9">–</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Colaboradores</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="ponto-k-pos" style="font-size:20px;font-weight:800;color:#0F9B78">–</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Banco +</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+            <div id="ponto-k-neg" style="font-size:20px;font-weight:800;color:#DC2626">–</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Banco −</div>
+          </div>
+        </div>
+
+        <!-- Upload planilha principal -->
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:.8rem">📄 Planilha principal</div>
+          <label id="ponto-zone-main" style="display:block;border:2px dashed #D6E5EE;border-radius:10px;padding:24px;text-align:center;cursor:pointer;background:#F8FBFD;transition:.2s">
+            <input type="file" id="ponto-file-main" accept=".xlsx" style="display:none" onchange="pontoLerPrincipal(this.files[0])"/>
+            <div style="font-size:28px;margin-bottom:8px">📄</div>
+            <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:4px">CONTROLE_RH_MÊS.xlsx</div>
+            <div style="font-size:11px;color:#94A8B8">Arraste ou toque para selecionar</div>
+          </label>
+          <div id="ponto-status-main" style="display:none;margin-top:8px;text-align:center;font-size:12px"></div>
+        </div>
+
+        <!-- Upload extrato banco -->
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:.8rem">🏦 Extrato banco de horas <span style="font-size:11px;color:#94A8B8;font-weight:400">(opcional)</span></div>
+          <label id="ponto-zone-extrato" style="display:block;border:2px dashed #D1FAE5;border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:#F0FDF4;transition:.2s">
+            <input type="file" id="ponto-file-extrato" accept=".xlsx" style="display:none" onchange="pontoLerExtrato(this.files[0])"/>
+            <div style="font-size:24px;margin-bottom:6px">🏦</div>
+            <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:2px">Extrato_do_banco_de_horas_MÊS.xlsx</div>
+            <div style="font-size:11px;color:#4ADE80">Adiciona coluna Saldo Real</div>
+          </label>
+          <div id="ponto-status-extrato" style="display:none;margin-top:8px;text-align:center;font-size:12px"></div>
+        </div>
+
+        <button id="ponto-btn-processar" onclick="pontoProcessar()" style="display:none;width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">
+          ▶ Processar e visualizar
+        </button>
+        <button id="ponto-btn-salvar" onclick="pontoSalvarResumo()" style="display:none;width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-weight:700;font-size:13px;cursor:pointer">
+          💾 Salvar resumo do mês no banco
+        </button>
+      </div>
+
+      <!-- AVISOS -->
+      <div id="ponto-tab-avisos" style="display:none">
+        <div id="ponto-av-critico" style="margin-bottom:1rem"></div>
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:.8rem">📢 Amanhã</div>
+          <div id="ponto-av-amanha"><div class="empty">Carregue a planilha primeiro</div></div>
+        </div>
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:.8rem">🌴 Em férias hoje</div>
+          <div id="ponto-av-hoje"><div class="empty">–</div></div>
+        </div>
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:.8rem">📅 Próximas férias (30 dias)</div>
+          <div id="ponto-av-proximas"><div class="empty">–</div></div>
+        </div>
+      </div>
+
+      <!-- BANCO DE HORAS -->
+      <div id="ponto-tab-banco" style="display:none">
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
+            ⏳ Banco de Horas
+            <button onclick="pontoGerarPDF()" style="padding:5px 10px;border-radius:6px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-size:11px;font-weight:700;cursor:pointer">📄 PDF</button>
+          </div>
+          <div id="ponto-lista-banco"><div class="empty">Carregue a planilha primeiro</div></div>
+        </div>
+      </div>
+
+      <!-- HOME OFFICE -->
+      <div id="ponto-tab-home" style="display:none">
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem">🏠 Home Office</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+            <div style="background:#F8FBFD;border-radius:8px;border:1.5px solid #EBF1F5;padding:8px;text-align:center">
+              <div id="ponto-ho-taxa" style="font-size:18px;font-weight:800;color:#1E9FD9">–</div>
+              <div style="font-size:10px;color:#5A7A8F;font-weight:600">Taxa adesão</div>
+            </div>
+            <div style="background:#F8FBFD;border-radius:8px;border:1.5px solid #EBF1F5;padding:8px;text-align:center">
+              <div id="ponto-ho-media" style="font-size:18px;font-weight:800;color:#0F9B78">–</div>
+              <div style="font-size:10px;color:#5A7A8F;font-weight:600">Média dias</div>
+            </div>
+          </div>
+          <div id="ponto-lista-home"><div class="empty">Carregue a planilha primeiro</div></div>
+        </div>
+      </div>
+
+      <!-- HISTÓRICO -->
+      <div id="ponto-tab-historico" style="display:none">
+        <div id="ponto-hist-lista"><div class="empty"><span class="spinner"></span></div></div>
+        <div style="margin-top:.5rem">
+          <button onclick="pontoSalvarResumo()" id="ponto-btn-salvar2" style="display:none;width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-weight:700;font-size:13px;cursor:pointer">
+            💾 Salvar resumo do mês atual
+          </button>
+        </div>
+      </div>
+
+      <!-- CONFIG -->
+      <div id="ponto-tab-config" style="display:none">
+        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+          <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem">🚫 Colaboradores Desligados</div>
+          <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Ao processar a planilha, esses colaboradores serão ignorados nos cálculos e aparecerão como <strong>DESLIGADO</strong>.</div>
+
+          <!-- Adicionar -->
+          <div style="display:flex;gap:8px;margin-bottom:1rem">
+            <input type="text" id="ponto-desl-nome" placeholder="Nome do colaborador..."
+              style="flex:1;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A"/>
+            <button onclick="pontoAdicionarDesligado()" style="padding:9px 14px;border-radius:10px;border:none;background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">
+              + Desligar
+            </button>
+          </div>
+
+          <div id="ponto-desl-lista"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
     <div style="padding:1rem;max-width:540px;margin:0 auto">
 
       <!-- Sub tabs -->
@@ -1457,6 +1607,7 @@
     if (id === 'checklist-view') carregarChecklists();
     if (id === 'checklists-incompletos') carregarChecklistsIncompletos();
     if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
+    if (id === 'ponto-rh') iniciarPontoRH();
     if (id === 'estoque-view') iniciarEstoqueView();
     if (id === 'gestor') {
       renderItensAuditoria();
@@ -4673,6 +4824,452 @@
     setView('gestor', btnGestor);
     history.replaceState(null, '', window.location.pathname);
   }
+
+  // =============================================
+  // PONTO RH
+  // =============================================
+
+  let pontoDadosPonto=[], pontoDadosFerias=[], pontoDadosBanco=[], pontoDadosEndereco=[];
+  let pontoSaldosReais={}, pontoTemExtrato=false;
+  let pontoDiasExist=[], pontoMes=new Date().getMonth(), pontoAno=new Date().getFullYear();
+  let pontoHomeData=[], pontoBancoData=[];
+  let pontoProcessado=false;
+
+  function iniciarPontoRH() {
+    pontoCarregarHistorico();
+    pontoCarregarDesligados();
+  }
+
+  let pontoDesligados = [];
+
+  function mudarTabPonto(tab, btn) {
+    ['upload','avisos','banco','home','historico','config'].forEach(t => {
+      const el=document.getElementById('ponto-tab-'+t); if(el) el.style.display=t===tab?'block':'none';
+      const b=document.getElementById('ponto-tab-btn-'+t);
+      if(b){b.style.borderColor=t===tab?'#8B5CF6':'#D6E5EE';b.style.background=t===tab?'#F3F0FF':'#fff';b.style.color=t===tab?'#5B21B6':'#5A7A8F';}
+    });
+    if(tab==='historico') pontoCarregarHistorico();
+    if(tab==='config') pontoCarregarDesligados();
+  }
+
+  // ── LEITURA ────────────────────────────────
+  function pontoLerPrincipal(file) {
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try {
+        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+        pontoDadosPonto    = pontoSheetJson(wb,'BASE INFRACTAL');
+        pontoDadosFerias   = pontoSheetJson(wb,'FERIAS');
+        pontoDadosBanco    = pontoSheetJson(wb,'BANCO DE HORAS');
+        pontoDadosEndereco = pontoSheetJson(wb,'ENDEREÇO');
+        const datas=pontoDadosPonto.map(x=>new Date(x['DATA'])).filter(d=>!isNaN(d));
+        if(datas.length){pontoMes=datas[0].getMonth();pontoAno=datas[0].getFullYear();}
+        pontoDiasExist=[...new Set(datas.map(d=>d.getDate()))].sort((a,b)=>a-b);
+        const el=document.getElementById('ponto-status-main');
+        el.style.display='block';
+        el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${pontoDadosPonto.length} registros</span>`;
+        document.getElementById('ponto-zone-main').style.borderColor='#0F9B78';
+        document.getElementById('ponto-btn-processar').style.display='block';
+      } catch(err){toast('Erro ao ler planilha.','error');console.error(err);}
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function pontoLerExtrato(file) {
+    if(!file) return;
+    const reader=new FileReader();
+    reader.onload=e=>{
+      try {
+        const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array',cellDates:true});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        const raw=XLSX.utils.sheet_to_json(ws,{header:1,raw:false});
+        const temp={};
+        raw.slice(1).forEach(r=>{
+          const nome=(r[3]||'').trim();
+          if(nome&&r[7]) temp[nome.toUpperCase()]={saldo:pontoParseSaldo(r[7]),saldoStr:r[7]};
+        });
+        pontoSaldosReais=temp; pontoTemExtrato=true;
+        const el=document.getElementById('ponto-status-extrato');
+        el.style.display='block';
+        el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${Object.keys(pontoSaldosReais).length} saldos reais carregados</span>`;
+        document.getElementById('ponto-zone-extrato').style.borderColor='#0F9B78';
+      } catch(err){toast('Erro ao ler extrato.','error');}
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function pontoSheetJson(wb,nome){return wb.Sheets[nome]?XLSX.utils.sheet_to_json(wb.Sheets[nome]):[];}
+
+  // ── PROCESSAR ──────────────────────────────
+  function pontoProcessar() {
+    if(!pontoDadosPonto.length){toast('Carregue a planilha primeiro','error');return;}
+    pontocalcHome(); pontocalcBanco();
+
+    // Marcar desligados
+    const desl = pontoDesligados.map(d => pontoNorm(d.nome));
+    pontoBancoData.forEach(x => { if(desl.includes(pontoNorm(x.nome))) x.desligado=true; });
+    pontoHomeData.forEach(x => { if(desl.includes(pontoNorm(x.nome))) x.desligado=true; });
+
+    pontoRenderBanco(); pontoRenderHome(); pontoRenderAvisos();
+
+    const ativos = pontoBancoData.filter(x=>!x.desligado);
+    const pos=ativos.filter(x=>x.totalReal>0).length;
+    const neg=ativos.filter(x=>x.totalReal<0).length;
+    document.getElementById('ponto-k-total').textContent=ativos.length;
+    document.getElementById('ponto-k-pos').textContent=pos;
+    document.getElementById('ponto-k-neg').textContent=neg;
+    document.getElementById('ponto-kpis').style.display='grid';
+    const mesNome=new Date(pontoAno,pontoMes,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    document.getElementById('ponto-status-mes').style.display='block';
+    document.getElementById('ponto-status-mes').textContent=`✓ ${mesNome} — ${ativos.length} ativos · ${desl.length} desligados`;
+    document.getElementById('ponto-btn-salvar').style.display='block';
+    document.getElementById('ponto-btn-salvar2').style.display='block';
+    pontoProcessado=true;
+    toast('✓ Dados processados!');
+  }
+
+  // ── CÁLCULO HOME ───────────────────────────
+  function pontocalcHome() {
+    const nomes=[...new Set(pontoDadosPonto.map(x=>x['NOME CORRIGIDO']).filter(Boolean))].sort();
+    pontoHomeData=nomes.map(nome=>{
+      let total=0,dias={};
+      const refEnd=pontoDadosEndereco.find(e=>pontoNorm(e['NOME CORRIGIDO'])===pontoNorm(nome));
+      const cepCad=refEnd?pontolimpaCEP(refEnd['ENDEREÇO']):null;
+      pontoDiasExist.forEach(d=>{
+        const regs=pontoDadosPonto.filter(x=>pontoNorm(x['NOME CORRIGIDO'])===pontoNorm(nome)&&new Date(x['DATA']).getDate()===d).sort((a,b)=>new Date(a['HORA'])-new Date(b['HORA']));
+        if(regs.length){
+          const entH=cepCad&&pontolimpaCEP(regs[0]['CEP'])===cepCad;
+          const saiH=regs.length>1&&cepCad&&pontolimpaCEP(regs[regs.length-1]['CEP'])===cepCad;
+          if(entH||saiH) total++;
+          dias[d]={entH,saiH,temReg:true};
+        } else dias[d]={temReg:false};
+      });
+      return{nome,total,dias};
+    }).sort((a,b)=>b.total-a.total);
+  }
+
+  // ── CÁLCULO BANCO ──────────────────────────
+  function pontocalcBanco() {
+    const nomes=[...new Set(pontoDadosBanco.map(x=>x['NOME CORRIGIDO']).filter(Boolean))].sort();
+    const saldoPlanilha={};
+    pontoDadosBanco.forEach(r=>{
+      const n=pontoNorm(r['NOME CORRIGIDO']);
+      const data=new Date(r['DATA']);
+      if(!r['SALDO'])return;
+      if(!saldoPlanilha[n]||data>saldoPlanilha[n].data)
+        saldoPlanilha[n]={saldoStr:String(r['SALDO']).trim(),saldo:pontoParseSaldo(String(r['SALDO']).trim()),data};
+    });
+    pontoBancoData=nomes.map(nome=>{
+      let totalMes=0,dias={};
+      pontoDiasExist.forEach(d=>{
+        const r=pontoDadosBanco.find(x=>pontoNorm(x['NOME CORRIGIDO'])===pontoNorm(nome)&&new Date(x['DATA']).getDate()===d);
+        const s=r?(pontofmtH(r['CRÉDITO'])-pontofmtH(r['DÉBITO'])):0;
+        totalMes+=s; dias[d]=s;
+      });
+      const nUp=nome.toUpperCase();
+      const ext=pontoSaldosReais[nUp]||null;
+      const plan=saldoPlanilha[pontoNorm(nome)]||null;
+      const fonte=ext||plan;
+      return{nome,totalMes,totalReal:fonte?fonte.saldo:totalMes,saldoRealStr:fonte?fonte.saldoStr:null,dias};
+    }).sort((a,b)=>b.totalReal-a.totalReal);
+  }
+
+  // ── RENDER BANCO ───────────────────────────
+  function pontoRenderBanco() {
+    const el=document.getElementById('ponto-lista-banco'); if(!el) return;
+    const ativos=pontoBancoData.filter(x=>!x.desligado);
+    const maxAbs=Math.max(...ativos.map(x=>Math.abs(x.totalReal)),1);
+    el.innerHTML=pontoBancoData.map(x=>{
+      if(x.desligado) return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F4F8;opacity:.5">
+        <div style="flex:1;font-size:13px;font-weight:700;color:#94A8B8;text-decoration:line-through">${x.nome}</div>
+        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0F4F8;color:#94A8B8">DESLIGADO</span>
+      </div>`;
+      const v=x.totalReal;
+      const lbl=x.saldoRealStr||pontoHhMM(v);
+      const cor=v>=0?'#0F9B78':v<=-8?'#DC2626':'#F59E0B';
+      const pct=Math.round((Math.abs(v)/maxAbs)*100);
+      const sub=v<=-8?'⚠️ Débito crítico':v<0?'Débito':'Saldo positivo';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F4F8">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#0F4C7A">${x.nome}</div>
+          <div style="font-size:10px;color:${cor};font-weight:600">${sub}</div>
+        </div>
+        <div style="flex:1;height:5px;background:#EBF1F5;border-radius:3px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${cor};border-radius:3px"></div>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:${cor};min-width:52px;text-align:right">${lbl}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── RENDER HOME ────────────────────────────
+  function pontoRenderHome() {
+    const ativos=pontoHomeData.filter(x=>!x.desligado);
+    const total=ativos.length;
+    const comHO=ativos.filter(x=>x.total>0).length;
+    const totalD=ativos.reduce((a,x)=>a+x.total,0);
+    const media=total?(totalD/total).toFixed(1):0;
+    document.getElementById('ponto-ho-taxa').textContent=total?((comHO/total)*100).toFixed(0)+'%':'–';
+    document.getElementById('ponto-ho-media').textContent=media+'d';
+    const el=document.getElementById('ponto-lista-home'); if(!el) return;
+    const maxD=Math.max(...ativos.map(x=>x.total),1);
+    el.innerHTML=pontoHomeData.map(x=>{
+      if(x.desligado) return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F4F8;opacity:.5">
+        <div style="flex:1;font-size:13px;font-weight:700;color:#94A8B8;text-decoration:line-through">${x.nome}</div>
+        <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0F4F8;color:#94A8B8">DESLIGADO</span>
+      </div>`;
+      const cor=x.total>=8?'#0F9B78':x.total>=4?'#F59E0B':'#DC2626';
+      const badge=x.total>=8?'Acima meta':x.total>=4?'Em progresso':x.total>0?'Abaixo':'Sem HO';
+      const pct=Math.round((x.total/maxD)*100);
+      return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F4F8">
+        <div style="flex:1;font-size:13px;font-weight:700;color:#0F4C7A">${x.nome}</div>
+        <div style="width:80px;height:5px;background:#EBF1F5;border-radius:3px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${cor};border-radius:3px"></div>
+        </div>
+        <span style="font-size:13px;font-weight:800;color:${cor};min-width:28px;text-align:right">${x.total}d</span>
+        <span style="font-size:10px;padding:2px 6px;border-radius:20px;font-weight:700;background:${cor}20;color:${cor};white-space:nowrap">${badge}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // ── RENDER AVISOS ──────────────────────────
+  function pontoRenderAvisos() {
+    const hoje=new Date(); hoje.setHours(0,0,0,0);
+    const amanha=new Date(hoje); amanha.setDate(hoje.getDate()+1);
+    const em30=new Date(hoje); em30.setDate(hoje.getDate()+30);
+    let amanhaH='', hojeH='', proximasH='', criticoH='';
+
+    pontoDadosFerias.forEach(f=>{
+      const nome=(f['COLABORADOR']||'').trim();
+      const dI=f['Início das Férias']?pontoD0(new Date(f['Início das Férias'])):null;
+      const dFim=f['Fim das Férias']?pontoD0(new Date(f['Fim das Férias'])):null;
+      if(!dI||!dFim) return;
+      const dR=pontoD0(new Date(dFim)); dR.setDate(dR.getDate()+1);
+      if(dR<hoje) return;
+      // Amanhã
+      if(dI.getTime()===amanha.getTime())
+        amanhaH+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#FEF9EC;border-left:3px solid #F59E0B;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:600;color:#92400E">🛫 ${nome} — sai amanhã</span>
+          <button onclick="pontoCopiarZap('${nome}','SAIDA')" style="padding:3px 8px;border-radius:6px;border:none;background:#25D366;color:#fff;font-size:10px;font-weight:700;cursor:pointer">WhatsApp</button></div>`;
+      if(dR.getTime()===amanha.getTime())
+        amanhaH+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#E8F8F0;border-left:3px solid #0F9B78;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:600;color:#0F9B78">🛬 ${nome} — retorna amanhã</span>
+          <button onclick="pontoCopiarZap('${nome}','VOLTA')" style="padding:3px 8px;border-radius:6px;border:none;background:#25D366;color:#fff;font-size:10px;font-weight:700;cursor:pointer">WhatsApp</button></div>`;
+      // Hoje
+      if(hoje>=dI&&hoje<=dFim)
+        hojeH+=`<div style="font-size:12px;padding:6px 0;color:#0F4C7A;border-bottom:1px solid #F0F4F8">🌴 <strong>${nome}</strong> — retorno ${dR.toLocaleDateString('pt-BR')}</div>`;
+      // Próximas 30 dias
+      if(dI>hoje&&dI<=em30)
+        proximasH+=`<div style="font-size:12px;padding:6px 0;color:#0F4C7A;border-bottom:1px solid #F0F4F8">📅 <strong>${nome}</strong> — inicia ${dI.toLocaleDateString('pt-BR')}</div>`;
+    });
+
+    // Banco crítico
+    pontoBancoData.forEach(x=>{
+      if(x.totalReal<=-8){
+        const lbl=x.saldoRealStr||pontoHhMM(x.totalReal);
+        criticoH+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:8px;background:#FCEBEB;border-left:3px solid #DC2626;margin-bottom:5px">
+          <span style="font-size:12px;font-weight:700;color:#DC2626">🔴 ${x.nome}</span>
+          <span style="font-size:13px;font-weight:800;color:#DC2626;font-family:monospace">${lbl}</span></div>`;
+      }
+    });
+
+    document.getElementById('ponto-av-critico').innerHTML=criticoH?`<div style="margin-bottom:1rem"><div style="font-size:12px;font-weight:700;color:#DC2626;margin-bottom:6px">🔴 Banco crítico (débito &gt; 8h)</div>${criticoH}</div>`:'';
+    document.getElementById('ponto-av-amanha').innerHTML=amanhaH||'<div style="font-size:12px;color:#94A8B8">Nenhum</div>';
+    document.getElementById('ponto-av-hoje').innerHTML=hojeH||'<div style="font-size:12px;color:#94A8B8">Ninguém em férias hoje</div>';
+    document.getElementById('ponto-av-proximas').innerHTML=proximasH||'<div style="font-size:12px;color:#94A8B8">Nenhuma nos próximos 30 dias</div>';
+  }
+
+  // ── SALVAR NO D1 ───────────────────────────
+  async function pontoSalvarResumo() {
+    if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
+    const mes=pontoMes+1, ano=pontoAno;
+    const pos=pontoBancoData.filter(x=>x.totalReal>0).length;
+    const neg=pontoBancoData.filter(x=>x.totalReal<0).length;
+    const totalHO=pontoHomeData.reduce((a,x)=>a+x.total,0);
+    const mediaHO=pontoHomeData.length?(totalHO/pontoHomeData.length):0;
+    const pior=pontoBancoData.reduce((p,c)=>c.totalReal<p.totalReal?c:p,pontoBancoData[0]||{});
+
+    try {
+      // Salvar resumo do mês
+      await fetch(API+'/ponto-resumo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        mes,ano,total_colabs:pontoBancoData.length,banco_positivos:pos,banco_negativos:neg,
+        media_ho:mediaHO.toFixed(1),maior_debito_nome:pior.nome||'',maior_debito_horas:pior.totalReal||0
+      })});
+      // Salvar colaboradores
+      await fetch(API+'/ponto-colaboradores',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+        mes,ano,
+        colaboradores:pontoBancoData.map(x=>({
+          nome:x.nome,saldo_banco:x.totalReal,saldo_str:x.saldoRealStr||pontoHhMM(x.totalReal),
+          dias_ho:(pontoHomeData.find(h=>pontoNorm(h.nome)===pontoNorm(x.nome))||{}).total||0,
+          status_banco:x.totalReal>0?'positivo':x.totalReal<=-8?'critico':'negativo'
+        }))
+      })});
+      // Salvar férias
+      const ferias=pontoDadosFerias.map(f=>({
+        nome:(f['COLABORADOR']||'').trim(),
+        inicio:f['Início das Férias']?new Date(f['Início das Férias']).toLocaleDateString('pt-BR'):'',
+        fim:f['Fim das Férias']?new Date(f['Fim das Férias']).toLocaleDateString('pt-BR'):'',
+        status:'agendada'
+      })).filter(f=>f.nome);
+      if(ferias.length) await fetch(API+'/ponto-ferias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mes,ano,ferias})});
+
+      toast('✓ Resumo salvo no banco!');
+      pontoCarregarHistorico();
+    } catch(e){toast('Erro ao salvar','error');console.error(e);}
+  }
+
+  // ── HISTÓRICO ──────────────────────────────
+  async function pontoCarregarHistorico() {
+    const el=document.getElementById('ponto-hist-lista'); if(!el) return;
+    try {
+      const r=await fetch(API+'/ponto-resumo');
+      const d=await r.json();
+      const meses=d.resumos||[];
+      if(!meses.length){el.innerHTML='<div class="empty">Nenhum resumo salvo ainda</div>';return;}
+      const mesesNomes=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      el.innerHTML=meses.map(m=>`
+        <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px;cursor:pointer" onclick="pontoCarregarMes(${m.mes},${m.ano})">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+            <span style="font-size:13px;font-weight:700;color:#0F4C7A">${mesesNomes[m.mes-1]} ${m.ano}</span>
+            <div style="display:flex;gap:4px">
+              <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F8F0;color:#0F9B78">+${m.banco_positivos}</span>
+              <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FCEBEB;color:#DC2626">−${m.banco_negativos}</span>
+            </div>
+          </div>
+          <div style="font-size:11px;color:#5A7A8F">${m.total_colabs} colaboradores · Média HO: ${m.media_ho}d · Maior débito: ${m.maior_debito_nome||'–'}</div>
+        </div>`).join('');
+    } catch(e){el.innerHTML='<div class="empty">Carregue dados para ver histórico</div>';}
+  }
+
+  async function pontoCarregarMes(mes, ano) {
+    try {
+      const r=await fetch(`${API}/ponto-colaboradores?mes=${mes}&ano=${ano}`);
+      const d=await r.json();
+      const colabs=d.colaboradores||[];
+      const mesesNomes=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      const el=document.getElementById('ponto-hist-lista');
+      const maxAbs=Math.max(...colabs.map(x=>Math.abs(x.saldo_banco)),1);
+      el.innerHTML=`<div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between">
+        ${mesesNomes[mes-1]} ${ano}
+        <button onclick="pontoCarregarHistorico()" style="padding:4px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:11px;font-weight:700;cursor:pointer;color:#5A7A8F">← Voltar</button>
+      </div>`+
+      colabs.map(x=>{
+        const cor=x.saldo_banco>=0?'#0F9B78':x.saldo_banco<=-8?'#DC2626':'#F59E0B';
+        const pct=Math.round((Math.abs(x.saldo_banco)/maxAbs)*100);
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #F0F4F8">
+          <div style="flex:1"><div style="font-size:12px;font-weight:700;color:#0F4C7A">${x.nome}</div>
+          <div style="font-size:10px;color:#5A7A8F">HO: ${x.dias_ho}d</div></div>
+          <div style="width:60px;height:4px;background:#EBF1F5;border-radius:3px;overflow:hidden">
+            <div style="width:${pct}%;height:100%;background:${cor};border-radius:3px"></div></div>
+          <span style="font-size:12px;font-weight:800;color:${cor};min-width:50px;text-align:right">${x.saldo_str}</span>
+        </div>`;
+      }).join('');
+    } catch(e){toast('Erro ao carregar mês','error');}
+  }
+
+  // ── PDF ────────────────────────────────────
+  function pontoGerarPDF() {
+    if(!pontoBancoData.length){toast('Processe os dados primeiro','error');return;}
+    const {jsPDF}=window.jspdf;
+    const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const W=doc.internal.pageSize.getWidth();
+    const mesNome=new Date(pontoAno,pontoMes,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+    // Header
+    doc.setFillColor(30,58,138); doc.rect(0,0,W,20,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(14); doc.setFont('helvetica','bold');
+    doc.text('LOGLIFE · Banco de Horas — '+mesNome.charAt(0).toUpperCase()+mesNome.slice(1),12,13);
+    let y=28;
+    // Tabela banco
+    doc.autoTable({
+      startY:y,
+      head:[['#','Colaborador','Saldo Acumulado','Status']],
+      body:pontoBancoData.map((x,i)=>[i+1,x.nome,x.saldoRealStr||pontoHhMM(x.totalReal),x.totalReal>0?'POSITIVO':x.totalReal<=-8?'CRÍTICO':'NEGATIVO']),
+      theme:'grid',
+      styles:{fontSize:8,cellPadding:3,font:'helvetica'},
+      headStyles:{fillColor:[30,58,138],textColor:255,fontStyle:'bold'},
+      didParseCell(d){
+        if(d.section!=='body') return;
+        const row=pontoBancoData[d.row.index];
+        if(!row) return;
+        if(d.column.index===2){d.cell.styles.textColor=row.totalReal>=0?[22,163,74]:[220,38,38];d.cell.styles.fontStyle='bold';}
+        if(d.column.index===3){
+          if(row.totalReal>0){d.cell.styles.textColor=[22,163,74];d.cell.styles.fillColor=[240,253,244];}
+          else if(row.totalReal<=-8){d.cell.styles.textColor=[220,38,38];d.cell.styles.fillColor=[254,242,242];}
+          else{d.cell.styles.textColor=[217,119,6];d.cell.styles.fillColor=[255,251,235];}
+        }
+      },
+      margin:{left:12,right:12}
+    });
+    const nomeMes=new Date(pontoAno,pontoMes,1).toLocaleDateString('pt-BR',{month:'long'});
+    doc.save(`BancoHoras_LogLife_${nomeMes}_${pontoAno}.pdf`);
+    toast('PDF gerado!');
+  }
+
+  // ── WHATSAPP ───────────────────────────────
+  function pontoCopiarZap(nome, tipo) {
+    const msg=tipo==='SAIDA'
+      ?`Olá ${nome}! Desejamos um excelente descanso. Amanhã começam suas férias! 🌴`
+      :`Olá ${nome}! Seu retorno às atividades é amanhã. Esperamos que tenha descansado bem! 🤝`;
+    navigator.clipboard.writeText(msg).then(()=>toast('✓ Mensagem copiada! Cole no WhatsApp.'));
+  }
+
+  // ── DESLIGADOS ─────────────────────────────
+  async function pontoCarregarDesligados() {
+    const el=document.getElementById('ponto-desl-lista'); if(!el) return;
+    try {
+      const r=await fetch(API+'/ponto-desligados');
+      const d=await r.json();
+      pontoDesligados=d.desligados||[];
+    } catch(e) {
+      pontoDesligados=JSON.parse(localStorage.getItem('ponto_desligados')||'[]');
+    }
+    pontoRenderDesligados();
+  }
+
+  function pontoRenderDesligados() {
+    const el=document.getElementById('ponto-desl-lista'); if(!el) return;
+    if(!pontoDesligados.length){
+      el.innerHTML='<div class="empty">Nenhum colaborador desligado</div>';return;
+    }
+    el.innerHTML=pontoDesligados.map(d=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#FCEBEB;border:1px solid #F09595;margin-bottom:5px">
+        <div style="width:22px;height:22px;border-radius:50%;background:#DC2626;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">✕</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#DC2626">${d.nome}</div>
+          <div style="font-size:10px;color:#94A8B8">Desligado em ${d.data||'–'}</div>
+        </div>
+        <button onclick="pontoRemoverDesligado('${d.nome}')" style="padding:3px 8px;border-radius:6px;border:1px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:10px;font-weight:700;cursor:pointer">↩ Reativar</button>
+      </div>`).join('');
+  }
+
+  async function pontoAdicionarDesligado() {
+    const input=document.getElementById('ponto-desl-nome');
+    const nome=input.value.trim().toUpperCase();
+    if(!nome){toast('⚠️ Digite o nome','error');return;}
+    if(pontoDesligados.find(d=>pontoNorm(d.nome)===pontoNorm(nome))){toast('Já está na lista','error');return;}
+    const data=new Date().toLocaleDateString('pt-BR');
+    pontoDesligados.push({nome,data});
+    localStorage.setItem('ponto_desligados',JSON.stringify(pontoDesligados));
+    try { await fetch(API+'/ponto-desligados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({desligados:pontoDesligados})}); } catch(e){}
+    input.value='';
+    pontoRenderDesligados();
+    toast('✓ '+nome+' marcado como desligado');
+  }
+
+  async function pontoRemoverDesligado(nome) {
+    pontoDesligados=pontoDesligados.filter(d=>pontoNorm(d.nome)!==pontoNorm(nome));
+    localStorage.setItem('ponto_desligados',JSON.stringify(pontoDesligados));
+    try { await fetch(API+'/ponto-desligados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({desligados:pontoDesligados})}); } catch(e){}
+    pontoRenderDesligados();
+    toast('✓ '+nome+' reativado');
+  }
+  function pontoNorm(t){return String(t||'').trim().toUpperCase().replace(/\s+/g,' ');}
+  function pontolimpaCEP(c){return String(c||'').replace(/\D/g,'');}
+  function pontoD0(d){d.setHours(0,0,0,0);return d;}
+  function pontofmtH(v){if(!v) return 0;if(typeof v==='number')return v*24;const p=String(v).split(':');return p.length>=2?parseInt(p[0])+parseInt(p[1])/60:0;}
+  function pontoParseSaldo(s){if(!s)return 0;s=String(s).trim();const neg=s.startsWith('-');s=s.replace(/^-/,'');const[h,m]=s.split(':').map(Number);return(neg?-1:1)*((h||0)+(m||0)/60);}
+  function pontoHhMM(n){if(n===0)return '0h00';const s=n<0?'-':'+';n=Math.abs(n);const h=Math.floor(n),m=Math.round((n-h)*60);return s+h+'h'+String(m===60?0:m).padStart(2,'0');}
 </script>
 
 </body>
