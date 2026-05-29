@@ -3083,14 +3083,32 @@
         const qtd=(estoqueUnif[tipo.id]&&estoqueUnif[tipo.id][tam])||0;
         const bg=qtd===0?'#FCEBEB':qtd<=2?'#FEF9EC':'#F8FBFD';
         const tc=qtd===0?'#DC2626':qtd<=2?'#92400E':'#0F4C7A';
-        return `<div style="text-align:center;border-radius:8px;padding:8px 4px;border:1.5px solid #EBF1F5;background:${bg}">
+        return `<div onclick="editarQtdUnif('${tipo.id}','${tam}',${qtd})"
+          style="text-align:center;border-radius:8px;padding:8px 4px;border:1.5px solid #EBF1F5;background:${bg};cursor:pointer;position:relative"
+          title="Clique para editar">
           <div style="font-size:10px;font-weight:700;color:#94A8B8">${tam}</div>
-          <div style="font-size:18px;font-weight:800;color:${tc}">${qtd}</div></div>`;
+          <div style="font-size:18px;font-weight:800;color:${tc}">${qtd}</div>
+          <div style="font-size:8px;color:#94A8B8">✏️</div>
+        </div>`;
       }).join('');
       return `<div style="margin-bottom:10px">
         <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:6px">${tipo.icon} ${tipo.nome}</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${tamHtml}</div></div>`;
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${tamHtml}</div>
+      </div>`;
     }).join('');
+  }
+
+  function editarQtdUnif(tipoId, tam, qtdAtual) {
+    const nova = prompt(`Quantidade de ${tipoId==='cmc'?'Camiseta MC':tipoId==='cml'?'Camiseta ML':tipoId==='colete'?'Colete':'Jaqueta'} tamanho ${tam}:\n(Atual: ${qtdAtual})`);
+    if(nova === null) return;
+    const novaQtd = parseInt(nova);
+    if(isNaN(novaQtd) || novaQtd < 0) { toast('⚠️ Quantidade inválida'); return; }
+    if(!estoqueUnif[tipoId]) estoqueUnif[tipoId]={};
+    estoqueUnif[tipoId][tam] = novaQtd;
+    salvarEstoqueUnif();
+    renderEstoqueUnifEst();
+    renderUniformes();
+    toast('✓ Estoque atualizado: ' + novaQtd + ' unidades');
   }
 
   function abrirModalEntradaUnifEst() {
@@ -3154,15 +3172,42 @@
     el.innerHTML=LISTA_PADRAO_PAT.filter(t=>!t.codigo).map(tipo=>{
       const d=patrimoniosSimples[tipo.id]||{total:0,vinculados:0};
       const dp=Math.max(0,(d.total||0)-(d.vinculados||0));
+      const qtdCor = dp===0?'#DC2626':dp<=2?'#92400E':'#0F4C7A';
       return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F4F8">
         <div><div style="font-size:13px;font-weight:700;color:#0F4C7A">${tipo.icon} ${tipo.nome}</div>
         <div style="font-size:11px;color:#5A7A8F">${d.vinculados||0} vinculados</div></div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <button onclick="ajustarSimples('${tipo.id}',-1);renderEstoqueSimplesEst()" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer;color:#0F4C7A;font-weight:700">−</button>
-          <span style="font-size:20px;font-weight:800;color:#0F4C7A;min-width:32px;text-align:center">${dp}</span>
-          <button onclick="ajustarSimples('${tipo.id}',1);renderEstoqueSimplesEst()" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer;color:#0F4C7A;font-weight:700">+</button>
-        </div></div>`;
+        <div style="display:flex;align-items:center;gap:6px">
+          <button onclick="ajustarSimplesEst('${tipo.id}',-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer;color:#0F4C7A;font-weight:700">−</button>
+          <span onclick="editarQtdSimples('${tipo.id}',${dp})" style="font-size:20px;font-weight:800;color:${qtdCor};min-width:32px;text-align:center;cursor:pointer" title="Clique para editar">${dp}</span>
+          <button onclick="ajustarSimplesEst('${tipo.id}',1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer;color:#0F4C7A;font-weight:700">+</button>
+        </div>
+      </div>`;
     }).join('');
+  }
+
+  function ajustarSimplesEst(tipo, delta) {
+    if(!patrimoniosSimples[tipo]) patrimoniosSimples[tipo]={total:0,vinculados:0};
+    const atual = Math.max(0,(patrimoniosSimples[tipo].total||0)-(patrimoniosSimples[tipo].vinculados||0));
+    const novo = atual + delta;
+    if(novo < 0) return;
+    if(novo === 0 && delta < 0) {
+      if(!confirm('Zerar estoque disponível?')) return;
+    }
+    patrimoniosSimples[tipo].total = Math.max(0, (patrimoniosSimples[tipo].total||0) + delta);
+    syncPatServer(); renderEstoqueSimplesEst();
+    toast('✓ Estoque atualizado');
+  }
+
+  function editarQtdSimples(tipo, qtdAtual) {
+    const tipoInfo = LISTA_PADRAO_PAT.find(t=>t.id===tipo);
+    const nova = prompt(`Quantidade disponível de ${tipoInfo?.nome||tipo}:\n(Atual: ${qtdAtual})`);
+    if(nova === null) return;
+    const novaQtd = parseInt(nova);
+    if(isNaN(novaQtd) || novaQtd < 0) { toast('⚠️ Quantidade inválida'); return; }
+    if(!patrimoniosSimples[tipo]) patrimoniosSimples[tipo]={total:0,vinculados:0};
+    patrimoniosSimples[tipo].total = novaQtd + (patrimoniosSimples[tipo].vinculados||0);
+    syncPatServer(); renderEstoqueSimplesEst();
+    toast('✓ Estoque atualizado: ' + novaQtd + ' disponíveis');
   }
 
   async function carregarChecklistEstMotoboy(motoboy) {
