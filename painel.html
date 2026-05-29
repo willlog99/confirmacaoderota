@@ -945,114 +945,13 @@
         </div>
 
         <!-- MODAL ADICIONAR ITEM AO MOTOBOY -->
-        <div id="modal-pat-add" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
-          <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
-            <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
-              <span id="pat-add-titulo">➕ Adicionar Item</span>
-              <button onclick="document.getElementById('modal-pat-add').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
-            </div>
-            <div style="margin-bottom:1rem">
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Item</label>
-              <select id="pat-add-tipo" onchange="mudarTipoPatAdd(this.value)" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
-                <option value="">Selecione...</option>
-                <option value="bau">🛵 Baú</option>
-                <option value="rastreador">📡 Rastreador</option>
-                <option value="cooler_g">❄️ Cooler G</option>
-                <option value="cooler_p">❄️ Cooler P</option>
-                <option value="cartao">⛽ Cartão Combustível</option>
-                <option value="craca">🪪 Crachá</option>
-                <option value="colete">🦺 Colete</option>
-                <option value="cadeado">🔒 Cadeado</option>
-                <option value="kit">🧰 Kit Emergência</option>
-                <option value="bolsa">👜 Bolsa Pardini</option>
-              </select>
-            </div>
-            <!-- Bloco com código -->
-            <div id="pat-add-bloco-codigo" style="display:none">
-              <div id="pat-add-disponiveis"></div>
-              <div id="pat-add-manual-wrap" style="display:none;margin-top:8px">
-                <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código manual</label>
-                <input type="text" id="pat-add-codigo-manual" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-                <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estado</label>
-                <select id="pat-add-estado-manual" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
-                  <option>Novo</option><option>Bom</option><option>Danificado</option>
-                </select>
-              </div>
-            </div>
-            <!-- Bloco sem código -->
-            <div id="pat-add-bloco-simples" style="display:none">
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-                <div>
-                  <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
-                  <input type="number" id="pat-add-qtd" value="1" min="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-                </div>
-              </div>
-            </div>
-            <div style="margin-bottom:1rem">
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de entrega</label>
-              <input type="date" id="pat-add-data" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-            </div>
-            <div id="msg-pat-add" class="msg" style="margin-bottom:.5rem"></div>
-            <button onclick="confirmarPatAdd()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Adicionar e Vincular</button>
-            <button onclick="document.getElementById('modal-pat-add').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
-          </div>
-        </div>
+
 
         <!-- MODAL CADASTRAR NO ESTOQUE -->
-        <div id="modal-pat-cad" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
-          <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
-            <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
-              <span id="pat-cad-titulo">➕ Cadastrar Item</span>
-              <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
-            </div>
-            <input type="hidden" id="pat-cad-tipo"/>
-            <div style="margin-bottom:1rem">
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código identificador</label>
-              <input type="text" id="pat-cad-codigo" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-            </div>
-            <div id="pat-cad-subtipo-wrap" style="display:none;margin-bottom:1rem">
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo do Cartão</label>
-              <div style="display:flex;gap:8px">
-                <button onclick="selSubtipoPat(this,'Definitivo')" class="subtipo-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:13px;font-weight:700;cursor:pointer;color:#5B21B6">Definitivo</button>
-                <button onclick="selSubtipoPat(this,'Provisório')" class="subtipo-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Provisório</button>
-              </div>
-            </div>
-            <div style="margin-bottom:1rem">
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estado</label>
-              <div style="display:flex;gap:8px">
-                <button onclick="selEstadoPat(this,'Novo')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #0F9B78;background:#E8F8F0;font-size:13px;font-weight:700;cursor:pointer;color:#0F9B78">Novo</button>
-                <button onclick="selEstadoPat(this,'Bom')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Bom</button>
-                <button onclick="selEstadoPat(this,'Danificado')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Danificado</button>
-              </div>
-            </div>
-            <div id="msg-pat-cad" class="msg" style="margin-bottom:.5rem"></div>
-            <button onclick="confirmarPatCad()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Cadastrar</button>
-            <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
-          </div>
-        </div>
+
 
         <!-- MODAL SUBSTITUIR -->
-        <div id="modal-pat-subst" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
-          <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
-            <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
-              <span id="subst-titulo">↔ Substituir</span>
-              <button onclick="document.getElementById('modal-pat-subst').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
-            </div>
-            <div id="subst-info" style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#5A7A8F;border:1.5px solid #EBF1F5"></div>
-            <div style="margin-bottom:1rem">
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Motivo</label>
-              <select id="subst-motivo" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
-                <option>Quebrado</option><option>Danificado</option><option>Perda</option><option>Manutenção</option><option>Outro</option>
-              </select>
-            </div>
-            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Substituto disponível</label>
-            <div id="subst-disponiveis"></div>
-            <div id="subst-alerta" style="background:#FEF9EC;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#92400E;border:1px solid #F2CC70"></div>
-            <div id="msg-subst" class="msg" style="margin-bottom:.5rem"></div>
-            <button onclick="confirmarSubstituicao()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar Substituição</button>
-            <button onclick="document.getElementById('modal-pat-subst').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
-          </div>
-        </div>
+
 
       </div>
 
@@ -1172,79 +1071,10 @@
       </div>
 
       <!-- MODAL CADASTRAR MATERIAL -->
-      <div id="modal-cad-mat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
-        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
-          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
-            <span id="modal-mat-titulo">➕ Cadastrar Item</span>
-            <button onclick="fecharModalMat()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
-          </div>
-          <div style="margin-bottom:1rem">
-            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Nome do item</label>
-            <input type="text" id="mat-nome" placeholder="Ex: Papel A4, Saco de lixo 100L..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-          </div>
-          <div style="margin-bottom:1rem">
-            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Categoria</label>
-            <select id="mat-cat" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
-              <option value="escritorio">📎 Escritório</option>
-              <option value="limpeza">🧹 Limpeza</option>
-              <option value="alimentacao">🍱 Alimentação</option>
-            </select>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-            <div>
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
-              <input type="number" id="mat-qtd" min="0" value="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-            </div>
-            <div>
-              <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estoque mínimo</label>
-              <input type="number" id="mat-min" min="0" value="2" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-            </div>
-          </div>
-          <div style="margin-bottom:1rem">
-            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de validade <span style="color:#94A8B8;font-weight:400">(opcional)</span></label>
-            <input type="date" id="mat-validade" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
-          </div>
-          <input type="hidden" id="mat-edit-id" value=""/>
-          <div id="msg-cad-mat" class="msg" style="margin-bottom:.5rem"></div>
-          <button onclick="salvarMaterial()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Salvar</button>
-          <button onclick="fecharModalMat()" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
-        </div>
-      </div>
+
 
       <!-- MODAL MOVIMENTAR -->
-      <div id="modal-mov-mat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
-        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
-          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
-            <span id="mov-mat-nome-titulo">Contagem</span>
-            <button onclick="document.getElementById('modal-mov-mat').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
-          </div>
-          <div id="mov-mat-estoque-atual" style="font-size:13px;color:#5A7A8F;margin-bottom:1rem"></div>
 
-          <!-- Tipo: contagem ou entrada -->
-          <div style="display:flex;gap:8px;margin-bottom:1rem">
-            <button onclick="selecionarMovTipo('contagem',this)" class="mov-tipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:13px;font-weight:700;cursor:pointer;color:#0F4C7A">📋 Contar</button>
-            <button onclick="selecionarMovTipo('entrada',this)" class="mov-tipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">📥 Entrada</button>
-          </div>
-
-          <!-- Contagem -->
-          <div id="bloco-contagem">
-            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quanto você contou agora?</label>
-            <div style="display:flex;gap:8px;align-items:center">
-              <button onclick="ajustarQtdMov(-1)" style="width:44px;height:44px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:24px;cursor:pointer;color:#0F4C7A;font-weight:700">−</button>
-              <input type="number" id="qtd-mov-val" min="0" value="0"
-                oninput="atualizarPreviewMov()"
-                style="flex:1;text-align:center;font-size:28px;font-weight:800;color:#0F4C7A;border:1.5px solid #D6E5EE;border-radius:10px;padding:8px;outline:none"/>
-              <button onclick="ajustarQtdMov(1)" style="width:44px;height:44px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:24px;cursor:pointer;color:#0F4C7A;font-weight:700">+</button>
-            </div>
-          </div>
-
-          <!-- Preview resultado -->
-          <div id="preview-mov-mat" style="background:#F3F0FF;border-radius:10px;padding:12px;margin-top:1rem;margin-bottom:1rem;border:1px solid #8B5CF6;font-size:13px;color:#0F4C7A"></div>
-
-          <button onclick="confirmarMovMat()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar</button>
-          <button onclick="document.getElementById('modal-mov-mat').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
-        </div>
-      </div>
 
       <div id="gestor-sub-gestores" style="display:none">
         <div class="card">
@@ -1267,6 +1097,191 @@
     </div>
   </div>
 
+</div>
+
+
+<div id="modal-pat-add" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="pat-add-titulo">➕ Adicionar Item</span>
+      <button onclick="document.getElementById('modal-pat-add').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Item</label>
+      <select id="pat-add-tipo" onchange="mudarTipoPatAdd(this.value)" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+<option value="">Selecione...</option>
+<option value="bau">🛵 Baú</option>
+<option value="rastreador">📡 Rastreador</option>
+<option value="cooler_g">❄️ Cooler G</option>
+<option value="cooler_p">❄️ Cooler P</option>
+<option value="cartao">⛽ Cartão Combustível</option>
+<option value="craca">🪪 Crachá</option>
+<option value="colete">🦺 Colete</option>
+<option value="cadeado">🔒 Cadeado</option>
+<option value="kit">🧰 Kit Emergência</option>
+<option value="bolsa">👜 Bolsa Pardini</option>
+      </select>
+    </div>
+    <!-- Bloco com código -->
+    <div id="pat-add-bloco-codigo" style="display:none">
+      <div id="pat-add-disponiveis"></div>
+      <div id="pat-add-manual-wrap" style="display:none;margin-top:8px">
+<label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código manual</label>
+<input type="text" id="pat-add-codigo-manual" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+<label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estado</label>
+<select id="pat-add-estado-manual" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+  <option>Novo</option><option>Bom</option><option>Danificado</option>
+</select>
+      </div>
+    </div>
+    <!-- Bloco sem código -->
+    <div id="pat-add-bloco-simples" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+<div>
+  <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
+  <input type="number" id="pat-add-qtd" value="1" min="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+</div>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de entrega</label>
+      <input type="date" id="pat-add-data" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div id="msg-pat-add" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="confirmarPatAdd()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Adicionar e Vincular</button>
+    <button onclick="document.getElementById('modal-pat-add').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+
+<div id="modal-pat-cad" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="pat-cad-titulo">➕ Cadastrar Item</span>
+      <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <input type="hidden" id="pat-cad-tipo"/>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código identificador</label>
+      <input type="text" id="pat-cad-codigo" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div id="pat-cad-subtipo-wrap" style="display:none;margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo do Cartão</label>
+      <div style="display:flex;gap:8px">
+<button onclick="selSubtipoPat(this,'Definitivo')" class="subtipo-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:13px;font-weight:700;cursor:pointer;color:#5B21B6">Definitivo</button>
+<button onclick="selSubtipoPat(this,'Provisório')" class="subtipo-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Provisório</button>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estado</label>
+      <div style="display:flex;gap:8px">
+<button onclick="selEstadoPat(this,'Novo')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #0F9B78;background:#E8F8F0;font-size:13px;font-weight:700;cursor:pointer;color:#0F9B78">Novo</button>
+<button onclick="selEstadoPat(this,'Bom')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Bom</button>
+<button onclick="selEstadoPat(this,'Danificado')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Danificado</button>
+      </div>
+    </div>
+    <div id="msg-pat-cad" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="confirmarPatCad()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Cadastrar</button>
+    <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+
+<div id="modal-pat-subst" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="subst-titulo">↔ Substituir</span>
+      <button onclick="document.getElementById('modal-pat-subst').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div id="subst-info" style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#5A7A8F;border:1.5px solid #EBF1F5"></div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Motivo</label>
+      <select id="subst-motivo" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+<option>Quebrado</option><option>Danificado</option><option>Perda</option><option>Manutenção</option><option>Outro</option>
+      </select>
+    </div>
+    <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Substituto disponível</label>
+    <div id="subst-disponiveis"></div>
+    <div id="subst-alerta" style="background:#FEF9EC;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#92400E;border:1px solid #F2CC70"></div>
+    <div id="msg-subst" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="confirmarSubstituicao()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar Substituição</button>
+    <button onclick="document.getElementById('modal-pat-subst').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+
+<div id="modal-cad-mat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+<span id="modal-mat-titulo">➕ Cadastrar Item</span>
+<button onclick="fecharModalMat()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div style="margin-bottom:1rem">
+<label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Nome do item</label>
+<input type="text" id="mat-nome" placeholder="Ex: Papel A4, Saco de lixo 100L..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div style="margin-bottom:1rem">
+<label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Categoria</label>
+<select id="mat-cat" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+  <option value="escritorio">📎 Escritório</option>
+  <option value="limpeza">🧹 Limpeza</option>
+  <option value="alimentacao">🍱 Alimentação</option>
+</select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+<div>
+  <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
+  <input type="number" id="mat-qtd" min="0" value="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+</div>
+<div>
+  <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estoque mínimo</label>
+  <input type="number" id="mat-min" min="0" value="2" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+</div>
+    </div>
+    <div style="margin-bottom:1rem">
+<label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de validade <span style="color:#94A8B8;font-weight:400">(opcional)</span></label>
+<input type="date" id="mat-validade" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <input type="hidden" id="mat-edit-id" value=""/>
+    <div id="msg-cad-mat" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="salvarMaterial()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Salvar</button>
+    <button onclick="fecharModalMat()" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+
+<div id="modal-mov-mat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+<span id="mov-mat-nome-titulo">Contagem</span>
+<button onclick="document.getElementById('modal-mov-mat').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div id="mov-mat-estoque-atual" style="font-size:13px;color:#5A7A8F;margin-bottom:1rem"></div>
+
+    <!-- Tipo: contagem ou entrada -->
+    <div style="display:flex;gap:8px;margin-bottom:1rem">
+<button onclick="selecionarMovTipo('contagem',this)" class="mov-tipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:13px;font-weight:700;cursor:pointer;color:#0F4C7A">📋 Contar</button>
+<button onclick="selecionarMovTipo('entrada',this)" class="mov-tipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">📥 Entrada</button>
+    </div>
+
+    <!-- Contagem -->
+    <div id="bloco-contagem">
+<label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quanto você contou agora?</label>
+<div style="display:flex;gap:8px;align-items:center">
+  <button onclick="ajustarQtdMov(-1)" style="width:44px;height:44px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:24px;cursor:pointer;color:#0F4C7A;font-weight:700">−</button>
+  <input type="number" id="qtd-mov-val" min="0" value="0"
+    oninput="atualizarPreviewMov()"
+    style="flex:1;text-align:center;font-size:28px;font-weight:800;color:#0F4C7A;border:1.5px solid #D6E5EE;border-radius:10px;padding:8px;outline:none"/>
+  <button onclick="ajustarQtdMov(1)" style="width:44px;height:44px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:24px;cursor:pointer;color:#0F4C7A;font-weight:700">+</button>
+</div>
+    </div>
+
+    <!-- Preview resultado -->
+    <div id="preview-mov-mat" style="background:#F3F0FF;border-radius:10px;padding:12px;margin-top:1rem;margin-bottom:1rem;border:1px solid #8B5CF6;font-size:13px;color:#0F4C7A"></div>
+
+    <button onclick="confirmarMovMat()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar</button>
+    <button onclick="document.getElementById('modal-mov-mat').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
 </div>
 
 <div class="modal-overlay hidden" id="modal-mover">
