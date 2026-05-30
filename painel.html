@@ -502,43 +502,72 @@
 
       <!-- NOVA AUDITORIA -->
       <div id="gestor-sub-nova">
-        <div class="card">
-          <div class="card-title">📝 Nova Auditoria</div>
-          <div style="margin-bottom:1rem">
-            <label class="field-label">Motorista</label>
-            <input type="text" id="aud-motorista" placeholder="Nome do motorista" class="field-input"/>
+
+        <!-- Score em tempo real -->
+        <div id="aud-resultado-box" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:linear-gradient(135deg,#F3F0FF,#E8F4FB);border:1.5px solid #8B5CF6;margin-bottom:1rem">
+          <div>
+            <div id="aud-resultado-txt" style="font-size:15px;font-weight:700;color:#5B21B6">Preencha os itens abaixo</div>
+            <div id="aud-resultado-meta" style="font-size:11px;color:#5A7A8F;margin-top:2px">0 conformes · 0 não conformes · 0 ressalvas</div>
           </div>
-          <div style="margin-bottom:1rem">
-            <label class="field-label">Auditor</label>
-            <input type="text" id="aud-auditor" placeholder="Seu nome" class="field-input"/>
+          <div style="text-align:right">
+            <div style="font-size:10px;color:#8B5CF6;font-weight:600;text-transform:uppercase;margin-bottom:2px">Itens</div>
+            <div id="aud-resultado-count" style="font-size:18px;font-weight:800;color:#5B21B6">0/11</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📋 Dados da Auditoria</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+            <div>
+              <label class="field-label">Motorista</label>
+              <input type="text" id="aud-motorista" placeholder="Nome do motorista" class="field-input" style="margin-bottom:0"/>
+            </div>
+            <div>
+              <label class="field-label">Auditor</label>
+              <input type="text" id="aud-auditor" placeholder="Seu nome" class="field-input" style="margin-bottom:0"/>
+            </div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
             <div>
               <label class="field-label">Placa</label>
-              <input type="text" id="aud-placa" placeholder="ABC-1234" class="field-input"/>
+              <input type="text" id="aud-placa" placeholder="ABC-1234" class="field-input" style="margin-bottom:0"/>
             </div>
             <div>
               <label class="field-label">Tipo de veículo</label>
-              <select id="aud-tipo" onchange="renderItensAuditoria()" class="field-input">
+              <select id="aud-tipo" onchange="renderItensAuditoria()" class="field-input" style="margin-bottom:0">
                 <option value="moto">🛵 Moto</option>
                 <option value="carro">🚗 Carro</option>
               </select>
             </div>
           </div>
-          <div style="margin-bottom:1rem">
+          <div>
             <label class="field-label">Unidade</label>
-            <input type="text" id="aud-unidade" placeholder="Unidade/filial" class="field-input"/>
+            <input type="text" id="aud-unidade" placeholder="Unidade/filial" class="field-input" style="margin-bottom:0"/>
           </div>
-          <div id="aud-itens-container"></div>
-          <div style="margin-bottom:1rem">
-            <label class="field-label">Observações</label>
-            <textarea id="aud-obs" placeholder="Observações gerais..." class="field-input" rows="3" style="resize:vertical"></textarea>
-          </div>
-          <div id="msg-auditoria" class="msg"></div>
-          <button onclick="salvarAuditoria()" class="btn-primary" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer">
-            ✓ Salvar Auditoria
-          </button>
         </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom:.5rem">🔍 Itens de Auditoria</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-bottom:1rem">
+            <span style="color:#0F9B78;font-weight:700">✓ Conforme</span> = 100pts &nbsp;·&nbsp;
+            <span style="color:#F59E0B;font-weight:700">~ Ressalva</span> = 50pts &nbsp;·&nbsp;
+            <span style="color:#DC2626;font-weight:700">✗ Não conforme</span> = 0pts
+          </div>
+          <div id="itens-auditoria-lista"></div>
+        </div>
+
+        <div class="card">
+          <label class="field-label">Observações</label>
+          <textarea id="aud-obs" placeholder="Observações gerais..." class="field-input" rows="3" style="resize:vertical;margin-bottom:0"></textarea>
+        </div>
+
+        <div id="msg-auditoria" class="msg" style="margin-bottom:.5rem"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+          <button onclick="gerarPDFAuditoria(null,true)" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-weight:700;font-size:13px;cursor:pointer">📥 Gerar PDF</button>
+          <button onclick="salvarAuditoria()" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer">✓ Salvar + Email</button>
+        </div>
+
       </div>
 
       <!-- AUDITORIAS -->
@@ -3491,20 +3520,33 @@
   function renderItensAuditoria() {
     const tipoEl = document.getElementById('aud-tipo');
     const listaEl = document.getElementById('itens-auditoria-lista');
-    if (!tipoEl || !listaEl) return; // view ainda não visível
+    if (!tipoEl || !listaEl) return;
     const tipo = tipoEl.value || 'moto';
     const itensFiltrados = ITENS_AUDITORIA.filter(i => i.todos || i.somente === tipo);
     listaEl.innerHTML = itensFiltrados.map(item => {
       const r = respostasAuditoria[item.id] || '';
-      return `<div style="border-radius:10px;background:#F8FBFD;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px">
-        <div style="font-size:13px;color:#0F4C7A;font-weight:600;margin-bottom:8px">${item.label}</div>
-        <div style="display:flex;gap:5px">
+      const isExtintor = item.id === 'extintor';
+      const itemBg = isExtintor ? 'background:#F0F8FF;border-color:#E8F4FB' : '';
+      const confAtivo   = r==='conf';
+      const ressAtivo   = r==='ressalva';
+      const nconfAtivo  = r==='nconf';
+      return `<div style="border-radius:10px;background:#F8FBFD;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px;${itemBg}">
+        <div style="font-size:13px;color:${isExtintor?'#0F4C7A':'#0F4C7A'};font-weight:600;margin-bottom:8px">
+          ${item.label}${isExtintor ? ' <span style="font-size:10px;color:#1E9FD9;font-weight:700;background:#DBEAFE;padding:1px 6px;border-radius:20px">só carro</span>' : ''}
+        </div>
+        <div style="display:flex;gap:6px">
           <button onclick="marcarAuditoria('${item.id}','conf')"
-            style="flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid ${r==='conf'?'#0F9B78':'#D6E5EE'};background:${r==='conf'?'#E8F8F0':'#fff'};font-size:11px;font-weight:700;cursor:pointer;color:${r==='conf'?'#0F9B78':'#5A7A8F'}">✓ Conforme</button>
-          <button onclick="marcarAuditoria('${item.id}','nconf')"
-            style="flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid ${r==='nconf'?'#DC2626':'#D6E5EE'};background:${r==='nconf'?'#FCEBEB':'#fff'};font-size:11px;font-weight:700;cursor:pointer;color:${r==='nconf'?'#DC2626':'#5A7A8F'}">✗ Não conforme</button>
+            style="flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid ${confAtivo?'#0F9B78':'#D6E5EE'};background:${confAtivo?'#0F9B78':'#fff'};font-size:12px;font-weight:700;cursor:pointer;color:${confAtivo?'#fff':'#5A7A8F'};transition:.15s">
+            ✓ Conforme
+          </button>
           <button onclick="marcarAuditoria('${item.id}','ressalva')"
-            style="flex:1;padding:6px 4px;border-radius:8px;border:1.5px solid ${r==='ressalva'?'#8B5CF6':'#D6E5EE'};background:${r==='ressalva'?'#F3F0FF':'#fff'};font-size:11px;font-weight:700;cursor:pointer;color:${r==='ressalva'?'#8B5CF6':'#5A7A8F'}">! Ressalva</button>
+            style="flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid ${ressAtivo?'#F59E0B':'#D6E5EE'};background:${ressAtivo?'#F59E0B':'#fff'};font-size:12px;font-weight:700;cursor:pointer;color:${ressAtivo?'#fff':'#5A7A8F'};transition:.15s">
+            ~ Ressalva
+          </button>
+          <button onclick="marcarAuditoria('${item.id}','nconf')"
+            style="flex:1;padding:7px 4px;border-radius:8px;border:1.5px solid ${nconfAtivo?'#DC2626':'#D6E5EE'};background:${nconfAtivo?'#DC2626':'#fff'};font-size:12px;font-weight:700;cursor:pointer;color:${nconfAtivo?'#fff':'#5A7A8F'};transition:.15s">
+            ✗ Não conf.
+          </button>
         </div>
       </div>`;
     }).join('');
@@ -3517,28 +3559,40 @@
   }
 
   function calcularResultadoAuditoria(itensFiltrados) {
-    const tipo = document.getElementById('aud-tipo').value;
+    const tipo = document.getElementById('aud-tipo')?.value || 'moto';
     const itens = itensFiltrados || ITENS_AUDITORIA.filter(i => i.todos || i.somente === tipo);
     const vals = itens.map(i => respostasAuditoria[i.id] || '');
-    const conf = vals.filter(v => v === 'conf').length;
-    const nconf = vals.filter(v => v === 'nconf').length;
-    const ressalva = vals.filter(v => v === 'ressalva').length;
+    const conf    = vals.filter(v => v === 'conf').length;
+    const nconf   = vals.filter(v => v === 'nconf').length;
+    const ressalva= vals.filter(v => v === 'ressalva').length;
+    const avaliados = conf + nconf + ressalva;
+    const pts = conf * 100 + ressalva * 50;
+    const maxPts = avaliados * 100;
+    const pct = maxPts > 0 ? Math.round(pts / maxPts * 100) : 0;
+
     const box = document.getElementById('aud-resultado-box');
     const txt = document.getElementById('aud-resultado-txt');
     const meta = document.getElementById('aud-resultado-meta');
-    meta.textContent = conf + ' conformes · ' + nconf + ' não conformes · ' + ressalva + ' ressalvas';
-    if (nconf > 0 || ressalva > 0) {
-      box.style.background = '#FCEBEB'; box.style.borderColor = '#F09595';
-      txt.textContent = '⚠️ Resultado: Não conforme'; txt.style.color = '#DC2626';
-      meta.style.color = '#DC2626';
-    } else if (conf > 0 && nconf === 0 && ressalva === 0) {
-      box.style.background = '#E8F8F0'; box.style.borderColor = '#5DCAA5';
-      txt.textContent = '✓ Resultado: Conforme'; txt.style.color = '#0F9B78';
-      meta.style.color = '#0F9B78';
+    const count = document.getElementById('aud-resultado-count');
+
+    if(count) count.textContent = avaliados + '/' + itens.length;
+    if(meta) meta.textContent = conf + ' conformes · ' + nconf + ' não conformes · ' + ressalva + ' ressalvas';
+
+    if(avaliados === 0) {
+      if(box){box.style.background='linear-gradient(135deg,#F3F0FF,#E8F4FB)';box.style.borderColor='#8B5CF6';}
+      if(txt){txt.textContent='Preencha os itens abaixo';txt.style.color='#5B21B6';}
+    } else if(nconf > 0) {
+      if(box){box.style.background='linear-gradient(135deg,#FCEBEB,#FEF9EC)';box.style.borderColor='#F09595';}
+      if(txt){txt.textContent=`⚠️ Score: ${pct}% — Não conforme`;txt.style.color='#DC2626';}
+    } else if(ressalva > 0) {
+      if(box){box.style.background='linear-gradient(135deg,#FEF9EC,#FFFBEB)';box.style.borderColor='#F2CC70';}
+      if(txt){txt.textContent=`~ Score: ${pct}% — Com ressalvas`;txt.style.color='#92400E';}
+    } else if(conf === itens.length) {
+      if(box){box.style.background='linear-gradient(135deg,#E8F8F0,#F0FAF7)';box.style.borderColor='#5DCAA5';}
+      if(txt){txt.textContent=`✓ Score: 100% — Conforme`;txt.style.color='#0F9B78';}
     } else {
-      box.style.background = '#F0F4F8'; box.style.borderColor = '#D6E5EE';
-      txt.textContent = 'Preencha os itens acima'; txt.style.color = '#5A7A8F';
-      meta.style.color = '#94A8B8';
+      if(box){box.style.background='linear-gradient(135deg,#E8F4FB,#F0F8FF)';box.style.borderColor='#1E9FD9';}
+      if(txt){txt.textContent=`Score: ${pct}% — Em andamento`;txt.style.color='#0F4C7A';}
     }
   }
 
