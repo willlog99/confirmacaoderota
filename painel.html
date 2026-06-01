@@ -185,11 +185,7 @@
     .toast.show{opacity:1}
     .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-</head>
+        </head>
 <body>
 
 <div class="topbar">
@@ -1275,6 +1271,15 @@
 </div>
 
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script></script defer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script></script defer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script></script defer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script></script defer>
+
+
 <script>
 // ============================================================
 // ── CORE — Funções base, navegação e utilitários ──────────────────────────
@@ -1283,7 +1288,8 @@
 // ── VARIÁVEIS ──
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let autoRefreshInterval = null;
-  let filtroDia = diaSemanaAtual === 0 ? 'domingo' : diaSemanaAtual === 6 ? 'sabado' : 'seg-sex';
+  const _diaSemana = new Date().getDay();
+  let filtroDia = _diaSemana === 0 ? 'domingo' : _diaSemana === 6 ? 'sabado' : 'seg-sex';
   let cachePainel = null;
   let rotasDisponiveis = [];
   let motoboysListaCompleta = []; // Guardar lista completa para filtro
@@ -4572,6 +4578,11 @@
   renderAgendamentos();
   carregarPainel();
   iniciarAutoRefresh();
+  if (window.location.hash === '#gestor') {
+    const btnGestor = document.querySelector('[onclick="setView(\'gestor\',this)"]');
+    setView('gestor', btnGestor);
+    history.replaceState(null, '', window.location.pathname);
+  }
 
 </script>
 <script src="js/chat.js"></script>
