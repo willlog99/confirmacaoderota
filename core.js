@@ -15,6 +15,24 @@
 
 // ── FUNÇÕES ──
 
+  function abrirMenu() {
+    document.getElementById('menu-overlay').classList.add('open');
+  }
+
+  function fecharMenu() {
+    const el = document.getElementById('menu-overlay');
+    if (el) el.classList.remove('open');
+  }
+
+  function fecharMenuOverlay(e) {
+    if (e.target === document.getElementById('menu-overlay')) fecharMenu();
+  }
+
+  function fecharModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  }
+
   function setView(id, el) {
     pararAutoRefresh();
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
