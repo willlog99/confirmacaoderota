@@ -5,7 +5,8 @@
 // ── VARIÁVEIS ──
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let autoRefreshInterval = null;
-  let filtroDia = diaSemanaAtual === 0 ? 'domingo' : diaSemanaAtual === 6 ? 'sabado' : 'seg-sex';
+  const _diaSemana = new Date().getDay();
+  let filtroDia = _diaSemana === 0 ? 'domingo' : _diaSemana === 6 ? 'sabado' : 'seg-sex';
   let cachePainel = null;
   let rotasDisponiveis = [];
   let motoboysListaCompleta = []; // Guardar lista completa para filtro
