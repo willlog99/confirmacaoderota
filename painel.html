@@ -1280,6 +1280,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script></script defer>
 
 
+
 <script>
 // ============================================================
 // ── CORE — Funções base, navegação e utilitários ──────────────────────────
@@ -1297,6 +1298,24 @@
   let clienteParaMover = null;
 
 // ── FUNÇÕES ──
+
+  function abrirMenu() {
+    document.getElementById('menu-overlay').classList.add('open');
+  }
+
+  function fecharMenu() {
+    const el = document.getElementById('menu-overlay');
+    if (el) el.classList.remove('open');
+  }
+
+  function fecharMenuOverlay(e) {
+    if (e.target === document.getElementById('menu-overlay')) fecharMenu();
+  }
+
+  function fecharModal(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  }
 
   function setView(id, el) {
     pararAutoRefresh();
@@ -3695,6 +3714,357 @@
       </div>`).join('');
   }
 
+  // ── PATRIMÔNIOS — funções de gestão ─────────────────────────
+
+  function toggleCat(header) {
+    const corpo = header.nextElementSibling;
+    const arrow = header.querySelector('.cat-arrow');
+    const show = corpo.style.display !== 'block';
+    corpo.style.display = show ? 'block' : 'none';
+    if (arrow) arrow.textContent = show ? '˅' : '›';
+  }
+
+  function toggleCatPat(header) { toggleCat(header); }
+
+  async function syncPatServer() {
+    salvarPatLocal();
+    try {
+      await fetch(API + '/patrimonios', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patrimonios, simples: patrimoniosSimples, checklists: checklistsMotoboys })
+      });
+    } catch(e) {}
+  }
+
+  function salvarPatLocal() {
+    localStorage.setItem('lgl_pat', JSON.stringify(patrimonios));
+    localStorage.setItem('lgl_pat_simples', JSON.stringify(patrimoniosSimples));
+    localStorage.setItem('lgl_pat_chk', JSON.stringify(checklistsMotoboys));
+  }
+
+  function ajustarSimples(tipo, delta) {
+    if (!patrimoniosSimples[tipo]) patrimoniosSimples[tipo] = { total: 0, vinculados: 0 };
+    patrimoniosSimples[tipo].total = Math.max(0, (patrimoniosSimples[tipo].total || 0) + delta);
+    syncPatServer();
+    renderEstoquePat && renderEstoquePat();
+    renderEstoqueSimplesEst();
+    toast('✓ Estoque atualizado');
+  }
+
+  function renderEstoquePat() {
+    const total = patrimonios.length;
+    const disp  = patrimonios.filter(p => !p.motoboy).length;
+    const vinc  = total - disp;
+    const elT = document.getElementById('pat-total'); if (elT) elT.textContent = total;
+    const elD = document.getElementById('pat-disp');  if (elD) elD.textContent = disp;
+    const elU = document.getElementById('pat-uso');   if (elU) elU.textContent = vinc;
+    const el = document.getElementById('pat-categorias-lista'); if (!el) return;
+    el.innerHTML = LISTA_PADRAO_PAT.filter(t => t.codigo).map(tipo => {
+      const itens = patrimonios.filter(p => p.tipo === tipo.id);
+      const nD = itens.filter(p => !p.motoboy).length;
+      const nV = itens.filter(p =>  p.motoboy).length;
+      const bD = nD > 0 ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F8F0;color:#0F9B78">${nD} disp.</span>` : '';
+      const bV = nV > 0 ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F4FB;color:#1E9FD9">${nV} vinc.</span>` : '';
+      const iList = itens.map(p => {
+        const ec = p.estado==='Novo'?'#0F9B78':p.estado==='Bom'?'#1E9FD9':'#DC2626';
+        const eb = p.estado==='Novo'?'#E8F8F0':p.estado==='Bom'?'#E8F4FB':'#FCEBEB';
+        return p.motoboy
+          ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #F0F4F8">
+              <div><span style="font-size:12px;font-weight:700;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
+              <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-top:3px">👤 ${p.motoboy}</div>
+              <div style="font-size:11px;color:#5A7A8F">Desde ${p.dataEntrega||'—'} · <span style="font-size:10px;padding:2px 6px;border-radius:20px;font-weight:700;background:${eb};color:${ec}">${p.estado}</span></div></div>
+              <div style="display:flex;gap:5px">
+                <button onclick="abrirModalSubst(${p.id})" style="padding:4px 8px;border-radius:6px;background:#FEF9EC;color:#92400E;border:1px solid #F2CC70;font-size:11px;font-weight:700;cursor:pointer">↔</button>
+                <button onclick="devolverPat(${p.id})" style="padding:4px 8px;border-radius:6px;background:#FCEBEB;color:#DC2626;border:1px solid #F09595;font-size:11px;font-weight:700;cursor:pointer">↩</button>
+              </div></div>`
+          : `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #F0F4F8">
+              <div><span style="font-size:12px;font-weight:700;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
+              <div style="font-size:12px;font-weight:700;color:#0F9B78;margin-top:3px">✓ Disponível</div>
+              <span style="font-size:10px;padding:2px 6px;border-radius:20px;font-weight:700;background:${eb};color:${ec}">${p.estado}</span></div>
+              <div style="display:flex;gap:5px">
+                <button onclick="vincularPatEstoque(${p.id})" style="padding:4px 8px;border-radius:6px;background:#E8F8F0;color:#0F9B78;border:none;font-size:11px;font-weight:700;cursor:pointer">📤</button>
+                <button onclick="excluirPatEstoque(${p.id})" style="padding:4px 8px;border-radius:6px;background:#FCEBEB;color:#DC2626;border:1px solid #F09595;font-size:11px;font-weight:700;cursor:pointer">✕</button>
+              </div></div>`;
+      }).join('');
+      return `<div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;margin-bottom:8px;overflow:hidden">
+        <div onclick="toggleCat(this)" style="display:flex;align-items:center;justify-content:space-between;padding:12px;cursor:pointer">
+          <span style="font-size:13px;font-weight:700;color:#0F4C7A">${tipo.icon} ${tipo.nome}</span>
+          <div style="display:flex;gap:6px;align-items:center">${bD}${bV}<span class="cat-arrow" style="font-size:16px;color:#94A8B8">›</span></div>
+        </div>
+        <div style="display:none;border-top:1px solid #EBF1F5">
+          ${iList || '<div style="padding:12px;text-align:center;font-size:13px;color:#94A8B8">Nenhum item</div>'}
+          <div onclick="abrirModalPatCad('${tipo.id}')" style="display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;color:#8B5CF6;font-size:12px;font-weight:700;background:#F8F6FF;border-top:1px solid #EBF1F5">➕ Cadastrar novo ${tipo.nome}</div>
+        </div></div>`;
+    }).join('');
+    const elS = document.getElementById('pat-simples-lista'); if (!elS) return;
+    elS.innerHTML = LISTA_PADRAO_PAT.filter(t => !t.codigo).map(tipo => {
+      const d = patrimoniosSimples[tipo.id] || { total: 0, vinculados: 0 };
+      const dp = Math.max(0, (d.total || 0) - (d.vinculados || 0));
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #F0F4F8">
+        <div><div style="font-size:13px;font-weight:700;color:#0F4C7A">${tipo.icon} ${tipo.nome}</div>
+        <div style="font-size:11px;color:#5A7A8F">${d.vinculados||0} vinculados</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button onclick="ajustarSimples('${tipo.id}',-1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer">−</button>
+          <span style="font-size:20px;font-weight:800;color:#0F4C7A;min-width:32px;text-align:center">${dp}</span>
+          <button onclick="ajustarSimples('${tipo.id}',1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer">+</button>
+        </div></div>`;
+    }).join('');
+  }
+
+  function renderResumoPat() {
+    const el = document.getElementById('pat-resumo-lista'); if (!el) return;
+    const mbs = Object.keys(checklistsMotoboys);
+    if (!mbs.length) { el.innerHTML = '<div class="empty">Nenhum checklist cadastrado</div>'; return; }
+    el.innerHTML = mbs.map(mb => {
+      const chk = checklistsMotoboys[mb] || {};
+      const flt = LISTA_PADRAO_PAT.filter(t => !chk[t.id] || chk[t.id].na);
+      const ok = flt.length === 0;
+      return `<div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px;cursor:pointer"
+        onclick="this.querySelector('.mb-det').style.display=this.querySelector('.mb-det').style.display==='block'?'none':'block'">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:13px;font-weight:700;color:#0F4C7A">${mb}</span>
+          ${ok ? '<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✓ Completo</span>'
+               : `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">⚠️ ${flt.length} pendente(s)</span>`}
+        </div>
+        <div class="mb-det" style="display:none;margin-top:8px;border-top:1px solid #F0F4F8;padding-top:8px">
+          ${LISTA_PADRAO_PAT.map(t => {
+            const item = chk[t.id];
+            const det  = item ? (t.codigo ? (item.codigo||'') : (item.qtd ? item.qtd+'un' : '')) : '';
+            const cor  = item ? '#0F9B78' : '#92400E';
+            const bg2  = item ? '#E8F8F0' : '#FEF9EC';
+            const ico  = item ? '✓' : '!';
+            return `<div style="display:flex;align-items:center;gap:6px;padding:4px 0;font-size:12px;border-bottom:1px solid #F8FBFD">
+              <div style="width:18px;height:18px;border-radius:50%;background:${bg2};color:${cor};display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;flex-shrink:0">${ico}</div>
+              <span style="flex:1;color:${item?'#0F4C7A':'#92400E'};font-weight:600">${t.icon} ${t.nome}</span>
+              <span style="color:#8B5CF6;font-size:11px;font-weight:700">${det}</span></div>`;
+          }).join('')}
+        </div></div>`;
+    }).join('');
+  }
+
+  function abrirModalPatCad(tipo) {
+    const t = LISTA_PADRAO_PAT.find(x => x.id === tipo);
+    document.getElementById('pat-cad-tipo').value = tipo;
+    document.getElementById('pat-cad-titulo').textContent = '➕ Cadastrar ' + (t ? t.icon + ' ' + t.nome : '');
+    document.getElementById('pat-cad-codigo').value = '';
+    document.getElementById('pat-cad-subtipo-wrap').style.display = tipo === 'cartao' ? 'block' : 'none';
+    estadoPat = 'Novo'; subtipoPat2 = 'Definitivo';
+    document.querySelectorAll('.estado-btn-pat').forEach((b, i) => {
+      b.style.borderColor = i===0 ? '#0F9B78' : '#D6E5EE';
+      b.style.background  = i===0 ? '#E8F8F0' : '#fff';
+      b.style.color       = i===0 ? '#0F9B78' : '#5A7A8F';
+    });
+    document.getElementById('msg-pat-cad').textContent = '';
+    document.getElementById('modal-pat-cad').style.display = 'block';
+  }
+
+  function selEstadoPat(btn, estado) {
+    estadoPat = estado;
+    const c = { Novo:'#0F9B78', Bom:'#1E9FD9', Danificado:'#DC2626' };
+    const b = { Novo:'#E8F8F0', Bom:'#E8F4FB', Danificado:'#FCEBEB' };
+    document.querySelectorAll('.estado-btn-pat').forEach(x => { x.style.borderColor='#D6E5EE'; x.style.background='#fff'; x.style.color='#5A7A8F'; });
+    btn.style.borderColor = c[estado]; btn.style.background = b[estado]; btn.style.color = c[estado];
+  }
+
+  function selSubtipoPat(btn, sub) {
+    subtipoPat2 = sub;
+    document.querySelectorAll('.subtipo-btn-pat').forEach(b => { b.style.borderColor='#D6E5EE'; b.style.background='#fff'; b.style.color='#5A7A8F'; });
+    btn.style.borderColor = '#8B5CF6'; btn.style.background = '#F3F0FF'; btn.style.color = '#5B21B6';
+  }
+
+  async function confirmarPatCad() {
+    const tipo   = document.getElementById('pat-cad-tipo').value;
+    const codigo = document.getElementById('pat-cad-codigo').value.trim().toUpperCase();
+    const msg    = document.getElementById('msg-pat-cad');
+    if (!codigo) { msg.textContent = '⚠️ Informe o código'; msg.style.color = '#DC2626'; return; }
+    if (patrimonios.find(p => p.codigo === codigo)) { msg.textContent = '⚠️ Código já cadastrado'; msg.style.color = '#DC2626'; return; }
+    patrimonios.push({ id: Date.now(), tipo, codigo, subtipo: tipo==='cartao'?subtipoPat2:null, estado: estadoPat, motoboy: null, dataEntrega: null });
+    await syncPatServer();
+    renderEstoquePat(); renderEstoquePatEst();
+    document.getElementById('modal-pat-cad').style.display = 'none';
+    toast('✓ ' + codigo + ' cadastrado!');
+  }
+
+  function abrirPatAdd(motoboy, tipoId) {
+    patAddMotoboy = motoboy; patAddTipoAtual = tipoId; patAddCodigoSelecionado = null;
+    document.getElementById('pat-add-titulo').textContent = '➕ Adicionar Item — ' + motoboy;
+    document.getElementById('pat-add-tipo').value = tipoId;
+    document.getElementById('pat-add-data').value = new Date().toISOString().split('T')[0];
+    document.getElementById('msg-pat-add').textContent = '';
+    mudarTipoPatAdd(tipoId);
+    document.getElementById('modal-pat-add').style.display = 'block';
+  }
+
+  function mudarTipoPatAdd(tipo) {
+    patAddTipoAtual = tipo; patAddCodigoSelecionado = null;
+    const temCod = PAT_COM_COD.includes(tipo);
+    document.getElementById('pat-add-bloco-codigo').style.display = temCod ? 'block' : 'none';
+    document.getElementById('pat-add-bloco-simples').style.display = !temCod ? 'block' : 'none';
+    if (temCod) {
+      const disp = patrimonios.filter(p => p.tipo === tipo && !p.motoboy);
+      const ec = { Novo:'#0F9B78', Bom:'#1E9FD9', Danificado:'#DC2626' };
+      let html = disp.map(p => `<div onclick="selecionarPatDisp('${p.codigo}',this)" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:6px;cursor:pointer">
+        <div style="width:12px;height:12px;border-radius:50%;border:2px solid #D6E5EE;flex-shrink:0" class="radio-disp"></div>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#0F4C7A">${p.codigo}</div><div style="font-size:11px;color:${ec[p.estado]||'#5A7A8F'}">${p.estado}</div></div></div>`).join('');
+      if (!disp.length) html = `<div style="padding:8px;font-size:12px;color:#94A8B8;text-align:center">Nenhum disponível no estoque</div>` + html;
+      html += `<div onclick="toggleAddManual()" id="pat-add-manual-toggle" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px dashed #D6E5EE;background:#F8FBFD;cursor:pointer">
+        <div style="width:12px;height:12px;border-radius:50%;border:2px solid #D6E5EE;flex-shrink:0" id="radio-manual-pat"></div>
+        <span style="font-size:13px;font-weight:600;color:#5A7A8F">✏️ Digitar código manualmente</span></div>`;
+      document.getElementById('pat-add-disponiveis').innerHTML = html;
+      document.getElementById('pat-add-manual-wrap').style.display = 'none';
+    }
+  }
+
+  function selecionarPatDisp(codigo, el) {
+    patAddCodigoSelecionado = codigo;
+    document.querySelectorAll('#pat-add-disponiveis .radio-disp').forEach(r => { r.style.background=''; r.style.borderColor='#D6E5EE'; });
+    document.querySelectorAll('#pat-add-disponiveis > div').forEach(d => { d.style.borderColor='#D6E5EE'; d.style.background='#fff'; });
+    el.style.borderColor = '#8B5CF6'; el.style.background = '#F3F0FF';
+    el.querySelector('.radio-disp').style.background = '#8B5CF6';
+    el.querySelector('.radio-disp').style.borderColor = '#8B5CF6';
+    document.getElementById('pat-add-manual-wrap').style.display = 'none';
+  }
+
+  function toggleAddManual() {
+    patAddCodigoSelecionado = 'manual';
+    document.querySelectorAll('#pat-add-disponiveis .radio-disp').forEach(r => { r.style.background=''; r.style.borderColor='#D6E5EE'; });
+    document.querySelectorAll('#pat-add-disponiveis > div').forEach(d => { d.style.borderColor='#D6E5EE'; d.style.background='#fff'; });
+    const t = document.getElementById('pat-add-manual-toggle'); if (t) { t.style.borderColor='#8B5CF6'; t.style.background='#F3F0FF'; }
+    const r = document.getElementById('radio-manual-pat'); if (r) { r.style.background='#8B5CF6'; r.style.borderColor='#8B5CF6'; }
+    document.getElementById('pat-add-manual-wrap').style.display = 'block';
+  }
+
+  async function confirmarPatAdd() {
+    const tipo   = document.getElementById('pat-add-tipo').value;
+    const data   = document.getElementById('pat-add-data').value;
+    const msg    = document.getElementById('msg-pat-add');
+    const motoboy = patAddMotoboy;
+    if (!tipo)    { msg.textContent='⚠️ Selecione o item'; msg.style.color='#DC2626'; return; }
+    if (!motoboy) { msg.textContent='⚠️ Selecione o motoboy'; msg.style.color='#DC2626'; return; }
+    if (!checklistsMotoboys[motoboy]) checklistsMotoboys[motoboy] = {};
+    const dataFmt = data ? new Date(data).toLocaleDateString('pt-BR') : new Date().toLocaleDateString('pt-BR');
+    if (PAT_COM_COD.includes(tipo)) {
+      if (!patAddCodigoSelecionado) { msg.textContent='⚠️ Selecione ou digite o código'; msg.style.color='#DC2626'; return; }
+      let cod = patAddCodigoSelecionado;
+      if (cod === 'manual') {
+        cod = (document.getElementById('pat-add-codigo-manual').value||'').trim().toUpperCase();
+        if (!cod) { msg.textContent='⚠️ Digite o código'; msg.style.color='#DC2626'; return; }
+        if (!patrimonios.find(p => p.codigo===cod)) {
+          const est = document.getElementById('pat-add-estado-manual').value;
+          patrimonios.push({ id:Date.now(), tipo, codigo:cod, subtipo:null, estado:est, motoboy, dataEntrega:dataFmt });
+        } else { const p=patrimonios.find(x=>x.codigo===cod); if(p){p.motoboy=motoboy;p.dataEntrega=dataFmt;} }
+      } else { const p=patrimonios.find(x=>x.codigo===cod); if(p){p.motoboy=motoboy;p.dataEntrega=dataFmt;} }
+      checklistsMotoboys[motoboy][tipo] = { codigo:cod, data:dataFmt };
+    } else {
+      const qtd = parseInt(document.getElementById('pat-add-qtd').value)||1;
+      if (!patrimoniosSimples[tipo]) patrimoniosSimples[tipo]={total:0,vinculados:0};
+      patrimoniosSimples[tipo].vinculados=(patrimoniosSimples[tipo].vinculados||0)+qtd;
+      checklistsMotoboys[motoboy][tipo]={ qtd, data:dataFmt };
+    }
+    await syncPatServer();
+    document.getElementById('modal-pat-add').style.display='none';
+    carregarChecklistEstMotoboy(motoboy); renderEstoquePat();
+    toast('✓ Item adicionado!');
+  }
+
+  function abrirModalSubst(id) {
+    const p = patrimonios.find(x => x.id===id); if(!p) return;
+    substPatId=id; substPatSelecionado=null;
+    document.getElementById('subst-titulo').textContent='↔ Substituir '+p.codigo;
+    document.getElementById('subst-info').innerHTML=`Substituindo <strong style="color:#8B5CF6">${p.codigo}</strong> de <strong style="color:#0F4C7A">${p.motoboy}</strong>`;
+    const disp = patrimonios.filter(x=>x.tipo===p.tipo&&!x.motoboy);
+    const ec={Novo:'#0F9B78',Bom:'#1E9FD9',Danificado:'#DC2626'};
+    let html=disp.map(d=>`<div onclick="selecionarSubst('${d.codigo}',this)" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:6px;cursor:pointer">
+      <div style="width:12px;height:12px;border-radius:50%;border:2px solid #D6E5EE;flex-shrink:0" class="radio-subst"></div>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#0F4C7A">${d.codigo}</div><div style="font-size:11px;color:${ec[d.estado]||'#5A7A8F'}">${d.estado}</div></div></div>`).join('');
+    html+=`<div onclick="selecionarSubst('__manual__',this)" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px dashed #D6E5EE;background:#F8FBFD;cursor:pointer">
+      <div style="width:12px;height:12px;border-radius:50%;border:2px solid #D6E5EE;flex-shrink:0" class="radio-subst"></div>
+      <span style="font-size:13px;font-weight:600;color:#5A7A8F">✏️ Digitar código novo</span></div>
+    <div id="subst-manual-wrap" style="display:none;margin-top:8px">
+      <input type="text" id="subst-codigo-novo" placeholder="Ex: BAU-005" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/></div>`;
+    document.getElementById('subst-disponiveis').innerHTML=html;
+    document.getElementById('msg-subst').textContent='';
+    document.getElementById('modal-pat-subst').style.display='block';
+  }
+
+  function selecionarSubst(codigo, el) {
+    substPatSelecionado=codigo;
+    document.querySelectorAll('#subst-disponiveis .radio-subst').forEach(r=>{r.style.background='';r.style.borderColor='#D6E5EE';});
+    document.querySelectorAll('#subst-disponiveis > div').forEach(d=>{d.style.borderColor='#D6E5EE';d.style.background='#F8FBFD';});
+    el.style.borderColor='#8B5CF6'; el.style.background='#F3F0FF';
+    el.querySelector('.radio-subst').style.background='#8B5CF6'; el.querySelector('.radio-subst').style.borderColor='#8B5CF6';
+    const mw=document.getElementById('subst-manual-wrap'); if(mw) mw.style.display=codigo==='__manual__'?'block':'none';
+  }
+
+  async function confirmarSubstituicao() {
+    const msg=document.getElementById('msg-subst');
+    if(!substPatSelecionado){msg.textContent='⚠️ Selecione o substituto';msg.style.color='#DC2626';return;}
+    const pAnt=patrimonios.find(x=>x.id===substPatId); if(!pAnt) return;
+    const motivo=document.getElementById('subst-motivo').value;
+    const motoboy=pAnt.motoboy, hoje=new Date().toLocaleDateString('pt-BR');
+    let cod=substPatSelecionado;
+    if(cod==='__manual__'){
+      cod=(document.getElementById('subst-codigo-novo').value||'').trim().toUpperCase();
+      if(!cod){msg.textContent='⚠️ Digite o código';msg.style.color='#DC2626';return;}
+      if(!patrimonios.find(p=>p.codigo===cod)) patrimonios.push({id:Date.now(),tipo:pAnt.tipo,codigo:cod,subtipo:pAnt.subtipo,estado:'Novo',motoboy,dataEntrega:hoje});
+    }
+    pAnt.estado=motivo==='Perda'?'Perda':'Danificado'; pAnt.motoboy=null; pAnt.dataEntrega=null;
+    const pN=patrimonios.find(x=>x.codigo===cod); if(pN){pN.motoboy=motoboy;pN.dataEntrega=hoje;}
+    if(checklistsMotoboys[motoboy]) Object.keys(checklistsMotoboys[motoboy]).forEach(k=>{
+      if(checklistsMotoboys[motoboy][k]?.codigo===pAnt.codigo){checklistsMotoboys[motoboy][k].codigo=cod;checklistsMotoboys[motoboy][k].data=hoje;}
+    });
+    await syncPatServer();
+    document.getElementById('modal-pat-subst').style.display='none';
+    renderEstoquePat(); renderEstoquePatEst();
+    adicionarHistorico({tipo:'troca',motoboy,item:pAnt.codigo,substituto:cod,motivo,data:hoje});
+    toast(`✓ ${pAnt.codigo} substituído por ${cod}!`);
+  }
+
+  function excluirPatEstoque(id) {
+    if(!confirm('Remover este item do cadastro?')) return;
+    patrimonios=patrimonios.filter(x=>x.id!==id);
+    syncPatServer(); renderEstoquePat(); renderEstoquePatEst();
+    toast('✓ Item removido');
+  }
+
+  async function vincularPatEstoque(id) {
+    const p=patrimonios.find(x=>x.id===id); if(!p) return;
+    const nome=prompt('Vincular ao motoboy:\n(Digite o nome)');
+    if(!nome) return;
+    p.motoboy=nome.trim().toUpperCase(); p.dataEntrega=new Date().toLocaleDateString('pt-BR');
+    await syncPatServer(); renderEstoquePat(); renderEstoquePatEst();
+    toast('✓ Vinculado a '+p.motoboy);
+  }
+
+  async function devolverPat(id) {
+    if(!confirm('Confirmar devolução?')) return;
+    const p=patrimonios.find(x=>x.id===id); if(!p) return;
+    if(p.motoboy&&checklistsMotoboys[p.motoboy]){
+      const chk=checklistsMotoboys[p.motoboy];
+      Object.keys(chk).forEach(k=>{if(chk[k]&&chk[k].codigo===p.codigo)delete chk[k];});
+    }
+    p.motoboy=null; p.dataEntrega=null;
+    await syncPatServer(); renderEstoquePat(); renderEstoquePatEst();
+    toast('✓ Devolvido ao estoque');
+  }
+
+  function removerItemChecklist(motoboy, tipoId) {
+    if(!confirm('Remover este item?')) return;
+    if(checklistsMotoboys[motoboy]){
+      const item=checklistsMotoboys[motoboy][tipoId];
+      if(item&&item.codigo){const p=patrimonios.find(x=>x.codigo===item.codigo);if(p){p.motoboy=null;p.dataEntrega=null;}}
+      delete checklistsMotoboys[motoboy][tipoId];
+    }
+    syncPatServer(); carregarChecklistEstMotoboy(motoboy);
+  }
+
+  function marcarNA(motoboy, tipoId) {
+    if(!checklistsMotoboys[motoboy])checklistsMotoboys[motoboy]={};
+    checklistsMotoboys[motoboy][tipoId]={na:true};
+    syncPatServer(); carregarChecklistEstMotoboy(motoboy);
+  }
+
 
 // ============================================================
 // ── MATERIAIS — Escritório, limpeza, alimentação ───────────────────────────
@@ -4578,11 +4948,6 @@
   renderAgendamentos();
   carregarPainel();
   iniciarAutoRefresh();
-  if (window.location.hash === '#gestor') {
-    const btnGestor = document.querySelector('[onclick="setView(\'gestor\',this)"]');
-    setView('gestor', btnGestor);
-    history.replaceState(null, '', window.location.pathname);
-  }
 
 </script>
 <script src="js/chat.js"></script>
