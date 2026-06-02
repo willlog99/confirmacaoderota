@@ -389,7 +389,7 @@
       </div>
 
       <!-- Resumo -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem">
         <div style="background:#E8F4FB;border-radius:10px;padding:10px;text-align:center">
           <div id="pres-total" style="font-size:22px;font-weight:800;color:#0F4C7A">—</div>
           <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Total</div>
@@ -397,6 +397,10 @@
         <div style="background:#E8F8F0;border-radius:10px;padding:10px;text-align:center">
           <div id="pres-marcados" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
           <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Marcados</div>
+        </div>
+        <div style="background:#F0FAF6;border-radius:10px;padding:10px;text-align:center">
+          <div id="pres-gps" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">GPS ✓</div>
         </div>
         <div style="background:#F3F4F6;border-radius:10px;text-align:center;padding:10px">
           <div id="pres-semrota" style="font-size:22px;font-weight:800;color:#6B7280">—</div>
@@ -1488,7 +1492,6 @@
     if (!el) return;
     el.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
 
-    // Atualizar data
     const dataEl = document.getElementById('presencas-data');
     if (dataEl) {
       const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
@@ -1497,27 +1500,31 @@
     }
 
     try {
-      // Buscar motoboys + configuração salva em paralelo
-      const [rMb, rPres] = await Promise.all([
+      const [rMb, rPres, rLoc] = await Promise.all([
         fetch(API + '/motoboys?todos=1&agrupado=1'),
-        fetch(API + '/presencas')
+        fetch(API + '/presencas'),
+        fetch(API + '/localizacao')
       ]);
       const dMb   = await rMb.json();
       const dPres = await rPres.json();
+      const dLoc  = await rLoc.json();
 
-      // Lista única de motoboys com telefone
+      // Quem já enviou GPS (qualquer momento — não só hoje)
+      const comGPS = new Set((dLoc.localizacoes || []).map(l => l.nome));
+
+      // Lista única de motoboys
       const mbs = dMb.motoboys || [];
       const vistos = new Set();
       presencasLista = [];
       mbs.forEach(m => {
         if (!vistos.has(m.nome)) {
           vistos.add(m.nome);
-          // Buscar rotas do dia
           const rotasDia = mbs.filter(x => x.nome === m.nome && x.rota).map(x => x.rota);
           presencasLista.push({
             nome: m.nome,
             telefone: m.telefone || m.contato || '—',
-            rotas: [...new Set(rotasDia)]
+            rotas: [...new Set(rotasDia)],
+            gpsAutorizado: comGPS.has(m.nome)
           });
         }
       });
@@ -1529,11 +1536,8 @@
         return a.nome.localeCompare(b.nome);
       });
 
-      // Restaurar marcados salvos
       const marcados = dPres.marcados || [];
       presencasMarcados = new Set(marcados);
-
-      // Se nenhum salvo, marcar quem tem rota por padrão
       if (!marcados.length) {
         presencasLista.forEach(m => { if (m.rotas.length > 0) presencasMarcados.add(m.nome); });
       }
@@ -1557,6 +1561,7 @@
     document.getElementById('pres-total').textContent    = presencasLista.length;
     document.getElementById('pres-marcados').textContent = presencasMarcados.size;
     document.getElementById('pres-semrota').textContent  = semRota.length;
+    document.getElementById('pres-gps').textContent      = presencasLista.filter(m => m.gpsAutorizado).length;
 
     // Checkbox todos
     const cbAll   = document.getElementById('pres-cb-all');
@@ -1573,23 +1578,30 @@
       if (!lista.length) return '';
       const filtrado = lista.filter(m => !busca || m.nome.toLowerCase().includes(busca));
       if (!filtrado.length) return '';
-      let html = `<div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.08em;padding:10px 4px 6px;font-family:inherit">${titulo}</div>`;
-      filtrado.forEach((m, i) => {
+      let html = `<div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.08em;padding:10px 4px 6px">${titulo}</div>`;
+      filtrado.forEach(m => {
         const cor = CORES[(presencasLista.indexOf(m)) % CORES.length];
         const iniciais = m.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
         const marcado = presencasMarcados.has(m.nome);
         const rotaTxt = m.rotas.length > 0 ? m.rotas.join(', ') : 'Sem rota';
         const rotaBg  = m.rotas.length > 0 ? '#E8F4FB' : '#F3F4F6';
         const rotaCor = m.rotas.length > 0 ? '#0F4C7A' : '#9CA3AF';
-        html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\\'")}')" id="pres-row-${m.nome.replace(/\s/g,'-')}"
+
+        // Badge GPS
+        const gpsBadge = m.gpsAutorizado
+          ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">📍 GPS ✓</span>`
+          : `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">📍 Pendente</span>`;
+
+        html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\\'")}')"
           style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:1.5px solid ${marcado?'#5DCAA5':'#EBF1F5'};background:${marcado?'#F0FAF6':'#fff'};margin-bottom:6px;cursor:pointer;transition:.15s">
           <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${marcado?'#0F9B78':'#D6E5EE'};background:${marcado?'#0F9B78':'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0;transition:.15s">${marcado?'✓':''}</div>
           <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid ${marcado?'#0F9B78':'transparent'};transition:.15s">${iniciais}</div>
           <div style="flex:1;min-width:0">
             <div style="font-size:13px;font-weight:700;color:#0F2940">${m.nome}</div>
-            <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px;flex-wrap:wrap">
               <span style="font-size:11px;color:#5A7A8F">📞 ${m.telefone}</span>
               <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${rotaBg};color:${rotaCor}">🛵 ${rotaTxt}</span>
+              ${gpsBadge}
             </div>
           </div>
         </div>`;
