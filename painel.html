@@ -209,8 +209,9 @@
     <div class="menu-cat">
       <button class="menu-cat-btn" onclick="toggleCat(this)">⚡ Operação <span>▼</span></button>
       <div class="menu-cat-items open">
-        <button class="menu-item active" id="menu-painel" onclick="setView('painel',this)">🏠 Painel</button>
+        <button class="menu-item" onclick="setView('painel',this)">🏠 Painel</button>
         <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
+        <button class="menu-item" onclick="setView('mapa-rastreamento',this)">🗺️ Rastreamento</button>
         <button class="menu-item" onclick="setView('checklist-view',this)">📋 Checklists</button>
         <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
         <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
@@ -366,6 +367,59 @@
     </div>
     <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
     <div id="detalhe-lista"></div>
+  </div>
+
+  <!-- ══════════ RASTREAMENTO GPS ══════════ -->
+  <div class="view" id="view-mapa-rastreamento" style="padding:1rem">
+    <div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div>
+          <div class="card-title" style="margin-bottom:2px">🗺️ Rastreamento em Tempo Real</div>
+          <div style="font-size:12px;color:#5A7A8F">Atualiza a cada 2 minutos</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div id="mapa-live-badge" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:4px 10px;border-radius:20px">
+            <div style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:pulse2 1.4s infinite"></div>
+            AO VIVO
+          </div>
+          <button onclick="carregarMapa()" style="padding:7px 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#0F4C7A">↻ Atualizar</button>
+        </div>
+      </div>
+
+      <!-- Resumo rápido -->
+      <div id="mapa-resumo" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+        <div style="background:#E8F8F0;border-radius:10px;padding:10px;text-align:center">
+          <div id="mapa-count-online" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Online</div>
+        </div>
+        <div style="background:#FEF9EC;border-radius:10px;padding:10px;text-align:center">
+          <div id="mapa-count-idle" style="font-size:22px;font-weight:800;color:#F59E0B">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Parado</div>
+        </div>
+        <div style="background:#F3F4F6;border-radius:10px;padding:10px;text-align:center">
+          <div id="mapa-count-off" style="font-size:22px;font-weight:800;color:#6B7280">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Offline</div>
+        </div>
+      </div>
+
+      <!-- Iframe do mapa OpenStreetMap -->
+      <div id="mapa-container" style="border-radius:14px;overflow:hidden;border:1.5px solid #D6E5EE;background:#E8EFE8;height:300px;display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;color:#5A7A8F;font-size:13px">
+          <div style="font-size:32px;margin-bottom:8px">🗺️</div>
+          Carregando mapa...
+        </div>
+      </div>
+
+      <div style="margin-top:10px;font-size:11px;color:#94A8B8;text-align:center" id="mapa-ultima-sync">—</div>
+    </div>
+
+    <!-- Lista de motoboys -->
+    <div class="card">
+      <div class="card-title" style="margin-bottom:.75rem">Motoboys</div>
+      <div id="mapa-lista-motoboys">
+        <div class="empty">Carregando...</div>
+      </div>
+    </div>
   </div>
 
   <div class="view" id="view-confirmacoes">
@@ -1325,6 +1379,7 @@
     if (el) el.classList.add('active');
     fecharMenu();
     window.scrollTo(0,0);
+    if (id === 'mapa-rastreamento') { carregarMapa(); iniciarAutoRefreshMapa(); }
     if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); }
     if (id === 'confirmacoes') carregarConfirmacoes();
     if (id === 'motoristas') carregarMotoristasList();
@@ -1368,6 +1423,148 @@
   }
 
 
+  // ── RASTREAMENTO GPS ──────────────────────────────────────
+  let mapaRefreshInterval = null;
+
+  function iniciarAutoRefreshMapa() {
+    pararAutoRefreshMapa();
+    mapaRefreshInterval = setInterval(carregarMapa, 2 * 60 * 1000);
+  }
+
+  function pararAutoRefreshMapa() {
+    if (mapaRefreshInterval) { clearInterval(mapaRefreshInterval); mapaRefreshInterval = null; }
+  }
+
+  async function carregarMapa() {
+    try {
+      // Buscar localizações
+      const r = await fetch(API + '/localizacao');
+      const d = await r.json();
+      const locs = d.localizacoes || [];
+
+      // Buscar lista de motoboys para saber quem está offline
+      const r2 = await fetch(API + '/motoboys?todos=1&agrupado=1');
+      const d2 = await r2.json();
+      const todosMotoboys = [...new Set((d2.motoboys||[]).map(m => m.nome))].sort();
+
+      const agora = Date.now();
+      const ONLINE_LIMITE = 5 * 60 * 1000;   // 5 min
+      const IDLE_LIMITE   = 10 * 60 * 1000;  // 10 min
+
+      // Classificar
+      const online = locs.filter(l => agora - l.timestamp < ONLINE_LIMITE);
+      const idle   = locs.filter(l => agora - l.timestamp >= ONLINE_LIMITE && agora - l.timestamp < IDLE_LIMITE);
+      const comSinal = new Set(locs.map(l => l.nome));
+      const offline  = todosMotoboys.filter(n => !comSinal.has(n));
+
+      // Atualizar contadores
+      document.getElementById('mapa-count-online').textContent = online.length;
+      document.getElementById('mapa-count-idle').textContent   = idle.length;
+      document.getElementById('mapa-count-off').textContent    = offline.length;
+
+      // Badge ao vivo
+      const badge = document.getElementById('mapa-live-badge');
+      if (badge) badge.style.display = locs.length > 0 ? 'flex' : 'none';
+
+      // Sync time
+      const syncEl = document.getElementById('mapa-ultima-sync');
+      if (syncEl) syncEl.textContent = 'Última atualização: ' + new Date().toLocaleTimeString('pt-BR');
+
+      // Renderizar mapa com OpenStreetMap (Leaflet via CDN)
+      renderizarMapaLeaflet(locs);
+
+      // Renderizar lista
+      renderizarListaMapa(locs, offline, agora, ONLINE_LIMITE, IDLE_LIMITE);
+
+    } catch(e) {
+      document.getElementById('mapa-lista-motoboys').innerHTML = '<div class="empty">Erro ao carregar</div>';
+    }
+  }
+
+  function renderizarMapaLeaflet(locs) {
+    const container = document.getElementById('mapa-container');
+    if (!container) return;
+
+    // Se não tem localizações, mostrar placeholder
+    if (!locs.length) {
+      container.innerHTML = '<div style="text-align:center;color:#5A7A8F;font-size:13px"><div style="font-size:32px;margin-bottom:8px">🗺️</div>Nenhum motoboy com GPS ativo</div>';
+      return;
+    }
+
+    // Calcular centro
+    const lat = locs.reduce((s, l) => s + l.lat, 0) / locs.length;
+    const lng = locs.reduce((s, l) => s + l.lng, 0) / locs.length;
+
+    // Gerar URL do OpenStreetMap com marcadores
+    const markers = locs.map(l => `${l.lat},${l.lng}`).join('|');
+    const cores = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
+
+    // Usar iframe do OpenStreetMap com pins
+    const pins = locs.map((l, i) => {
+      const cor = cores[i % cores.length].replace('#','');
+      return `&mlat${i+1}=${l.lat}&mlon${i+1}=${l.lng}`;
+    }).join('');
+
+    // URL do OpenStreetMap estático (export)
+    const zoom = locs.length === 1 ? 15 : 13;
+    const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.02},${lat-0.02},${lng+0.02},${lat+0.02}&layer=mapnik&marker=${lat},${lng}`;
+
+    container.innerHTML = `<iframe
+      src="${osmUrl}"
+      style="width:100%;height:100%;border:none"
+      loading="lazy"
+      title="Mapa de rastreamento"
+    ></iframe>`;
+  }
+
+  function renderizarListaMapa(locs, offline, agora, ONLINE_LIMITE, IDLE_LIMITE) {
+    const el = document.getElementById('mapa-lista-motoboys');
+    if (!el) return;
+
+    const cores = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
+    let html = '';
+
+    // Online e idle
+    locs.forEach((l, i) => {
+      const diff = agora - l.timestamp;
+      const isOnline = diff < ONLINE_LIMITE;
+      const minutos = Math.floor(diff / 60000);
+      const segundos = Math.floor((diff % 60000) / 1000);
+      const tempo = minutos > 0 ? `${minutos}min atrás` : `${segundos}s atrás`;
+      const cor = cores[i % cores.length];
+      const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
+      const stBg = isOnline ? '#DCFCE7' : '#FEF9EC';
+      const stCor = isOnline ? '#16A34A' : '#92400E';
+      const stTxt = isOnline ? '● online' : '⚠ parado';
+
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0F5FA">
+        <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${l.nome}</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-top:1px">📍 ${l.lat.toFixed(4)}° S, ${l.lng.toFixed(4)}° W · ${tempo}</div>
+          <div style="font-size:10px;color:#94A8B8">Precisão: ${Math.round(l.precisao||0)}m</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${stBg};color:${stCor}">${stTxt}</span>
+      </div>`;
+    });
+
+    // Offline
+    offline.forEach(nome => {
+      const iniciais = nome.split(' ').map(p=>p[0]).slice(0,2).join('');
+      html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0F5FA;opacity:.5">
+        <div style="width:36px;height:36px;border-radius:50%;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${nome}</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-top:1px">Sem sinal de GPS</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#F3F4F6;color:#6B7280">○ offline</span>
+      </div>`;
+    });
+
+    el.innerHTML = html || '<div class="empty">Nenhum motoboy encontrado</div>';
+  }
+  // ──────────────────────────────────────────────────────────
+
   function iniciarAutoRefresh() {
     pararAutoRefresh();
     autoRefreshInterval = setInterval(() => carregarPainel(true), 30000);
@@ -1376,6 +1573,7 @@
 
   function pararAutoRefresh() {
     if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+    pararAutoRefreshMapa();
   }
 
 
