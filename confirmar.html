@@ -299,6 +299,10 @@
         if (resp === 'sim') {
           // ── ATIVAR GPS ────────────────────────────────────────
           ativarGPS();
+          // Avisar app nativo (Capacitor) que motoboy confirmou
+          if (window.parent !== window) {
+            window.parent.postMessage({ type: 'MOTOBOY_CONFIRMOU', nome: nomeUsuario }, '*');
+          }
           // ─────────────────────────────────────────────────────
 
           showMsg('', '');
@@ -584,6 +588,10 @@
 
   function voltarInicial() {
     pararGPS();
+    // Avisar app nativo que motoboy saiu
+    if (window.parent !== window) {
+      window.parent.postMessage({ type: 'MOTOBOY_SAIU' }, '*');
+    }
     localStorage.removeItem('telefone_temp');
     localStorage.removeItem('nome_temp');
     window.location.href = 'index.html';
