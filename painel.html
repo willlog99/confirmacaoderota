@@ -1338,7 +1338,7 @@
 <!-- Módulos JS -->
 
   <!-- BOTÃO FORÇAR ATUALIZAÇÃO -->
-  <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
+  <div id="btn-versao-fab" onclick="atualizarVersaoApp()" style="position:fixed;bottom:156px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);box-shadow:0 4px 14px rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:9997" title="Publicar nova versão do app">📲</div> style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
 
 <!-- CHAT WIDGET ADMIN -->
 <div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 6px 20px rgba(30,159,217,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;cursor:pointer;z-index:9998">💬
@@ -1690,6 +1690,27 @@
     }).addTo(leafletMap);
   }
 
+  async function buscarEndereco(lat, lng) {
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`,
+        { headers: { 'User-Agent': 'Loglife/1.0' } }
+      );
+      const d = await r.json();
+      if (d.address) {
+        const end = d.address;
+        const partes = [
+          end.road || end.pedestrian || end.path,
+          end.house_number,
+          end.suburb || end.neighbourhood || end.city_district,
+          end.city || end.town
+        ].filter(Boolean);
+        return partes.join(', ') || d.display_name?.split(',').slice(0,3).join(',') || '—';
+      }
+      return '—';
+    } catch(e) { return '—'; }
+  }
+
   function criarIconeLeaflet(cor, iniciais, status) {
     const online = status === 'online';
     return L.divIcon({
@@ -1756,24 +1777,32 @@
           const stCor = status==='online' ? '#16A34A' : '#F59E0B';
           const stBg  = status==='online' ? '#DCFCE7' : '#FEF9EC';
           const stTxt = status==='online' ? '● Online' : '⚠ Parado';
-          const popup = `<div style="font-family:-apple-system,sans-serif;min-width:160px">
+          const popup = `<div style="font-family:-apple-system,sans-serif;min-width:180px">
             <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:6px">${l.nome}</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px" id="end-${l.nome.replace(/\s/g,'-')}">📍 Buscando endereço...</div>
             <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">🕐 ${tempo}</div>
-            <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">🎯 Precisão: ${Math.round(l.precisao||0)}m</div>
-            <div style="font-size:11px;color:#5A7A8F;margin-bottom:6px">📍 ${l.lat.toFixed(4)}°S, ${l.lng.toFixed(4)}°W</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-bottom:6px">🎯 Precisão: ${Math.round(l.precisao||0)}m</div>
             <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${stBg};color:${stCor}">${stTxt}</span>
           </div>`;
 
           if (leafletMarkers[l.nome]) {
-            // Atualizar posição e ícone
             leafletMarkers[l.nome].setLatLng([l.lat, l.lng]);
             leafletMarkers[l.nome].setIcon(criarIconeLeaflet(cor, iniciais, status));
             leafletMarkers[l.nome].setPopupContent(popup);
           } else {
-            // Criar novo marcador
             const marker = L.marker([l.lat, l.lng], { icon: criarIconeLeaflet(cor, iniciais, status) })
               .addTo(leafletMap)
-              .bindPopup(popup, { maxWidth: 200 });
+              .bindPopup(popup, { maxWidth: 220 });
+
+            // Buscar endereço ao abrir o popup
+            marker.on('popupopen', async () => {
+              const endEl = document.getElementById('end-' + l.nome.replace(/\s/g,'-'));
+              if (endEl && endEl.textContent.includes('Buscando')) {
+                const endereco = await buscarEndereco(l.lat, l.lng);
+                if (endEl) endEl.textContent = '📍 ' + endereco;
+              }
+            });
+
             leafletMarkers[l.nome] = marker;
           }
         });
@@ -1798,6 +1827,7 @@
     if (marker && leafletMap) {
       leafletMap.setView(marker.getLatLng(), 16, { animate: true, duration: 0.8 });
       marker.openPopup();
+      // O evento popupopen vai buscar o endereço automaticamente
     }
   }
 
@@ -1842,6 +1872,20 @@
     el.innerHTML = html || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
   }
   // ──────────────────────────────────────────────────────────
+
+  async function atualizarVersaoApp() {
+    const novaVersao = prompt('Digite a nova versão do app:\n(Ex: 1.0.1, 1.0.2)\n\nAo salvar, todos os apps abertos verão o banner de atualização.');
+    if (!novaVersao) return;
+    try {
+      const r = await fetch(API + '/app-versao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ versao: novaVersao.trim() })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') toast('✓ Versão ' + d.versao + ' publicada — apps serão notificados em até 5 min');
+    } catch(e) { toast('Erro ao publicar versão', 'error'); }
+  }
 
   function iniciarAutoRefresh() {
     pararAutoRefresh();
