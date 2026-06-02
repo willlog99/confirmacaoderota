@@ -1,5 +1,7 @@
 // ── CHAT WIDGET ──
 
+  const _CHAT_API = 'https://confirmacaoderota.willlog99.workers.dev';
+
   let chatMotoboyAtual = null;
   let chatLista = [];
   let chatRefreshInterval = null;
@@ -23,7 +25,7 @@
   
   async function carregarChatLista() {
     try {
-      const r = await fetch(API + '/chat/lista');
+      const r = await fetch(_CHAT_API + '/chat/lista');
       const d = await r.json();
       const novaLista = d.lista || [];
       
@@ -87,7 +89,7 @@
     document.getElementById('chat-conv-avatar').textContent = iniciais || '?';
     
     // Marcar mensagens como lidas
-    await fetch(API + '/chat/marcar-lido', {
+    await fetch(_CHAT_API + '/chat/marcar-lido', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ telefone_motoboy: tel, remetente: 'motoboy' })
@@ -101,7 +103,7 @@
   async function carregarMensagens() {
     if (!chatMotoboyAtual) return;
     try {
-      const r = await fetch(API + '/chat/mensagens?telefone=' + encodeURIComponent(chatMotoboyAtual));
+      const r = await fetch(_CHAT_API + '/chat/mensagens?telefone=' + encodeURIComponent(chatMotoboyAtual));
       const d = await r.json();
       const msgs = d.mensagens || [];
       
@@ -135,7 +137,7 @@
     const motoboy = chatLista.find(m => m.telefone === chatMotoboyAtual);
     
     try {
-      await fetch(API + '/chat/enviar', {
+      await fetch(_CHAT_API + '/chat/enviar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -154,7 +156,7 @@
   
   async function atualizarBadge() {
     try {
-      const r = await fetch(API + '/chat/nao-lidas');
+      const r = await fetch(_CHAT_API + '/chat/nao-lidas');
       const d = await r.json();
       const total = d.total || 0;
       const badge = document.getElementById('chat-fab-badge');
@@ -199,7 +201,7 @@
     if (!confirm('🔄 Forçar atualização em todos os apps abertos?\n\nOs motoboys que estiverem com o app aberto irão ver um aviso e o app vai recarregar.')) return;
     
     try {
-      await fetch(API + '/refresh-flag', {
+      await fetch(_CHAT_API + '/refresh-flag', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timestamp: new Date().getTime() })
