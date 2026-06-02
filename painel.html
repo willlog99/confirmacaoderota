@@ -213,6 +213,7 @@
       <div class="menu-cat-items open">
         <button class="menu-item" onclick="setView('painel',this)">🏠 Painel</button>
         <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
+        <button class="menu-item" onclick="setView('presencas',this)">📋 Presenças</button>
         <button class="menu-item" onclick="setView('mapa-rastreamento',this)">🗺️ Rastreamento</button>
         <button class="menu-item" onclick="setView('checklist-view',this)">📋 Checklists</button>
         <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
@@ -369,6 +370,55 @@
     </div>
     <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
     <div id="detalhe-lista"></div>
+  </div>
+
+  <!-- ══════════ PRESENÇAS ══════════ -->
+  <div class="view" id="view-presencas" style="padding:1rem">
+
+    <div class="card" style="margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div>
+          <div class="card-title" style="margin-bottom:2px">📋 Configuração de Presenças</div>
+          <div style="font-size:12px;color:#5A7A8F" id="presencas-data">Selecione quem deve confirmar presença hoje</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="presencas-busca" placeholder="🔍 Buscar..." oninput="filtrarPresencas()"
+            style="height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;width:150px;color:#0F4C7A"/>
+          <button onclick="salvarPresencas()" style="height:36px;padding:0 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-size:12px;font-weight:700;cursor:pointer">✓ Salvar</button>
+        </div>
+      </div>
+
+      <!-- Resumo -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+        <div style="background:#E8F4FB;border-radius:10px;padding:10px;text-align:center">
+          <div id="pres-total" style="font-size:22px;font-weight:800;color:#0F4C7A">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Total</div>
+        </div>
+        <div style="background:#E8F8F0;border-radius:10px;padding:10px;text-align:center">
+          <div id="pres-marcados" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Marcados</div>
+        </div>
+        <div style="background:#F3F4F6;border-radius:10px;text-align:center;padding:10px">
+          <div id="pres-semrota" style="font-size:22px;font-weight:800;color:#6B7280">—</div>
+          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Sem rota</div>
+        </div>
+      </div>
+
+      <!-- Selecionar todos -->
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#F8FBFD;border-radius:8px;border:1.5px solid #D6E5EE;margin-bottom:8px">
+        <span style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.05em">Motoboys</span>
+        <div onclick="presencasToggleTodos()" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;font-weight:600;color:#0F4C7A">
+          <div id="pres-cb-all" style="width:18px;height:18px;border-radius:5px;border:1.5px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:.15s"></div>
+          <span id="pres-label-all">Marcar todos</span>
+        </div>
+      </div>
+
+      <!-- Lista -->
+      <div id="presencas-lista"></div>
+
+      <div id="msg-presencas" class="msg"></div>
+    </div>
+
   </div>
 
   <!-- ══════════ RASTREAMENTO GPS ══════════ -->
@@ -1378,6 +1428,7 @@
     if (el) el.classList.add('active');
     fecharMenu();
     window.scrollTo(0,0);
+    if (id === 'presencas') { carregarPresencas(); }
     if (id === 'mapa-rastreamento') {
       setTimeout(() => {
         iniciarLeafletMap();
@@ -1427,6 +1478,161 @@
     return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
   }
 
+
+  // ── PRESENÇAS ─────────────────────────────────────────────
+  let presencasLista = [];   // todos os motoboys
+  let presencasMarcados = new Set(); // nomes marcados
+
+  async function carregarPresencas() {
+    const el = document.getElementById('presencas-lista');
+    if (!el) return;
+    el.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+    // Atualizar data
+    const dataEl = document.getElementById('presencas-data');
+    if (dataEl) {
+      const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+      const d = new Date();
+      dataEl.textContent = dias[d.getDay()] + ', ' + d.toLocaleDateString('pt-BR');
+    }
+
+    try {
+      // Buscar motoboys + configuração salva em paralelo
+      const [rMb, rPres] = await Promise.all([
+        fetch(API + '/motoboys?todos=1&agrupado=1'),
+        fetch(API + '/presencas')
+      ]);
+      const dMb   = await rMb.json();
+      const dPres = await rPres.json();
+
+      // Lista única de motoboys com telefone
+      const mbs = dMb.motoboys || [];
+      const vistos = new Set();
+      presencasLista = [];
+      mbs.forEach(m => {
+        if (!vistos.has(m.nome)) {
+          vistos.add(m.nome);
+          // Buscar rotas do dia
+          const rotasDia = mbs.filter(x => x.nome === m.nome && x.rota).map(x => x.rota);
+          presencasLista.push({
+            nome: m.nome,
+            telefone: m.telefone || m.contato || '—',
+            rotas: [...new Set(rotasDia)]
+          });
+        }
+      });
+      presencasLista.sort((a,b) => {
+        const aRota = a.rotas.length > 0;
+        const bRota = b.rotas.length > 0;
+        if (aRota && !bRota) return -1;
+        if (!aRota && bRota) return 1;
+        return a.nome.localeCompare(b.nome);
+      });
+
+      // Restaurar marcados salvos
+      const marcados = dPres.marcados || [];
+      presencasMarcados = new Set(marcados);
+
+      // Se nenhum salvo, marcar quem tem rota por padrão
+      if (!marcados.length) {
+        presencasLista.forEach(m => { if (m.rotas.length > 0) presencasMarcados.add(m.nome); });
+      }
+
+      renderizarPresencas();
+    } catch(e) {
+      el.innerHTML = '<div class="empty">Erro ao carregar motoboys</div>';
+    }
+  }
+
+  function renderizarPresencas() {
+    const busca = (document.getElementById('presencas-busca')?.value || '').toLowerCase();
+    const el = document.getElementById('presencas-lista');
+    if (!el) return;
+
+    const CORES = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
+    const comRota = presencasLista.filter(m => m.rotas.length > 0);
+    const semRota = presencasLista.filter(m => m.rotas.length === 0);
+
+    // Contadores
+    document.getElementById('pres-total').textContent    = presencasLista.length;
+    document.getElementById('pres-marcados').textContent = presencasMarcados.size;
+    document.getElementById('pres-semrota').textContent  = semRota.length;
+
+    // Checkbox todos
+    const cbAll   = document.getElementById('pres-cb-all');
+    const lblAll  = document.getElementById('pres-label-all');
+    const todosMarcados = presencasLista.length > 0 && presencasLista.every(m => presencasMarcados.has(m.nome));
+    if (cbAll) {
+      cbAll.style.background    = todosMarcados ? '#0F4C7A' : '#fff';
+      cbAll.style.borderColor   = todosMarcados ? '#0F4C7A' : '#D6E5EE';
+      cbAll.textContent         = todosMarcados ? '✓' : '';
+    }
+    if (lblAll) lblAll.textContent = todosMarcados ? 'Desmarcar todos' : 'Marcar todos';
+
+    function renderGrupo(lista, titulo) {
+      if (!lista.length) return '';
+      const filtrado = lista.filter(m => !busca || m.nome.toLowerCase().includes(busca));
+      if (!filtrado.length) return '';
+      let html = `<div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.08em;padding:10px 4px 6px;font-family:inherit">${titulo}</div>`;
+      filtrado.forEach((m, i) => {
+        const cor = CORES[(presencasLista.indexOf(m)) % CORES.length];
+        const iniciais = m.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
+        const marcado = presencasMarcados.has(m.nome);
+        const rotaTxt = m.rotas.length > 0 ? m.rotas.join(', ') : 'Sem rota';
+        const rotaBg  = m.rotas.length > 0 ? '#E8F4FB' : '#F3F4F6';
+        const rotaCor = m.rotas.length > 0 ? '#0F4C7A' : '#9CA3AF';
+        html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\\'")}')" id="pres-row-${m.nome.replace(/\s/g,'-')}"
+          style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:1.5px solid ${marcado?'#5DCAA5':'#EBF1F5'};background:${marcado?'#F0FAF6':'#fff'};margin-bottom:6px;cursor:pointer;transition:.15s">
+          <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${marcado?'#0F9B78':'#D6E5EE'};background:${marcado?'#0F9B78':'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0;transition:.15s">${marcado?'✓':''}</div>
+          <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid ${marcado?'#0F9B78':'transparent'};transition:.15s">${iniciais}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${m.nome}</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap">
+              <span style="font-size:11px;color:#5A7A8F">📞 ${m.telefone}</span>
+              <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${rotaBg};color:${rotaCor}">🛵 ${rotaTxt}</span>
+            </div>
+          </div>
+        </div>`;
+      });
+      return html;
+    }
+
+    el.innerHTML = renderGrupo(comRota, 'Com rota hoje') + renderGrupo(semRota, 'Sem rota hoje');
+    if (!el.innerHTML.trim()) el.innerHTML = '<div class="empty">Nenhum motoboy encontrado</div>';
+  }
+
+  function presencasToggle(nome) {
+    if (presencasMarcados.has(nome)) presencasMarcados.delete(nome);
+    else presencasMarcados.add(nome);
+    renderizarPresencas();
+  }
+
+  function presencasToggleTodos() {
+    const todosMarcados = presencasLista.every(m => presencasMarcados.has(m.nome));
+    if (todosMarcados) presencasMarcados.clear();
+    else presencasLista.forEach(m => presencasMarcados.add(m.nome));
+    renderizarPresencas();
+  }
+
+  function filtrarPresencas() { renderizarPresencas(); }
+
+  async function salvarPresencas() {
+    const msg = document.getElementById('msg-presencas');
+    try {
+      const r = await fetch(API + '/presencas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ marcados: [...presencasMarcados] })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        toast('✓ Configuração salva — ' + presencasMarcados.size + ' motoboys marcados');
+      } else {
+        toast('Erro ao salvar', 'error');
+      }
+    } catch(e) { toast('Erro de conexão', 'error'); }
+  }
+  // ──────────────────────────────────────────────────────────
 
   // ── RASTREAMENTO GPS — Leaflet + OpenStreetMap ────────────
   let mapaRefreshInterval = null;
