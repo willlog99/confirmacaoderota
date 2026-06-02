@@ -74,6 +74,8 @@
     .panel-live{display:flex;align-items:center;gap:6px;font-size:11px;color:#0F9B78;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
     .live-dot{width:8px;height:8px;border-radius:50%;background:#0F9B78;animation:pulse 1.5s ease-in-out infinite}
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+    @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.2}}
+    .leaflet-popup-content{margin:10px 14px!important;font-family:-apple-system,sans-serif}
     .panel-body{padding:1rem 1.5rem;max-height:400px;overflow-y:auto}
 
     .rota-card{background:#fff;border-radius:12px;padding:1rem 1.25rem;margin-bottom:10px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .2s;position:relative}
@@ -370,55 +372,52 @@
   </div>
 
   <!-- ══════════ RASTREAMENTO GPS ══════════ -->
-  <div class="view" id="view-mapa-rastreamento" style="padding:1rem">
-    <div class="card" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <div>
-          <div class="card-title" style="margin-bottom:2px">🗺️ Rastreamento em Tempo Real</div>
-          <div style="font-size:12px;color:#5A7A8F">Atualiza a cada 2 minutos</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div id="mapa-live-badge" style="display:none;align-items:center;gap:5px;font-size:11px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:4px 10px;border-radius:20px">
-            <div style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:pulse2 1.4s infinite"></div>
-            AO VIVO
+  <div class="view" id="view-mapa-rastreamento" style="padding:0">
+    <div style="display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px)">
+
+      <!-- Sidebar motoboys -->
+      <div style="background:#fff;border-right:1px solid #D6E5EE;display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:12px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.07em">Motoboys</span>
+          <div id="mapa-live-badge" style="display:none;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:3px 9px;border-radius:20px">
+            <div style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:pulse2 1.4s infinite"></div>AO VIVO
           </div>
-          <button onclick="carregarMapa()" style="padding:7px 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:700;cursor:pointer;color:#0F4C7A">↻ Atualizar</button>
+        </div>
+
+        <!-- Resumo -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid #EBF1F5">
+          <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#E8F8F0">
+            <div id="mapa-count-online" style="font-size:20px;font-weight:800;color:#0F9B78">—</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Online</div>
+          </div>
+          <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#FEF9EC">
+            <div id="mapa-count-idle" style="font-size:20px;font-weight:800;color:#F59E0B">—</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Parado</div>
+          </div>
+          <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#F3F4F6">
+            <div id="mapa-count-off" style="font-size:20px;font-weight:800;color:#6B7280">—</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Offline</div>
+          </div>
+        </div>
+
+        <!-- Lista motoboys -->
+        <div id="mapa-lista-motoboys" style="overflow-y:auto;flex:1">
+          <div class="empty">Carregando...</div>
+        </div>
+
+        <!-- Footer sync -->
+        <div style="padding:10px 14px;border-top:1px solid #EBF1F5;background:#FAFCFE;font-size:11px;color:#5A7A8F;display:flex;align-items:center;gap:8px">
+          <div id="mapa-sync-dot" style="width:6px;height:6px;border-radius:50%;background:#1E9FD9;animation:pulse2 1.4s infinite"></div>
+          Próx. sync
+          <div style="flex:1;height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden">
+            <div id="mapa-sync-bar" style="height:100%;background:#1E9FD9;border-radius:2px;width:0%;transition:width 1s linear"></div>
+          </div>
+          <span id="mapa-sync-countdown">2:00</span>
         </div>
       </div>
 
-      <!-- Resumo rápido -->
-      <div id="mapa-resumo" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
-        <div style="background:#E8F8F0;border-radius:10px;padding:10px;text-align:center">
-          <div id="mapa-count-online" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Online</div>
-        </div>
-        <div style="background:#FEF9EC;border-radius:10px;padding:10px;text-align:center">
-          <div id="mapa-count-idle" style="font-size:22px;font-weight:800;color:#F59E0B">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Parado</div>
-        </div>
-        <div style="background:#F3F4F6;border-radius:10px;padding:10px;text-align:center">
-          <div id="mapa-count-off" style="font-size:22px;font-weight:800;color:#6B7280">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Offline</div>
-        </div>
-      </div>
-
-      <!-- Iframe do mapa OpenStreetMap -->
-      <div id="mapa-container" style="border-radius:14px;overflow:hidden;border:1.5px solid #D6E5EE;background:#E8EFE8;height:300px;display:flex;align-items:center;justify-content:center">
-        <div style="text-align:center;color:#5A7A8F;font-size:13px">
-          <div style="font-size:32px;margin-bottom:8px">🗺️</div>
-          Carregando mapa...
-        </div>
-      </div>
-
-      <div style="margin-top:10px;font-size:11px;color:#94A8B8;text-align:center" id="mapa-ultima-sync">—</div>
-    </div>
-
-    <!-- Lista de motoboys -->
-    <div class="card">
-      <div class="card-title" style="margin-bottom:.75rem">Motoboys</div>
-      <div id="mapa-lista-motoboys">
-        <div class="empty">Carregando...</div>
-      </div>
+      <!-- Mapa Leaflet -->
+      <div id="leaflet-map" style="height:100%;width:100%"></div>
     </div>
   </div>
 
@@ -1325,13 +1324,13 @@
 </div>
 
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script></script defer>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script></script defer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script></script defer>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script></script defer>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 
 
 
@@ -1379,7 +1378,13 @@
     if (el) el.classList.add('active');
     fecharMenu();
     window.scrollTo(0,0);
-    if (id === 'mapa-rastreamento') { carregarMapa(); iniciarAutoRefreshMapa(); }
+    if (id === 'mapa-rastreamento') {
+      setTimeout(() => {
+        iniciarLeafletMap();
+        carregarMapa();
+        iniciarAutoRefreshMapa();
+      }, 100);
+    }
     if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); }
     if (id === 'confirmacoes') carregarConfirmacoes();
     if (id === 'motoristas') carregarMotoristasList();
@@ -1423,37 +1428,83 @@
   }
 
 
-  // ── RASTREAMENTO GPS ──────────────────────────────────────
+  // ── RASTREAMENTO GPS — Leaflet + OpenStreetMap ────────────
   let mapaRefreshInterval = null;
+  let leafletMap = null;
+  let leafletMarkers = {};
+  let mapaSyncTimer = null;
+  let mapaSyncSegundos = 120;
+  const CORES_MB = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
 
   function iniciarAutoRefreshMapa() {
     pararAutoRefreshMapa();
-    mapaRefreshInterval = setInterval(carregarMapa, 2 * 60 * 1000);
+    mapaSyncSegundos = 120;
+    mapaSyncTimer = setInterval(() => {
+      mapaSyncSegundos--;
+      atualizarCountdownMapa();
+      if (mapaSyncSegundos <= 0) {
+        mapaSyncSegundos = 120;
+        carregarMapa();
+      }
+    }, 1000);
+  }
+
+  function atualizarCountdownMapa() {
+    const el = document.getElementById('mapa-sync-countdown');
+    const bar = document.getElementById('mapa-sync-bar');
+    if (el) el.textContent = Math.floor(mapaSyncSegundos/60) + ':' + String(mapaSyncSegundos%60).padStart(2,'0');
+    if (bar) bar.style.width = ((120 - mapaSyncSegundos) / 120 * 100) + '%';
   }
 
   function pararAutoRefreshMapa() {
     if (mapaRefreshInterval) { clearInterval(mapaRefreshInterval); mapaRefreshInterval = null; }
+    if (mapaSyncTimer) { clearInterval(mapaSyncTimer); mapaSyncTimer = null; }
+  }
+
+  function iniciarLeafletMap() {
+    if (leafletMap) return;
+    if (!document.getElementById('leaflet-map')) return;
+    if (typeof L === 'undefined') { setTimeout(iniciarLeafletMap, 500); return; }
+    leafletMap = L.map('leaflet-map', { zoomControl: true }).setView([-23.5505, -46.6330], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 19
+    }).addTo(leafletMap);
+  }
+
+  function criarIconeLeaflet(cor, iniciais, status) {
+    const online = status === 'online';
+    return L.divIcon({
+      className: '',
+      html: `<div style="position:relative">
+        <div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:36px;height:36px;border:3px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;opacity:${online?1:.7}">
+          <span style="transform:rotate(45deg);font-size:11px;font-weight:700">${iniciais}</span>
+        </div>
+        ${online ? `<div style="position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:#16A34A;border:2px solid #fff;border-radius:50%"></div>` : ''}
+      </div>`,
+      iconSize: [36,36], iconAnchor: [18,36], popupAnchor: [0,-36]
+    });
   }
 
   async function carregarMapa() {
     try {
-      // Buscar localizações
-      const r = await fetch(API + '/localizacao');
-      const d = await r.json();
-      const locs = d.localizacoes || [];
+      iniciarLeafletMap();
 
-      // Buscar lista de motoboys para saber quem está offline
-      const r2 = await fetch(API + '/motoboys?todos=1&agrupado=1');
-      const d2 = await r2.json();
-      const todosMotoboys = [...new Set((d2.motoboys||[]).map(m => m.nome))].sort();
+      const [rLoc, rMb] = await Promise.all([
+        fetch(API + '/localizacao'),
+        fetch(API + '/motoboys?todos=1&agrupado=1')
+      ]);
+      const dLoc = await rLoc.json();
+      const dMb  = await rMb.json();
+      const locs = dLoc.localizacoes || [];
+      const todosMotoboys = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
 
       const agora = Date.now();
-      const ONLINE_LIMITE = 5 * 60 * 1000;   // 5 min
-      const IDLE_LIMITE   = 10 * 60 * 1000;  // 10 min
+      const ONLINE_LIM = 5  * 60 * 1000;
+      const IDLE_LIM   = 10 * 60 * 1000;
 
-      // Classificar
-      const online = locs.filter(l => agora - l.timestamp < ONLINE_LIMITE);
-      const idle   = locs.filter(l => agora - l.timestamp >= ONLINE_LIMITE && agora - l.timestamp < IDLE_LIMITE);
+      const online  = locs.filter(l => agora - l.timestamp < ONLINE_LIM);
+      const idle    = locs.filter(l => agora - l.timestamp >= ONLINE_LIM && agora - l.timestamp < IDLE_LIM);
       const comSinal = new Set(locs.map(l => l.nome));
       const offline  = todosMotoboys.filter(n => !comSinal.has(n));
 
@@ -1462,106 +1513,115 @@
       document.getElementById('mapa-count-idle').textContent   = idle.length;
       document.getElementById('mapa-count-off').textContent    = offline.length;
 
-      // Badge ao vivo
       const badge = document.getElementById('mapa-live-badge');
       if (badge) badge.style.display = locs.length > 0 ? 'flex' : 'none';
 
-      // Sync time
-      const syncEl = document.getElementById('mapa-ultima-sync');
-      if (syncEl) syncEl.textContent = 'Última atualização: ' + new Date().toLocaleTimeString('pt-BR');
+      // Atualizar marcadores no mapa
+      if (leafletMap) {
+        // Remover marcadores antigos que não estão mais na lista
+        Object.keys(leafletMarkers).forEach(nome => {
+          if (!comSinal.has(nome)) {
+            leafletMap.removeLayer(leafletMarkers[nome]);
+            delete leafletMarkers[nome];
+          }
+        });
 
-      // Renderizar mapa com OpenStreetMap (Leaflet via CDN)
-      renderizarMapaLeaflet(locs);
+        // Adicionar/atualizar marcadores
+        locs.forEach((l, i) => {
+          const cor = CORES_MB[i % CORES_MB.length];
+          const status = agora - l.timestamp < ONLINE_LIM ? 'online' : 'parado';
+          const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
+          const diff = agora - l.timestamp;
+          const min = Math.floor(diff/60000);
+          const seg = Math.floor((diff%60000)/1000);
+          const tempo = min > 0 ? `${min}min atrás` : `${seg}s atrás`;
+          const stCor = status==='online' ? '#16A34A' : '#F59E0B';
+          const stBg  = status==='online' ? '#DCFCE7' : '#FEF9EC';
+          const stTxt = status==='online' ? '● Online' : '⚠ Parado';
+          const popup = `<div style="font-family:-apple-system,sans-serif;min-width:160px">
+            <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:6px">${l.nome}</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">🕐 ${tempo}</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">🎯 Precisão: ${Math.round(l.precisao||0)}m</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-bottom:6px">📍 ${l.lat.toFixed(4)}°S, ${l.lng.toFixed(4)}°W</div>
+            <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${stBg};color:${stCor}">${stTxt}</span>
+          </div>`;
 
-      // Renderizar lista
-      renderizarListaMapa(locs, offline, agora, ONLINE_LIMITE, IDLE_LIMITE);
+          if (leafletMarkers[l.nome]) {
+            // Atualizar posição e ícone
+            leafletMarkers[l.nome].setLatLng([l.lat, l.lng]);
+            leafletMarkers[l.nome].setIcon(criarIconeLeaflet(cor, iniciais, status));
+            leafletMarkers[l.nome].setPopupContent(popup);
+          } else {
+            // Criar novo marcador
+            const marker = L.marker([l.lat, l.lng], { icon: criarIconeLeaflet(cor, iniciais, status) })
+              .addTo(leafletMap)
+              .bindPopup(popup, { maxWidth: 200 });
+            leafletMarkers[l.nome] = marker;
+          }
+        });
+
+        // Ajustar zoom para mostrar todos se tiver localizações
+        if (locs.length > 0) {
+          const bounds = L.latLngBounds(locs.map(l => [l.lat, l.lng]));
+          leafletMap.fitBounds(bounds, { padding: [50,50], maxZoom: 15 });
+        }
+      }
+
+      // Renderizar lista sidebar
+      renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM);
 
     } catch(e) {
       document.getElementById('mapa-lista-motoboys').innerHTML = '<div class="empty">Erro ao carregar</div>';
     }
   }
 
-  function renderizarMapaLeaflet(locs) {
-    const container = document.getElementById('mapa-container');
-    if (!container) return;
-
-    // Se não tem localizações, mostrar placeholder
-    if (!locs.length) {
-      container.innerHTML = '<div style="text-align:center;color:#5A7A8F;font-size:13px"><div style="font-size:32px;margin-bottom:8px">🗺️</div>Nenhum motoboy com GPS ativo</div>';
-      return;
+  function focarMotoboy(nome) {
+    const marker = leafletMarkers[nome];
+    if (marker && leafletMap) {
+      leafletMap.setView(marker.getLatLng(), 16, { animate: true, duration: 0.8 });
+      marker.openPopup();
     }
-
-    // Calcular centro
-    const lat = locs.reduce((s, l) => s + l.lat, 0) / locs.length;
-    const lng = locs.reduce((s, l) => s + l.lng, 0) / locs.length;
-
-    // Gerar URL do OpenStreetMap com marcadores
-    const markers = locs.map(l => `${l.lat},${l.lng}`).join('|');
-    const cores = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
-
-    // Usar iframe do OpenStreetMap com pins
-    const pins = locs.map((l, i) => {
-      const cor = cores[i % cores.length].replace('#','');
-      return `&mlat${i+1}=${l.lat}&mlon${i+1}=${l.lng}`;
-    }).join('');
-
-    // URL do OpenStreetMap estático (export)
-    const zoom = locs.length === 1 ? 15 : 13;
-    const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.02},${lat-0.02},${lng+0.02},${lat+0.02}&layer=mapnik&marker=${lat},${lng}`;
-
-    container.innerHTML = `<iframe
-      src="${osmUrl}"
-      style="width:100%;height:100%;border:none"
-      loading="lazy"
-      title="Mapa de rastreamento"
-    ></iframe>`;
   }
 
-  function renderizarListaMapa(locs, offline, agora, ONLINE_LIMITE, IDLE_LIMITE) {
+  function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
     const el = document.getElementById('mapa-lista-motoboys');
     if (!el) return;
-
-    const cores = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
     let html = '';
 
-    // Online e idle
     locs.forEach((l, i) => {
+      const cor = CORES_MB[i % CORES_MB.length];
       const diff = agora - l.timestamp;
-      const isOnline = diff < ONLINE_LIMITE;
-      const minutos = Math.floor(diff / 60000);
-      const segundos = Math.floor((diff % 60000) / 1000);
-      const tempo = minutos > 0 ? `${minutos}min atrás` : `${segundos}s atrás`;
-      const cor = cores[i % cores.length];
+      const isOnline = diff < ONLINE_LIM;
+      const min = Math.floor(diff/60000);
+      const seg = Math.floor((diff%60000)/1000);
+      const tempo = min > 0 ? `${min}min atrás` : `${seg}s atrás`;
       const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
-      const stBg = isOnline ? '#DCFCE7' : '#FEF9EC';
+      const stBg  = isOnline ? '#DCFCE7' : '#FEF9EC';
       const stCor = isOnline ? '#16A34A' : '#92400E';
       const stTxt = isOnline ? '● online' : '⚠ parado';
-
-      html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0F5FA">
-        <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
+      html += `<div onclick="focarMotoboy('${l.nome}')" style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
+        <div style="width:34px;height:34px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:700;color:#0F2940">${l.nome}</div>
-          <div style="font-size:11px;color:#5A7A8F;margin-top:1px">📍 ${l.lat.toFixed(4)}° S, ${l.lng.toFixed(4)}° W · ${tempo}</div>
-          <div style="font-size:10px;color:#94A8B8">Precisão: ${Math.round(l.precisao||0)}m</div>
+          <div style="font-size:13px;font-weight:600;color:#0F2940">${l.nome}</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">📍 ${l.lat.toFixed(4)}°S · ${tempo}</div>
         </div>
-        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${stBg};color:${stCor}">${stTxt}</span>
+        <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap">${stTxt}</span>
       </div>`;
     });
 
-    // Offline
     offline.forEach(nome => {
       const iniciais = nome.split(' ').map(p=>p[0]).slice(0,2).join('');
-      html += `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #F0F5FA;opacity:.5">
-        <div style="width:36px;height:36px;border-radius:50%;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
+      html += `<div style="padding:10px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:10px;opacity:.4">
+        <div style="width:34px;height:34px;border-radius:50%;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
         <div style="flex:1">
-          <div style="font-size:13px;font-weight:700;color:#0F2940">${nome}</div>
+          <div style="font-size:13px;font-weight:600;color:#0F2940">${nome}</div>
           <div style="font-size:11px;color:#5A7A8F;margin-top:1px">Sem sinal de GPS</div>
         </div>
-        <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:#F3F4F6;color:#6B7280">○ offline</span>
+        <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F3F4F6;color:#6B7280;white-space:nowrap">○ offline</span>
       </div>`;
     });
 
-    el.innerHTML = html || '<div class="empty">Nenhum motoboy encontrado</div>';
+    el.innerHTML = html || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
   }
   // ──────────────────────────────────────────────────────────
 
