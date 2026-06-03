@@ -478,7 +478,6 @@ function renderizarMotoristasFiltrados() {
     </div>`).join('');
 }
 let clienteParaMover = null;
-let autoRefreshInterval = null;
 let cardExpandido = null;
 let rotasDisponiveis = [];
 
