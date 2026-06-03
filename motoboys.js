@@ -3,6 +3,7 @@
 // ============================================================
 
 // ── VARIÁVEIS ──
+let motoboysListaCompleta = [];
 let agendamentos = JSON.parse(localStorage.getItem('disp_agendamentos') || '[]');
 let editandoAgendamento = null;
 let diasSelecionados = new Set();
