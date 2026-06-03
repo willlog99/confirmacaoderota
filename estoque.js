@@ -2,6 +2,32 @@
 // ABA ESTOQUE — JS COMPLETO
 // =============================================
 
+// ── VARIÁVEIS GLOBAIS DE PATRIMÔNIO ──
+let patrimonios = JSON.parse(localStorage.getItem('lgl_pat') || '[]');
+let patrimoniosSimples = JSON.parse(localStorage.getItem('lgl_pat_simples') || '{}');
+let checklistsMotoboys = JSON.parse(localStorage.getItem('lgl_pat_chk') || '{}');
+let substPatId = null;
+let substPatSelecionado = null;
+let patAddMotoboy = null;
+let patAddTipoAtual = null;
+let patAddCodigoSelecionado = null;
+let estadoPat = 'Novo';
+let subtipoPat2 = 'Definitivo';
+const PAT_COM_COD = ['bau','cartao','cracha','colete','tablet','celular'];
+const LISTA_PADRAO_PAT = [
+  { id:'bau',        nome:'Baú',               icon:'🔒', codigo:true  },
+  { id:'cartao',     nome:'Cartão',            icon:'💳', codigo:true  },
+  { id:'cracha',     nome:'Crachá',            icon:'🪪', codigo:true  },
+  { id:'colete',     nome:'Colete',            icon:'🦺', codigo:true  },
+  { id:'tablet',     nome:'Tablet',            icon:'📱', codigo:true  },
+  { id:'celular',    nome:'Celular',           icon:'📞', codigo:true  },
+  { id:'bolsa',      nome:'Bolsa Térmica',     icon:'🧳', codigo:false },
+  { id:'gelox',      nome:'Gelox',             icon:'🧊', codigo:false },
+  { id:'gelo_seco',  nome:'Gelo Seco',         icon:'❄️', codigo:false },
+  { id:'caixa_amb',  nome:'Caixa Ambiente',    icon:'📦', codigo:false },
+  { id:'caixa_ref',  nome:'Caixa Refrigerada', icon:'🧊', codigo:false },
+];
+
 let entTamSel = 'P';
 let entQtd = 5;
 let filtroMatEstAtual = 'todos';
