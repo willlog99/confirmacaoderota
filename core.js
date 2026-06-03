@@ -27,6 +27,23 @@ function fecharModal(id) {
   if (el) el.style.display = 'none';
 }
 
+// ── BREADCRUMB ──────────────────────────────────────────
+const BREADCRUMBS = {
+  'painel': 'OPS › <b>Painel</b>',
+  'confirmacoes': 'OPS › <b>Confirmações</b>',
+  'mapa-rastreamento': 'OPS › <b>Rastreamento</b>',
+  'checklist-view': 'OPS › <b>Checklist</b>',
+  'motoristas': 'OPS › <b>Motoristas</b>',
+  'estoque-view': 'Gente e Gestão › <b>PMC Estoque</b>',
+  'ponto-rh': 'Gente e Gestão › <b>Ponto RH</b>',
+  'gestor': 'Qualidade › <b>Auditoria</b>',
+  'presencas': 'Gente e Gestão › <b>Presenças</b>',
+  'buscar': 'Gestão de Rota › <b>Buscar cliente</b>',
+  'criar-cliente': 'Gestão de Rota › <b>Criar cliente</b>',
+  'gerenciar-motoboys': 'Gestão de Rota › <b>Motoboys</b>',
+  'ativar-cliente': 'Gestão de Rota › <b>Ativar/Desativar cliente</b>',
+};
+
 function setView(id, el) {
   pararAutoRefresh();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -91,22 +108,6 @@ function pararAutoRefresh() {
   if (typeof pararAutoRefreshMapa === 'function') pararAutoRefreshMapa();
 
 
-// ── BREADCRUMB ──────────────────────────────────────────
-const BREADCRUMBS = {
-  'painel': 'OPS › <b>Painel</b>',
-  'confirmacoes': 'OPS › <b>Confirmações</b>',
-  'mapa-rastreamento': 'OPS › <b>Rastreamento</b>',
-  'checklist-view': 'OPS › <b>Checklist</b>',
-  'motoristas': 'OPS › <b>Motoristas</b>',
-  'estoque-view': 'Gente e Gestão › <b>PMC Estoque</b>',
-  'ponto-rh': 'Gente e Gestão › <b>Ponto RH</b>',
-  'gestor': 'Qualidade › <b>Auditoria</b>',
-  'presencas': 'Gente e Gestão › <b>Presenças</b>',
-  'buscar': 'Gestão de Rota › <b>Buscar cliente</b>',
-  'criar-cliente': 'Gestão de Rota › <b>Criar cliente</b>',
-  'gerenciar-motoboys': 'Gestão de Rota › <b>Motoboys</b>',
-  'ativar-cliente': 'Gestão de Rota › <b>Ativar/Desativar cliente</b>',
-};
 
 function atualizarBreadcrumb(id) {
   const bc = document.getElementById('tb-breadcrumb');
