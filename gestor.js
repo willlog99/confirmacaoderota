@@ -42,11 +42,6 @@ function mudarSubGestor(sub, btn) {
 // =============================================
 // MATERIAIS — ESTOQUE GERAL
 // =============================================
-let materiais = [];
-let filtroMatAtual = 'todos';
-let matMovId = null;
-let matMovTipo = 'entrada';
-let qtdMov = 1;
 // CAT_ICONS e CAT_NOMES definidos em materiais.js
 
 
@@ -490,13 +485,6 @@ function filtrarChkGestor(filtro, btn) {
 // =============================================
 // PONTO RH — COMPLETO
 // =============================================
-let pontoDadosPonto=[], pontoDadosFerias=[], pontoDadosBanco=[], pontoDadosEndereco=[];
-let pontoSaldosReais={}, pontoTemExtrato=false;
-let pontoDiasExist=[], pontoMes=new Date().getMonth(), pontoAno=new Date().getFullYear();
-let pontoNomesHome=[], pontoNomesBanco=[];
-let pontoHomeData=[], pontoBancoData=[];
-let pontoDesligados=[];
-let pontoProcessado=false;
 
 
 async function carregarGestores() {
