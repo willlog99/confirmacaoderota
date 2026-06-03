@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Centro de Controle</title>
-  <link rel="manifest" href="manifest-admin.json"/>
-  <meta name="theme-color" content="#1E9FD9"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <meta name="apple-mobile-web-app-title" content="Loglife Admin"/>
-  <link rel="apple-touch-icon" href="20050686-7618-4EE2-86F2-0E0E1EE012BE.png"/>
-  <style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Loglife</title>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-title" content="Loglife Admin"/>
+<link rel="apple-touch-icon" href="20050686-7618-4EE2-86F2-0E0E1EE012BE.png"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F0F4F8;color:#0F4C7A;min-height:100vh}
 
@@ -186,184 +190,347 @@
     .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#0F4C7A;color:#fff;padding:11px 22px;border-radius:99px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;box-shadow:0 4px 12px rgba(15,75,122,0.3)}
     .toast.show{opacity:1}
     .empty{text-align:center;padding:2rem;color:#94A8B8;font-size:13px}
-  </style>
-        </head>
+  
+
+/* ══ NOVO LAYOUT ══ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --az:#0F4C7A;--az2:#1E9FD9;--az3:#E8F4FB;
+  --vd:#0F9B78;--vd2:#E8F8F0;
+  --am:#F59E0B;--am2:#FEF9EC;
+  --rd:#DC2626;--rd2:#FCEBEB;
+  --bg:#F0F5FA;--card:#fff;
+  --border:#D6E5EE;--border2:#EBF1F5;
+  --txt:#0F2940;--mut:#5A7A8F;--mut2:#94A8B8;
+  --sidebar-w:220px;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
+
+/* Wrapper principal */
+.app-layout{display:flex;flex:1;overflow:hidden;height:100vh}
+
+/* ══ SIDEBAR ══ */
+.app-sidebar{
+  width:var(--sidebar-w);background:var(--az);
+  display:flex;flex-direction:column;flex-shrink:0;
+  overflow:hidden;
+}
+.sidebar-logo{
+  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);
+  flex-shrink:0;display:flex;align-items:center;gap:10px;
+}
+.sidebar-logo img{height:32px;width:auto;filter:brightness(0) invert(1)}
+.sidebar-logo-txt{font-size:13px;font-weight:700;color:#fff}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:none}
+.sidebar-nav::-webkit-scrollbar{display:none}
+
+.nav-group-lbl{
+  font-size:9px;font-weight:700;color:rgba(255,255,255,.3);
+  text-transform:uppercase;letter-spacing:.12em;
+  padding:10px 16px 4px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 16px;font-size:13px;font-weight:500;
+  color:rgba(255,255,255,.55);cursor:pointer;
+  border-left:2px solid transparent;transition:.15s;
+  background:none;border-top:none;border-right:none;border-bottom:none;
+  width:100%;text-align:left;font-family:inherit;
+}
+.nav-item:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.05)}
+.nav-item.active{color:#fff;background:rgba(30,159,217,.18);border-left-color:var(--az2);font-weight:600}
+.nav-ic{font-size:13px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge-red{margin-left:auto;font-size:10px;font-weight:700;background:var(--rd);color:#fff;padding:1px 6px;border-radius:20px}
+.nav-tag{margin-left:auto;font-size:9px;color:rgba(255,255,255,.25);background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px}
+.nav-live{margin-left:auto;display:flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.15);padding:2px 6px;border-radius:20px}
+.nav-live-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse2 1.4s infinite}
+
+.sidebar-footer{
+  padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
+}
+.sf-av{width:28px;height:28px;border-radius:50%;background:var(--az2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.sf-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
+.sf-role{font-size:10px;color:rgba(255,255,255,.35)}
+
+/* ══ MAIN ══ */
+.app-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Topbar */
+.app-topbar{
+  background:var(--card);border-bottom:1px solid var(--border2);
+  padding:0 20px;height:48px;
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+}
+.tb-breadcrumb{font-size:11px;color:var(--mut)}
+.tb-breadcrumb b{color:var(--txt);font-weight:600}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.tb-btn{height:30px;padding:0 12px;border-radius:7px;border:1.5px solid var(--border);background:var(--card);font-size:11px;font-weight:600;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:.15s}
+.tb-btn:hover{border-color:var(--az2);color:var(--az)}
+
+/* Content */
+.app-content{flex:1;overflow-y:auto;padding:16px 20px}
+
+/* Views dentro do novo layout */
+.view{display:none}
+.view.active{display:block}
+
+/* ══ PAINEL PRINCIPAL (view-painel) ══ */
+.dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;align-items:start}
+
+.panel{background:var(--card);border-radius:14px;border:1px solid var(--border2);box-shadow:0 2px 10px rgba(30,159,217,.06);overflow:hidden;margin-bottom:12px}
+.panel:last-child{margin-bottom:0}
+.ph{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;border-bottom:1px solid var(--border2)}
+.pt{font-size:13px;font-weight:700;color:var(--az);display:flex;align-items:center;gap:7px}
+.pbadge{background:var(--az2);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700}
+.plive{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:700;color:var(--vd)}
+
+.kpi-grid-new{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.kpi-new{background:var(--card);border-radius:12px;padding:.9rem;text-align:center;border:1px solid var(--border2);box-shadow:0 2px 8px rgba(30,159,217,.06);transition:.2s;cursor:default}
+.kpi-new:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(30,159,217,.1)}
+.kpi-ico{font-size:20px;margin-bottom:3px}
+.kpi-val{font-size:26px;font-weight:800;color:var(--az);line-height:1}
+.kpi-lbl{font-size:10px;color:var(--mut);font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+
+.ri{padding:9px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:9px;cursor:pointer;transition:.15s}
+.ri:last-child{border-bottom:none}
+.ri:hover{background:#F7FBFD}
+.ri-cod{font-size:10px;font-weight:700;color:var(--az);background:var(--az3);padding:2px 7px;border-radius:5px;white-space:nowrap;flex-shrink:0}
+.ri-info{flex:1;min-width:0}
+.ri-name{font-size:12px;font-weight:600;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ri-sub{font-size:10px;color:var(--mut);margin-top:1px}
+.ri-prog{width:65px;flex-shrink:0}
+.ri-prog-bar{height:3px;background:var(--border2);border-radius:2px;overflow:hidden;margin-bottom:2px}
+.ri-prog-fill{height:100%;border-radius:2px}
+.ri-prog-lbl{font-size:9px;font-weight:600;color:var(--mut);text-align:right}
+.ri-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.ri-ok{background:var(--vd2);color:var(--vd)}
+.ri-par{background:var(--am2);color:#92400E}
+.ri-no{background:var(--border2);color:var(--mut)}
+
+/* Reverter coleta */
+.reverter-body{padding:14px}
+.field-row-new{display:flex;gap:8px;margin-bottom:12px}
+.field-input-new{flex:1;height:36px;border-radius:8px;border:1.5px solid var(--border);padding:0 12px;font-size:13px;color:var(--az);outline:none;font-family:inherit;transition:.2s}
+.field-input-new:focus{border-color:var(--az2);background:#fff}
+.field-btn-new{height:36px;padding:0 14px;border-radius:8px;border:none;background:var(--az);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:.15s}
+.field-btn-new:hover{background:#0d3f68}
+.resultado-card{background:#F8FBFD;border-radius:10px;border:1.5px solid var(--border);padding:12px;margin-bottom:10px;display:none}
+.resultado-card.show{display:block}
+.rc-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.rc-row:last-child{margin-bottom:0}
+.rc-label{font-size:10px;font-weight:700;color:var(--mut);text-transform:uppercase;letter-spacing:.06em;width:70px;flex-shrink:0}
+.rc-val{font-size:13px;font-weight:600;color:var(--txt)}
+.rc-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+.rc-prod{background:var(--vd2);color:var(--vd)}
+.rc-improd{background:var(--rd2);color:var(--rd)}
+.reverter-btn-new{width:100%;height:38px;border-radius:9px;border:none;background:linear-gradient(135deg,var(--am),#d97706);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit;transition:.2s}
+.reverter-btn-new:hover{transform:translateY(-1px)}
+
+/* Confirmações */
+.conf-prog-new{padding:10px 14px;border-bottom:1px solid var(--border2)}
+.cpval{font-size:22px;font-weight:800;color:var(--az)}
+.cpbar{height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-top:6px}
+.cpfill{height:100%;background:var(--vd);border-radius:2px}
+.ci{padding:8px 14px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:8px}
+.ci:last-child{border-bottom:none}
+.ci-av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* Mini mapa */
+.mapa-wrap-new{background:var(--card);border-radius:14px;border:1px solid var(--border2);box-shadow:0 2px 10px rgba(30,159,217,.06);overflow:hidden;margin-bottom:12px}
+#mini-mapa-painel{height:180px}
+.mapa-foot{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border2)}
+.mf{padding:8px;text-align:center;border-right:1px solid var(--border2)}
+.mf:last-child{border-right:none}
+.mf-n{font-size:16px;font-weight:800}
+.mf-l{font-size:9px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-top:2px}
+.sync-row-new{padding:6px 14px;display:flex;align-items:center;gap:7px;font-size:10px;color:var(--mut);border-top:1px solid var(--border2);background:#FAFCFE}
+.sync-bar-new{flex:1;height:2px;background:var(--border2);border-radius:2px;overflow:hidden}
+.sync-fill-new{height:100%;background:var(--az2);border-radius:2px;animation:sfill 120s linear infinite}
+@keyframes sfill{from{width:0}to{width:100%}}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+
+</style>
+</head>
 <body>
+<div class="app-layout">
 
-<div class="topbar">
-  <div class="topbar-left">
-    <button class="menu-btn" onclick="abrirMenu()">☰ Menu</button>
-    <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="topbar-logo"/>
-  </div>
-  <div class="topbar-right">
-    <div class="topbar-titulo">Centro de Controle</div>
-    <div class="topbar-data" id="topbar-data">—</div>
-  </div>
-</div>
-
-<div class="menu-overlay" id="menu-overlay" onclick="fecharMenuOverlay(event)">
-  <div class="menu-side" onclick="event.stopPropagation()">
-    <div class="menu-header">
+  <!-- ══ SIDEBAR ══ -->
+  <div class="app-sidebar">
+    <div class="sidebar-logo">
       <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife"/>
-      <button class="menu-close" onclick="fecharMenu()">✕</button>
-    </div>
-
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">⚡ Operação <span>▼</span></button>
-      <div class="menu-cat-items open">
-        <button class="menu-item" onclick="setView('painel',this)">🏠 Painel</button>
-        <button class="menu-item" onclick="setView('confirmacoes',this)">✓ Confirmações</button>
-        <button class="menu-item" onclick="setView('presencas',this)">📋 Presenças</button>
-        <button class="menu-item" onclick="setView('mapa-rastreamento',this)">🗺️ Rastreamento</button>
-        <button class="menu-item" onclick="setView('checklist-view',this)">📋 Checklists</button>
-        <button class="menu-item" onclick="setView('checklists-incompletos',this)">⏳ Checklists Incompletos</button>
-        <button class="menu-item" onclick="window.location.href='dashboard.html'">📊 Dashboard</button>
-        <button class="menu-item" onclick="setView('motoristas',this)">👤 Motoristas</button>
-        <button class="menu-item" onclick="setView('estoque-view',this)">📦 Estoque</button>
-        <button class="menu-item" onclick="setView('ponto-rh',this)">📋 Ponto RH</button>
-        <button class="menu-item" onclick="setView('gestor',this)">👔 Gestor / Auditoria</button>
-        <button class="menu-item" onclick="window.location.href='disparador.html'">📲 Disparador WhatsApp</button>
-
+      <div>
+        <div class="sidebar-logo-txt">Loglife</div>
+        <div class="sidebar-logo-sub">Hermes Pardini</div>
       </div>
     </div>
 
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">⚙️ Configuração de OPS <span>▼</span></button>
-      <div class="menu-cat-items">
-        <button class="menu-item" onclick="window.location.href='criar-rota.html'">➕ Criar rota</button>
-        <button class="menu-item" onclick="window.location.href='rotas.html'">✏️ Alterar rota</button>
-        <button class="menu-item" onclick="setView('buscar',this)">🔎 Buscar/Mover cliente</button>
-        <button class="menu-item" onclick="setView('criar-cliente',this)">👤 Criar cliente</button>
-        <button class="menu-item" onclick="setView('gerenciar-motoboys',this)">➕➖ Adicionar/Excluir motoboy</button>
-        <button class="menu-item" onclick="setView('ativar-cliente',this)">🔁 Ativar/Desativar cliente</button>
-      </div>
+    <div class="sidebar-nav">
+      <div class="nav-group-lbl">OPS</div>
+      <button class="nav-item active" onclick="setView('painel',this)"><span class="nav-ic">🏠</span>Painel<span class="nav-badge-red" id="nav-badge-painel" style="display:none">0</span></button>
+      <button class="nav-item" onclick="setView('confirmacoes',this)"><span class="nav-ic">✓</span>Confirmações</button>
+      <button class="nav-item" onclick="setView('mapa-rastreamento',this)"><span class="nav-ic">🗺️</span>Rastreamento<div class="nav-live"><div class="nav-live-dot"></div>LIVE</div></button>
+      <button class="nav-item" onclick="setView('checklist-view',this)"><span class="nav-ic">📋</span>Checklist</button>
+      <button class="nav-item" onclick="setView('motoristas',this)"><span class="nav-ic">👤</span>Motoristas</button>
+
+      <div class="nav-group-lbl">Gente e Gestão</div>
+      <button class="nav-item" onclick="setView('estoque-view',this)"><span class="nav-ic">📦</span>PMC Estoque</button>
+      <button class="nav-item" onclick="setView('ponto-rh',this)"><span class="nav-ic">⏱️</span>Ponto RH</button>
+      <button class="nav-item" onclick="setView('gestor',this)"><span class="nav-ic">🔒</span>Patrimônios</button>
+      <button class="nav-item" onclick="setView('presencas',this)"><span class="nav-ic">📋</span>Presenças</button>
+
+      <div class="nav-group-lbl">Qualidade</div>
+      <button class="nav-item" onclick="setView('gestor',this)"><span class="nav-ic">👔</span>Auditoria</button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📚</span>Treinamentos<span class="nav-tag">em breve</span></button>
+
+      <div class="nav-group-lbl">Gestão de Rota</div>
+      <button class="nav-item" onclick="window.location.href='criar-rota.html'"><span class="nav-ic">➕</span>Criar rota</button>
+      <button class="nav-item" onclick="window.location.href='rotas.html'"><span class="nav-ic">✏️</span>Alterar rota</button>
+      <button class="nav-item" onclick="setView('buscar',this)"><span class="nav-ic">🔎</span>Buscar cliente</button>
+      <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span>Criar cliente</button>
+      <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span>Motoboys</button>
+      <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span>Ativar/Desativar cliente</button>
+
+      <div class="nav-group-lbl">Importação e Registro</div>
+      <button class="nav-item" onclick="window.location.href='importar.html'"><span class="nav-ic">📥</span>Importação</button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📏</span>Quilometragem<span class="nav-tag">pendente</span></button>
+
+      <div class="nav-group-lbl">Sistema</div>
+      <button class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span>Atualização APK</button>
+      <button class="nav-item" onclick="confirmarRefresh()"><span class="nav-ic">🔄</span>Forçar atualização</button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">👤</span>Criar usuário<span class="nav-tag">pendente</span></button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">⚙️</span>Administrar usuários<span class="nav-tag">pendente</span></button>
     </div>
 
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">📁 Importação e Registro <span>▼</span></button>
-      <div class="menu-cat-items">
-        <button class="menu-item" onclick="window.location.href='importar.html'">📤 Importar</button>
-        <button class="menu-item" onclick="window.location.href='atualizar-massa.html'">🔄 Atualização de Rota em Massa</button>
-        <button class="menu-item" onclick="window.location.href='exportar.html'">📥 Exportar</button>
-        <button class="menu-item" onclick="window.location.href='base.html'">📋 Base de clientes</button>
-        <button class="menu-item" onclick="window.location.href='historico.html'">📅 Histórico</button>
-      </div>
-    </div>
-
-    <div class="menu-cat">
-      <button class="menu-cat-btn" onclick="toggleCat(this)">🔧 Sistema <span>▼</span></button>
-      <div class="menu-cat-items">
-        <button class="menu-item danger" onclick="setView('reset',this)">🔄 Reset</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="content">
-
-  <div class="view active" id="view-painel" style="padding-bottom:1rem">
-
-    <!-- MASCOTE CENTRALIZADO NO TOPO -->
-    <div style="text-align:center;padding:1.5rem 0;display:flex;justify-content:center;align-items:center;width:100%">
-      <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="Mascote" style="height:120px;width:auto;filter:drop-shadow(0 4px 12px rgba(30,159,217,0.15))"/>
-    </div>
-
-    <div class="dash-grid">
-      <!-- COLUNA ESQUERDA -->
-      <div style="display:flex;flex-direction:column;gap:1rem">
-        <!-- ROTAS -->
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">🛵 Rotas em operação <span class="panel-badge" id="rotas-badge">0</span></div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div id="filtro-dias" style="display:flex;gap:6px"></div>
-              <div class="panel-live"><div class="live-dot"></div>Live</div>
-            </div>
-          </div>
-          <div class="panel-body" id="painel-rotas">
-            <div class="empty"><span class="spinner"></span> Carregando...</div>
-          </div>
-        </div>
-
-        <!-- 4 KPIs em 2x2 -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-          <div class="kpi total">
-            <div class="kpi-icon">📦</div>
-            <div class="kpi-val" id="kpi-total">—</div>
-            <div class="kpi-label">Total</div>
-          </div>
-          <div class="kpi feitas">
-            <div class="kpi-icon">✓</div>
-            <div class="kpi-val" id="kpi-feitas">—</div>
-            <div class="kpi-label">Coletadas</div>
-          </div>
-          <div class="kpi pendentes">
-            <div class="kpi-icon">⏳</div>
-            <div class="kpi-val" id="kpi-pendentes">—</div>
-            <div class="kpi-label">Pendentes</div>
-          </div>
-          <div class="kpi motoboys">
-            <div class="kpi-icon">🏍️</div>
-            <div class="kpi-val" id="kpi-motoboys">—</div>
-            <div class="kpi-label">Motoboys</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- COLUNA DIREITA -->
-      <div style="display:flex;flex-direction:column;gap:1rem">
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">✓ Confirmações <span class="panel-badge" id="conf-badge-count">0</span></div>
-            <div class="panel-live"><div class="live-dot"></div>Live</div>
-          </div>
-          <div class="conf-progress">
-            <div class="conf-prog-val"><span id="conf-prog-val">0</span> <span style="font-size:16px;color:#5A7A8F;font-weight:600">/ 37</span></div>
-            <div class="conf-prog-lbl" id="conf-prog-lbl">Biocondutores confirmados</div>
-            <div class="conf-bar"><div class="conf-bar-fill" id="conf-bar-fill" style="width:0%"></div></div>
-          </div>
-          <div class="conf-list" id="conf-list-live">
-            <div class="empty"><span class="spinner"></span></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">📋 Checklist <span class="panel-badge" id="checklist-badge">0</span></div>
-            <div class="panel-live"><div class="live-dot"></div>Live</div>
-          </div>
-          <div class="panel-body" id="painel-checklist" style="max-height:200px">
-            <div class="empty"><span class="spinner"></span></div>
-          </div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">⏰ Atrasos <span class="panel-badge" id="atrasos-badge">0</span></div>
-            <div class="panel-live"><div class="live-dot"></div>Live</div>
-          </div>
-          <div class="panel-body" id="painel-atrasos" style="max-height:200px">
-            <div class="empty">Nenhum atraso ✓</div>
-          </div>
-        </div>
-
-        <!-- DISPARADOR WHATSAPP -->
-        <div class="panel">
-          <div class="panel-header">
-            <div class="panel-title">📲 Disparador WhatsApp</div>
-            <a href="disparador.html" style="font-size:11px;color:#25D366;font-weight:700;text-decoration:none">Abrir →</a>
-          </div>
-          <div class="panel-body" id="painel-disparador" style="max-height:250px">
-            <div id="lista-hist-disparos">
-              <div class="empty"><span class="spinner"></span></div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div class="sidebar-footer">
+      <div class="sf-av">WL</div>
+      <div><div class="sf-name">William</div><div class="sf-role">Administrador</div></div>
     </div>
   </div>
 
-  <div class="view" id="view-detalhe-rota">
+  <!-- ══ MAIN ══ -->
+  <div class="app-main">
+
+    <div class="app-topbar">
+      <div class="tb-breadcrumb" id="tb-breadcrumb">OPS › <b>Painel</b></div>
+      <div id="topbar-data" style="font-size:11px;color:var(--mut)">—</div>
+      <div class="tb-right">
+        <button class="tb-btn" onclick="confirmarRefresh()">↻ Atualizar</button>
+        <button class="tb-btn" onclick="setView('presencas', document.querySelector('[onclick*=presencas]'))">📋 Presenças</button>
+      </div>
+    </div>
+
+    <div class="app-content">
+
+      <!-- VIEW PAINEL — NOVO LAYOUT -->
+      <div class="view active" id="view-painel">
+        <div class="dash-grid">
+
+          <!-- COLUNA ESQUERDA -->
+          <div>
+            <!-- Rotas -->
+            <div class="panel">
+              <div class="ph">
+                <div class="pt">🛵 Rotas em operação <span class="pbadge" id="rotas-badge">0</span></div>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div id="filtro-dias" style="display:flex;gap:4px"></div>
+                  <div class="plive"><div class="live-dot"></div>Live</div>
+                </div>
+              </div>
+              <div id="painel-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+            </div>
+
+            <!-- KPIs -->
+            <div class="kpi-grid-new">
+              <div class="kpi-new"><div class="kpi-ico">📦</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-lbl">Total</div></div>
+              <div class="kpi-new"><div class="kpi-ico">✓</div><div class="kpi-val" id="kpi-feitas" style="color:var(--vd)">—</div><div class="kpi-lbl">Coletadas</div></div>
+              <div class="kpi-new"><div class="kpi-ico">⏳</div><div class="kpi-val" id="kpi-pendentes" style="color:var(--am)">—</div><div class="kpi-lbl">Pendentes</div></div>
+              <div class="kpi-new"><div class="kpi-ico">🏍️</div><div class="kpi-val" id="kpi-motoboys">—</div><div class="kpi-lbl">Motoboys</div></div>
+            </div>
+
+            <!-- Reverter coleta -->
+            <div class="panel">
+              <div class="ph">
+                <div class="pt">🔄 Reverter coleta</div>
+                <div style="font-size:11px;color:var(--mut)">Voltar cliente para pendente</div>
+              </div>
+              <div class="reverter-body">
+                <div class="field-row-new">
+                  <input class="field-input-new" type="number" id="reverter-num-cliente" placeholder="Nº do cliente (ex: 16578)" onkeydown="if(event.key==='Enter')buscarClienteReverter()"/>
+                  <button class="field-btn-new" onclick="buscarClienteReverter()">Buscar</button>
+                </div>
+                <div class="resultado-card" id="reverter-resultado">
+                  <div class="rc-row"><div class="rc-label">Cliente</div><div class="rc-val" id="reverter-rc-nome">—</div></div>
+                  <div class="rc-row"><div class="rc-label">Coletor</div><div class="rc-val" id="reverter-rc-coletor">—</div></div>
+                  <div class="rc-row"><div class="rc-label">Horário</div><div class="rc-val" id="reverter-rc-horario">—</div></div>
+                  <div class="rc-row"><div class="rc-label">Status</div><div class="rc-badge rc-prod" id="reverter-rc-status">—</div></div>
+                </div>
+                <button class="reverter-btn-new" id="reverter-btn" style="display:none" onclick="confirmarReverterColeta()">↩ Voltar para Pendente</button>
+                <div id="reverter-msg" class="msg" style="margin-top:8px"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- COLUNA DIREITA -->
+          <div>
+            <!-- Confirmações -->
+            <div class="panel">
+              <div class="ph">
+                <div class="pt">✓ Confirmações <span class="pbadge" id="conf-badge-count">0</span></div>
+                <div class="plive"><div class="live-dot"></div>Live</div>
+              </div>
+              <div class="conf-prog-new">
+                <div class="cpval"><span id="conf-prog-val">0</span> <span style="font-size:16px;color:var(--mut);font-weight:600">/ 37</span></div>
+                <div style="font-size:11px;color:var(--mut);margin-top:2px" id="conf-prog-lbl">Biocondutores confirmados</div>
+                <div class="cpbar"><div class="cpfill" id="conf-bar-fill" style="width:0%"></div></div>
+              </div>
+              <div id="conf-list-live"><div class="empty"><span class="spinner"></span></div></div>
+            </div>
+
+            <!-- Mini mapa rastreamento -->
+            <div class="mapa-wrap-new">
+              <div class="ph">
+                <div class="pt"><div class="live-dot"></div>Rastreamento</div>
+                <div style="font-size:11px;font-weight:700;color:var(--az2);cursor:pointer" onclick="setView('mapa-rastreamento',document.querySelector('[onclick*=mapa-rastreamento]'))">Ver mapa completo →</div>
+              </div>
+              <div id="mini-mapa-painel"></div>
+              <div class="mapa-foot">
+                <div class="mf"><div class="mf-n" id="mini-mapa-online" style="color:var(--vd)">—</div><div class="mf-l">Online</div></div>
+                <div class="mf"><div class="mf-n" id="mini-mapa-idle" style="color:var(--am)">—</div><div class="mf-l">Parado</div></div>
+                <div class="mf"><div class="mf-n" id="mini-mapa-off" style="color:var(--mut)">—</div><div class="mf-l">Offline</div></div>
+              </div>
+              <div class="sync-row-new">
+                <div class="live-dot"></div>
+                Atualiza a cada 2 min
+                <div class="sync-bar-new"><div class="sync-fill-new"></div></div>
+              </div>
+            </div>
+
+            <!-- Checklist -->
+            <div class="panel">
+              <div class="ph">
+                <div class="pt">📋 Checklist <span class="pbadge" id="checklist-badge">0</span></div>
+                <div class="plive"><div class="live-dot"></div>Live</div>
+              </div>
+              <div id="painel-checklist" style="max-height:200px;overflow-y:auto"><div class="empty"><span class="spinner"></span></div></div>
+            </div>
+
+            <!-- Atrasos -->
+            <div class="panel">
+              <div class="ph">
+                <div class="pt">⏰ Atrasos <span class="pbadge" id="atrasos-badge" style="background:var(--am)">0</span></div>
+                <div class="plive"><div class="live-dot"></div>Live</div>
+              </div>
+              <div id="painel-atrasos" style="max-height:200px;overflow-y:auto"><div class="empty">Nenhum atraso ✓</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+<div class="view" id="view-detalhe-rota">
     <div class="detalhe-header">
       <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
       <div class="detalhe-titulo" id="detalhe-titulo">—</div>
@@ -1338,11 +1505,18 @@
 <!-- Módulos JS -->
 
   <!-- BOTÃO FORÇAR ATUALIZAÇÃO -->
-  <div id="btn-versao-fab" onclick="atualizarVersaoApp()" style="position:fixed;bottom:156px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);box-shadow:0 4px 14px rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:9997" title="Publicar nova versão do app">📲</div> style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
+  <div id="btn-versao-fab" onclick="atualizarVersaoApp()" style="position:fixed;bottom:156px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);box-shadow:0 4px 14px rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:9997" title="Publicar nova versão do app">📲</div>
+  <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
 
 <!-- CHAT WIDGET ADMIN -->
-<div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:24px;right:24px;width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 6px 20px rgba(30,159,217,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:26px;cursor:pointer;z-index:9998">💬
-  <div id="chat-fab-badge" style="position:absolute;top:-5px;right:-5px;background:#DC2626;color:#fff;border-radius:50%;width:24px;height:24px;font-size:12px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
+    </div><!-- app-content -->
+  </div><!-- app-main -->
+</div><!-- app-layout -->
+
+
+<!-- Chat FAB -->
+<div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 4px 16px rgba(30,159,217,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9998">💬
+  <div id="chat-fab-badge" style="position:absolute;top:-4px;right:-4px;background:#DC2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
 </div>
 
 <div id="chat-window" style="display:none;position:fixed;bottom:100px;right:24px;width:600px;max-width:calc(100vw - 48px);height:500px;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);overflow:hidden;z-index:9999;flex-direction:row">
@@ -1388,7 +1562,518 @@
 
 
 
+<!-- MODAL ENTREGAR PENDÊNCIA -->
+      <div id="modal-entregar-pend" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+            <span id="pend-modal-titulo">✓ Entregar Item</span>
+            <button onclick="document.getElementById('modal-entregar-pend').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+          </div>
+          <div id="pend-modal-info" style="font-size:13px;color:#5A7A8F;margin-bottom:1rem"></div>
+
+          <!-- Seleção de patrimônio se tiver código -->
+          <div id="pend-modal-pat" style="display:none">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Selecionar do estoque</label>
+            <div id="pend-modal-disponiveis"></div>
+            <div onclick="togglePendManual()" id="pend-manual-toggle" style="display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;border:1.5px dashed #D6E5EE;background:#F8FBFD;margin-bottom:6px;cursor:pointer">
+              <div style="width:12px;height:12px;border-radius:50%;border:2px solid #D6E5EE;flex-shrink:0" id="pend-radio-manual"></div>
+              <span style="font-size:13px;font-weight:600;color:#5A7A8F">✏️ Digitar código manualmente</span>
+            </div>
+            <div id="pend-manual-wrap" style="display:none;margin-bottom:1rem">
+              <input type="text" id="pend-codigo-manual" placeholder="Ex: BAU-005" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+            </div>
+          </div>
+
+          <!-- Quantidade para itens sem código e camisetas -->
+          <div id="pend-modal-qtd" style="display:none;margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
+            <input type="number" id="pend-qtd-val" value="1" min="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+          </div>
+
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de entrega</label>
+            <input type="date" id="pend-data-entrega" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+          </div>
+
+          <div id="msg-pend-modal" class="msg" style="margin-bottom:.5rem"></div>
+          <button onclick="confirmarEntregaPend()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar Entrega</button>
+          <button onclick="document.getElementById('modal-entregar-pend').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- MODAL CAMISETA MOTOBOY -->
+      <div id="modal-camiseta-mb" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+            <span id="cam-mb-titulo">👕 Camisetas</span>
+            <button onclick="fecharModalCamiseta()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+          </div>
+          <div id="cam-mb-nome" style="font-size:13px;color:#5A7A8F;margin-bottom:1rem"></div>
+
+          <!-- Lista de camisetas a adicionar -->
+          <div id="cam-mb-lista" style="margin-bottom:1rem"></div>
+
+          <!-- Adicionar mais uma -->
+          <div style="background:#F8FBFD;border-radius:10px;border:1.5px dashed #D6E5EE;padding:12px;margin-bottom:1rem">
+            <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:8px">+ Adicionar camiseta</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div>
+                <label style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;display:block;margin-bottom:4px">Tipo</label>
+                <select id="cam-novo-tipo" onchange="atualizarTamanhosCam()" style="width:100%;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px;font-size:13px;outline:none;color:#0F4C7A">
+                  <option value="cmc">👕 Manga Curta</option>
+                  <option value="cml">👕 Manga Longa</option>
+                </select>
+              </div>
+              <div>
+                <label style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;display:block;margin-bottom:4px">Quantidade</label>
+                <input type="number" id="cam-novo-qtd" value="1" min="1" style="width:100%;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px;font-size:13px;outline:none;color:#0F4C7A"/>
+              </div>
+            </div>
+            <div style="margin-bottom:8px">
+              <label style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;display:block;margin-bottom:4px">Tamanho</label>
+              <div style="display:flex;gap:6px" id="cam-novo-tamanhos">
+                <div onclick="selNovoCamTam(this,'P')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #8B5CF6;background:#F3F0FF;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5B21B6">P<div style="font-size:9px;color:#94A8B8" id="cam-est-P">...</div></div>
+                <div onclick="selNovoCamTam(this,'M')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">M<div style="font-size:9px;color:#94A8B8" id="cam-est-M">...</div></div>
+                <div onclick="selNovoCamTam(this,'G')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">G<div style="font-size:9px;color:#94A8B8" id="cam-est-G">...</div></div>
+                <div onclick="selNovoCamTam(this,'GG')" style="flex:1;padding:8px 4px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;text-align:center;cursor:pointer;font-size:13px;font-weight:700;color:#5A7A8F">GG<div style="font-size:9px;color:#94A8B8" id="cam-est-GG">...</div></div>
+              </div>
+            </div>
+            <button onclick="adicionarCamisetaLista()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:12px;cursor:pointer">+ Adicionar à lista</button>
+          </div>
+
+          <div id="msg-cam-mb" class="msg" style="margin-bottom:.5rem"></div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de entrega</label>
+            <input type="date" id="cam-mb-data" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+          </div>
+          <button onclick="confirmarCamisetasMB()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar Entrega</button>
+          <button onclick="fecharModalCamiseta()" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- MODAL ENTRADA UNIFORME ESTOQUE -->
+      <div id="modal-entrada-unif-est" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+        <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+          <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+            📥 Adicionar ao Estoque
+            <button onclick="document.getElementById('modal-entrada-unif-est').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo</label>
+            <select id="ent-unif-tipo" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+              <option value="cmc">👕 Camiseta Manga Curta</option>
+              <option value="cml">👕 Camiseta Manga Longa</option>
+              <option value="colete">🦺 Colete</option>
+              <option value="jaqueta">🧥 Jaqueta</option>
+            </select>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tamanho</label>
+            <div style="display:flex;gap:8px" id="ent-unif-tamanhos">
+              <div onclick="selTamEnt(this,'P')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:14px;font-weight:700;cursor:pointer;text-align:center;color:#5B21B6">P</div>
+              <div onclick="selTamEnt(this,'M')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;color:#5A7A8F">M</div>
+              <div onclick="selTamEnt(this,'G')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;color:#5A7A8F">G</div>
+              <div onclick="selTamEnt(this,'GG')" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:center;color:#5A7A8F">GG</div>
+            </div>
+          </div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <button onclick="ajQtdEnt(-1)" style="width:40px;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:22px;cursor:pointer;color:#0F4C7A;font-weight:700">−</button>
+              <div style="flex:1;text-align:center;font-size:26px;font-weight:800;color:#0F4C7A" id="qtd-ent-val">5</div>
+              <button onclick="ajQtdEnt(1)" style="width:40px;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:22px;cursor:pointer;color:#0F4C7A;font-weight:700">+</button>
+            </div>
+          </div>
+          <button onclick="confirmarEntradaUnifEst()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Adicionar ao Estoque</button>
+          <button onclick="document.getElementById('modal-entrada-unif-est').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+        </div>
+      </div>
+
+      <!-- MODAL ADD ITEM AO CHECKLIST (reutiliza modal-pat-add) -->
+
+    </div>
+  </div>
+
+  <!-- VIEW PONTO RH -->
+  <div class="view" id="view-ponto-rh">
+    <div style="padding:0;max-width:640px;margin:0 auto">
+
+      <!-- Topbar interna -->
+      <div style="background:linear-gradient(135deg,#1E3A8A,#1D4ED8);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+        <span style="color:#fff;font-size:14px;font-weight:700">📋 PONTO LOGLIFE</span>
+        <div style="display:flex;gap:6px" id="ponto-topbar-pills" style="display:none">
+          <span id="pill-ponto-periodo" style="display:none;background:rgba(255,255,255,.15);color:#93C5FD;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600"></span>
+          <span id="pill-ponto-records" style="display:none;background:rgba(255,255,255,.15);color:#93C5FD;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600"></span>
+        </div>
+      </div>
+
+      <!-- Sub tabs -->
+      <div style="background:#fff;border-bottom:2px solid #EBF1F5;display:flex;overflow-x:auto;scrollbar-width:none" id="ponto-tabs-bar">
+        <button id="ponto-tab-btn-upload" onclick="mudarTabPonto('upload',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#1D4ED8;border-bottom:2px solid #1D4ED8;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">📤 Planilha</button>
+        <button id="ponto-tab-btn-panorama" onclick="mudarTabPonto('panorama',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">📅 Panorama</button>
+        <button id="ponto-tab-btn-home" onclick="mudarTabPonto('home',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">🏠 Home Off.</button>
+        <button id="ponto-tab-btn-banco" onclick="mudarTabPonto('banco',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">⏳ Banco Hrs</button>
+        <button id="ponto-tab-btn-ferias" onclick="mudarTabPonto('ferias',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">🌴 Férias</button>
+        <button id="ponto-tab-btn-historico" onclick="mudarTabPonto('historico',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">📅 Histórico</button>
+        <button id="ponto-tab-btn-config" onclick="mudarTabPonto('config',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">⚙️ Config</button>
+      </div>
+
+      <!-- Botões de ação (aparecem após processar) -->
+      <div id="ponto-action-bar" style="display:none;background:#F9FAFB;border-bottom:1px solid #E5E7EB;padding:8px 12px;display:none;gap:6px;flex-wrap:wrap">
+        <button onclick="pontoRenderAvisosModal()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">🔔 Avisos</button>
+        <button onclick="pontoExportarExcel()" style="padding:5px 10px;border-radius:6px;border:none;background:#16A34A;color:#fff;font-size:11px;font-weight:600;cursor:pointer">📥 Excel</button>
+        <button onclick="pontoGerarPDF()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">📄 PDF</button>
+        <button onclick="pontoPrintZap()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">📸 Print Zap</button>
+        <button onclick="pontoSalvarResumo()" style="padding:5px 10px;border-radius:6px;border:none;background:#1D4ED8;color:#fff;font-size:11px;font-weight:600;cursor:pointer">💾 Salvar mês</button>
+        <button onclick="pontoResetar()" style="padding:5px 10px;border-radius:6px;border:1px solid #DC2626;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#DC2626">🔄 Nova planilha</button>
+      </div>
+
+      <div style="padding:1rem">
+
+        <!-- UPLOAD -->
+        <div id="ponto-tab-upload">
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem">1. Planilha principal (obrigatório)</div>
+            <label id="ponto-zone-main" style="display:block;border:2px dashed #D6E5EE;border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:#F8FBFD;transition:.2s;position:relative">
+              <input type="file" id="ponto-file-main" accept=".xlsx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="pontoLerPrincipal(this.files[0])"/>
+              <div style="font-size:28px;margin-bottom:8px">📄</div>
+              <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:4px">CONTROLE_RH_MÊS.xlsx</div>
+              <div style="font-size:11px;color:#94A8B8">Abas: BASE INFRACTAL · BANCO DE HORAS · FERIAS · ENDEREÇO</div>
+            </label>
+            <div id="ponto-status-main" style="display:none;margin-top:8px;text-align:center"></div>
+          </div>
+
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #D1FAE5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem">2. Extrato banco de horas <span style="font-weight:400;color:#94A8B8">(opcional)</span></div>
+            <label id="ponto-zone-extrato" style="display:block;border:2px dashed #D1FAE5;border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:#F0FDF4;transition:.2s;position:relative">
+              <input type="file" id="ponto-file-extrato" accept=".xlsx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="pontoLerExtrato(this.files[0])"/>
+              <div style="font-size:24px;margin-bottom:6px">🏦</div>
+              <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:2px">Extrato_do_banco_de_horas_MÊS.xlsx</div>
+              <div style="font-size:11px;color:#4ADE80">Adiciona coluna Saldo Real</div>
+            </label>
+            <div id="ponto-status-extrato" style="display:none;margin-top:8px;text-align:center"></div>
+          </div>
+
+          <button id="ponto-btn-processar" onclick="pontoProcessar()" style="display:none;width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1D4ED8,#1E3A8A);color:#fff;font-weight:700;font-size:14px;cursor:pointer">
+            ▶ Processar e visualizar
+          </button>
+        </div>
+
+        <!-- PANORAMA GERAL -->
+        <div id="ponto-tab-panorama" style="display:none">
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">📅 Panorama Geral — registros de ponto por dia</div>
+            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-panorama"></div></div>
+          </div>
+        </div>
+
+        <!-- HOME OFFICE -->
+        <div id="ponto-tab-home" style="display:none">
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">🏠 Ranking Home Office</div>
+            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-home"></div></div>
+          </div>
+        </div>
+
+        <!-- BANCO DE HORAS -->
+        <div id="ponto-tab-banco" style="display:none">
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A;display:flex;align-items:center;justify-content:space-between">
+              ⏳ Banco de Horas
+              <span id="ponto-badge-saldo-real" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✅ saldo real</span>
+            </div>
+            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-banco"></div></div>
+          </div>
+        </div>
+
+        <!-- FÉRIAS -->
+        <div id="ponto-tab-ferias" style="display:none">
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">🌴 Controle de Férias</div>
+            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-ferias"></div></div>
+          </div>
+        </div>
+
+        <!-- HISTÓRICO -->
+        <div id="ponto-tab-historico" style="display:none">
+          <div id="ponto-hist-lista"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+
+        <!-- CONFIG -->
+        <div id="ponto-tab-config" style="display:none">
+          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+            <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem">🚫 Colaboradores Desligados</div>
+            <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Serão ignorados nos cálculos e aparecerão como <strong>DESLIGADO</strong>.</div>
+            <div style="display:flex;gap:8px;margin-bottom:1rem">
+              <input type="text" id="ponto-desl-nome" placeholder="Nome do colaborador..."
+                style="flex:1;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A"/>
+              <button onclick="pontoAdicionarDesligado()" style="padding:9px 14px;border-radius:10px;border:none;background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">+ Desligar</button>
+            </div>
+            <div id="ponto-desl-lista"><div class="empty">Nenhum desligado</div></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+<!-- MODAL PAT ADD -->
+<div id="modal-pat-add" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="pat-add-titulo">➕ Adicionar Item</span>
+      <button onclick="document.getElementById('modal-pat-add').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Item</label>
+      <select id="pat-add-tipo" onchange="mudarTipoPatAdd(this.value)" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+        <option value="">Selecione...</option>
+        <option value="bau">🛵 Baú</option>
+        <option value="rastreador">📡 Rastreador</option>
+        <option value="cooler_g">❄️ Cooler G</option>
+        <option value="cooler_p">❄️ Cooler P</option>
+        <option value="cartao">⛽ Cartão Combustível</option>
+        <option value="craca">🪪 Crachá</option>
+        <option value="colete">🦺 Colete</option>
+        <option value="cadeado">🔒 Cadeado</option>
+        <option value="kit">🧰 Kit Emergência</option>
+        <option value="bolsa">👜 Bolsa Pardini</option>
+      </select>
+    </div>
+    <div id="pat-add-bloco-codigo" style="display:none">
+      <div id="pat-add-disponiveis"></div>
+      <div id="pat-add-manual-wrap" style="display:none;margin-top:8px">
+        <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código manual</label>
+        <input type="text" id="pat-add-codigo-manual" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+        <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px;margin-top:8px">Estado</label>
+        <select id="pat-add-estado-manual" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+          <option>Novo</option><option>Bom</option><option>Danificado</option>
+        </select>
+      </div>
+    </div>
+    <div id="pat-add-bloco-simples" style="display:none;margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
+      <input type="number" id="pat-add-qtd" value="1" min="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de entrega</label>
+      <input type="date" id="pat-add-data" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div id="msg-pat-add" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="confirmarPatAdd()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Adicionar e Vincular</button>
+    <button onclick="document.getElementById('modal-pat-add').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL PAT CAD -->
+<div id="modal-pat-cad" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="pat-cad-titulo">➕ Cadastrar Item</span>
+      <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <input type="hidden" id="pat-cad-tipo"/>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código identificador</label>
+      <input type="text" id="pat-cad-codigo" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div id="pat-cad-subtipo-wrap" style="display:none;margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo do Cartão</label>
+      <div style="display:flex;gap:8px">
+        <button onclick="selSubtipoPat(this,'Definitivo')" class="subtipo-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:13px;font-weight:700;cursor:pointer;color:#5B21B6">Definitivo</button>
+        <button onclick="selSubtipoPat(this,'Provisório')" class="subtipo-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Provisório</button>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estado</label>
+      <div style="display:flex;gap:8px">
+        <button onclick="selEstadoPat(this,'Novo')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #0F9B78;background:#E8F8F0;font-size:13px;font-weight:700;cursor:pointer;color:#0F9B78">Novo</button>
+        <button onclick="selEstadoPat(this,'Bom')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Bom</button>
+        <button onclick="selEstadoPat(this,'Danificado')" class="estado-btn-pat" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">Danificado</button>
+      </div>
+    </div>
+    <div id="msg-pat-cad" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="confirmarPatCad()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Cadastrar</button>
+    <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL PAT SUBST -->
+<div id="modal-pat-subst" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="subst-titulo">↔ Substituir</span>
+      <button onclick="document.getElementById('modal-pat-subst').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div id="subst-info" style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#5A7A8F;border:1.5px solid #EBF1F5"></div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Motivo</label>
+      <select id="subst-motivo" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+        <option>Quebrado</option><option>Danificado</option><option>Perda</option><option>Manutenção</option><option>Outro</option>
+      </select>
+    </div>
+    <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Substituto disponível</label>
+    <div id="subst-disponiveis"></div>
+    <div id="subst-alerta" style="background:#FEF9EC;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#92400E;border:1px solid #F2CC70"></div>
+    <div id="msg-subst" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="confirmarSubstituicao()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar Substituição</button>
+    <button onclick="document.getElementById('modal-pat-subst').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL CAD MAT -->
+<div id="modal-cad-mat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1.2rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="modal-mat-titulo">➕ Cadastrar Item</span>
+      <button onclick="fecharModalMat()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Nome do item</label>
+      <input type="text" id="mat-nome" placeholder="Ex: Papel A4, Saco de lixo..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Categoria</label>
+      <select id="mat-cat" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A">
+        <option value="escritorio">📎 Escritório</option>
+        <option value="limpeza">🧹 Limpeza</option>
+        <option value="alimentacao">🍱 Alimentação</option>
+      </select>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quantidade</label>
+        <input type="number" id="mat-qtd" min="0" value="1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Estoque mínimo</label>
+        <input type="number" id="mat-min" min="0" value="2" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Data de validade <span style="color:#94A8B8;font-weight:400">(opcional)</span></label>
+      <input type="date" id="mat-validade" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+    <input type="hidden" id="mat-edit-id" value=""/>
+    <div id="msg-cad-mat" class="msg" style="margin-bottom:.5rem"></div>
+    <button onclick="salvarMaterial()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Salvar</button>
+    <button onclick="fecharModalMat()" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL MOV MAT -->
+<div id="modal-mov-mat" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:500px;margin:0 auto">
+    <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+      <span id="mov-mat-nome-titulo">Contagem</span>
+      <button onclick="document.getElementById('modal-mov-mat').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+    <div id="mov-mat-estoque-atual" style="font-size:13px;color:#5A7A8F;margin-bottom:1rem"></div>
+    <div style="display:flex;gap:8px;margin-bottom:1rem">
+      <button onclick="selecionarMovTipo('contagem',this)" class="mov-tipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:13px;font-weight:700;cursor:pointer;color:#0F4C7A">📋 Contar</button>
+      <button onclick="selecionarMovTipo('entrada',this)" class="mov-tipo-btn" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:13px;font-weight:700;cursor:pointer;color:#5A7A8F">📥 Entrada</button>
+    </div>
+    <div id="bloco-contagem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Quanto você contou agora?</label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="ajustarQtdMov(-1)" style="width:44px;height:44px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:24px;cursor:pointer;color:#0F4C7A;font-weight:700">−</button>
+        <input type="number" id="qtd-mov-val" min="0" value="0" oninput="atualizarPreviewMov()"
+          style="flex:1;text-align:center;font-size:28px;font-weight:800;color:#0F4C7A;border:1.5px solid #D6E5EE;border-radius:10px;padding:8px;outline:none"/>
+        <button onclick="ajustarQtdMov(1)" style="width:44px;height:44px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;font-size:24px;cursor:pointer;color:#0F4C7A;font-weight:700">+</button>
+      </div>
+    </div>
+    <div id="preview-mov-mat" style="background:#F3F0FF;border-radius:10px;padding:12px;margin-top:1rem;margin-bottom:1rem;border:1px solid #8B5CF6;font-size:13px;color:#0F4C7A"></div>
+    <button onclick="confirmarMovMat()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer;margin-bottom:8px">✓ Confirmar</button>
+    <button onclick="document.getElementById('modal-mov-mat').style.display='none'" style="width:100%;padding:11px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+  </div>
+</div>
+
+<div class="modal-overlay hidden" id="modal-mover">
+  <div class="modal">
+    <h2>↔ Mover cliente</h2>
+    <div class="field"><label>Rota</label><select id="nova-rota-select"><option value="">Selecione a rota...</option></select></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" onclick="fecharModal('modal-mover')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarMover()">Mover</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- MODAL DISPARADOR WHATSAPP -->
+<div id="modal-disparador" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;overflow-y:auto;padding:1rem">
+  <div style="background:#fff;border-radius:16px;padding:1.5rem;max-width:480px;margin:0 auto;margin-top:1rem">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem">
+      <h3 style="font-size:16px;color:#0F4C7A;font-weight:700" id="disparador-titulo">📲 Novo agendamento</h3>
+      <button onclick="fecharDisparador()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#5A7A8F">✕</button>
+    </div>
+
+    <!-- Nome -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Nome do agendamento</label>
+      <input type="text" id="disp-nome" placeholder="Ex: Lembrete diário de confirmação" style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+    </div>
+
+    <!-- Dias -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:8px">Dias da semana</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap" id="disp-dias">
+        <button onclick="toggleDia(this,'seg')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Seg</button>
+        <button onclick="toggleDia(this,'ter')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Ter</button>
+        <button onclick="toggleDia(this,'qua')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Qua</button>
+        <button onclick="toggleDia(this,'qui')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Qui</button>
+        <button onclick="toggleDia(this,'sex')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Sex</button>
+        <button onclick="toggleDia(this,'sab')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Sáb</button>
+        <button onclick="toggleDia(this,'dom')" class="disp-dia-btn" style="padding:7px 12px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:12px;font-weight:700;color:#5A7A8F;cursor:pointer;background:#fff">Dom</button>
+      </div>
+    </div>
+
+    <!-- Horários -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:8px">Horários de disparo</label>
+      <div id="disp-horarios" style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px"></div>
+      <button onclick="addHorario()" style="width:100%;padding:9px;border-radius:8px;border:1.5px dashed #1E9FD9;background:#F0F8FD;color:#1E9FD9;font-size:13px;font-weight:600;cursor:pointer">+ Adicionar horário</button>
+    </div>
+
+    <!-- Destinatários -->
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:8px">Destinatários</label>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">
+        <button onclick="toggleDest(this,'todos')" class="disp-dest-btn ativo" style="padding:6px 12px;border-radius:20px;border:1.5px solid #1E9FD9;background:#E8F4FB;font-size:12px;font-weight:600;color:#0F4C7A;cursor:pointer">✅ Todos</button>
+        <button onclick="toggleDest(this,'seg-sex')" class="disp-dest-btn" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📆 Seg-Sex</button>
+        <button onclick="toggleDest(this,'sabado')" class="disp-dest-btn" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📆 Sábado</button>
+        <button onclick="toggleDest(this,'domingo')" class="disp-dest-btn" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📆 Domingo</button>
+      </div>
+    </div>
+
+    <!-- Mensagem -->
+    <div style="margin-bottom:1.2rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Mensagem</label>
+      <textarea id="disp-mensagem" rows="4" placeholder="Digite o recado para os motoboys..." style="width:100%;border-radius:8px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;resize:none;outline:none;color:#0F4C7A;font-family:inherit;line-height:1.5"></textarea>
+    </div>
+
+    <!-- Botões -->
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button onclick="salvarAgendamento()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;cursor:pointer">💾 Salvar agendamento</button>
+      <button onclick="dispararAgora()" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #25D366;background:#fff;color:#128C7E;font-weight:700;font-size:14px;cursor:pointer">📲 Disparar agora também</button>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- Módulos JS -->
+
+  <!-- BOTÃO FORÇAR ATUALIZAÇÃO -->
+  <div id="btn-versao-fab" onclick="atualizarVersaoApp()" style="position:fixed;bottom:156px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);box-shadow:0 4px 14px rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:9997" title="Publicar nova versão do app">📲</div>
+  <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
+
+<!-- CHAT WIDGET ADMIN -->
+
 <script>
+
 // ============================================================
 // ── CORE — Funções base, navegação e utilitários ──────────────────────────
 // ============================================================
@@ -5469,8 +6154,206 @@
   carregarPainel();
   iniciarAutoRefresh();
 
-</script>
 
+
+  // ── BREADCRUMB ──────────────────────────────────────────
+  const BREADCRUMBS = {
+    'painel': 'OPS › <b>Painel</b>',
+    'confirmacoes': 'OPS › <b>Confirmações</b>',
+    'mapa-rastreamento': 'OPS › <b>Rastreamento</b>',
+    'checklist-view': 'OPS › <b>Checklist</b>',
+    'motoristas': 'OPS › <b>Motoristas</b>',
+    'estoque-view': 'Gente e Gestão › <b>PMC Estoque</b>',
+    'ponto-rh': 'Gente e Gestão › <b>Ponto RH</b>',
+    'gestor': 'Qualidade › <b>Auditoria</b>',
+    'presencas': 'Gente e Gestão › <b>Presenças</b>',
+    'buscar': 'Gestão de Rota › <b>Buscar cliente</b>',
+    'criar-cliente': 'Gestão de Rota › <b>Criar cliente</b>',
+    'gerenciar-motoboys': 'Gestão de Rota › <b>Motoboys</b>',
+    'ativar-cliente': 'Gestão de Rota › <b>Ativar/Desativar cliente</b>',
+    'reset': 'Sistema › <b>Reset</b>',
+  };
+
+  // Override setView para atualizar breadcrumb e nav
+  const _setViewOriginal = setView;
+  function setView(id, el) {
+    // Atualizar breadcrumb
+    const bc = document.getElementById('tb-breadcrumb');
+    if (bc && BREADCRUMBS[id]) bc.innerHTML = BREADCRUMBS[id];
+
+    // Atualizar nav sidebar
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    if (el) el.classList.add('active');
+
+    // Chamar setView original
+    _setViewOriginal(id, el);
+
+    // Carregar mini mapa ao abrir painel
+    if (id === 'painel') iniciarMiniMapa();
+  }
+
+  // ── REVERTER COLETA ──────────────────────────────────────
+  let reverterClienteData = null;
+
+  async function buscarClienteReverter() {
+    const num = document.getElementById('reverter-num-cliente').value.trim();
+    const msg = document.getElementById('reverter-msg');
+    const resultado = document.getElementById('reverter-resultado');
+    const btn = document.getElementById('reverter-btn');
+    msg.className = 'msg'; msg.textContent = '';
+    if (!num) return;
+
+    msg.className = 'msg loading'; msg.textContent = 'Buscando...';
+    try {
+      const r = await fetch(API + '/buscar-cliente?num=' + encodeURIComponent(num));
+      const d = await r.json();
+      if (d.status === 'ok' && d.cliente) {
+        reverterClienteData = d.cliente;
+        document.getElementById('reverter-rc-nome').textContent = d.cliente.nome || '—';
+        document.getElementById('reverter-rc-coletor').textContent = (d.cliente.biocondutor || '—') + (d.cliente.rota ? ' · ' + d.cliente.rota : '');
+        document.getElementById('reverter-rc-horario').textContent = d.cliente.hora_confirmacao || '—';
+        const stEl = document.getElementById('reverter-rc-status');
+        const prod = d.cliente.resposta === 'produtivo';
+        stEl.textContent = prod ? 'Produtivo' : 'Improdutivo';
+        stEl.className = 'rc-badge ' + (prod ? 'rc-prod' : 'rc-improd');
+        resultado.classList.add('show');
+        btn.style.display = 'flex';
+        msg.className = 'msg'; msg.textContent = '';
+      } else {
+        resultado.classList.remove('show');
+        btn.style.display = 'none';
+        msg.className = 'msg error'; msg.textContent = '⚠️ Cliente não encontrado ou sem coleta registrada hoje';
+      }
+    } catch(e) {
+      msg.className = 'msg error'; msg.textContent = 'Erro de conexão';
+    }
+  }
+
+  async function confirmarReverterColeta() {
+    if (!reverterClienteData) return;
+    const msg = document.getElementById('reverter-msg');
+    const btn = document.getElementById('reverter-btn');
+    btn.disabled = true;
+    msg.className = 'msg loading'; msg.textContent = 'Revertendo...';
+    try {
+      const r = await fetch(API + '/reverter-coleta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ num_cliente: reverterClienteData.num_cliente || reverterClienteData.id })
+      });
+      const d = await r.json();
+      if (d.status === 'ok') {
+        msg.className = 'msg success'; msg.textContent = '✓ Coleta revertida para Pendente!';
+        document.getElementById('reverter-resultado').classList.remove('show');
+        btn.style.display = 'none';
+        document.getElementById('reverter-num-cliente').value = '';
+        reverterClienteData = null;
+        setTimeout(() => { msg.className = 'msg'; msg.textContent = ''; }, 3000);
+        carregarPainel();
+      } else {
+        msg.className = 'msg error'; msg.textContent = 'Erro ao reverter';
+        btn.disabled = false;
+      }
+    } catch(e) {
+      msg.className = 'msg error'; msg.textContent = 'Erro de conexão';
+      btn.disabled = false;
+    }
+  }
+
+  // ── MINI MAPA NO PAINEL ──────────────────────────────────
+  let miniMapaInst = null;
+  let miniMapaMarkers = {};
+  const MINI_CORES = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
+
+  function iniciarMiniMapa() {
+    const el = document.getElementById('mini-mapa-painel');
+    if (!el) return;
+    if (typeof L === 'undefined') { setTimeout(iniciarMiniMapa, 500); return; }
+    if (!miniMapaInst) {
+      miniMapaInst = L.map('mini-mapa-painel', { zoomControl:false, dragging:false, scrollWheelZoom:false })
+        .setView([-23.5505, -46.6330], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap', maxZoom:19
+      }).addTo(miniMapaInst);
+    }
+    carregarMiniMapa();
+  }
+
+  async function carregarMiniMapa() {
+    try {
+      const r = await fetch(API + '/localizacao');
+      const d = await r.json();
+      const locs = d.localizacoes || [];
+      const agora = Date.now();
+      const ONLINE_LIM = 5*60*1000;
+      const IDLE_LIM = 10*60*1000;
+      const online = locs.filter(l => agora-l.timestamp < ONLINE_LIM).length;
+      const idle   = locs.filter(l => agora-l.timestamp >= ONLINE_LIM && agora-l.timestamp < IDLE_LIM).length;
+
+      const elOn  = document.getElementById('mini-mapa-online');
+      const elIdle= document.getElementById('mini-mapa-idle');
+      const elOff = document.getElementById('mini-mapa-off');
+      if(elOn) elOn.textContent = online;
+      if(elIdle) elIdle.textContent = idle;
+
+      // Motoboys offline
+      try {
+        const r2 = await fetch(API + '/motoboys?todos=1&agrupado=1');
+        const d2 = await r2.json();
+        const total = new Set((d2.motoboys||[]).map(m=>m.nome)).size;
+        if(elOff) elOff.textContent = Math.max(0, total - locs.length);
+      } catch(e) { if(elOff) elOff.textContent = '—'; }
+
+      if (!miniMapaInst) return;
+      locs.forEach((l, i) => {
+        const cor = MINI_CORES[i % MINI_CORES.length];
+        const status = agora-l.timestamp < ONLINE_LIM ? 'online' : 'parado';
+        const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
+        const icon = L.divIcon({
+          className:'',
+          html:`<div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:20px;height:20px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;opacity:${status==='online'?1:.65}">
+            <span style="transform:rotate(45deg);font-size:7px;font-weight:700">${iniciais}</span>
+          </div>`,
+          iconSize:[20,20],iconAnchor:[10,20],popupAnchor:[0,-20]
+        });
+        if (miniMapaMarkers[l.nome]) {
+          miniMapaMarkers[l.nome].setLatLng([l.lat,l.lng]);
+          miniMapaMarkers[l.nome].setIcon(icon);
+        } else {
+          miniMapaMarkers[l.nome] = L.marker([l.lat,l.lng],{icon}).addTo(miniMapaInst)
+            .bindPopup(`<div style="font-size:11px;font-weight:700;color:#0F4C7A">${l.nome}</div>`,{maxWidth:120});
+        }
+      });
+      if (locs.length > 0) {
+        const bounds = L.latLngBounds(locs.map(l=>[l.lat,l.lng]));
+        miniMapaInst.fitBounds(bounds, {padding:[20,20],maxZoom:14});
+      }
+    } catch(e) {}
+  }
+
+  // Atualizar mini mapa junto com o painel
+  const _carregarPainelOriginal = carregarPainel;
+  function carregarPainel() {
+    _carregarPainelOriginal();
+    if (document.getElementById('view-painel')?.classList.contains('active')) {
+      carregarMiniMapa();
+    }
+  }
+
+  // Topbar data
+  function atualizarTopbarData() {
+    const el = document.getElementById('topbar-data');
+    if (!el) return;
+    const d = new Date();
+    const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+    el.textContent = dias[d.getDay()] + ', ' + d.toLocaleDateString('pt-BR');
+  }
+  atualizarTopbarData();
+
+  // Iniciar mini mapa ao carregar
+  iniciarMiniMapa();
+
+</script>
 
 <script>
 // ── CHAT WIDGET ──
