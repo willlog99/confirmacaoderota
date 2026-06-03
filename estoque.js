@@ -13,19 +13,21 @@ let patAddTipoAtual = null;
 let patAddCodigoSelecionado = null;
 let estadoPat = 'Novo';
 let subtipoPat2 = 'Definitivo';
-const PAT_COM_COD = ['bau','cartao','cracha','colete','tablet','celular'];
+const PAT_COM_COD = ['rastreador','bau','cooler_g','cooler_p'];
 const LISTA_PADRAO_PAT = [
-  { id:'bau',        nome:'Baú',               icon:'🔒', codigo:true  },
-  { id:'cartao',     nome:'Cartão',            icon:'💳', codigo:true  },
-  { id:'cracha',     nome:'Crachá',            icon:'🪪', codigo:true  },
-  { id:'colete',     nome:'Colete',            icon:'🦺', codigo:true  },
-  { id:'tablet',     nome:'Tablet',            icon:'📱', codigo:true  },
-  { id:'celular',    nome:'Celular',           icon:'📞', codigo:true  },
-  { id:'bolsa',      nome:'Bolsa Térmica',     icon:'🧳', codigo:false },
-  { id:'gelox',      nome:'Gelox',             icon:'🧊', codigo:false },
-  { id:'gelo_seco',  nome:'Gelo Seco',         icon:'❄️', codigo:false },
-  { id:'caixa_amb',  nome:'Caixa Ambiente',    icon:'📦', codigo:false },
-  { id:'caixa_ref',  nome:'Caixa Refrigerada', icon:'🧊', codigo:false },
+  // Com código
+  { id:'rastreador', nome:'Rastreador',       icon:'📡', codigo:true  },
+  { id:'bau',        nome:'Baú',              icon:'🔒', codigo:true  },
+  { id:'cooler_g',   nome:'Cooler G',         icon:'🧊', codigo:true  },
+  { id:'cooler_p',   nome:'Cooler P',         icon:'🧊', codigo:true  },
+  // Sem código — com tamanho
+  { id:'cmc',        nome:'Camiseta MC',      icon:'👕', codigo:false, tamanho:true  },
+  { id:'cml',        nome:'Camiseta ML',      icon:'👕', codigo:false, tamanho:true  },
+  { id:'blusa',      nome:'Blusa',            icon:'👔', codigo:false, tamanho:true  },
+  // Sem código — sem tamanho
+  { id:'colete',     nome:'Colete',           icon:'🦺', codigo:false, tamanho:false },
+  { id:'cracha',     nome:'Crachá',           icon:'🪪', codigo:false, tamanho:false },
+  { id:'bolsa',      nome:'Bolsa Pardini',    icon:'👜', codigo:false, tamanho:false },
 ];
 
 let entTamSel = 'P';
@@ -83,11 +85,11 @@ function mudarTabEst(tab, btn) {
   if(tab==='materiais') renderMateriaisEst();
 }
 
-const TIPOS_UNIF_EST=[
-  {id:'cmc',icon:'\ud83d\udc55',nome:'Camiseta Manga Curta'},
-  {id:'cml',icon:'\ud83d\udc55',nome:'Camiseta Manga Longa'},
-  {id:'colete',icon:'\ud83e\uddba',nome:'Colete'},
-  {id:'jaqueta',icon:'\ud83e\udde5',nome:'Jaqueta'},
+const TIPOS_UNIF_EST = [
+  {id:'cmc',  icon:'👕', nome:'Camiseta Manga Curta'},
+  {id:'cml',  icon:'👕', nome:'Camiseta Manga Longa'},
+  {id:'blusa',icon:'👔', nome:'Blusa'},
+  {id:'colete',icon:'🦺',nome:'Colete'},
 ];
 
 function renderEstoqueUnifEst() {
@@ -1016,4 +1018,219 @@ function marcarNA(motoboy, tipoId) {
   if(!checklistsMotoboys[motoboy])checklistsMotoboys[motoboy]={};
   checklistsMotoboys[motoboy][tipoId]={na:true};
   syncPatServer(); carregarChecklistEstMotoboy(motoboy);
+}
+
+// ── TABS PATRIMÔNIOS ─────────────────────────────────────────
+function mudarTabPat(tab, btn) {
+  ['geral','motoboy','pendencias','historico'].forEach(t => {
+    const el = document.getElementById('pat-tab-'+t);
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+    const b = document.getElementById('pat-tab-btn-'+t);
+    if(b) {
+      b.style.background  = t===tab ? '#0F4C7A' : 'transparent';
+      b.style.color       = t===tab ? '#fff'    : '#5A7A8F';
+    }
+  });
+  if(tab==='pendencias') renderPendencias();
+  if(tab==='historico')  renderHistorico();
+  if(tab==='motoboy') {
+    // Popular select de motoboys
+    const sel = document.getElementById('pat-sel-motoboy');
+    if(sel && sel.options.length <= 1) {
+      fetch(API + '/motoboys?todos=1&agrupado=1').then(r=>r.json()).then(d=>{
+        const nomes = [...new Set((d.motoboys||[]).map(m=>m.nome))].sort();
+        nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+      }).catch(()=>{});
+    }
+  }
+}
+
+// ── INICIAR VIEW PATRIMÔNIOS ─────────────────────────────────
+async function iniciarPatrimonios() {
+  if(!patrimonios.length && !Object.keys(patrimoniosSimples).length) await carregarPatrimonios();
+  if(!Object.keys(estoqueUnif).length) await carregarUniformes();
+  // Popular select de motoboys
+  const sel = document.getElementById('pat-sel-motoboy');
+  if(sel && sel.options.length <= 1) {
+    try {
+      const r = await fetch(API+'/motoboys?todos=1&agrupado=1');
+      const d = await r.json();
+      const nomes = [...new Set((d.motoboys||[]).map(m=>m.nome))].sort();
+      nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+    } catch(e) {}
+  }
+  // Preencher select de download checklist
+  const selChk = document.getElementById('chk-download-motoboy');
+  if(selChk && selChk.options.length <= 1) {
+    try {
+      const r = await fetch(API+'/motoboys?todos=1&agrupado=1');
+      const d = await r.json();
+      const nomes = [...new Set((d.motoboys||[]).map(m=>m.nome))].sort();
+      nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; selChk.appendChild(o); });
+    } catch(e) {}
+  }
+  // Data padrão hoje
+  const dataEl = document.getElementById('chk-download-data');
+  if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
+  renderEstoquePat();
+  renderUniformesPat();
+  renderEstoqueSimplesEst();
+  renderResumoPat();
+}
+
+function renderUniformesPat() {
+  const el = document.getElementById('pat-uniformes-lista');
+  if(!el) return;
+  const tipos = LISTA_PADRAO_PAT.filter(t => !t.codigo && t.tamanho);
+  el.innerHTML = tipos.map(tipo => {
+    const tamHtml = ['P','M','G','GG'].map(tam => {
+      const qtd = (estoqueUnif[tipo.id] && estoqueUnif[tipo.id][tam]) || 0;
+      const bg = qtd===0?'#FCEBEB':qtd<=2?'#FEF9EC':'#F8FBFD';
+      const tc = qtd===0?'#DC2626':qtd<=2?'#92400E':'#0F4C7A';
+      return `<div onclick="editarQtdUnif('${tipo.id}','${tam}',${qtd})"
+        style="text-align:center;border-radius:8px;padding:8px 4px;border:1.5px solid #EBF1F5;background:${bg};cursor:pointer" title="Clique para editar">
+        <div style="font-size:10px;font-weight:700;color:#94A8B8">${tam}</div>
+        <div style="font-size:17px;font-weight:800;color:${tc}">${qtd}</div>
+        <div style="font-size:8px;color:#94A8B8">✏️</div>
+      </div>`;
+    }).join('');
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:6px">${tipo.icon} ${tipo.nome}</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">${tamHtml}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── DOWNLOAD CHECKLIST PDF ────────────────────────────────────
+async function downloadChecklistPDF() {
+  const dataEl = document.getElementById('chk-download-data');
+  const mbEl   = document.getElementById('chk-download-motoboy');
+  const msg    = document.getElementById('msg-chk-download');
+  if(!dataEl || !dataEl.value) { msg.className='msg error'; msg.textContent='⚠️ Selecione a data'; return; }
+
+  const data    = dataEl.value; // YYYY-MM-DD
+  const motoboy = mbEl ? mbEl.value : '';
+  const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
+
+  msg.className='msg loading'; msg.textContent='⏳ Buscando checklists...';
+
+  try {
+    const r = await fetch(API + '/checklist?data=' + encodeURIComponent(dataFmt));
+    const d = await r.json();
+    let lista = d.checklists || [];
+    if(motoboy) lista = lista.filter(c => c.biocondutor === motoboy);
+    if(!lista.length) { msg.className='msg error'; msg.textContent='⚠️ Nenhum checklist encontrado para essa data'; return; }
+
+    msg.textContent = '⏳ Gerando PDF...';
+    gerarPDFChecklists(lista, dataFmt, motoboy);
+    msg.className='msg success'; msg.textContent='✓ PDF gerado!';
+    setTimeout(() => { msg.className='msg'; msg.textContent=''; }, 3000);
+  } catch(e) {
+    msg.className='msg error'; msg.textContent='Erro de conexão';
+  }
+}
+
+function gerarPDFChecklists(lista, dataFmt, motoboy) {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, M=15, CW=W-M*2;
+  const AZ=[15,76,122], AZ2=[30,159,217], VD=[15,155,120], CZ=[90,122,143], CZ2=[235,241,245];
+
+  const campos = [
+    { label:'Placa',                 key:'placa' },
+    { label:'Conservação da Moto',   key:'conservacao_moto' },
+    { label:'Pneu Dianteiro',        key:'pneu_dianteiro' },
+    { label:'Pneu Traseiro',         key:'pneu_traseiro' },
+    { label:'Bolsa Térmica — Limpeza', key:'bolsa_limpeza' },
+    { label:'Bolsa Térmica — Estado', key:'bolsa_estado' },
+    { label:'Bolsa Térmica — Identificação', key:'bolsa_identificacao' },
+    { label:'Colete Refletivo',      key:'colete' },
+    { label:'Documento do Veículo',  key:'documento' },
+    { label:'Caixa Refrigerada',     key:'caixa_refrigerada' },
+    { label:'Qtd Gelox',             key:'qtd_gelox' },
+    { label:'Qtd Gelo Seco',         key:'qtd_gelo_seco' },
+    { label:'Caixa Ambiente',        key:'caixa_ambiente' },
+    { label:'Caixa com Identificação?', key:'caixa_identificacao' },
+    { label:'Amostras pendentes do dia anterior?', key:'amostras_pendentes' },
+    { label:'Baú com cadeado?',      key:'bau_cadeado' },
+  ];
+
+  const corVal = v => {
+    if(!v || v === '—') return [148,168,184];
+    if(['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return [8,80,65];
+    if(['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return [121,31,31];
+    return [15,76,122];
+  };
+  const bgVal = v => {
+    if(!v || v === '—') return [247,251,253];
+    if(['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return [225,245,238];
+    if(['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return [252,235,235];
+    return [232,244,251];
+  };
+
+  lista.forEach((c, idx) => {
+    if(idx > 0) doc.addPage();
+
+    // Cabeçalho
+    try { doc.addImage('https://raw.githubusercontent.com/willlog99/confirmacaoderota/main/20050686-7618-4EE2-86F2-0E0E1EE012BE.png','PNG',M,10,14,9); } catch(e){}
+    doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...AZ);
+    doc.text('Checklist Operacional', W-M, 15, {align:'right'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...CZ);
+    doc.text('Loglife · Hermes Pardini', W-M, 20, {align:'right'});
+    doc.setDrawColor(...AZ2); doc.setLineWidth(0.8); doc.line(M, 24, W-M, 24);
+
+    let y = 28;
+
+    // Info
+    const info = [
+      ['BIOCONDUTOR', c.biocondutor||'—'],
+      ['DATA', c.data_checklist||dataFmt],
+      ['ROTA', c.rota||'—'],
+      ['PLACA', c.placa||'—'],
+    ];
+    const iw = CW/4;
+    info.forEach(([lbl,val], i) => {
+      const x = M + i*iw;
+      doc.setFillColor(247,251,253); doc.rect(x,y,iw,14,'F');
+      doc.setDrawColor(...CZ2); doc.setLineWidth(0.2); doc.rect(x,y,iw,14);
+      doc.setFont('helvetica','bold'); doc.setFontSize(7); doc.setTextColor(...CZ);
+      doc.text(lbl, x+3, y+5);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(...AZ);
+      doc.text(String(val).substring(0,22), x+3, y+11);
+    });
+    y += 18;
+
+    // Itens
+    doc.setFillColor(...AZ2); doc.rect(M,y,CW,7,'F');
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
+    doc.text('ITENS VERIFICADOS', M+3, y+5);
+    y += 10;
+
+    campos.forEach((campo, i) => {
+      const val = c[campo.key] !== undefined && c[campo.key] !== null && c[campo.key] !== '' ? String(c[campo.key]) : '—';
+      const lines = doc.splitTextToSize(campo.label, CW-40);
+      const h = Math.max(8, lines.length*4.5+4);
+      if(y > 255) { doc.addPage(); y = 20; }
+      if(i%2===0) { doc.setFillColor(247,251,253); doc.rect(M,y,CW,h,'F'); }
+      doc.setDrawColor(...CZ2); doc.setLineWidth(0.15); doc.rect(M,y,CW,h);
+      doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(68,68,68);
+      doc.text(lines, M+3, y+5);
+      const bg = bgVal(val); const cor = corVal(val);
+      doc.setFillColor(...bg); doc.roundedRect(W-M-32, y+h/2-3, 30, 6, 1,1,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...cor);
+      doc.text(val, W-M-17, y+h/2+1.5, {align:'center'});
+      y += h;
+    });
+
+    // Rodapé
+    const pH = doc.internal.pageSize.height;
+    doc.setDrawColor(...CZ2); doc.line(M, pH-18, W-M, pH-18);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...CZ);
+    doc.text('Loglife Logistica · Checklist Operacional · '+dataFmt, M, pH-13);
+    doc.text(`${idx+1} / ${lista.length}`, W-M, pH-13, {align:'right'});
+  });
+
+  const titulo = motoboy ? `Checklist_${motoboy.replace(/ /g,'_')}_${dataFmt.replace(/\//g,'-')}.pdf`
+                          : `Checklists_${dataFmt.replace(/\//g,'-')}.pdf`;
+  doc.save(titulo);
 }
