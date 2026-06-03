@@ -4,14 +4,7 @@
 
 // ── VARIÁVEIS ──
 const API = 'https://confirmacaoderota.willlog99.workers.dev';
-let autoRefreshInterval = null;
 const _diaSemana = new Date().getDay();
-let filtroDia = _diaSemana === 0 ? 'domingo' : _diaSemana === 6 ? 'sabado' : 'seg-sex';
-let cachePainel = null;
-let rotasDisponiveis = [];
-let motoboysListaCompleta = []; // Guardar lista completa para filtro
-let cardExpandido = null;
-let clienteParaMover = null;
 
 // ── FUNÇÕES ──
 
@@ -70,10 +63,6 @@ function showMsg(id, text, type) {
 }
 
 // ===== DISPARADOR WHATSAPP =====
-let agendamentos = JSON.parse(localStorage.getItem('disp_agendamentos') || '[]');
-let editandoAgendamento = null;
-let diasSelecionados = new Set();
-let destSelecionado = 'todos';
 
 
 function toast(msg) {
