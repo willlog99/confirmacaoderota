@@ -5,6 +5,7 @@
 // ── VARIÁVEIS ──
 const API = 'https://confirmacaoderota.willlog99.workers.dev';
 const _diaSemana = new Date().getDay();
+let autoRefreshInterval = null; // Declarada explicitamente para evitar erros de escopo
 
 // ── FUNÇÕES ──
 
@@ -72,7 +73,6 @@ function setView(id, el) {
   if (id === 'gestor') renderItensAuditoria();
 }
 
-
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -82,32 +82,29 @@ function showMsg(id, text, type) {
 
 // ===== DISPARADOR WHATSAPP =====
 
-
 function toast(msg) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2500);
+  if (el) {
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2500);
+  }
 }
-
 
 function formatarTelefone(t) {
   const s = String(t||'').replace(/\D/g,'');
   return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
 }
 
-
 function iniciarAutoRefresh() {
   pararAutoRefresh();
   autoRefreshInterval = setInterval(() => carregarPainel(true), 30000);
 }
 
-
 function pararAutoRefresh() {
   if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
   if (typeof pararAutoRefreshMapa === 'function') pararAutoRefreshMapa();
-
-
+} // <── Corrigido: Fechamento inserido aqui
 
 function atualizarBreadcrumb(id) {
   const bc = document.getElementById('tb-breadcrumb');
@@ -210,7 +207,7 @@ async function carregarMiniMapa() {
     const locs = d.localizacoes || [];
     const agora = Date.now();
     const ONLINE_LIM = 5*60*1000;
-    const IDLE_LIM = 10*60*1000;
+    const IDLE_LIM   = 10*60*1000;
     const online = locs.filter(l => agora-l.timestamp < ONLINE_LIM).length;
     const idle   = locs.filter(l => agora-l.timestamp >= ONLINE_LIM && agora-l.timestamp < IDLE_LIM).length;
     const elOn = document.getElementById('mini-mapa-online');
@@ -249,7 +246,6 @@ async function carregarMiniMapa() {
   } catch(e) {}
 }
 
-}
 function atualizarVersaoApp() {
   const novaVersao = prompt('Digite a nova versão do app:\n(Ex: 1.0.1)\n\nAo salvar, todos os apps verão o banner de atualização.');
   if (!novaVersao) return;
@@ -522,7 +518,7 @@ function renderizarPresencas() {
       const gpsBadge = m.gpsAutorizado
         ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">📍 GPS ✓</span>`
         : `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">📍 Pendente</span>`;
-      html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\'")}') "
+      html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\'")}')"
         style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:1.5px solid ${marcado?'#5DCAA5':'#EBF1F5'};background:${marcado?'#F0FAF6':'#fff'};margin-bottom:6px;cursor:pointer;transition:.15s">
         <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${marcado?'#0F9B78':'#D6E5EE'};background:${marcado?'#0F9B78':'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0">${marcado?'✓':''}</div>
         <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid ${marcado?'#0F9B78':'transparent'}">${iniciais}</div>
