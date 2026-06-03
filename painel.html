@@ -379,7 +379,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="nav-group-lbl">Gente e Gestão</div>
       <button class="nav-item" onclick="setView('estoque-view',this)"><span class="nav-ic">📦</span>PMC Estoque</button>
       <button class="nav-item" onclick="setView('ponto-rh',this)"><span class="nav-ic">⏱️</span>Ponto RH</button>
-      <button class="nav-item" onclick="setView('gestor',this)"><span class="nav-ic">🔒</span>Patrimônios</button>
+      <button class="nav-item" onclick="setView('patrimonios',this)"><span class="nav-ic">🔒</span>Patrimônios</button>
       <button class="nav-item" onclick="setView('presencas',this)"><span class="nav-ic">📋</span>Presenças</button>
 
       <div class="nav-group-lbl">Qualidade</div>
@@ -395,7 +395,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span>Ativar/Desativar cliente</button>
 
       <div class="nav-group-lbl">Importação e Registro</div>
-      <button class="nav-item" onclick="window.location.href='importar.html'"><span class="nav-ic">📥</span>Importação</button>
+      <button class="nav-item" onclick="setView('importacao',this)"><span class="nav-ic">📥</span>Importação</button>
       <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📏</span>Quilometragem<span class="nav-tag">pendente</span></button>
 
       <div class="nav-group-lbl">Sistema</div>
@@ -1515,6 +1515,148 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 
 <!-- Chat FAB -->
+
+  <!-- VIEW PATRIMÔNIOS -->
+  <div class="view" id="view-patrimonios">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div style="font-size:16px;font-weight:800;color:#0F4C7A">🔒 Patrimônios</div>
+      <button onclick="abrirModalPatCad('')" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Cadastrar item</button>
+    </div>
+
+    <!-- KPIs -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+      <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+        <div style="font-size:22px;font-weight:800;color:#0F4C7A" id="pat-total">—</div>
+        <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Total itens</div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+        <div style="font-size:22px;font-weight:800;color:#0F9B78" id="pat-disp">—</div>
+        <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Disponíveis</div>
+      </div>
+      <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+        <div style="font-size:22px;font-weight:800;color:#1E9FD9" id="pat-uso">—</div>
+        <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Em uso</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;gap:6px;margin-bottom:1rem;background:#fff;border-radius:12px;padding:6px;border:1px solid #EBF1F5">
+      <button id="pat-tab-btn-geral" onclick="mudarTabPat('geral',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📦 Geral</button>
+      <button id="pat-tab-btn-motoboy" onclick="mudarTabPat('motoboy',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👤 Por Motoboy</button>
+      <button id="pat-tab-btn-pendencias" onclick="mudarTabPat('pendencias',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pendências</button>
+      <button id="pat-tab-btn-historico" onclick="mudarTabPat('historico',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Histórico</button>
+    </div>
+
+    <!-- Aba Geral -->
+    <div id="pat-tab-geral">
+      <!-- Com código -->
+      <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
+        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
+          <span style="font-size:13px;font-weight:700;color:#0F4C7A">📡 Com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Rastreador · Baú · Cooler P · Cooler G)</span></span>
+          <span style="color:#94A8B8;font-size:16px">›</span>
+        </div>
+        <div style="display:none;border-top:1px solid #EBF1F5;padding:12px" id="pat-categorias-lista"></div>
+      </div>
+
+      <!-- Sem código -->
+      <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
+        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
+          <span style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Sem código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Colete · Camisetas · Blusa · Crachá · Bolsa)</span></span>
+          <span style="color:#94A8B8;font-size:16px">›</span>
+        </div>
+        <div style="display:none;border-top:1px solid #EBF1F5;padding:12px">
+          <!-- Itens com tamanho -->
+          <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Com tamanho</div>
+          <div id="pat-uniformes-lista"></div>
+          <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin-top:8px">+ Entrada de uniforme</button>
+          <!-- Itens sem tamanho -->
+          <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px">Sem tamanho</div>
+          <div id="pat-simples-lista2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aba Por Motoboy -->
+    <div id="pat-tab-motoboy" style="display:none">
+      <select id="pat-sel-motoboy" onchange="carregarChecklistMotoboy(this.value)" style="width:100%;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;margin-bottom:1rem;background:#fff">
+        <option value="">Selecione o motoboy...</option>
+      </select>
+      <div id="pat-checklist-motoboy"></div>
+    </div>
+
+    <!-- Aba Pendências -->
+    <div id="pat-tab-pendencias" style="display:none">
+      <div id="pend-resumo" style="font-size:12px;color:#5A7A8F;margin-bottom:1rem"></div>
+      <div id="lista-pendencias"></div>
+    </div>
+
+    <!-- Aba Histórico -->
+    <div id="pat-tab-historico" style="display:none">
+      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
+        <button class="hist-filtro" onclick="filtrarHistorico('todos',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">Todos</button>
+        <button class="hist-filtro" onclick="filtrarHistorico('entrega',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">✓ Entregas</button>
+        <button class="hist-filtro" onclick="filtrarHistorico('troca',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">⇄ Trocas</button>
+        <button class="hist-filtro" onclick="filtrarHistorico('descarte',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">↩ Devoluções</button>
+      </div>
+      <div id="lista-historico"></div>
+    </div>
+
+  </div>
+  <!-- FIM VIEW PATRIMÔNIOS -->
+
+
+  <!-- VIEW IMPORTAÇÃO E REGISTRO -->
+  <div class="view" id="view-importacao">
+    <div style="font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem">📁 Importação e Registro</div>
+
+    <!-- Download Checklist -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
+      <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Download de Checklists</div>
+        <div style="font-size:11px;color:#5A7A8F">Exportar em PDF</div>
+      </div>
+      <div style="padding:14px">
+        <div style="display:flex;gap:8px;margin-bottom:12px">
+          <div style="flex:1">
+            <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">DATA</label>
+            <input type="date" id="chk-download-data" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit"/>
+          </div>
+          <div style="flex:1">
+            <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">MOTOBOY (opcional)</label>
+            <select id="chk-download-motoboy" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;background:#fff">
+              <option value="">Todos</option>
+            </select>
+          </div>
+        </div>
+        <button onclick="downloadChecklistPDF()" style="width:100%;height:38px;border-radius:9px;border:none;background:linear-gradient(135deg,#0F4C7A,#1E9FD9);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
+          📥 Baixar PDF dos checklists
+        </button>
+        <div id="msg-chk-download" class="msg" style="margin-top:8px"></div>
+      </div>
+    </div>
+
+    <!-- Importação -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
+      <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5">
+        <div style="font-size:13px;font-weight:700;color:#0F4C7A">📤 Importação de rotas</div>
+      </div>
+      <div style="padding:14px">
+        <button onclick="window.location.href='importar.html'" style="width:100%;height:38px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+          Abrir página de importação →
+        </button>
+      </div>
+    </div>
+
+    <!-- Quilometragem pendente -->
+    <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;opacity:.5">
+      <div style="padding:13px 14px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:13px;font-weight:700;color:#0F4C7A">📏 Registro de Quilometragem</div>
+        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">pendente</span>
+      </div>
+    </div>
+  </div>
+  <!-- FIM VIEW IMPORTAÇÃO -->
+
 <div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 4px 16px rgba(30,159,217,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9998">💬
   <div id="chat-fab-badge" style="position:absolute;top:-4px;right:-4px;background:#DC2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
 </div>
