@@ -34,7 +34,13 @@ let entTamSel = 'P';
 let entQtd = 5;
 let filtroMatEstAtual = 'todos';
 let camMBTamSel = '';
-
+let camisetasParaAdicionar = [];
+let pendEntregaMotoboy = '';
+let pendEntregaTipo = '';
+let pendEntregaIdx = -1;
+let pendCodigoSel = null;
+let filtroHistoricoAtual = 'todos';
+let historicoItens = [];
 async function carregarPatrimonios() {
   try {
     const r = await fetch(API + '/patrimonios');
@@ -61,26 +67,16 @@ async function carregarPatrimonios() {
 }
 
 async function iniciarEstoqueView() {
-  if(!patrimonios.length && !Object.keys(patrimoniosSimples).length) await carregarPatrimonios();
   if(!materiais.length) await carregarMateriais();
-  if(!Object.keys(estoqueUnif).length) await carregarUniformes();
-  const sel = document.getElementById('est-sel-motoboy');
-  if(sel && sel.options.length<=1){
-    try{
-      const r=await fetch(API+'/motoboys?todos=1&agrupado=1');
-      const d=await r.json();
-      const nomes=[...new Set((d.motoboys||[]).map(m=>m.nome))].sort();
-      nomes.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;sel.appendChild(o);});
-    }catch(e){}
-  }
-  renderEstoqueUnifEst(); renderEstoquePatEst(); renderEstoqueSimplesEst(); renderMateriaisEst(); renderResumoPorMotoboy();
+  renderMateriaisEst();
 }
 
 function mudarTabEst(tab, btn) {
-  ['geral','motoboy','materiais'].forEach(t=>{
-    const el=document.getElementById('est-tab-'+t); if(el) el.style.display=t===tab?'block':'none';
-    const b=document.getElementById('est-tab-btn-'+t);
-    if(b){b.style.borderColor=t===tab?'#8B5CF6':'#D6E5EE';b.style.background=t===tab?'#F3F0FF':'#fff';b.style.color=t===tab?'#5B21B6':'#5A7A8F';}
+  ['materiais'].forEach(t => {
+    const el = document.getElementById('est-tab-'+t);
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+    const b = document.getElementById('est-tab-btn-'+t);
+    if(b) { b.style.borderColor=t===tab?'#8B5CF6':'#D6E5EE'; b.style.background=t===tab?'#F3F0FF':'#fff'; b.style.color=t===tab?'#5B21B6':'#5A7A8F'; }
   });
   if(tab==='materiais') renderMateriaisEst();
 }
@@ -395,8 +391,8 @@ function renderMateriaisEst(){
 
 
 // ── PENDÊNCIAS ─────────────────────────────────────────
-let pendEntregaMotoboy='', pendEntregaTipo='', pendEntregaIdx=-1, pendCodigoSel=null;
-let historicoItens=[], filtroHistoricoAtual='todos';
+// vars declaradas no topo
+// vars declaradas no topo
 
 function fecharModalCamiseta(){
   document.getElementById('modal-camiseta-mb').style.display='none';
@@ -1233,4 +1229,36 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
   const titulo = motoboy ? `Checklist_${motoboy.replace(/ /g,'_')}_${dataFmt.replace(/\//g,'-')}.pdf`
                           : `Checklists_${dataFmt.replace(/\//g,'-')}.pdf`;
   doc.save(titulo);
+}
+
+// ── ATUALIZAR MOTOBOYS DO CHECKLIST POR DATA ─────────────────
+async function atualizarMotoboysChecklist() {
+  const dataEl = document.getElementById('chk-download-data');
+  const sel = document.getElementById('chk-download-motoboy');
+  const info = document.getElementById('chk-download-info');
+  if(!dataEl || !dataEl.value || !sel) return;
+
+  const dataFmt = new Date(dataEl.value + 'T12:00:00').toLocaleDateString('pt-BR');
+  if(info) info.textContent = '⏳ Buscando...';
+
+  try {
+    const r = await fetch(API + '/checklist?data=' + encodeURIComponent(dataFmt));
+    const d = await r.json();
+    const lista = d.checklists || [];
+
+    // Limpar e popular select
+    sel.innerHTML = '<option value="">Todos (' + lista.length + ')</option>';
+    lista.forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.biocondutor;
+      o.textContent = c.biocondutor + ' · ' + c.rota;
+      sel.appendChild(o);
+    });
+
+    if(info) info.textContent = lista.length
+      ? '✓ ' + lista.length + ' checklist(s) encontrado(s)'
+      : '⚠️ Nenhum checklist nesta data';
+  } catch(e) {
+    if(info) info.textContent = 'Erro ao buscar';
+  }
 }
