@@ -55,7 +55,7 @@ function setView(id, el) {
   window.scrollTo(0,0);
 
   // Atualizar breadcrumb
-  atualizarBreadcrumb(id);
+  if (typeof atualizarBreadcrumb === 'function') atualizarBreadcrumb(id);
 
   if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); iniciarMiniMapa(); }
   if (id === 'confirmacoes') carregarConfirmacoes();
@@ -109,8 +109,7 @@ function iniciarAutoRefresh() {
 function pararAutoRefresh() {
   if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
   if (typeof pararAutoRefreshMapa === 'function') pararAutoRefreshMapa();
-
-
+}
 
 function atualizarBreadcrumb(id) {
   const bc = document.getElementById('tb-breadcrumb');
@@ -252,7 +251,6 @@ async function carregarMiniMapa() {
   } catch(e) {}
 }
 
-}
 function atualizarVersaoApp() {
   const novaVersao = prompt('Digite a nova versão do app:\n(Ex: 1.0.1)\n\nAo salvar, todos os apps verão o banner de atualização.');
   if (!novaVersao) return;
