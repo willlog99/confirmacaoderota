@@ -49,6 +49,7 @@ function setView(id, el) {
   pararAutoRefresh();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(m => m.classList.remove('active'));
+  
   const viewEl = document.getElementById('view-' + id);
   if (viewEl) viewEl.classList.add('active');
   if (el) el.classList.add('active');
@@ -57,22 +58,36 @@ function setView(id, el) {
   // Atualizar breadcrumb
   if (typeof atualizarBreadcrumb === 'function') atualizarBreadcrumb(id);
 
-  if (id === 'painel') { carregarPainel(); iniciarAutoRefresh(); iniciarMiniMapa(); }
-  if (id === 'confirmacoes') carregarConfirmacoes();
-  if (id === 'motoristas') carregarMotoristasList();
-  if (id === 'rotas-view') carregarRotasView();
-  if (id === 'checklist-view') carregarChecklists();
-  if (id === 'checklists-incompletos') carregarChecklistsIncompletos();
-  if (id === 'gerenciar-motoboys') carregarMotoboysGerenciar();
-  if (id === 'ponto-rh') iniciarPontoRH();
-  if (id === 'estoque-view') iniciarEstoqueView();
-    if (id === 'patrimonios') iniciarPatrimonios();
-    if (id === 'importacao') iniciarImportacao();
-  if (id === 'presencas') carregarPresencas();
-  if (id === 'mapa-rastreamento') {
-    setTimeout(() => { iniciarLeafletMap(); carregarMapa(); iniciarAutoRefreshMapa(); }, 100);
+  // BLINDAGEM: Verifica se a função existe antes de chamar, evitando travamento (Uncaught ReferenceError)
+  if (id === 'painel') { 
+      if (typeof carregarPainel === 'function') carregarPainel(); 
+      iniciarAutoRefresh(); 
+      iniciarMiniMapa(); 
   }
-  if (id === 'gestor') renderItensAuditoria();
+  if (id === 'confirmacoes' && typeof carregarConfirmacoes === 'function') carregarConfirmacoes();
+  if (id === 'motoristas' && typeof carregarMotoristasList === 'function') carregarMotoristasList();
+  if (id === 'rotas-view' && typeof carregarRotasView === 'function') carregarRotasView();
+  if (id === 'checklist-view' && typeof carregarChecklists === 'function') carregarChecklists();
+  if (id === 'checklists-incompletos' && typeof carregarChecklistsIncompletos === 'function') carregarChecklistsIncompletos();
+  if (id === 'gerenciar-motoboys' && typeof carregarMotoboysGerenciar === 'function') carregarMotoboysGerenciar();
+  
+  // A correção que resolve o problema do Ponto RH:
+  if (id === 'ponto-rh' && typeof iniciarPontoRH === 'function') iniciarPontoRH();
+  
+  if (id === 'estoque-view' && typeof iniciarEstoqueView === 'function') iniciarEstoqueView();
+  if (id === 'patrimonios' && typeof iniciarPatrimonios === 'function') iniciarPatrimonios();
+  if (id === 'importacao' && typeof iniciarImportacao === 'function') iniciarImportacao();
+  if (id === 'presencas' && typeof carregarPresencas === 'function') carregarPresencas();
+  
+  if (id === 'mapa-rastreamento') {
+    setTimeout(() => { 
+        if (typeof iniciarLeafletMap === 'function') iniciarLeafletMap(); 
+        if (typeof carregarMapa === 'function') carregarMapa(); 
+        if (typeof iniciarAutoRefreshMapa === 'function') iniciarAutoRefreshMapa(); 
+    }, 100);
+  }
+  
+  if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
 }
 
 
@@ -88,6 +103,7 @@ function showMsg(id, text, type) {
 
 function toast(msg) {
   const el = document.getElementById('toast');
+  if(!el) { console.log(msg); return; }
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
@@ -102,7 +118,9 @@ function formatarTelefone(t) {
 
 function iniciarAutoRefresh() {
   pararAutoRefresh();
-  autoRefreshInterval = setInterval(() => carregarPainel(true), 30000);
+  autoRefreshInterval = setInterval(() => {
+      if (typeof carregarPainel === 'function') carregarPainel(true);
+  }, 30000);
 }
 
 
@@ -178,7 +196,7 @@ async function confirmarReverterColeta() {
       document.getElementById('reverter-num-cliente').value = '';
       reverterClienteData = null;
       setTimeout(() => { msg.className = 'msg'; msg.textContent = ''; }, 3000);
-      carregarPainel();
+      if (typeof carregarPainel === 'function') carregarPainel();
     } else {
       msg.className = 'msg error'; msg.textContent = 'Erro ao reverter';
       btn.disabled = false;
