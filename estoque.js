@@ -1,5 +1,5 @@
 // =============================================
-// ABA ESTOQUE — JS COMPLETO
+// ABA ESTOQUE — JS COMPLETO CORRIGIDO
 // =============================================
 
 // ── VARIÁVEIS GLOBAIS DE PATRIMÔNIO ──
@@ -46,6 +46,7 @@ async function carregarUniformes() {
     if (d.estoque) { estoqueUnif = d.estoque; salvarEstoqueUnif(); }
   } catch(e) {}
 }
+
 let camMBTamSel = '';
 let camisetasParaAdicionar = [];
 let pendEntregaMotoboy = '';
@@ -54,6 +55,7 @@ let pendEntregaIdx = -1;
 let pendCodigoSel = null;
 let filtroHistoricoAtual = 'todos';
 let historicoItens = [];
+
 async function carregarPatrimonios() {
   try {
     const r = await fetch(API + '/patrimonios');
@@ -80,7 +82,6 @@ async function carregarPatrimonios() {
 }
 
 async function iniciarEstoqueView() {
-  // Mostrar aba materiais
   const tabEl = document.getElementById('est-tab-materiais');
   if (tabEl) tabEl.style.display = 'block';
   if (!materiais.length) await carregarMateriais();
@@ -143,7 +144,8 @@ async function confirmarEntradaUnifEst() {
   if(!estoqueUnif[tipo]) estoqueUnif[tipo]={};
   estoqueUnif[tipo][entTamSel]=((estoqueUnif[tipo][entTamSel])||0)+entQtd;
   await salvarEstoqueUnif();
-  renderEstoqueUnifEst(); renderUniformes();
+  renderEstoqueUnifEst(); 
+  renderUniformesPat(); // <--- CORRIGIDO: Vinculado para a função real existente
   document.getElementById('modal-entrada-unif-est').style.display='none';
   toast(`✓ ${entQtd}x ${entTamSel} adicionado!`);
 }
@@ -405,11 +407,6 @@ function renderMateriaisEst(){
     ae.innerHTML=h?`<div style="margin-bottom:1rem">${h}</div>`:'';}
 }
 
-
-// ── PENDÊNCIAS ─────────────────────────────────────────
-// vars declaradas no topo
-// vars declaradas no topo
-
 function fecharModalCamiseta(){
   document.getElementById('modal-camiseta-mb').style.display='none';
   camisetasParaAdicionar=[];
@@ -495,8 +492,8 @@ function editarQtdUnif(tipoId,tam,qtdAtual){
   estoqueUnif[tipoId][tam]=novaQtd;
   salvarEstoqueUnif();
   renderEstoqueUnifEst();
-  renderUniformes();
-  toast('✓ Estoque atualizado: '+novaQtd+' unidades');
+  renderUniformesPat();
+  toast('✓ Estoque updated: '+novaQtd+' unidades');
 }
 
 function ajustarSimplesEst(tipo,delta){
@@ -681,8 +678,6 @@ function renderHistorico(){
     </div>`).join('');
 }
 
-// ── PATRIMÔNIOS — funções de gestão ─────────────────────────
-
 function toggleCat(header) {
   const corpo = header.nextElementSibling;
   const arrow = header.querySelector('.cat-arrow');
@@ -714,7 +709,7 @@ function ajustarSimples(tipo, delta) {
   if (!patrimoniosSimples[tipo]) patrimoniosSimples[tipo] = { total: 0, vinculados: 0 };
   patrimoniosSimples[tipo].total = Math.max(0, (patrimoniosSimples[tipo].total || 0) + delta);
   syncPatServer();
-  renderEstoquePat && renderEstoquePat();
+  renderEstoquePat();
   renderEstoqueSimplesEst();
   toast('✓ Estoque atualizado');
 }
@@ -764,6 +759,7 @@ function renderEstoquePat() {
         <div onclick="abrirModalPatCad('${tipo.id}')" style="display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;color:#8B5CF6;font-size:12px;font-weight:700;background:#F8F6FF;border-top:1px solid #EBF1F5">➕ Cadastrar novo ${tipo.nome}</div>
       </div></div>`;
   }).join('');
+  
   const elS = document.getElementById('pat-simples-lista'); if (!elS) return;
   elS.innerHTML = LISTA_PADRAO_PAT.filter(t => !t.codigo).map(tipo => {
     const d = patrimoniosSimples[tipo.id] || { total: 0, vinculados: 0 };
@@ -966,7 +962,7 @@ function selecionarSubst(codigo, el) {
 
 async function confirmarSubstituicao() {
   const msg=document.getElementById('msg-subst');
-  if(!substPatSelecionado){msg.textContent='⚠️ Selecione o substituto';msg.style.color='#DC2626';return;}
+  if(!substPatSelecionado){msg.textContent='⚠️ Selecione the substituto';msg.style.color='#DC2626';return;}
   const pAnt=patrimonios.find(x=>x.id===substPatId); if(!pAnt) return;
   const motivo=document.getElementById('subst-motivo').value;
   const motoboy=pAnt.motoboy, hoje=new Date().toLocaleDateString('pt-BR');
@@ -1032,7 +1028,6 @@ function marcarNA(motoboy, tipoId) {
   syncPatServer(); carregarChecklistEstMotoboy(motoboy);
 }
 
-// ── TABS PATRIMÔNIOS ─────────────────────────────────────────
 function mudarTabPat(tab, btn) {
   ['geral','motoboy','pendencias','historico'].forEach(t => {
     const el = document.getElementById('pat-tab-'+t);
@@ -1046,7 +1041,6 @@ function mudarTabPat(tab, btn) {
   if(tab==='pendencias') renderPendencias();
   if(tab==='historico')  renderHistorico();
   if(tab==='motoboy') {
-    // Popular select de motoboys
     const sel = document.getElementById('pat-sel-motoboy');
     if(sel && sel.options.length <= 1) {
       fetch(API + '/motoboys?todos=1&agrupado=1').then(r=>r.json()).then(d=>{
@@ -1057,11 +1051,10 @@ function mudarTabPat(tab, btn) {
   }
 }
 
-// ── INICIAR VIEW PATRIMÔNIOS ─────────────────────────────────
 async function iniciarPatrimonios() {
   if(!patrimonios.length && !Object.keys(patrimoniosSimples).length) await carregarPatrimonios();
   if(!Object.keys(estoqueUnif).length) await carregarUniformes();
-  // Popular select de motoboys
+  
   const sel = document.getElementById('pat-sel-motoboy');
   if(sel && sel.options.length <= 1) {
     try {
@@ -1071,7 +1064,7 @@ async function iniciarPatrimonios() {
       nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
     } catch(e) {}
   }
-  // Preencher select de download checklist
+  
   const selChk = document.getElementById('chk-download-motoboy');
   if(selChk && selChk.options.length <= 1) {
     try {
@@ -1081,7 +1074,7 @@ async function iniciarPatrimonios() {
       nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; selChk.appendChild(o); });
     } catch(e) {}
   }
-  // Data padrão hoje
+  
   const dataEl = document.getElementById('chk-download-data');
   if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
   renderEstoquePat();
@@ -1113,14 +1106,13 @@ function renderUniformesPat() {
   }).join('');
 }
 
-// ── DOWNLOAD CHECKLIST PDF ────────────────────────────────────
 async function downloadChecklistPDF() {
   const dataEl = document.getElementById('chk-download-data');
   const mbEl   = document.getElementById('chk-download-motoboy');
   const msg    = document.getElementById('msg-chk-download');
   if(!dataEl || !dataEl.value) { msg.className='msg error'; msg.textContent='⚠️ Selecione a data'; return; }
 
-  const data    = dataEl.value; // YYYY-MM-DD
+  const data    = dataEl.value; 
   const motoboy = mbEl ? mbEl.value : '';
   const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
 
@@ -1146,13 +1138,13 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W=210, M=15, CW=W-M*2;
-  const AZ=[15,76,122], AZ2=[30,159,217], VD=[15,155,120], CZ=[90,122,143], CZ2=[235,241,245];
+  const AZ=[15,76,122], AZ2=[30,159,217], CZ=[90,122,143], CZ2=[235,241,245];
 
   const campos = [
-    { label:'Placa',                 key:'placa' },
-    { label:'Conservação da Moto',   key:'conservacao_moto' },
-    { label:'Pneu Dianteiro',        key:'pneu_dianteiro' },
-    { label:'Pneu Traseiro',         key:'pneu_traseiro' },
+    { label:'Placa',                               key:'placa' },
+    { label:'Conservação da Moto',                   key:'conservacao_moto' },
+    { label:'Pneu Dianteiro',                        key:'pneu_dianteiro' },
+    { label:'Pneu Traseiro',                         key:'pneu_traseiro' },
     { label:'Bolsa Térmica — Limpeza', key:'bolsa_limpeza' },
     { label:'Bolsa Térmica — Estado', key:'bolsa_estado' },
     { label:'Bolsa Térmica — Identificação', key:'bolsa_identificacao' },
@@ -1183,7 +1175,6 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
   lista.forEach((c, idx) => {
     if(idx > 0) doc.addPage();
 
-    // Cabeçalho
     try { doc.addImage('https://raw.githubusercontent.com/willlog99/confirmacaoderota/main/20050686-7618-4EE2-86F2-0E0E1EE012BE.png','PNG',M,10,14,9); } catch(e){}
     doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(...AZ);
     doc.text('Checklist Operacional', W-M, 15, {align:'right'});
@@ -1193,7 +1184,6 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
 
     let y = 28;
 
-    // Info
     const info = [
       ['BIOCONDUTOR', c.biocondutor||'—'],
       ['DATA', c.data_checklist||dataFmt],
@@ -1212,7 +1202,6 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
     });
     y += 18;
 
-    // Itens
     doc.setFillColor(...AZ2); doc.rect(M,y,CW,7,'F');
     doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.setTextColor(255,255,255);
     doc.text('ITENS VERIFICADOS', M+3, y+5);
@@ -1234,7 +1223,6 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
       y += h;
     });
 
-    // Rodapé
     const pH = doc.internal.pageSize.height;
     doc.setDrawColor(...CZ2); doc.line(M, pH-18, W-M, pH-18);
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...CZ);
@@ -1243,11 +1231,10 @@ function gerarPDFChecklists(lista, dataFmt, motoboy) {
   });
 
   const titulo = motoboy ? `Checklist_${motoboy.replace(/ /g,'_')}_${dataFmt.replace(/\//g,'-')}.pdf`
-                          : `Checklists_${dataFmt.replace(/\//g,'-')}.pdf`;
+                        : `Checklists_${dataFmt.replace(/\//g,'-')}.pdf`;
   doc.save(titulo);
 }
 
-// ── ATUALIZAR MOTOBOYS DO CHECKLIST POR DATA ─────────────────
 async function atualizarMotoboysChecklist() {
   const dataEl = document.getElementById('chk-download-data');
   const sel = document.getElementById('chk-download-motoboy');
@@ -1262,7 +1249,6 @@ async function atualizarMotoboysChecklist() {
     const d = await r.json();
     const lista = d.checklists || [];
 
-    // Limpar e popular select
     sel.innerHTML = '<option value="">Todos (' + lista.length + ')</option>';
     lista.forEach(c => {
       const o = document.createElement('option');
