@@ -33,6 +33,19 @@ const LISTA_PADRAO_PAT = [
 let entTamSel = 'P';
 let entQtd = 5;
 let filtroMatEstAtual = 'todos';
+let estoqueUnif = JSON.parse(localStorage.getItem('lgl_unif') || '{}');
+
+function salvarEstoqueUnif() {
+  localStorage.setItem('lgl_unif', JSON.stringify(estoqueUnif));
+}
+
+async function carregarUniformes() {
+  try {
+    const r = await fetch(API + '/uniformes');
+    const d = await r.json();
+    if (d.estoque) { estoqueUnif = d.estoque; salvarEstoqueUnif(); }
+  } catch(e) {}
+}
 let camMBTamSel = '';
 let camisetasParaAdicionar = [];
 let pendEntregaMotoboy = '';
@@ -67,7 +80,10 @@ async function carregarPatrimonios() {
 }
 
 async function iniciarEstoqueView() {
-  if(!materiais.length) await carregarMateriais();
+  // Mostrar aba materiais
+  const tabEl = document.getElementById('est-tab-materiais');
+  if (tabEl) tabEl.style.display = 'block';
+  if (!materiais.length) await carregarMateriais();
   renderMateriaisEst();
 }
 
