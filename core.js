@@ -5,6 +5,7 @@
 // ── VARIÁVEIS ──
 const API = 'https://confirmacaoderota.willlog99.workers.dev';
 const _diaSemana = new Date().getDay();
+let autoRefreshInterval = null;
 
 // ── FUNÇÕES ──
 
