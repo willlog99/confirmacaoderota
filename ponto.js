@@ -2,7 +2,7 @@
 // ── PONTO RH — Sistema de ponto, banco de horas, home office, férias ───────
 // ============================================================
 
-// ── VARIÁVEIS ──
+// ── VARIÁVEIS GLOBAIS ──
 let pontoDadosPonto=[], pontoDadosFerias=[], pontoDadosBanco=[], pontoDadosEndereco=[];
 let pontoSaldosReais={}, pontoTemExtrato=false;
 let pontoDiasExist=[], pontoMes=new Date().getMonth(), pontoAno=new Date().getFullYear();
@@ -10,11 +10,11 @@ let pontoNomesHome=[], pontoNomesBanco=[];
 let pontoHomeData=[], pontoBancoData=[];
 let pontoDesligados=[];
 let pontoProcessado=false;
+let pontoArquivoPrincipal = null; // 💾 CORRIGIDO: Declarado globalmente para não quebrar o processamento
 
 // ── FUNÇÕES ──
 
 function iniciarPontoRH(){pontoCarregarHistorico();pontoCarregarDesligados();}
-
 
 function mudarTabPonto(tab,btn){
   ['upload','panorama','home','banco','ferias','historico','config'].forEach(t=>{
@@ -26,10 +26,9 @@ function mudarTabPonto(tab,btn){
   if(tab==='config')pontoCarregarDesligados();
 }
 
-
 function pontoLerPrincipal(file){
   if(!file)return;
-  pontoArquivoPrincipal=file;
+  pontoArquivoPrincipal=file; // Armazena o arquivo na variável global
   const reader=new FileReader();
   reader.onload=e=>{
     try{
@@ -42,15 +41,18 @@ function pontoLerPrincipal(file){
       if(datas.length){pontoMes=datas[0].getMonth();pontoAno=datas[0].getFullYear();}
       pontoDiasExist=[...new Set(datas.map(d=>d.getDate()))].sort((a,b)=>a-b);
       const el=document.getElementById('ponto-status-main');
-      el.style.display='block';
-      el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${pontoDadosPonto.length} registros, ${pontoDiasExist.length} dias</span>`;
-      document.getElementById('ponto-zone-main').style.borderColor='#16A34A';
-      document.getElementById('ponto-btn-processar').style.display='block';
+      if(el) {
+        el.style.display='block';
+        el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${pontoDadosPonto.length} registros, ${pontoDiasExist.length} dias</span>`;
+      }
+      const zone = document.getElementById('ponto-zone-main');
+      if(zone) zone.style.borderColor='#16A34A';
+      const btnProc = document.getElementById('ponto-btn-processar');
+      if(btnProc) btnProc.style.display='block';
     }catch(err){toast('Erro ao ler planilha','error');console.error(err);}
   };
   reader.readAsArrayBuffer(file);
 }
-
 
 function pontoLerExtrato(file){
   if(!file)return;
@@ -64,17 +66,18 @@ function pontoLerExtrato(file){
       raw.slice(1).forEach(r=>{const nome=(r[3]||'').trim();if(nome&&r[7])temp[nome.toUpperCase()]={saldo:pontoParseSaldo(r[7]),saldoStr:r[7]};});
       pontoSaldosReais=temp;pontoTemExtrato=true;
       const el=document.getElementById('ponto-status-extrato');
-      el.style.display='block';
-      el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${Object.keys(pontoSaldosReais).length} saldos reais</span>`;
-      document.getElementById('ponto-zone-extrato').style.borderColor='#16A34A';
+      if(el) {
+        el.style.display='block';
+        el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${Object.keys(pontoSaldosReais).length} saldos reais</span>`;
+      }
+      const zone = document.getElementById('ponto-zone-extrato');
+      if(zone) zone.style.borderColor='#16A34A';
     }catch(err){toast('Erro ao ler extrato','error');}
   };
   reader.readAsArrayBuffer(file);
 }
 
-
 function pontoSheetJson(wb,nome){return wb.Sheets[nome]?XLSX.utils.sheet_to_json(wb.Sheets[nome]):[];}
-
 
 function pontoProcessar(){
   if(!pontoDadosPonto.length){toast('Carregue a planilha primeiro','error');return;}
@@ -84,21 +87,26 @@ function pontoProcessar(){
   const desl=pontoDesligados.map(d=>pontoNorm(d.nome));
   pontoBancoData.forEach(x=>{if(desl.includes(pontoNorm(x.nome)))x.desligado=true;});
   pontoHomeData.forEach(x=>{if(desl.includes(pontoNorm(x.nome)))x.desligado=true;});
+  
+  // Renderizações das tabelas
   pontoRenderPanorama();pontoRenderHome();pontoRenderBanco();pontoRenderFerias();
+  
+  // Validações de segurança para elementos de interface
   ['panorama','home','banco','ferias'].forEach(t=>{const b=document.getElementById('ponto-tab-btn-'+t);if(b)b.style.display='block';});
   const ab=document.getElementById('ponto-action-bar');if(ab)ab.style.display='flex';
   const pp=document.getElementById('pill-ponto-periodo');const pr=document.getElementById('pill-ponto-records');
   if(pp){pp.textContent='📅 '+String(pontoMes+1).padStart(2,'0')+'/'+pontoAno;pp.style.display='inline-block';}
   if(pr){pr.textContent=pontoDadosPonto.length+' registros';pr.style.display='inline-block';}
   if(pontoTemExtrato){const b=document.getElementById('ponto-badge-saldo-real');if(b){b.style.display='inline-block';b.textContent='✅ saldo real';}}
-  pontoProcessado=true;toast('✓ Dados processados!');
-  // Salvar planilha no R2 automaticamente
-  pontoSalvarXlsxR2();
+  
+  pontoProcessado=true;
+  toast('✓ Dados processados!');
+  
+  // 🔥 CORRIGIDO: Executa o upload em segundo plano sem travar o encerramento síncrono da função
+  pontoSalvarXlsxR2().catch(e => console.warn('Falha silenciosa no upload R2:', e));
+  
   mudarTabPonto('panorama',document.getElementById('ponto-tab-btn-panorama'));
 }
-
-// Salva o arquivo xlsx no R2 com chave ponto-ANO-MES.xlsx
-
 
 async function pontoSalvarXlsxR2(){
   if(!pontoArquivoPrincipal) return;
@@ -111,7 +119,6 @@ async function pontoSalvarXlsxR2(){
     console.log('Planilha salva no R2');
   } catch(e){ console.warn('Erro ao salvar no R2:', e); }
 }
-
 
 function pontocalcHome(){
   pontoHomeData=pontoNomesHome.map(nome=>{
@@ -130,7 +137,6 @@ function pontocalcHome(){
     return{nome,total,dias};
   }).sort((a,b)=>b.total-a.total);
 }
-
 
 function pontocalcBanco(){
   const saldoPlanilha={};
@@ -155,17 +161,13 @@ function pontocalcBanco(){
   }).sort((a,b)=>b.totalReal-a.totalReal);
 }
 
-
 function tblStyle(extra){return `border-collapse:collapse;width:100%;font-size:11px${extra?';'+extra:''}`;}
-
-
 function thStyle(sticky){return `padding:8px 10px;border-bottom:1px solid #E5E7EB;text-align:left;font-size:10px;color:#6B7280;font-weight:700;background:#F9FAFB${sticky?';position:sticky;left:0;z-index:5':''}`;}
-
-
 function tdStyle(extra){return `padding:8px 10px;border-bottom:1px solid #F3F4F6${extra?';'+extra:''}`;}
 
-
 function pontoRenderPanorama(){
+  const container = document.getElementById('ponto-tbl-panorama');
+  if(!container) return;
   const hoje=new Date();hoje.setHours(0,0,0,0);
   let h=`<table style="${tblStyle()}"><thead><tr>
     <th style="${thStyle(true)};min-width:160px;border-right:1px solid #E5E7EB">COLABORADOR</th>`;
@@ -187,11 +189,12 @@ function pontoRenderPanorama(){
     h+=`</tr>`;
   });
   h+=`</tbody></table>`;
-  document.getElementById('ponto-tbl-panorama').innerHTML=h;
+  container.innerHTML=h;
 }
 
-
 function pontoRenderHome(){
+  const container = document.getElementById('ponto-tbl-home');
+  if(!container) return;
   let h=`<table style="${tblStyle()}"><thead><tr>
     <th style="${thStyle(true)};min-width:160px;border-right:1px solid #E5E7EB">COLABORADOR</th>`;
   pontoDiasExist.forEach(d=>h+=`<th style="padding:8px 6px;border-bottom:1px solid #E5E7EB;text-align:center;font-size:10px;color:#6B7280;font-weight:700;background:#F9FAFB">Dia ${d}</th>`);
@@ -214,11 +217,12 @@ function pontoRenderHome(){
     h+=`<td style="${tdStyle('text-align:center;font-weight:700;background:#EFF6FF;color:#1D4ED8')}">${iD?'–':item.total}</td></tr>`;
   });
   h+=`</tbody></table>`;
-  document.getElementById('ponto-tbl-home').innerHTML=h;
+  container.innerHTML=h;
 }
 
-
 function pontoRenderBanco(){
+  const container = document.getElementById('ponto-tbl-banco');
+  if(!container) return;
   const lista=[...pontoBancoData].sort((a,b)=>b.totalReal-a.totalReal);
   let h=`<table style="${tblStyle()}"><thead><tr>
     <th style="padding:8px 6px;border-bottom:1px solid #E5E7EB;text-align:center;font-size:10px;color:#6B7280;font-weight:700;background:#F9FAFB;width:30px">#</th>
@@ -246,11 +250,12 @@ function pontoRenderBanco(){
     h+=`<td style="${tdStyle('text-align:center;font-family:monospace;font-size:13px;font-weight:700;background:#F0FDF4;border-left:2px solid #16A34A')};${sc}">${item.saldoRealStr||pontoHhMM(item.totalReal)}</td></tr>`;
   });
   h+=`</tbody></table>`;
-  document.getElementById('ponto-tbl-banco').innerHTML=h;
+  container.innerHTML=h;
 }
 
-
 function pontoRenderFerias(){
+  const container = document.getElementById('ponto-tbl-ferias');
+  if(!container) return;
   const hoje=new Date();hoje.setHours(0,0,0,0);
   const amanha=new Date(hoje);amanha.setDate(hoje.getDate()+1);
   let h=`<table style="${tblStyle()}"><thead><tr>
@@ -280,9 +285,8 @@ function pontoRenderFerias(){
       <td style="${tdStyle('text-align:center')}">${btn}</td></tr>`;
   });
   h+=`</tbody></table>`;
-  document.getElementById('ponto-tbl-ferias').innerHTML=h;
+  container.innerHTML=h;
 }
-
 
 function pontoRenderAvisosModal(){
   const hoje=new Date();hoje.setHours(0,0,0,0);
@@ -326,7 +330,6 @@ function pontoRenderAvisosModal(){
   pontoAbrirModalSimples('🔔 Avisos e WhatsApp',c);
 }
 
-
 function pontoAbrirModalSimples(titulo,conteudo){
   let m=document.getElementById('ponto-modal-avisos');
   if(!m){m=document.createElement('div');m.id='ponto-modal-avisos';
@@ -342,7 +345,6 @@ function pontoAbrirModalSimples(titulo,conteudo){
   m.style.display='block';
 }
 
-
 function pontoExportarExcel(){
   if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
   const wb=XLSX.utils.book_new();
@@ -353,7 +355,6 @@ function pontoExportarExcel(){
   XLSX.writeFile(wb,'PONTO_LOGLIFE_'+new Date().toLocaleDateString('pt-BR').replace(/\//g,'-')+'.xlsx');
   toast('✓ Excel exportado!');
 }
-
 
 function pontoGerarPDF(){
   if(!pontoBancoData.length){toast('Processe os dados primeiro','error');return;}
@@ -380,7 +381,6 @@ function pontoGerarPDF(){
   toast('✓ PDF gerado!');
 }
 
-
 async function pontoPrintZap(){
   if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
   const nome=prompt('Nome do colaborador:');if(!nome)return;
@@ -401,26 +401,25 @@ async function pontoPrintZap(){
   finally{document.body.removeChild(tmp);}
 }
 
-
 function pontoCopiarZap(nome,tipo){
   const msg=tipo==='SAIDA'?`Olá ${nome}! Desejamos um excelente descanso. Amanhã começam suas férias! 🌴`:`Olá ${nome}! Seu retorno às atividades é amanhã. Esperamos que tenha descansado bem! 🤝`;
   navigator.clipboard.writeText(msg).then(()=>toast('✓ Mensagem copiada!'));
 }
 
-
 function pontoResetar(){
   pontoDadosPonto=[];pontoDadosFerias=[];pontoDadosBanco=[];pontoDadosEndereco=[];
   pontoSaldosReais={};pontoTemExtrato=false;pontoDiasExist=[];pontoHomeData=[];pontoBancoData=[];pontoProcessado=false;
+  pontoArquivoPrincipal=null;
   ['ponto-file-main','ponto-file-extrato'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['ponto-status-main','ponto-status-extrato'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
-  document.getElementById('ponto-zone-main').style.borderColor='';
-  document.getElementById('ponto-zone-extrato').style.borderColor='';
-  document.getElementById('ponto-btn-processar').style.display='none';
+  
+  const zoneMain = document.getElementById('ponto-zone-main'); if(zoneMain) zoneMain.style.borderColor='';
+  const zoneExt = document.getElementById('ponto-zone-extrato'); if(zoneExt) zoneExt.style.borderColor='';
+  const btnProc = document.getElementById('ponto-btn-processar'); if(btnProc) btnProc.style.display='none';
   const ab=document.getElementById('ponto-action-bar');if(ab)ab.style.display='none';
   ['panorama','home','banco','ferias'].forEach(t=>{const b=document.getElementById('ponto-tab-btn-'+t);if(b)b.style.display='none';});
   mudarTabPonto('upload',document.getElementById('ponto-tab-btn-upload'));
 }
-
 
 async function pontoSalvarResumo(){
   if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
@@ -439,11 +438,10 @@ async function pontoSalvarResumo(){
   }catch(e){toast('Erro ao salvar','error');console.error(e);}
 }
 
-
 async function pontoCarregarHistorico(){
   const el=document.getElementById('ponto-hist-lista');if(!el)return;
   try{
-    const r=await fetch(API+'/ponto-resumo');const d=await r.json();const meses=d.resumos||[];
+    const r=await fetch(API+'/ponto-resumo');const d=await r.json();const meses=d.resumes||d.resumos||[];
     if(!meses.length){el.innerHTML='<div class="empty">Nenhum mês salvo ainda.<br>Processe uma planilha para criar o histórico.</div>';return;}
     const mn=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
     el.innerHTML=meses.map(m=>`<div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px 12px;margin-bottom:6px;cursor:pointer" onclick="pontoCarregarMes(${m.mes},${m.ano})">
@@ -461,12 +459,10 @@ async function pontoCarregarHistorico(){
   }catch(e){el.innerHTML='<div class="empty">Processe uma planilha para criar o histórico</div>';}
 }
 
-
 async function pontoCarregarMes(mes,ano){
   const el=document.getElementById('ponto-hist-lista');if(!el)return;
   el.innerHTML=`<div class="empty"><span class="spinner"></span> Carregando ${mes}/${ano}...</div>`;
   try{
-    // Baixar xlsx do R2
     const r=await fetch(`${API}/ponto-upload?mes=${mes}&ano=${ano}`);
     if(!r.ok) throw new Error('não encontrado');
     const blob=await r.blob();
@@ -501,7 +497,6 @@ async function pontoCarregarMes(mes,ano){
     };
     reader.readAsArrayBuffer(file);
   }catch(e){
-    // Fallback: mostrar só resumo do D1
     try{
       const r2=await fetch(`${API}/ponto-colaboradores?mes=${mes}&ano=${ano}`);
       const d=await r2.json();const colabs=d.colaboradores||[];
@@ -528,7 +523,6 @@ async function pontoCarregarMes(mes,ano){
   }
 }
 
-
 async function pontoCarregarDesligados(){
   const el=document.getElementById('ponto-desl-lista');if(!el)return;
   try{const r=await fetch(API+'/ponto-desligados');const d=await r.json();pontoDesligados=d.desligados||[];}
@@ -536,58 +530,4 @@ async function pontoCarregarDesligados(){
   pontoRenderDesligados();
 }
 
-
-function pontoRenderDesligados(){
-  const el=document.getElementById('ponto-desl-lista');if(!el)return;
-  if(!pontoDesligados.length){el.innerHTML='<div class="empty">Nenhum colaborador desligado</div>';return;}
-  el.innerHTML=pontoDesligados.map(d=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;background:#FCEBEB;border:1px solid #F09595;margin-bottom:5px">
-    <div style="width:22px;height:22px;border-radius:50%;background:#DC2626;color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0">✕</div>
-    <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#DC2626">${d.nome}</div>
-    <div style="font-size:10px;color:#94A8B8">Desligado em ${d.data||'–'}</div></div>
-    <button onclick="pontoRemoverDesligado('${d.nome}')" style="padding:3px 8px;border-radius:6px;border:1px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:10px;font-weight:700;cursor:pointer">↩ Reativar</button>
-  </div>`).join('');
-}
-
-
-async function pontoAdicionarDesligado(){
-  const input=document.getElementById('ponto-desl-nome');
-  const nome=input.value.trim().toUpperCase();
-  if(!nome){toast('⚠️ Digite o nome','error');return;}
-  if(pontoDesligados.find(d=>pontoNorm(d.nome)===pontoNorm(nome))){toast('Já está na lista','error');return;}
-  pontoDesligados.push({nome,data:new Date().toLocaleDateString('pt-BR')});
-  localStorage.setItem('ponto_desligados',JSON.stringify(pontoDesligados));
-  try{await fetch(API+'/ponto-desligados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({desligados:pontoDesligados})});}catch(e){}
-  input.value='';pontoRenderDesligados();toast('✓ '+nome+' marcado como desligado');
-}
-
-
-async function pontoRemoverDesligado(nome){
-  pontoDesligados=pontoDesligados.filter(d=>pontoNorm(d.nome)!==pontoNorm(nome));
-  localStorage.setItem('ponto_desligados',JSON.stringify(pontoDesligados));
-  try{await fetch(API+'/ponto-desligados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({desligados:pontoDesligados})});}catch(e){}
-  pontoRenderDesligados();toast('✓ '+nome+' reativado');
-}
-
-
-function pontoNorm(t){return String(t||'').trim().toUpperCase().replace(/\s+/g,' ');}
-
-
-function pontolimpaCEP(c){return String(c||'').replace(/\D/g,'');}
-
-
-function pontoD0(d){d.setHours(0,0,0,0);return d;}
-
-
-function pontoExtrairHora(c){if(!c)return null;if(c instanceof Date)return c.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});return String(c).substring(0,5);}
-
-
-function pontofmtH(v){if(!v)return 0;if(typeof v==='number')return v*24;const p=String(v).split(':');return p.length>=2?parseInt(p[0])+parseInt(p[1])/60:0;}
-
-
-function pontoParseSaldo(s){if(!s)return 0;s=String(s).trim();const neg=s.startsWith('-');s=s.replace(/^-/,'');const[h,m]=s.split(':').map(Number);return(neg?-1:1)*((h||0)+(m||0)/60);}
-
-
-function pontoEmFerias(nome,data){return pontoDadosFerias.some(f=>{const n=(f['COLABORADOR']||'').trim();const dI=f['Início das Férias']?pontoD0(new Date(f['Início das Férias'])):null;const dF=f['Fim das Férias']?pontoD0(new Date(f['Fim das Férias'])):null;return pontoNorm(n)===pontoNorm(nome)&&dI&&dF&&data>=dI&&data<=dF;});}
-
-
-function pontoHhMM(n){if(n===0)return '0h00';const s=n<0?'-':'+';n=Math.abs(n);const h=Math.floor(n),m=Math.round((n-h)*60);return s+h+'h'+String(m===60?0:m).padStart(2,'0');}
+function pontoRender
