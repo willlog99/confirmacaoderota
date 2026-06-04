@@ -883,93 +883,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <!-- VIEW ESTOQUE -->
   <div class="view" id="view-estoque-view">
     <div style="padding:1rem;max-width:540px;margin:0 auto">
-
-      <!-- Sub tabs -->
-      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
-        <button id="est-tab-btn-geral" onclick="mudarTabEst('geral',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">🗃️ Estoque Geral</button>
-        <button id="est-tab-btn-motoboy" onclick="mudarTabEst('motoboy',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">👤 Por Motoboy</button>
-        <button id="est-tab-btn-pendencias" onclick="mudarTabEst('pendencias',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⏳ Pendências</button>
-        <button id="est-tab-btn-historico" onclick="mudarTabEst('historico',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📋 Histórico</button>
-        <button id="est-tab-btn-materiais" onclick="mudarTabEst('materiais',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🗃️ Materiais</button>
-      </div>
-
-      <!-- ESTOQUE GERAL -->
-      <div id="est-tab-geral">
-
-        <!-- Uniformes -->
-        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
-          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:12px;cursor:pointer">
-            <span style="font-size:13px;font-weight:700;color:#0F4C7A">🧥 Uniformes</span>
-            <span style="font-size:11px;color:#5A7A8F">Camisetas · Coletes · Jaquetas</span>
-          </div>
-          <div style="display:none;border-top:1px solid #EBF1F5;padding:12px">
-            <div id="est-uniformes-lista"></div>
-            <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin-top:8px">+ Adicionar ao estoque</button>
-          </div>
-        </div>
-
-        <!-- Patrimônios com código -->
-        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
-          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:12px;cursor:pointer">
-            <span style="font-size:13px;font-weight:700;color:#0F4C7A">📦 Patrimônios com código</span>
-            <span style="font-size:11px;color:#5A7A8F">Baú · Rastreador · Cooler · Cartão</span>
-          </div>
-          <div style="display:none;border-top:1px solid #EBF1F5;padding:12px" id="est-pat-codigo-wrap">
-            <div id="est-pat-categorias"></div>
-          </div>
-        </div>
-
-        <!-- Itens sem código -->
-        <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;margin-bottom:8px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,0.05)">
-          <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:12px;cursor:pointer">
-            <span style="font-size:13px;font-weight:700;color:#0F4C7A">📦 Itens sem código</span>
-            <span style="font-size:11px;color:#5A7A8F">Crachá · Colete · Cadeado · Kit · Bolsa</span>
-          </div>
-          <div style="display:none;border-top:1px solid #EBF1F5;padding:12px">
-            <div id="est-simples-lista2"></div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- POR MOTOBOY -->
-      <div id="est-tab-motoboy" style="display:none">
-        <select id="est-sel-motoboy" onchange="carregarChecklistEstMotoboy(this.value)"
-          style="width:100%;border-radius:10px;border:1.5px solid #8B5CF6;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;background:#F3F0FF;font-weight:600;margin-bottom:1rem">
-          <option value="">Selecione o motoboy...</option>
-        </select>
-        <div id="est-checklist-motoboy"></div>
-
-        <!-- Resumo todos motoboys -->
-        <div id="est-resumo-todos" style="margin-top:1rem"></div>
-      </div>
-
-      <!-- PENDÊNCIAS -->
-      <div id="est-tab-pendencias" style="display:none">
-        <div style="background:#FEF9EC;border:1px solid #F2CC70;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#92400E" id="pend-resumo">
-          ⏳ Carregando pendências...
-        </div>
-        <div id="lista-pendencias"><div class="empty"><span class="spinner"></span></div></div>
-      </div>
-
-      <!-- HISTÓRICO -->
-      <div id="est-tab-historico" style="display:none">
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
-          <button onclick="filtrarHistorico('todos',this)" class="hist-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">Todos</button>
-          <button onclick="filtrarHistorico('troca',this)" class="hist-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">↔ Trocas</button>
-          <button onclick="filtrarHistorico('descarte',this)" class="hist-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🗑 Descartes</button>
-          <button onclick="filtrarHistorico('entrega',this)" class="hist-filtro" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">✓ Entregas</button>
-        </div>
-        <div id="lista-historico"><div class="empty">Nenhum registro ainda</div></div>
-      </div>
-
-      <!-- MATERIAIS -->
-      <div id="est-tab-materiais" style="display:none">
+      <div style="font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem">📦 PMC Estoque</div>
+      id="est-tab-materiais" style="display:none">
         <div id="alertas-materiais-est"></div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
           <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
@@ -1511,11 +1426,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <!-- CHAT WIDGET ADMIN -->
     </div><!-- app-content -->
   </div><!-- app-main -->
-</div><!-- app-layout -->
-
-
-<!-- Chat FAB -->
-
+</div>
+    </div>
+  </div>
   <!-- VIEW PATRIMÔNIOS -->
   <div class="view" id="view-patrimonios">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
@@ -1578,10 +1491,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
     <!-- Aba Por Motoboy -->
     <div id="pat-tab-motoboy" style="display:none">
-      <select id="pat-sel-motoboy" onchange="carregarChecklistMotoboy(this.value)" style="width:100%;height:40px;border-radius:10px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;margin-bottom:1rem;background:#fff">
+      <select id="pat-sel-motoboy" onchange="carregarChecklistMotoboy(this.value)"
+        style="width:100%;border-radius:10px;border:1.5px solid #8B5CF6;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;background:#F3F0FF;font-weight:600;margin-bottom:1rem">
         <option value="">Selecione o motoboy...</option>
       </select>
       <div id="pat-checklist-motoboy"></div>
+      <div id="est-resumo-todos" style="margin-top:1rem"></div>
     </div>
 
     <!-- Aba Pendências -->
@@ -1619,13 +1534,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="display:flex;gap:8px;margin-bottom:12px">
           <div style="flex:1">
             <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">DATA</label>
-            <input type="date" id="chk-download-data" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit"/>
+            <input type="date" id="chk-download-data" onchange="atualizarMotoboysChecklist()" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit"/>
           </div>
           <div style="flex:1">
             <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">MOTOBOY (opcional)</label>
-            <select id="chk-download-motoboy" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;background:#fff">
+            <select id="chk-download-motoboy" onchange="" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;background:#fff">
               <option value="">Todos</option>
             </select>
+            <div id="chk-download-info" style="font-size:11px;color:#5A7A8F;margin-top:4px"></div>
           </div>
         </div>
         <button onclick="downloadChecklistPDF()" style="width:100%;height:38px;border-radius:9px;border:none;background:linear-gradient(135deg,#0F4C7A,#1E9FD9);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
