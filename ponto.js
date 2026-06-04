@@ -530,4 +530,121 @@ async function pontoCarregarDesligados(){
   pontoRenderDesligados();
 }
 
-function pontoRender
+function pontoRenderDesligados() {
+  const el = document.getElementById('ponto-desl-lista');
+  if (!el) return;
+  if (!pontoDesligados.length) {
+    el.innerHTML = '<div class="empty">Nenhum colaborador desligado cadastrado.</div>';
+    return;
+  }
+  el.innerHTML = pontoDesligados.map(d => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #F3F4F6">
+    <div>
+      <div style="font-weight:600;font-size:13px;color:#0F2940">${d.nome}</div>
+      <div style="font-size:11px;color:#9CA3AF">Cadastrado em ${d.data || '—'}</div>
+    </div>
+    <button onclick="pontoRemDesligado('${d.nome}')" style="background:#FCEBEB;color:#DC2626;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Remover</button>
+  </div>`).join('');
+}
+
+async function pontoAddDesligado() {
+  const inp = document.getElementById('ponto-inp-desligado');
+  if (!inp) return;
+  const nome = inp.value.trim().toUpperCase();
+  if (!nome) return;
+  if (pontoDesligados.find(d => d.nome === nome)) { toast('Já cadastrado', 'error'); return; }
+  
+  pontoDesligados.push({ nome, data: new Date().toLocaleDateString('pt-BR') });
+  inp.value = '';
+  pontoRenderDesligados();
+  
+  try {
+    await fetch(API + '/ponto-desligados', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ desligados: pontoDesligados })
+    });
+    toast('✓ Adicionado');
+  } catch (e) {
+    localStorage.setItem('ponto_desligados', JSON.stringify(pontoDesligados));
+    toast('✓ Salvo offline');
+  }
+}
+
+async function pontoRemDesligado(nome) {
+  pontoDesligados = pontoDesligados.filter(d => d.nome !== nome);
+  pontoRenderDesligados();
+  
+  try {
+    await fetch(API + '/ponto-desligados', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ desligados: pontoDesligados })
+    });
+    toast('✓ Removido');
+  } catch (e) {
+    localStorage.setItem('ponto_desligados', JSON.stringify(pontoDesligados));
+    toast('✓ Removido offline');
+  }
+}
+
+// ============================================================
+// ── UTILS — Funções de conversão e formatação ───────────────
+// ============================================================
+
+function pontoNorm(s) {
+  return String(s || '').trim().toUpperCase();
+}
+
+function pontolimpaCEP(s) {
+  return String(s || '').replace(/\D/g, '');
+}
+
+function pontoD0(d) {
+  const nd = new Date(d);
+  nd.setHours(0, 0, 0, 0);
+  return nd;
+}
+
+function pontoExtrairHora(h) {
+  if (!h) return '';
+  if (h instanceof Date) return String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0');
+  const str = String(h);
+  return str.length > 5 ? str.substring(11, 16) : str;
+}
+
+function pontoEmFerias(nome, d) {
+  const hoj = pontoD0(d);
+  return pontoDadosFerias.some(f => {
+    const n = (f['COLABORADOR'] || '').trim();
+    if (pontoNorm(n) !== pontoNorm(nome)) return false;
+    const dI = f['Início das Férias'] ? pontoD0(new Date(f['Início das Férias'])) : null;
+    const dF = f['Fim das Férias'] ? pontoD0(new Date(f['Fim das Férias'])) : null;
+    return dI && dF && hoj >= dI && hoj <= dF;
+  });
+}
+
+function pontoParseSaldo(str) {
+  const s = String(str || '').trim();
+  if (!s) return 0;
+  const num = parseFloat(s.replace(',', '.'));
+  if (!isNaN(num) && s.indexOf(':') === -1) return num;
+  const parts = s.split(':');
+  if (parts.length !== 2) return 0;
+  const h = parseInt(parts[0], 10);
+  const m = parseInt(parts[1], 10);
+  const val = Math.abs(h) + (m / 60);
+  return s.startsWith('-') ? -val : val;
+}
+
+function pontofmtH(val) {
+  if (!val) return 0;
+  if (typeof val === 'number') return val * 24; // Excel fraction to hours
+  return pontoParseSaldo(val);
+}
+
+function pontoHhMM(dec) {
+  const abs = Math.abs(dec);
+  const h = Math.floor(abs);
+  const m = Math.round((abs - h) * 60);
+  return (dec < 0 ? '-' : '') + (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+}
