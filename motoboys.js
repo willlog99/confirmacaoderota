@@ -478,6 +478,7 @@ function renderizarMotoristasFiltrados() {
     </div>`).join('');
 }
 let clienteParaMover = null;
+
 let cardExpandido = null;
 let rotasDisponiveis = [];
 
@@ -737,7 +738,6 @@ async function fazerReset() {
 }
 
 
-function fecharModal(id) { document.getElementById(id).classList.add('hidden'); }
 
 
 function abrirDisparador(id) {
@@ -1029,7 +1029,6 @@ const TIPOS_PAT = {
   colete:    { icon: '🦺', nome: 'Colete',             codigo: false },
 };
 
-let estoqueUnif = {};
 let filtroUnifAtual = 'todos';
 let tamSelecionado = '';
 
