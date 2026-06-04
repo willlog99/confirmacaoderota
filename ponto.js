@@ -10,7 +10,7 @@ let pontoNomesHome=[], pontoNomesBanco=[];
 let pontoHomeData=[], pontoBancoData=[];
 let pontoDesligados=[];
 let pontoProcessado=false;
-let pontoArquivoPrincipal = null; // 💾 CORRIGIDO: Declarado globalmente para não quebrar o processamento
+let pontoArquivoPrincipal = null;
 
 // ── FUNÇÕES ──
 
@@ -28,7 +28,7 @@ function mudarTabPonto(tab,btn){
 
 function pontoLerPrincipal(file){
   if(!file)return;
-  pontoArquivoPrincipal=file; // Armazena o arquivo na variável global
+  pontoArquivoPrincipal=file;
   const reader=new FileReader();
   reader.onload=e=>{
     try{
@@ -41,15 +41,12 @@ function pontoLerPrincipal(file){
       if(datas.length){pontoMes=datas[0].getMonth();pontoAno=datas[0].getFullYear();}
       pontoDiasExist=[...new Set(datas.map(d=>d.getDate()))].sort((a,b)=>a-b);
       const el=document.getElementById('ponto-status-main');
-      if(el) {
-        el.style.display='block';
-        el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${pontoDadosPonto.length} registros, ${pontoDiasExist.length} dias</span>`;
-      }
-      const zone = document.getElementById('ponto-zone-main');
-      if(zone) zone.style.borderColor='#16A34A';
-      const btnProc = document.getElementById('ponto-btn-processar');
-      if(btnProc) btnProc.style.display='block';
-    }catch(err){toast('Erro ao ler planilha','error');console.error(err);}
+      if(el){el.style.display='block';el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${pontoDadosPonto.length} registros, ${pontoDiasExist.length} dias</span>`;}
+      const zone=document.getElementById('ponto-zone-main');
+      if(zone)zone.style.borderColor='#16A34A';
+      const btnProc=document.getElementById('ponto-btn-processar');
+      if(btnProc)btnProc.style.display='block';
+    }catch(err){toast('Erro ao ler planilha');console.error(err);}
   };
   reader.readAsArrayBuffer(file);
 }
@@ -66,13 +63,10 @@ function pontoLerExtrato(file){
       raw.slice(1).forEach(r=>{const nome=(r[3]||'').trim();if(nome&&r[7])temp[nome.toUpperCase()]={saldo:pontoParseSaldo(r[7]),saldoStr:r[7]};});
       pontoSaldosReais=temp;pontoTemExtrato=true;
       const el=document.getElementById('ponto-status-extrato');
-      if(el) {
-        el.style.display='block';
-        el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${Object.keys(pontoSaldosReais).length} saldos reais</span>`;
-      }
-      const zone = document.getElementById('ponto-zone-extrato');
-      if(zone) zone.style.borderColor='#16A34A';
-    }catch(err){toast('Erro ao ler extrato','error');}
+      if(el){el.style.display='block';el.innerHTML=`<span style="color:#0F9B78;font-weight:700">✅ ${file.name} — ${Object.keys(pontoSaldosReais).length} saldos reais</span>`;}
+      const zone=document.getElementById('ponto-zone-extrato');
+      if(zone)zone.style.borderColor='#16A34A';
+    }catch(err){toast('Erro ao ler extrato');}
   };
   reader.readAsArrayBuffer(file);
 }
@@ -80,44 +74,36 @@ function pontoLerExtrato(file){
 function pontoSheetJson(wb,nome){return wb.Sheets[nome]?XLSX.utils.sheet_to_json(wb.Sheets[nome]):[];}
 
 function pontoProcessar(){
-  if(!pontoDadosPonto.length){toast('Carregue a planilha primeiro','error');return;}
+  if(!pontoDadosPonto.length){toast('Carregue a planilha primeiro');return;}
   pontoNomesHome=[...new Set(pontoDadosPonto.map(x=>x['NOME CORRIGIDO']).filter(Boolean))].sort();
   pontoNomesBanco=[...new Set(pontoDadosBanco.map(x=>x['NOME CORRIGIDO']).filter(Boolean))].sort();
   pontocalcHome();pontocalcBanco();
   const desl=pontoDesligados.map(d=>pontoNorm(d.nome));
   pontoBancoData.forEach(x=>{if(desl.includes(pontoNorm(x.nome)))x.desligado=true;});
   pontoHomeData.forEach(x=>{if(desl.includes(pontoNorm(x.nome)))x.desligado=true;});
-  
-  // Renderizações das tabelas
   pontoRenderPanorama();pontoRenderHome();pontoRenderBanco();pontoRenderFerias();
-  
-  // Validações de segurança para elementos de interface
   ['panorama','home','banco','ferias'].forEach(t=>{const b=document.getElementById('ponto-tab-btn-'+t);if(b)b.style.display='block';});
   const ab=document.getElementById('ponto-action-bar');if(ab)ab.style.display='flex';
   const pp=document.getElementById('pill-ponto-periodo');const pr=document.getElementById('pill-ponto-records');
   if(pp){pp.textContent='📅 '+String(pontoMes+1).padStart(2,'0')+'/'+pontoAno;pp.style.display='inline-block';}
   if(pr){pr.textContent=pontoDadosPonto.length+' registros';pr.style.display='inline-block';}
   if(pontoTemExtrato){const b=document.getElementById('ponto-badge-saldo-real');if(b){b.style.display='inline-block';b.textContent='✅ saldo real';}}
-  
   pontoProcessado=true;
   toast('✓ Dados processados!');
-  
-  // 🔥 CORRIGIDO: Executa o upload em segundo plano sem travar o encerramento síncrono da função
-  pontoSalvarXlsxR2().catch(e => console.warn('Falha silenciosa no upload R2:', e));
-  
+  pontoSalvarXlsxR2().catch(e=>console.warn('Falha silenciosa no upload R2:',e));
   mudarTabPonto('panorama',document.getElementById('ponto-tab-btn-panorama'));
 }
 
 async function pontoSalvarXlsxR2(){
-  if(!pontoArquivoPrincipal) return;
-  try {
-    const formData = new FormData();
-    formData.append('file', pontoArquivoPrincipal);
-    formData.append('mes', pontoMes+1);
-    formData.append('ano', pontoAno);
-    await fetch(API+'/ponto-upload', { method:'POST', body: formData });
+  if(!pontoArquivoPrincipal)return;
+  try{
+    const formData=new FormData();
+    formData.append('file',pontoArquivoPrincipal);
+    formData.append('mes',pontoMes+1);
+    formData.append('ano',pontoAno);
+    await fetch(API+'/ponto-upload',{method:'POST',body:formData});
     console.log('Planilha salva no R2');
-  } catch(e){ console.warn('Erro ao salvar no R2:', e); }
+  }catch(e){console.warn('Erro ao salvar no R2:',e);}
 }
 
 function pontocalcHome(){
@@ -166,17 +152,14 @@ function thStyle(sticky){return `padding:8px 10px;border-bottom:1px solid #E5E7E
 function tdStyle(extra){return `padding:8px 10px;border-bottom:1px solid #F3F4F6${extra?';'+extra:''}`;}
 
 function pontoRenderPanorama(){
-  const container = document.getElementById('ponto-tbl-panorama');
-  if(!container) return;
+  const container=document.getElementById('ponto-tbl-panorama');if(!container)return;
   const hoje=new Date();hoje.setHours(0,0,0,0);
-  let h=`<table style="${tblStyle()}"><thead><tr>
-    <th style="${thStyle(true)};min-width:160px;border-right:1px solid #E5E7EB">COLABORADOR</th>`;
+  let h=`<table style="${tblStyle()}"><thead><tr><th style="${thStyle(true)};min-width:160px;border-right:1px solid #E5E7EB">COLABORADOR</th>`;
   pontoDiasExist.forEach(d=>h+=`<th style="padding:8px 6px;border-bottom:1px solid #E5E7EB;text-align:center;font-size:10px;color:#6B7280;font-weight:700;background:#F9FAFB;white-space:nowrap">${d}/${pontoMes+1}</th>`);
   h+=`</tr></thead><tbody>`;
   pontoHomeData.forEach(item=>{
     const iD=item.desligado;
-    h+=`<tr data-nome="${item.nome.toUpperCase()}" style="${iD?'opacity:.4':''}">
-      <td style="${tdStyle('font-weight:600;position:sticky;left:0;background:#fff;z-index:4;border-right:1px solid #E5E7EB')}${iD?';text-decoration:line-through;color:#9CA3AF':''}">${item.nome}</td>`;
+    h+=`<tr data-nome="${item.nome.toUpperCase()}" style="${iD?'opacity:.4':''}"><td style="${tdStyle('font-weight:600;position:sticky;left:0;background:#fff;z-index:4;border-right:1px solid #E5E7EB')}${iD?';text-decoration:line-through;color:#9CA3AF':''}">${item.nome}</td>`;
     pontoDiasExist.forEach(d=>{
       const dF=new Date(pontoAno,pontoMes,d);
       const emF=pontoEmFerias(item.nome,dF);
@@ -193,16 +176,13 @@ function pontoRenderPanorama(){
 }
 
 function pontoRenderHome(){
-  const container = document.getElementById('ponto-tbl-home');
-  if(!container) return;
-  let h=`<table style="${tblStyle()}"><thead><tr>
-    <th style="${thStyle(true)};min-width:160px;border-right:1px solid #E5E7EB">COLABORADOR</th>`;
+  const container=document.getElementById('ponto-tbl-home');if(!container)return;
+  let h=`<table style="${tblStyle()}"><thead><tr><th style="${thStyle(true)};min-width:160px;border-right:1px solid #E5E7EB">COLABORADOR</th>`;
   pontoDiasExist.forEach(d=>h+=`<th style="padding:8px 6px;border-bottom:1px solid #E5E7EB;text-align:center;font-size:10px;color:#6B7280;font-weight:700;background:#F9FAFB">Dia ${d}</th>`);
   h+=`<th style="padding:8px 10px;border-bottom:1px solid #E5E7EB;text-align:center;font-size:10px;color:#1D4ED8;font-weight:700;background:#EFF6FF">TOTAL</th></tr></thead><tbody>`;
   pontoHomeData.forEach(item=>{
     const iD=item.desligado;
-    h+=`<tr data-nome="${item.nome.toUpperCase()}" style="${iD?'opacity:.4':''}">
-      <td style="${tdStyle('font-weight:600;position:sticky;left:0;background:#fff;z-index:4;border-right:1px solid #E5E7EB')}${iD?';text-decoration:line-through;color:#9CA3AF':''}">${item.nome}</td>`;
+    h+=`<tr data-nome="${item.nome.toUpperCase()}" style="${iD?'opacity:.4':''}"><td style="${tdStyle('font-weight:600;position:sticky;left:0;background:#fff;z-index:4;border-right:1px solid #E5E7EB')}${iD?';text-decoration:line-through;color:#9CA3AF':''}">${item.nome}</td>`;
     pontoDiasExist.forEach(d=>{
       const di=item.dias[d];let txt='–';
       if(di?.temReg){
@@ -221,8 +201,7 @@ function pontoRenderHome(){
 }
 
 function pontoRenderBanco(){
-  const container = document.getElementById('ponto-tbl-banco');
-  if(!container) return;
+  const container=document.getElementById('ponto-tbl-banco');if(!container)return;
   const lista=[...pontoBancoData].sort((a,b)=>b.totalReal-a.totalReal);
   let h=`<table style="${tblStyle()}"><thead><tr>
     <th style="padding:8px 6px;border-bottom:1px solid #E5E7EB;text-align:center;font-size:10px;color:#6B7280;font-weight:700;background:#F9FAFB;width:30px">#</th>
@@ -254,8 +233,7 @@ function pontoRenderBanco(){
 }
 
 function pontoRenderFerias(){
-  const container = document.getElementById('ponto-tbl-ferias');
-  if(!container) return;
+  const container=document.getElementById('ponto-tbl-ferias');if(!container)return;
   const hoje=new Date();hoje.setHours(0,0,0,0);
   const amanha=new Date(hoje);amanha.setDate(hoje.getDate()+1);
   let h=`<table style="${tblStyle()}"><thead><tr>
@@ -346,7 +324,7 @@ function pontoAbrirModalSimples(titulo,conteudo){
 }
 
 function pontoExportarExcel(){
-  if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
+  if(!pontoProcessado){toast('Processe os dados primeiro');return;}
   const wb=XLSX.utils.book_new();
   [{id:'ponto-tbl-panorama',nome:'Panorama'},{id:'ponto-tbl-home',nome:'Home Office'},{id:'ponto-tbl-banco',nome:'Banco de Horas'},{id:'ponto-tbl-ferias',nome:'Ferias'}].forEach(t=>{
     const el=document.querySelector('#'+t.id+' table')||document.getElementById(t.id);
@@ -357,7 +335,7 @@ function pontoExportarExcel(){
 }
 
 function pontoGerarPDF(){
-  if(!pontoBancoData.length){toast('Processe os dados primeiro','error');return;}
+  if(!pontoBancoData.length){toast('Processe os dados primeiro');return;}
   const {jsPDF}=window.jspdf;
   const doc=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
   const W=doc.internal.pageSize.getWidth();
@@ -382,12 +360,12 @@ function pontoGerarPDF(){
 }
 
 async function pontoPrintZap(){
-  if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
+  if(!pontoProcessado){toast('Processe os dados primeiro');return;}
   const nome=prompt('Nome do colaborador:');if(!nome)return;
   const abas=['ponto-tbl-panorama','ponto-tbl-banco','ponto-tbl-home'];
   let cont=null,linha=null;
   for(const id of abas){const c=document.getElementById(id);const l=c?.querySelector(`tr[data-nome="${nome.toUpperCase()}"]`);if(l){cont=c;linha=l;break;}}
-  if(!linha){toast('Colaborador não encontrado','error');return;}
+  if(!linha){toast('Colaborador não encontrado');return;}
   const tmp=document.createElement('div');tmp.style.cssText='position:absolute;top:-9999px;background:white;font-family:system-ui;font-size:11px';
   const tbl=document.createElement('table');tbl.style.borderCollapse='collapse';
   const thead=cont.querySelector('thead').cloneNode(true);const tr=linha.cloneNode(true);
@@ -397,7 +375,7 @@ async function pontoPrintZap(){
   try{
     const canvas=await html2canvas(tbl,{backgroundColor:'#fff',scale:2});
     canvas.toBlob(async blob=>{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);toast('✓ Print copiado! Cole no WhatsApp.');});
-  }catch(e){toast('Erro ao copiar print','error');}
+  }catch(e){toast('Erro ao copiar print');}
   finally{document.body.removeChild(tmp);}
 }
 
@@ -412,17 +390,16 @@ function pontoResetar(){
   pontoArquivoPrincipal=null;
   ['ponto-file-main','ponto-file-extrato'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ['ponto-status-main','ponto-status-extrato'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});
-  
-  const zoneMain = document.getElementById('ponto-zone-main'); if(zoneMain) zoneMain.style.borderColor='';
-  const zoneExt = document.getElementById('ponto-zone-extrato'); if(zoneExt) zoneExt.style.borderColor='';
-  const btnProc = document.getElementById('ponto-btn-processar'); if(btnProc) btnProc.style.display='none';
+  const zoneMain=document.getElementById('ponto-zone-main');if(zoneMain)zoneMain.style.borderColor='';
+  const zoneExt=document.getElementById('ponto-zone-extrato');if(zoneExt)zoneExt.style.borderColor='';
+  const btnProc=document.getElementById('ponto-btn-processar');if(btnProc)btnProc.style.display='none';
   const ab=document.getElementById('ponto-action-bar');if(ab)ab.style.display='none';
   ['panorama','home','banco','ferias'].forEach(t=>{const b=document.getElementById('ponto-tab-btn-'+t);if(b)b.style.display='none';});
   mudarTabPonto('upload',document.getElementById('ponto-tab-btn-upload'));
 }
 
 async function pontoSalvarResumo(){
-  if(!pontoProcessado){toast('Processe os dados primeiro','error');return;}
+  if(!pontoProcessado){toast('Processe os dados primeiro');return;}
   const mes=pontoMes+1,ano=pontoAno;
   const ativos=pontoBancoData.filter(x=>!x.desligado);
   const pos=ativos.filter(x=>x.totalReal>0).length,neg=ativos.filter(x=>x.totalReal<0).length;
@@ -435,7 +412,7 @@ async function pontoSalvarResumo(){
     const ferias=pontoDadosFerias.map(f=>({nome:(f['COLABORADOR']||'').trim(),inicio:f['Início das Férias']?new Date(f['Início das Férias']).toLocaleDateString('pt-BR'):'',fim:f['Fim das Férias']?new Date(f['Fim das Férias']).toLocaleDateString('pt-BR'):'',status:'agendada'})).filter(f=>f.nome);
     if(ferias.length)await fetch(API+'/ponto-ferias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mes,ano,ferias})});
     toast('✓ Resumo salvo!');pontoCarregarHistorico();
-  }catch(e){toast('Erro ao salvar','error');console.error(e);}
+  }catch(e){toast('Erro ao salvar');console.error(e);}
 }
 
 async function pontoCarregarHistorico(){
@@ -464,7 +441,7 @@ async function pontoCarregarMes(mes,ano){
   el.innerHTML=`<div class="empty"><span class="spinner"></span> Carregando ${mes}/${ano}...</div>`;
   try{
     const r=await fetch(`${API}/ponto-upload?mes=${mes}&ano=${ano}`);
-    if(!r.ok) throw new Error('não encontrado');
+    if(!r.ok)throw new Error('não encontrado');
     const blob=await r.blob();
     const file=new File([blob],`ponto-${ano}-${String(mes).padStart(2,'0')}.xlsx`);
     const reader=new FileReader();
@@ -530,121 +507,77 @@ async function pontoCarregarDesligados(){
   pontoRenderDesligados();
 }
 
-function pontoRenderDesligados() {
-  const el = document.getElementById('ponto-desl-lista');
-  if (!el) return;
-  if (!pontoDesligados.length) {
-    el.innerHTML = '<div class="empty">Nenhum colaborador desligado cadastrado.</div>';
-    return;
-  }
-  el.innerHTML = pontoDesligados.map(d => `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #F3F4F6">
-    <div>
-      <div style="font-weight:600;font-size:13px;color:#0F2940">${d.nome}</div>
-      <div style="font-size:11px;color:#9CA3AF">Cadastrado em ${d.data || '—'}</div>
-    </div>
+function pontoRenderDesligados(){
+  const el=document.getElementById('ponto-desl-lista');if(!el)return;
+  if(!pontoDesligados.length){el.innerHTML='<div class="empty">Nenhum colaborador desligado cadastrado.</div>';return;}
+  el.innerHTML=pontoDesligados.map(d=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid #F3F4F6">
+    <div><div style="font-weight:600;font-size:13px;color:#0F2940">${d.nome}</div>
+    <div style="font-size:11px;color:#9CA3AF">Cadastrado em ${d.data||'—'}</div></div>
     <button onclick="pontoRemDesligado('${d.nome}')" style="background:#FCEBEB;color:#DC2626;border:none;padding:5px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">Remover</button>
   </div>`).join('');
 }
 
-async function pontoAddDesligado() {
-  const inp = document.getElementById('ponto-inp-desligado');
-  if (!inp) return;
-  const nome = inp.value.trim().toUpperCase();
-  if (!nome) return;
-  if (pontoDesligados.find(d => d.nome === nome)) { toast('Já cadastrado', 'error'); return; }
-  
-  pontoDesligados.push({ nome, data: new Date().toLocaleDateString('pt-BR') });
-  inp.value = '';
-  pontoRenderDesligados();
-  
-  try {
-    await fetch(API + '/ponto-desligados', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ desligados: pontoDesligados })
-    });
+async function pontoAddDesligado(){
+  const inp=document.getElementById('ponto-inp-desligado');if(!inp)return;
+  const nome=inp.value.trim().toUpperCase();if(!nome)return;
+  if(pontoDesligados.find(d=>d.nome===nome)){toast('Já cadastrado');return;}
+  pontoDesligados.push({nome,data:new Date().toLocaleDateString('pt-BR')});
+  inp.value='';pontoRenderDesligados();
+  try{
+    await fetch(API+'/ponto-desligados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({desligados:pontoDesligados})});
     toast('✓ Adicionado');
-  } catch (e) {
-    localStorage.setItem('ponto_desligados', JSON.stringify(pontoDesligados));
-    toast('✓ Salvo offline');
-  }
+  }catch(e){localStorage.setItem('ponto_desligados',JSON.stringify(pontoDesligados));toast('✓ Salvo offline');}
 }
 
-async function pontoRemDesligado(nome) {
-  pontoDesligados = pontoDesligados.filter(d => d.nome !== nome);
-  pontoRenderDesligados();
-  
-  try {
-    await fetch(API + '/ponto-desligados', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ desligados: pontoDesligados })
-    });
+async function pontoRemDesligado(nome){
+  pontoDesligados=pontoDesligados.filter(d=>d.nome!==nome);pontoRenderDesligados();
+  try{
+    await fetch(API+'/ponto-desligados',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({desligados:pontoDesligados})});
     toast('✓ Removido');
-  } catch (e) {
-    localStorage.setItem('ponto_desligados', JSON.stringify(pontoDesligados));
-    toast('✓ Removido offline');
-  }
+  }catch(e){localStorage.setItem('ponto_desligados',JSON.stringify(pontoDesligados));toast('✓ Removido offline');}
 }
 
-// ============================================================
-// ── UTILS — Funções de conversão e formatação ───────────────
-// ============================================================
+// ── UTILS ──
 
-function pontoNorm(s) {
-  return String(s || '').trim().toUpperCase();
+function pontoNorm(s){return String(s||'').trim().toUpperCase();}
+function pontolimpaCEP(s){return String(s||'').replace(/\D/g,'');}
+function pontoD0(d){const nd=new Date(d);nd.setHours(0,0,0,0);return nd;}
+
+function pontoExtrairHora(h){
+  if(!h)return '';
+  if(h instanceof Date)return String(h.getHours()).padStart(2,'0')+':'+String(h.getMinutes()).padStart(2,'0');
+  const str=String(h);
+  return str.length>5?str.substring(11,16):str;
 }
 
-function pontolimpaCEP(s) {
-  return String(s || '').replace(/\D/g, '');
-}
-
-function pontoD0(d) {
-  const nd = new Date(d);
-  nd.setHours(0, 0, 0, 0);
-  return nd;
-}
-
-function pontoExtrairHora(h) {
-  if (!h) return '';
-  if (h instanceof Date) return String(h.getHours()).padStart(2, '0') + ':' + String(h.getMinutes()).padStart(2, '0');
-  const str = String(h);
-  return str.length > 5 ? str.substring(11, 16) : str;
-}
-
-function pontoEmFerias(nome, d) {
-  const hoj = pontoD0(d);
-  return pontoDadosFerias.some(f => {
-    const n = (f['COLABORADOR'] || '').trim();
-    if (pontoNorm(n) !== pontoNorm(nome)) return false;
-    const dI = f['Início das Férias'] ? pontoD0(new Date(f['Início das Férias'])) : null;
-    const dF = f['Fim das Férias'] ? pontoD0(new Date(f['Fim das Férias'])) : null;
-    return dI && dF && hoj >= dI && hoj <= dF;
+function pontoEmFerias(nome,d){
+  const hoj=pontoD0(d);
+  return pontoDadosFerias.some(f=>{
+    const n=(f['COLABORADOR']||'').trim();
+    if(pontoNorm(n)!==pontoNorm(nome))return false;
+    const dI=f['Início das Férias']?pontoD0(new Date(f['Início das Férias'])):null;
+    const dF=f['Fim das Férias']?pontoD0(new Date(f['Fim das Férias'])):null;
+    return dI&&dF&&hoj>=dI&&hoj<=dF;
   });
 }
 
-function pontoParseSaldo(str) {
-  const s = String(str || '').trim();
-  if (!s) return 0;
-  const num = parseFloat(s.replace(',', '.'));
-  if (!isNaN(num) && s.indexOf(':') === -1) return num;
-  const parts = s.split(':');
-  if (parts.length !== 2) return 0;
-  const h = parseInt(parts[0], 10);
-  const m = parseInt(parts[1], 10);
-  const val = Math.abs(h) + (m / 60);
-  return s.startsWith('-') ? -val : val;
+function pontoParseSaldo(str){
+  const s=String(str||'').trim();if(!s)return 0;
+  const num=parseFloat(s.replace(',','.'));
+  if(!isNaN(num)&&s.indexOf(':')===-1)return num;
+  const parts=s.split(':');if(parts.length!==2)return 0;
+  const h=parseInt(parts[0],10);const m=parseInt(parts[1],10);
+  const val=Math.abs(h)+(m/60);
+  return s.startsWith('-')?-val:val;
 }
 
-function pontofmtH(val) {
-  if (!val) return 0;
-  if (typeof val === 'number') return val * 24; // Excel fraction to hours
+function pontofmtH(val){
+  if(!val)return 0;
+  if(typeof val==='number')return val*24;
   return pontoParseSaldo(val);
 }
 
-function pontoHhMM(dec) {
-  const abs = Math.abs(dec);
-  const h = Math.floor(abs);
-  const m = Math.round((abs - h) * 60);
-  return (dec < 0 ? '-' : '') + (h < 10 ? '0' + h : h) + ':' + (m < 10 ? '0' + m : m);
+function pontoHhMM(dec){
+  const abs=Math.abs(dec);const h=Math.floor(abs);const m=Math.round((abs-h)*60);
+  return(dec<0?'-':'')+(h<10?'0'+h:h)+':'+(m<10?'0'+m:m);
 }
