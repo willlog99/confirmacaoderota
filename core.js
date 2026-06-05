@@ -1,33 +1,25 @@
 // ============================================================
 // ── CORE — Funções base, navegação e utilitários ──────────────────────────
 // ============================================================
-
 // ── VARIÁVEIS ──
 const API = 'https://confirmacaoderota.willlog99.workers.dev';
 const _diaSemana = new Date().getDay();
 let autoRefreshInterval = null;
-
 // ── FUNÇÕES ──
-
 function abrirMenu() {
   document.getElementById('menu-overlay').classList.add('open');
 }
-
 function fecharMenu() {
   const el = document.getElementById('menu-overlay');
   if (el) el.classList.remove('open');
-  // sidebar nova — nenhuma ação necessária
 }
-
 function fecharMenuOverlay(e) {
   if (e.target === document.getElementById('menu-overlay')) fecharMenu();
 }
-
 function fecharModal(id) {
   const el = document.getElementById(id);
   if (el) el.style.display = 'none';
 }
-
 // ── BREADCRUMB ──────────────────────────────────────────
 const BREADCRUMBS = {
   'painel': 'OPS › <b>Painel</b>',
@@ -44,25 +36,19 @@ const BREADCRUMBS = {
   'gerenciar-motoboys': 'Gestão de Rota › <b>Motoboys</b>',
   'ativar-cliente': 'Gestão de Rota › <b>Ativar/Desativar cliente</b>',
 };
-
 function setView(id, el) {
   pararAutoRefresh();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(m => m.classList.remove('active'));
-  
   const viewEl = document.getElementById('view-' + id);
   if (viewEl) viewEl.classList.add('active');
   if (el) el.classList.add('active');
   window.scrollTo(0,0);
-
-  // Atualizar breadcrumb
   if (typeof atualizarBreadcrumb === 'function') atualizarBreadcrumb(id);
-
-  // BLINDAGEM: Verifica se a função existe antes de chamar, evitando travamento (Uncaught ReferenceError)
-  if (id === 'painel') { 
-      if (typeof carregarPainel === 'function') carregarPainel(); 
-      iniciarAutoRefresh(); 
-      iniciarMiniMapa(); 
+  if (id === 'painel') {
+    if (typeof carregarPainel === 'function') carregarPainel();
+    iniciarAutoRefresh();
+    iniciarMiniMapa();
   }
   if (id === 'confirmacoes' && typeof carregarConfirmacoes === 'function') carregarConfirmacoes();
   if (id === 'motoristas' && typeof carregarMotoristasList === 'function') carregarMotoristasList();
@@ -70,37 +56,27 @@ function setView(id, el) {
   if (id === 'checklist-view' && typeof carregarChecklists === 'function') carregarChecklists();
   if (id === 'checklists-incompletos' && typeof carregarChecklistsIncompletos === 'function') carregarChecklistsIncompletos();
   if (id === 'gerenciar-motoboys' && typeof carregarMotoboysGerenciar === 'function') carregarMotoboysGerenciar();
-  
-  // A correção que resolve o problema do Ponto RH:
   if (id === 'ponto-rh' && typeof iniciarPontoRH === 'function') iniciarPontoRH();
-  
   if (id === 'estoque-view' && typeof iniciarEstoqueView === 'function') iniciarEstoqueView();
   if (id === 'patrimonios' && typeof iniciarPatrimonios === 'function') iniciarPatrimonios();
   if (id === 'importacao' && typeof iniciarImportacao === 'function') iniciarImportacao();
   if (id === 'presencas' && typeof carregarPresencas === 'function') carregarPresencas();
-  
   if (id === 'mapa-rastreamento') {
-    setTimeout(() => { 
-        if (typeof iniciarLeafletMap === 'function') iniciarLeafletMap(); 
-        if (typeof carregarMapa === 'function') carregarMapa(); 
-        if (typeof iniciarAutoRefreshMapa === 'function') iniciarAutoRefreshMapa(); 
+    setTimeout(() => {
+      if (typeof iniciarLeafletMap === 'function') iniciarLeafletMap();
+      if (typeof carregarMapa === 'function') carregarMapa();
+      if (typeof iniciarAutoRefreshMapa === 'function') iniciarAutoRefreshMapa();
+      carregarKMDia();
     }, 100);
   }
-  
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
 }
-
-
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
   if (!el) return;
   el.innerHTML = (type==='loading'?'<span class="spinner"></span>':'')+text;
   el.className = 'msg'+(type?' '+type:'');
 }
-
-// ===== DISPARADOR WHATSAPP =====
-
-
 function toast(msg) {
   const el = document.getElementById('toast');
   if(!el) { console.log(msg); return; }
@@ -108,32 +84,24 @@ function toast(msg) {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
 }
-
-
 function formatarTelefone(t) {
   const s = String(t||'').replace(/\D/g,'');
   return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
 }
-
-
 function iniciarAutoRefresh() {
   pararAutoRefresh();
   autoRefreshInterval = setInterval(() => {
-      if (typeof carregarPainel === 'function') carregarPainel(true);
+    if (typeof carregarPainel === 'function') carregarPainel(true);
   }, 30000);
 }
-
-
 function pararAutoRefresh() {
   if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
   if (typeof pararAutoRefreshMapa === 'function') pararAutoRefreshMapa();
 }
-
 function atualizarBreadcrumb(id) {
   const bc = document.getElementById('tb-breadcrumb');
   if (bc && BREADCRUMBS[id]) bc.innerHTML = BREADCRUMBS[id];
 }
-
 function atualizarTopbarData() {
   const el = document.getElementById('topbar-data');
   if (!el) return;
@@ -141,10 +109,8 @@ function atualizarTopbarData() {
   const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
   el.textContent = dias[d.getDay()] + ', ' + d.toLocaleDateString('pt-BR');
 }
-
 // ── REVERTER COLETA ──────────────────────────────────────
 let reverterClienteData = null;
-
 async function buscarClienteReverter() {
   const num = document.getElementById('reverter-num-cliente').value.trim();
   const msg = document.getElementById('reverter-msg');
@@ -175,7 +141,6 @@ async function buscarClienteReverter() {
     }
   } catch(e) { msg.className = 'msg error'; msg.textContent = 'Erro de conexão'; }
 }
-
 async function confirmarReverterColeta() {
   if (!reverterClienteData) return;
   const msg = document.getElementById('reverter-msg');
@@ -203,12 +168,10 @@ async function confirmarReverterColeta() {
     }
   } catch(e) { msg.className = 'msg error'; msg.textContent = 'Erro de conexão'; btn.disabled = false; }
 }
-
 // ── MINI MAPA NO PAINEL ──────────────────────────────────
 let miniMapaInst = null;
 let miniMapaMarkers = {};
 const MINI_CORES = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
-
 function iniciarMiniMapa() {
   const el = document.getElementById('mini-mapa-painel');
   if (!el) return;
@@ -222,7 +185,6 @@ function iniciarMiniMapa() {
   }
   carregarMiniMapa();
 }
-
 async function carregarMiniMapa() {
   try {
     const r = await fetch(API + '/localizacao');
@@ -268,7 +230,6 @@ async function carregarMiniMapa() {
     }
   } catch(e) {}
 }
-
 function atualizarVersaoApp() {
   const novaVersao = prompt('Digite a nova versão do app:\n(Ex: 1.0.1)\n\nAo salvar, todos os apps verão o banner de atualização.');
   if (!novaVersao) return;
@@ -281,7 +242,6 @@ function atualizarVersaoApp() {
     else toast('Erro ao publicar versão');
   }).catch(() => toast('Erro de conexão'));
 }
-
 // ── MAPA RASTREAMENTO ────────────────────────────────────────
 let leafletMap = null;
 let leafletMarkers = {};
@@ -289,7 +249,6 @@ let mapaRefreshInterval = null;
 let mapaSyncTimer = null;
 let mapaSyncSegundos = 120;
 const CORES_MB = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
-
 function iniciarAutoRefreshMapa() {
   pararAutoRefreshMapa();
   mapaSyncSegundos = 120;
@@ -299,15 +258,13 @@ function iniciarAutoRefreshMapa() {
     const bar = document.getElementById('mapa-sync-bar');
     if (el) el.textContent = Math.floor(mapaSyncSegundos/60)+':'+String(mapaSyncSegundos%60).padStart(2,'0');
     if (bar) bar.style.width = ((120-mapaSyncSegundos)/120*100)+'%';
-    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 120; carregarMapa(); }
+    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 120; carregarMapa(); carregarKMDia(); }
   }, 1000);
 }
-
 function pararAutoRefreshMapa() {
   if (mapaRefreshInterval) { clearInterval(mapaRefreshInterval); mapaRefreshInterval = null; }
   if (mapaSyncTimer) { clearInterval(mapaSyncTimer); mapaSyncTimer = null; }
 }
-
 function iniciarLeafletMap() {
   if (leafletMap) return;
   const el = document.getElementById('leaflet-map');
@@ -319,7 +276,6 @@ function iniciarLeafletMap() {
     maxZoom: 19
   }).addTo(leafletMap);
 }
-
 function criarIconeLeaflet(cor, iniciais, status) {
   const online = status === 'online';
   return L.divIcon({
@@ -333,7 +289,6 @@ function criarIconeLeaflet(cor, iniciais, status) {
     iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36]
   });
 }
-
 async function buscarEndereco(lat, lng) {
   try {
     const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`,
@@ -347,7 +302,6 @@ async function buscarEndereco(lat, lng) {
     return '—';
   } catch(e) { return '—'; }
 }
-
 async function carregarMapa() {
   try {
     iniciarLeafletMap();
@@ -424,7 +378,6 @@ async function carregarMapa() {
     if(el) el.innerHTML = '<div class="empty">Erro ao carregar</div>';
   }
 }
-
 function focarMotoboy(nome) {
   const marker = leafletMarkers[nome];
   if (marker && leafletMap) {
@@ -432,7 +385,6 @@ function focarMotoboy(nome) {
     marker.openPopup();
   }
 }
-
 function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
   const el = document.getElementById('mapa-lista-motoboys');
   if (!el) return;
@@ -448,7 +400,7 @@ function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
     const stBg  = isOnline?'#DCFCE7':'#FEF9EC';
     const stCor = isOnline?'#16A34A':'#92400E';
     const stTxt = isOnline?'● online':'⚠ parado';
-    html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\'")}')" style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
+    html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
       <div style="width:34px;height:34px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:600;color:#0F2940">${l.nome}</div>
@@ -467,11 +419,9 @@ function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
   });
   el.innerHTML = html || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
 }
-
 // ── PRESENÇAS ─────────────────────────────────────────────────
 let presencasLista = [];
 let presencasMarcados = new Set();
-
 async function carregarPresencas() {
   const el = document.getElementById('presencas-lista');
   if (!el) return;
@@ -509,7 +459,6 @@ async function carregarPresencas() {
     renderizarPresencas();
   } catch(e) { el.innerHTML = '<div class="empty">Erro ao carregar motoboys</div>'; }
 }
-
 function renderizarPresencas() {
   const busca = (document.getElementById('presencas-busca')?.value||'').toLowerCase();
   const el = document.getElementById('presencas-lista');
@@ -541,7 +490,7 @@ function renderizarPresencas() {
       const gpsBadge = m.gpsAutorizado
         ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">📍 GPS ✓</span>`
         : `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">📍 Pendente</span>`;
-      html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\'")}') "
+      html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\\'")}') "
         style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:1.5px solid ${marcado?'#5DCAA5':'#EBF1F5'};background:${marcado?'#F0FAF6':'#fff'};margin-bottom:6px;cursor:pointer;transition:.15s">
         <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${marcado?'#0F9B78':'#D6E5EE'};background:${marcado?'#0F9B78':'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0">${marcado?'✓':''}</div>
         <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid ${marcado?'#0F9B78':'transparent'}">${iniciais}</div>
@@ -560,22 +509,18 @@ function renderizarPresencas() {
   el.innerHTML = renderGrupo(comRota,'Com rota hoje') + renderGrupo(semRota,'Sem rota hoje');
   if (!el.innerHTML.trim()) el.innerHTML = '<div class="empty">Nenhum motoboy encontrado</div>';
 }
-
 function presencasToggle(nome) {
   if (presencasMarcados.has(nome)) presencasMarcados.delete(nome);
   else presencasMarcados.add(nome);
   renderizarPresencas();
 }
-
 function presencasToggleTodos() {
   const todosMarcados = presencasLista.every(m => presencasMarcados.has(m.nome));
   if (todosMarcados) presencasMarcados.clear();
   else presencasLista.forEach(m => presencasMarcados.add(m.nome));
   renderizarPresencas();
 }
-
 function filtrarPresencas() { renderizarPresencas(); }
-
 async function salvarPresencas() {
   try {
     const r = await fetch(API + '/presencas', {
@@ -588,9 +533,7 @@ async function salvarPresencas() {
     else toast('Erro ao salvar');
   } catch(e) { toast('Erro de conexão'); }
 }
-
 async function iniciarImportacao() {
-  // Popular select de motoboys no download de checklist
   const sel = document.getElementById('chk-download-motoboy');
   if(sel && sel.options.length <= 1) {
     try {
@@ -600,7 +543,93 @@ async function iniciarImportacao() {
       nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
     } catch(e) {}
   }
-  // Data padrão hoje
   const dataEl = document.getElementById('chk-download-data');
   if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
+}
+// ── KM RODADO + HORÁRIOS ─────────────────────────────────────
+async function carregarKMDia() {
+  const el = document.getElementById('mapa-km-lista');
+  if (!el) return;
+  try {
+    const rLoc = await fetch(API + '/localizacao');
+    const dLoc = await rLoc.json();
+    const locs = dLoc.localizacoes || [];
+    if (!locs.length) {
+      el.innerHTML = '<div style="font-size:11px;color:#94A8B8;text-align:center;padding:8px">Nenhum motoboy online</div>';
+      return;
+    }
+    const hoje = new Date();
+    const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+    const data = diaSP.toISOString().split('T')[0];
+    const promises = locs.map(async l => {
+      try {
+        const r = await fetch(`${API}/km-rodado?nome=${encodeURIComponent(l.nome)}&data=${data}`);
+        const d = await r.json();
+        return { nome: l.nome, km: d.km || 0, horario: d.horario };
+      } catch(e) { return { nome: l.nome, km: 0 }; }
+    });
+    const resultados = await Promise.all(promises);
+    resultados.sort((a,b) => b.km - a.km);
+    el.innerHTML = resultados.map(r => {
+      const iniciais = r.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
+      const cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : '#5A7A8F';
+      const horario = r.horario ? `${r.horario.inicio}–${r.horario.fim}` : '—';
+      return `<div style="display:flex;align-items:center;gap:7px;padding:5px 4px;border-radius:7px;margin-bottom:3px">
+        <div style="width:24px;height:24px;border-radius:50%;background:#E8F4FB;color:#0F4C7A;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">${iniciais}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:11px;font-weight:700;color:#0F2940;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome.split(' ')[0]}</div>
+          <div style="font-size:9px;color:#94A8B8">${horario}</div>
+        </div>
+        <div style="font-size:13px;font-weight:800;color:${cor};flex-shrink:0">${r.km}km</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="font-size:11px;color:#94A8B8;text-align:center;padding:8px">Erro ao carregar</div>';
+  }
+}
+async function configurarHorarios() {
+  const modal = document.getElementById('modal-horarios');
+  const lista = document.getElementById('horarios-lista');
+  if (!modal || !lista) return;
+  modal.style.display = 'flex';
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const [rMb, rHor] = await Promise.all([
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
+      fetch(API + '/horarios-motoboy')
+    ]);
+    const dMb  = await rMb.json();
+    const dHor = await rHor.json();
+    const horariosCache = {};
+    (dHor.horarios || []).forEach(h => { horariosCache[h.nome] = h; });
+    const nomes = [...new Set((dMb.motoboys || []).map(m => m.nome))].sort();
+    lista.innerHTML = nomes.map(nome => {
+      const h = horariosCache[nome] || { hora_inicio: '06:00', hora_fim: '14:00' };
+      const id = nome.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+      return `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #EBF1F5;margin-bottom:6px;background:#F8FBFD">
+        <div style="flex:1;font-size:13px;font-weight:600;color:#0F4C7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nome}</div>
+        <input type="time" id="hi_${id}" value="${h.hora_inicio}" style="height:32px;border-radius:6px;border:1.5px solid #D6E5EE;padding:0 6px;font-size:12px;color:#0F4C7A;width:80px;outline:none"/>
+        <span style="font-size:11px;color:#94A8B8">até</span>
+        <input type="time" id="hf_${id}" value="${h.hora_fim}" style="height:32px;border-radius:6px;border:1.5px solid #D6E5EE;padding:0 6px;font-size:12px;color:#0F4C7A;width:80px;outline:none"/>
+        <button onclick="salvarHorario('${nome.replace(/'/g,"\\'")}','${id}')" style="height:32px;padding:0 10px;border-radius:6px;border:none;background:#0F9B78;color:#fff;font-size:11px;font-weight:700;cursor:pointer">✓</button>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    lista.innerHTML = '<div class="empty">Erro ao carregar motoboys</div>';
+  }
+}
+async function salvarHorario(nome, id) {
+  const hi = document.getElementById('hi_' + id)?.value;
+  const hf = document.getElementById('hf_' + id)?.value;
+  if (!hi || !hf) return;
+  try {
+    const r = await fetch(API + '/horarios-motoboy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, hora_inicio: hi, hora_fim: hf })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') toast('✓ Horário salvo para ' + nome.split(' ')[0]);
+    else toast('Erro ao salvar');
+  } catch(e) { toast('Erro de conexão'); }
 }
