@@ -530,696 +530,661 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <div class="view" id="view-detalhe-rota">
-    <div class="detalhe-header">
-      <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
-      <div class="detalhe-titulo" id="detalhe-titulo">—</div>
-    </div>
-    <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
-    <div id="detalhe-lista"></div>
-  </div>
+        <div class="detalhe-header">
+          <button class="detalhe-back" onclick="setView('painel', document.getElementById('menu-painel'))">← Voltar</button>
+          <div class="detalhe-titulo" id="detalhe-titulo">—</div>
+        </div>
+        <div id="detalhe-kpis" style="display:flex;gap:8px;margin-bottom:1.25rem;flex-wrap:wrap"></div>
+        <div id="detalhe-lista"></div>
+      </div>
 
       <div class="view" id="view-presencas" style="padding:1rem">
+        <div class="card" style="margin-bottom:1rem">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+            <div>
+              <div class="card-title" style="margin-bottom:2px">📋 Configuração de Presenças</div>
+              <div style="font-size:12px;color:#5A7A8F" id="presencas-data">Selecione quem deve confirmar presença hoje</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <input type="text" id="presencas-busca" placeholder="🔍 Buscar..." oninput="filtrarPresencas()"
+                style="height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;width:150px;color:#0F4C7A"/>
+              <button onclick="salvarPresencas()" style="height:36px;padding:0 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-size:12px;font-weight:700;cursor:pointer">✓ Salvar</button>
+            </div>
+          </div>
 
-    <div class="card" style="margin-bottom:1rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-        <div>
-          <div class="card-title" style="margin-bottom:2px">📋 Configuração de Presenças</div>
-          <div style="font-size:12px;color:#5A7A8F" id="presencas-data">Selecione quem deve confirmar presença hoje</div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <input type="text" id="presencas-busca" placeholder="🔍 Buscar..." oninput="filtrarPresencas()"
-            style="height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;width:150px;color:#0F4C7A"/>
-          <button onclick="salvarPresencas()" style="height:36px;padding:0 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#0F9B78,#085041);color:#fff;font-size:12px;font-weight:700;cursor:pointer">✓ Salvar</button>
+          <!-- Resumo -->
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem">
+            <div style="background:#E8F4FB;border-radius:10px;padding:10px;text-align:center">
+              <div id="pres-total" style="font-size:22px;font-weight:800;color:#0F4C7A">—</div>
+              <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Total</div>
+            </div>
+            <div style="background:#E8F8F0;border-radius:10px;padding:10px;text-align:center">
+              <div id="pres-marcados" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
+              <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Marcados</div>
+            </div>
+            <div style="background:#F0FAF6;border-radius:10px;padding:10px;text-align:center">
+              <div id="pres-gps" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
+              <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">GPS ✓</div>
+            </div>
+            <div style="background:#F3F4F6;border-radius:10px;text-align:center;padding:10px">
+              <div id="pres-semrota" style="font-size:22px;font-weight:800;color:#6B7280">—</div>
+              <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Sem rota</div>
+            </div>
+          </div>
+
+          <!-- Selecionar todos -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#F8FBFD;border-radius:8px;border:1.5px solid #D6E5EE;margin-bottom:8px">
+            <span style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.05em">Motoboys</span>
+            <div onclick="presencasToggleTodos()" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;font-weight:600;color:#0F4C7A">
+              <div id="pres-cb-all" style="width:18px;height:18px;border-radius:5px;border:1.5px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:.15s"></div>
+              <span id="pres-label-all">Marcar todos</span>
+            </div>
+          </div>
+
+          <!-- Lista -->
+          <div id="presencas-lista"></div>
+
+          <div id="msg-presencas" class="msg"></div>
         </div>
       </div>
-
-      <!-- Resumo -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem">
-        <div style="background:#E8F4FB;border-radius:10px;padding:10px;text-align:center">
-          <div id="pres-total" style="font-size:22px;font-weight:800;color:#0F4C7A">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Total</div>
-        </div>
-        <div style="background:#E8F8F0;border-radius:10px;padding:10px;text-align:center">
-          <div id="pres-marcados" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Marcados</div>
-        </div>
-        <div style="background:#F0FAF6;border-radius:10px;padding:10px;text-align:center">
-          <div id="pres-gps" style="font-size:22px;font-weight:800;color:#0F9B78">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">GPS ✓</div>
-        </div>
-        <div style="background:#F3F4F6;border-radius:10px;text-align:center;padding:10px">
-          <div id="pres-semrota" style="font-size:22px;font-weight:800;color:#6B7280">—</div>
-          <div style="font-size:10px;color:#5A7A8F;font-weight:700;text-transform:uppercase;margin-top:2px">Sem rota</div>
-        </div>
-      </div>
-
-      <!-- Selecionar todos -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:#F8FBFD;border-radius:8px;border:1.5px solid #D6E5EE;margin-bottom:8px">
-        <span style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.05em">Motoboys</span>
-        <div onclick="presencasToggleTodos()" style="display:flex;align-items:center;gap:7px;cursor:pointer;font-size:12px;font-weight:600;color:#0F4C7A">
-          <div id="pres-cb-all" style="width:18px;height:18px;border-radius:5px;border:1.5px solid #D6E5EE;background:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;transition:.15s"></div>
-          <span id="pres-label-all">Marcar todos</span>
-        </div>
-      </div>
-
-      <!-- Lista -->
-      <div id="presencas-lista"></div>
-
-      <div id="msg-presencas" class="msg"></div>
-    </div>
-
-  </div>
 
       <div class="view" id="view-mapa-rastreamento" style="padding:0">
-    <div style="display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px)">
+        <div style="display:grid;grid-template-columns:260px 1fr;height:calc(100vh - 56px)">
 
-      <!-- Sidebar motoboys -->
-      <div style="background:#fff;border-right:1px solid #D6E5EE;display:flex;flex-direction:column;overflow:hidden">
-        <div style="padding:12px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
-          <span style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.07em">Motoboys</span>
-          <div id="mapa-live-badge" style="display:none;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:3px 9px;border-radius:20px">
-            <div style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:pulse2 1.4s infinite"></div>AO VIVO
-          </div>
-        </div>
+          <!-- Sidebar motoboys -->
+          <div style="background:#fff;border-right:1px solid #D6E5EE;display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:12px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
+              <span style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.07em">Motoboys</span>
+              <div id="mapa-live-badge" style="display:none;align-items:center;gap:5px;font-size:10px;font-weight:700;color:#16A34A;background:#DCFCE7;padding:3px 9px;border-radius:20px">
+                <div style="width:6px;height:6px;border-radius:50%;background:#16A34A;animation:pulse2 1.4s infinite"></div>AO VIVO
+              </div>
+            </div>
 
-        <!-- Resumo -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid #EBF1F5">
-          <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#E8F8F0">
-            <div id="mapa-count-online" style="font-size:20px;font-weight:800;color:#0F9B78">—</div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Online</div>
-          </div>
-          <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#FEF9EC">
-            <div id="mapa-count-idle" style="font-size:20px;font-weight:800;color:#F59E0B">—</div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Parado</div>
-          </div>
-          <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#F3F4F6">
-            <div id="mapa-count-off" style="font-size:20px;font-weight:800;color:#6B7280">—</div>
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Offline</div>
-          </div>
-        </div>
+            <!-- Resumo -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 12px;border-bottom:1px solid #EBF1F5">
+              <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#E8F8F0">
+                <div id="mapa-count-online" style="font-size:20px;font-weight:800;color:#0F9B78">—</div>
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Online</div>
+              </div>
+              <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#FEF9EC">
+                <div id="mapa-count-idle" style="font-size:20px;font-weight:800;color:#F59E0B">—</div>
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Parado</div>
+              </div>
+              <div style="text-align:center;padding:8px 4px;border-radius:8px;background:#F3F4F6">
+                <div id="mapa-count-off" style="font-size:20px;font-weight:800;color:#6B7280">—</div>
+                <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#5A7A8F;margin-top:2px">Offline</div>
+              </div>
+            </div>
 
-        <!-- Lista motoboys -->
-        <div id="mapa-lista-motoboys" style="overflow-y:auto;flex:1">
-          <div class="empty">Carregando...</div>
-        </div>
+            <!-- Lista motoboys -->
+            <div id="mapa-lista-motoboys" style="overflow-y:auto;flex:1">
+              <div class="empty">Carregando...</div>
+            </div>
 
-        <!-- KM do dia -->
-        <div style="border-top:1px solid #EBF1F5;background:#F7FBFD">
-          <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
-            <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.07em">KM hoje</span>
-            <button onclick="configurarHorarios()" style="font-size:10px;font-weight:600;color:#1E9FD9;background:none;border:none;cursor:pointer;padding:2px 6px">⚙️ Horários</button>
-          </div>
-          <div id="mapa-km-lista" style="padding:0 8px 8px;max-height:140px;overflow-y:auto"></div>
-        </div>
+            <!-- KM do dia -->
+            <div style="border-top:1px solid #EBF1F5;background:#F7FBFD">
+              <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.07em">KM hoje</span>
+                <button onclick="configurarHorarios()" style="font-size:10px;font-weight:600;color:#1E9FD9;background:none;border:none;cursor:pointer;padding:2px 6px">⚙️ Horários</button>
+              </div>
+              <div id="mapa-km-lista" style="padding:0 8px 8px;max-height:140px;overflow-y:auto"></div>
+            </div>
 
-        <!-- Footer sync -->
-        <div style="padding:10px 14px;border-top:1px solid #EBF1F5;background:#FAFCFE;font-size:11px;color:#5A7A8F;display:flex;align-items:center;gap:8px">
-          <div id="mapa-sync-dot" style="width:6px;height:6px;border-radius:50%;background:#1E9FD9;animation:pulse2 1.4s infinite"></div>
-          Próx. sync
-          <div style="flex:1;height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden">
-            <div id="mapa-sync-bar" style="height:100%;background:#1E9FD9;border-radius:2px;width:0%;transition:width 1s linear"></div>
+            <!-- Footer sync -->
+            <div style="padding:10px 14px;border-top:1px solid #EBF1F5;background:#FAFCFE;font-size:11px;color:#5A7A8F;display:flex;align-items:center;gap:8px">
+              <div id="mapa-sync-dot" style="width:6px;height:6px;border-radius:50%;background:#1E9FD9;animation:pulse2 1.4s infinite"></div>
+              Próx. sync
+              <div style="flex:1;height:3px;background:#E5E7EB;border-radius:2px;overflow:hidden">
+                <div id="mapa-sync-bar" style="height:100%;background:#1E9FD9;border-radius:2px;width:0%;transition:width 1s linear"></div>
+              </div>
+              <span id="mapa-sync-countdown">2:00</span>
+            </div>
           </div>
-          <span id="mapa-sync-countdown">2:00</span>
+
+          <!-- Mapa Leaflet -->
+          <div id="leaflet-map" style="height:100%;width:100%"></div>
         </div>
       </div>
-
-      <!-- Mapa Leaflet -->
-      <div id="leaflet-map" style="height:100%;width:100%"></div>
-    </div>
-  </div>
 
       <div class="view" id="view-confirmacoes">
-    <div class="card">
-      <div class="card-title">✓ Confirmações de hoje</div>
-      <div id="lista-conf"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
+        <div class="card">
+          <div class="card-title">✓ Confirmações de hoje</div>
+          <div id="lista-conf"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
 
       <div class="view" id="view-checklist-view">
-    <div class="card" id="card-lista-checklists">
-      <div class="card-title">📋 Checklists de hoje</div>
-      <div id="lista-checklists"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-    <div class="card" id="card-detalhe-checklist" style="display:none">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
-        <button onclick="voltarListaChecklists()" style="background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">← Voltar</button>
-        <div style="font-size:16px;font-weight:800;color:#0F4C7A" id="detalhe-checklist-titulo">—</div>
+        <div class="card" id="card-lista-checklists">
+          <div class="card-title">📋 Checklists de hoje</div>
+          <div id="lista-checklists"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+        <div class="card" id="card-detalhe-checklist" style="display:none">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem">
+            <button onclick="voltarListaChecklists()" style="background:#fff;color:#0F4C7A;border:1.5px solid #D6E5EE;padding:7px 14px;border-radius:9px;font-size:13px;font-weight:600;cursor:pointer">← Voltar</button>
+            <div style="font-size:16px;font-weight:800;color:#0F4C7A" id="detalhe-checklist-titulo">—</div>
+          </div>
+          <div id="detalhe-checklist-conteudo"></div>
+        </div>
       </div>
-      <div id="detalhe-checklist-conteudo"></div>
-    </div>
-  </div>
 
       <div class="view" id="view-checklists-incompletos">
-    <div class="card">
-      <div class="card-title">⏳ Checklists Incompletos</div>
-      <div id="lista-checklists-incompletos"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
+        <div class="card">
+          <div class="card-title">⏳ Checklists Incompletos</div>
+          <div id="lista-checklists-incompletos"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
 
       <div class="view" id="view-motoristas">
-    <div class="card">
-      <div class="card-title">👤 Motoristas cadastrados</div>
-      <div style="margin-bottom:1rem">
-        <label style="font-size:12px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Filtrar por dia</label>
-        <select id="filtro-dias-moto" onchange="filtrarMotoristasPlus(this.value)" style="width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;font-weight:600;cursor:pointer">
-          <option value="">📅 Todos os dias</option>
-          <option value="seg-sex">📆 Segunda a Sexta</option>
-          <option value="sabado">📆 Sábado</option>
-          <option value="domingo">📆 Domingo</option>
-        </select>
+        <div class="card">
+          <div class="card-title">👤 Motoristas cadastrados</div>
+          <div style="margin-bottom:1rem">
+            <label style="font-size:12px;font-weight:700;color:#0F4C7A;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Filtrar por dia</label>
+            <select id="filtro-dias-moto" onchange="filtrarMotoristasPlus(this.value)" style="width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;background:#fff;font-weight:600;cursor:pointer">
+              <option value="">📅 Todos os dias</option>
+              <option value="seg-sex">📆 Segunda a Sexta</option>
+              <option value="sabado">📆 Sábado</option>
+              <option value="domingo">📆 Domingo</option>
+            </select>
+          </div>
+          <div id="lista-mb-view"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
       </div>
-      <div id="lista-mb-view"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
 
       <div class="view" id="view-rotas-view">
-    <div class="card">
-      <div class="card-title">🛣️ Rotas</div>
-      <div id="lista-rotas-view"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
+        <div class="card">
+          <div class="card-title">🛣️ Rotas</div>
+          <div id="lista-rotas-view"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
 
       <div class="view" id="view-buscar">
-    <div class="card">
-      <div class="card-title">🔎 Buscar cliente</div>
-      <div class="search-row">
-        <input type="text" id="busca-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarCliente()"/>
-        <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
+        <div class="card">
+          <div class="card-title">🔎 Buscar cliente</div>
+          <div class="search-row">
+            <input type="text" id="busca-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarCliente()"/>
+            <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
+          </div>
+          <div id="busca-resultado"></div>
+        </div>
       </div>
-      <div id="busca-resultado"></div>
-    </div>
-  </div>
 
       <div class="view" id="view-criar-cliente">
-    <div class="card">
-      <div class="card-title">👤 Criar cliente</div>
-      <div class="field"><label>Código</label><input type="text" id="cc-codigo" placeholder="Ex: 22088"/></div>
-      <div class="field"><label>Nome</label><input type="text" id="cc-nome" placeholder="Nome do cliente"/></div>
-      <div class="field"><label>Horário</label><input type="time" id="cc-horario"/></div>
-      <button class="btn btn-primary btn-block" onclick="criarCliente()">+ Criar cliente</button>
-      <div class="msg" id="msg-cc"></div>
-    </div>
-  </div>
+        <div class="card">
+          <div class="card-title">👤 Criar cliente</div>
+          <div class="field"><label>Código</label><input type="text" id="cc-codigo" placeholder="Ex: 22088"/></div>
+          <div class="field"><label>Nome</label><input type="text" id="cc-nome" placeholder="Nome do cliente"/></div>
+          <div class="field"><label>Horário</label><input type="time" id="cc-horario"/></div>
+          <button class="btn btn-primary btn-block" onclick="criarCliente()">+ Criar cliente</button>
+          <div class="msg" id="msg-cc"></div>
+        </div>
+      </div>
 
       <div class="view" id="view-gerenciar-motoboys">
-    <div class="card">
-      <div class="card-title">➕ Adicionar motorista</div>
-      <div class="field"><label>Nome</label><input type="text" id="mb-nome" placeholder="Nome completo"/></div>
-      <div class="field"><label>Telefone</label><input type="tel" id="mb-tel" placeholder="(11) 99999-0000"/></div>
-      <button class="btn btn-primary btn-block" onclick="adicionarMotoboy()">+ Adicionar</button>
-      <div class="msg" id="msg-mb"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">Lista de motoristas</div>
-      <div id="lista-mb-ger"><div class="empty"><span class="spinner"></span></div></div>
-    </div>
-  </div>
+        <div class="card">
+          <div class="card-title">➕ Adicionar motorista</div>
+          <div class="field"><label>Nome</label><input type="text" id="mb-nome" placeholder="Nome completo"/></div>
+          <div class="field"><label>Telefone</label><input type="tel" id="mb-tel" placeholder="(11) 99999-0000"/></div>
+          <button class="btn btn-primary btn-block" onclick="adicionarMotoboy()">+ Adicionar</button>
+          <div class="msg" id="msg-mb"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Lista de motoristas</div>
+          <div id="lista-mb-ger"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
 
       <div class="view" id="view-ativar-cliente">
-    <div class="card">
-      <div class="card-title">🔁 Ativar / Desativar cliente</div>
-      <div class="search-row">
-        <input type="text" id="ativar-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarParaAtivar()"/>
-        <button class="btn btn-primary" onclick="buscarParaAtivar()">Buscar</button>
+        <div class="card">
+          <div class="card-title">🔁 Ativar / Desativar cliente</div>
+          <div class="search-row">
+            <input type="text" id="ativar-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarParaAtivar()"/>
+            <button class="btn btn-primary" onclick="buscarParaAtivar()">Buscar</button>
+          </div>
+          <div id="ativar-resultado"></div>
+        </div>
       </div>
-      <div id="ativar-resultado"></div>
-    </div>
-  </div>
 
       <div class="view" id="view-reset">
-    <div class="card">
-      <div class="card-title">⚠️ Reset do sistema</div>
-      <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Reseta o status de todos os clientes e destrava todas as rotas.</p>
-      <button class="btn btn-danger btn-block" onclick="fazerReset()">⚠️ Fazer Reset agora</button>
-      <div class="msg" id="msg-reset"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">🔄 Limpar confirmações</div>
-      <button class="btn btn-warning btn-block" onclick="resetConfirmacoes()">Limpar confirmações de hoje</button>
-      <div class="msg" id="msg-reset-conf"></div>
-    </div>
-  </div>
+        <div class="card">
+          <div class="card-title">⚠️ Reset do sistema</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem">Reseta o status de todos os clientes e destrava todas as rotas.</p>
+          <button class="btn btn-danger btn-block" onclick="fazerReset()">⚠️ Fazer Reset agora</button>
+          <div class="msg" id="msg-reset"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">🔄 Limpar confirmações</div>
+          <button class="btn btn-warning btn-block" onclick="resetConfirmacoes()">Limpar confirmações de hoje</button>
+          <div class="msg" id="msg-reset-conf"></div>
+        </div>
+      </div>
 
       <div class="view" id="view-gestor">
-    <div style="padding:1rem">
+        <div style="padding:1rem">
 
-      <!-- Sub tabs -->
-      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
-        <button id="gestor-sub-btn-nova" onclick="mudarSubGestor('nova',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">📝 Nova Auditoria</button>
-        <button id="gestor-sub-btn-auditorias" onclick="mudarSubGestor('auditorias',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🔍 Auditorias</button>
-        <button id="gestor-sub-btn-checklists" onclick="mudarSubGestor('checklists',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">✅ Checklists</button>
-        <button id="gestor-sub-btn-gestores" onclick="mudarSubGestor('gestores',this)"
-          style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⚙️ Gestores</button>
-      </div>
-
-      <!-- NOVA AUDITORIA -->
-      <div id="gestor-sub-nova">
-
-        <!-- Score em tempo real -->
-        <div id="aud-resultado-box" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:linear-gradient(135deg,#F3F0FF,#E8F4FB);border:1.5px solid #8B5CF6;margin-bottom:1rem">
-          <div>
-            <div id="aud-resultado-txt" style="font-size:15px;font-weight:700;color:#5B21B6">Preencha os itens abaixo</div>
-            <div id="aud-resultado-meta" style="font-size:11px;color:#5A7A8F;margin-top:2px">0 conformes · 0 não conformes · 0 ressalvas</div>
-          </div>
-          <div style="text-align:right">
-            <div style="font-size:10px;color:#8B5CF6;font-weight:600;text-transform:uppercase;margin-bottom:2px">Itens</div>
-            <div id="aud-resultado-count" style="font-size:18px;font-weight:800;color:#5B21B6">0/11</div>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title">📋 Dados da Auditoria</div>
-
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-            <div>
-              <label class="field-label">Motorista</label>
-              <input type="text" id="aud-motorista" placeholder="Nome do motorista" class="field-input" style="margin-bottom:0"/>
-            </div>
-            <div>
-              <label class="field-label">Auditor</label>
-              <input type="text" id="aud-auditor" placeholder="Seu nome" class="field-input" style="margin-bottom:0"/>
-            </div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
-            <div>
-              <label class="field-label">Placa</label>
-              <input type="text" id="aud-placa" placeholder="ABC-1234" class="field-input" style="margin-bottom:0"/>
-            </div>
-            <div>
-              <label class="field-label">Tipo de veículo</label>
-              <select id="aud-tipo" onchange="renderItensAuditoria()" class="field-input" style="margin-bottom:0">
-                <option value="moto">🛵 Moto</option>
-                <option value="carro">🚗 Carro</option>
-              </select>
-            </div>
-          </div>
-          <div>
-            <label class="field-label">Unidade</label>
-            <input type="text" id="aud-unidade" placeholder="Unidade/filial" class="field-input" style="margin-bottom:0"/>
-          </div>
-        </div>
-
-        <div class="card">
-          <div class="card-title" style="margin-bottom:.5rem">🔍 Itens de Auditoria</div>
-          <div style="font-size:11px;color:#5A7A8F;margin-bottom:1rem">
-            <span style="color:#0F9B78;font-weight:700">✓ Conforme</span> = 100pts &nbsp;·&nbsp;
-            <span style="color:#F59E0B;font-weight:700">~ Ressalva</span> = 50pts &nbsp;·&nbsp;
-            <span style="color:#DC2626;font-weight:700">✗ Não conforme</span> = 0pts
-          </div>
-          <div id="itens-auditoria-lista"></div>
-        </div>
-
-        <div class="card">
-          <label class="field-label">Observações</label>
-          <textarea id="aud-obs" placeholder="Observações gerais..." class="field-input" rows="3" style="resize:vertical;margin-bottom:0"></textarea>
-        </div>
-
-        <div id="msg-auditoria" class="msg" style="margin-bottom:.5rem"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
-          <button onclick="gerarPDFAuditoria(null,true)" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-weight:700;font-size:13px;cursor:pointer">📥 Gerar PDF</button>
-          <button onclick="salvarAuditoria()" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer">✓ Salvar + Email</button>
-        </div>
-
-      </div>
-
-      <!-- AUDITORIAS -->
-      <div id="gestor-sub-auditorias" style="display:none">
-        <div class="card">
-          <div class="card-title">🔍 Auditorias realizadas</div>
-          <div id="lista-auditorias"><div class="empty"><span class="spinner"></span></div></div>
-        </div>
-      </div>
-
-      <!-- CHECKLISTS -->
-      <div id="gestor-sub-checklists" style="display:none">
-        <div class="card">
-          <div class="card-title">✅ Checklists de hoje</div>
+          <!-- Sub tabs -->
           <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
-            <button onclick="carregarChecklistsGestor('hoje',this)" class="filter-btn filter-btn-active">Hoje</button>
-            <button onclick="carregarChecklistsGestor('semana',this)" class="filter-btn">Semana</button>
-            <button onclick="carregarChecklistsGestor('todos',this)" class="filter-btn">Todos</button>
+            <button id="gestor-sub-btn-nova" onclick="mudarSubGestor('nova',this)"
+              style="padding:7px 14px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">📝 Nova Auditoria</button>
+            <button id="gestor-sub-btn-auditorias" onclick="mudarSubGestor('auditorias',this)"
+              style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🔍 Auditorias</button>
+            <button id="gestor-sub-btn-checklists" onclick="mudarSubGestor('checklists',this)"
+              style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">✅ Checklists</button>
+            <button id="gestor-sub-btn-gestores" onclick="mudarSubGestor('gestores',this)"
+              style="padding:7px 14px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">⚙️ Gestores</button>
           </div>
-          <div id="lista-checklists-gestor"><div class="empty"><span class="spinner"></span></div></div>
+
+          <!-- NOVA AUDITORIA -->
+          <div id="gestor-sub-nova">
+
+            <!-- Score em tempo real -->
+            <div id="aud-resultado-box" style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-radius:12px;background:linear-gradient(135deg,#F3F0FF,#E8F4FB);border:1.5px solid #8B5CF6;margin-bottom:1rem">
+              <div>
+                <div id="aud-resultado-txt" style="font-size:15px;font-weight:700;color:#5B21B6">Preencha os itens abaixo</div>
+                <div id="aud-resultado-meta" style="font-size:11px;color:#5A7A8F;margin-top:2px">0 conformes · 0 não conformes · 0 ressalvas</div>
+              </div>
+              <div style="text-align:right">
+                <div style="font-size:10px;color:#8B5CF6;font-weight:600;text-transform:uppercase;margin-bottom:2px">Itens</div>
+                <div id="aud-resultado-count" style="font-size:18px;font-weight:800;color:#5B21B6">0/11</div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title">📋 Dados da Auditoria</div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+                <div>
+                  <label class="field-label">Motorista</label>
+                  <input type="text" id="aud-motorista" placeholder="Nome do motorista" class="field-input" style="margin-bottom:0"/>
+                </div>
+                <div>
+                  <label class="field-label">Auditor</label>
+                  <input type="text" id="aud-auditor" placeholder="Seu nome" class="field-input" style="margin-bottom:0"/>
+                </div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem">
+                <div>
+                  <label class="field-label">Placa</label>
+                  <input type="text" id="aud-placa" placeholder="ABC-1234" class="field-input" style="margin-bottom:0"/>
+                </div>
+                <div>
+                  <label class="field-label">Tipo de veículo</label>
+                  <select id="aud-tipo" onchange="renderItensAuditoria()" class="field-input" style="margin-bottom:0">
+                    <option value="moto">🛵 Moto</option>
+                    <option value="carro">🚗 Carro</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label class="field-label">Unidade</label>
+                <input type="text" id="aud-unidade" placeholder="Unidade/filial" class="field-input" style="margin-bottom:0"/>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title" style="margin-bottom:.5rem">🔍 Itens de Auditoria</div>
+              <div style="font-size:11px;color:#5A7A8F;margin-bottom:1rem">
+                <span style="color:#0F9B78;font-weight:700">✓ Conforme</span> = 100pts &nbsp;·&nbsp;
+                <span style="color:#F59E0B;font-weight:700">~ Ressalva</span> = 50pts &nbsp;·&nbsp;
+                <span style="color:#DC2626;font-weight:700">✗ Não conforme</span> = 0pts
+              </div>
+              <div id="itens-auditoria-lista"></div>
+            </div>
+
+            <div class="card">
+              <label class="field-label">Observações</label>
+              <textarea id="aud-obs" placeholder="Observações gerais..." class="field-input" rows="3" style="resize:vertical;margin-bottom:0"></textarea>
+            </div>
+
+            <div id="msg-auditoria" class="msg" style="margin-bottom:.5rem"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem">
+              <button onclick="gerarPDFAuditoria(null,true)" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-weight:700;font-size:13px;cursor:pointer">📥 Gerar PDF</button>
+              <button onclick="salvarAuditoria()" style="padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:14px;cursor:pointer">✓ Salvar + Email</button>
+            </div>
+
+          </div>
+
+          <!-- AUDITORIAS -->
+          <div id="gestor-sub-auditorias" style="display:none">
+            <div class="card">
+              <div class="card-title">🔍 Auditorias realizadas</div>
+              <div id="lista-auditorias"><div class="empty"><span class="spinner"></span></div></div>
+            </div>
+          </div>
+
+          <!-- CHECKLISTS -->
+          <div id="gestor-sub-checklists" style="display:none">
+            <div class="card">
+              <div class="card-title">✅ Checklists de hoje</div>
+              <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
+                <button onclick="carregarChecklistsGestor('hoje',this)" class="filter-btn filter-btn-active">Hoje</button>
+                <button onclick="carregarChecklistsGestor('semana',this)" class="filter-btn">Semana</button>
+                <button onclick="carregarChecklistsGestor('todos',this)" class="filter-btn">Todos</button>
+              </div>
+              <div id="lista-checklists-gestor"><div class="empty"><span class="spinner"></span></div></div>
+            </div>
+          </div>
+
+          <!-- GESTORES -->
+          <div id="gestor-sub-gestores" style="display:none">
+            <div class="card">
+              <div class="card-title">⚙️ Gestores cadastrados</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+                <input type="text" id="gest-nome" placeholder="Nome" class="field-input"/>
+                <input type="text" id="gest-tel" placeholder="Telefone" class="field-input"/>
+              </div>
+              <div id="msg-gestor" class="msg"></div>
+              <button onclick="adicionarGestor()" style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:1rem">
+                ➕ Adicionar Gestor
+              </button>
+              <div id="lista-gestores"><div class="empty"><span class="spinner"></span></div></div>
+            </div>
+          </div>
+
         </div>
       </div>
-
-      <!-- GESTORES -->
-      <div id="gestor-sub-gestores" style="display:none">
-        <div class="card">
-          <div class="card-title">⚙️ Gestores cadastrados</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-            <input type="text" id="gest-nome" placeholder="Nome" class="field-input"/>
-            <input type="text" id="gest-tel" placeholder="Telefone" class="field-input"/>
-          </div>
-          <div id="msg-gestor" class="msg"></div>
-          <button onclick="adicionarGestor()" style="width:100%;padding:10px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-bottom:1rem">
-            ➕ Adicionar Gestor
-          </button>
-          <div id="lista-gestores"><div class="empty"><span class="spinner"></span></div></div>
-        </div>
-      </div>
-
-    </div>
-  </div>
 
       <div class="view" id="view-estoque-view">
-    <div style="padding:1rem">
-      <div style="font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem">📦 PMC Estoque</div>
-      <div id="est-tab-materiais" style="display:none">
-        <div id="alertas-materiais-est"></div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
-          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
-            <div id="mat-total-est" style="font-size:20px;font-weight:800;color:#8B5CF6">0</div>
-            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Itens</div>
+        <div style="padding:1rem">
+          <div style="font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem">📦 PMC Estoque</div>
+          <div id="est-tab-materiais">
+            <div id="alertas-materiais-est"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem">
+              <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+                <div id="mat-total-est" style="font-size:20px;font-weight:800;color:#8B5CF6">0</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600">Itens</div>
+              </div>
+              <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+                <div id="mat-venc-est" style="font-size:20px;font-weight:800;color:#DC2626">0</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600">Vencendo</div>
+              </div>
+              <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
+                <div id="mat-baixo-est" style="font-size:20px;font-weight:800;color:#F59E0B">0</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600">Estoque baixo</div>
+              </div>
+            </div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
+              <button onclick="filtrarMatEst('todos',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">Todos</button>
+              <button onclick="filtrarMatEst('escritorio',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📎 Escritório</button>
+              <button onclick="filtrarMatEst('limpeza',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🧹 Limpeza</button>
+              <button onclick="filtrarMatEst('alimentacao',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🍱 Alimentação</button>
+            </div>
+            <input type="text" id="busca-mat-est" placeholder="🔍 Buscar item..." oninput="renderMateriaisEst()"
+              style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A;margin-bottom:.8rem"/>
+            <div id="lista-materiais-est"></div>
+            <button onclick="abrirModalCadMat()"
+              style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-top:.5rem">
+              ➕ Cadastrar Item
+            </button>
           </div>
-          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
-            <div id="mat-venc-est" style="font-size:20px;font-weight:800;color:#DC2626">0</div>
-            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Vencendo</div>
+        </div>
+      </div>
+
+      <div class="view" id="view-patrimonios">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+          <div style="font-size:16px;font-weight:800;color:#0F4C7A">🔒 Patrimônios</div>
+          <button onclick="abrirModalPatCad('')" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Cadastrar item</button>
+        </div>
+
+        <!-- KPIs -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+          <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+            <div style="font-size:22px;font-weight:800;color:#0F4C7A" id="pat-total">—</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Total itens</div>
           </div>
-          <div style="background:#F8FBFD;border-radius:10px;border:1.5px solid #EBF1F5;padding:10px;text-align:center">
-            <div id="mat-baixo-est" style="font-size:20px;font-weight:800;color:#F59E0B">0</div>
-            <div style="font-size:10px;color:#5A7A8F;font-weight:600">Estoque baixo</div>
+          <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+            <div style="font-size:22px;font-weight:800;color:#0F9B78" id="pat-disp">—</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Disponíveis</div>
+          </div>
+          <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+            <div style="font-size:22px;font-weight:800;color:#1E9FD9" id="pat-uso">—</div>
+            <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Em uso</div>
           </div>
         </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:.8rem">
-          <button onclick="filtrarMatEst('todos',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;font-size:12px;font-weight:600;color:#5B21B6;cursor:pointer">Todos</button>
-          <button onclick="filtrarMatEst('escritorio',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">📎 Escritório</button>
-          <button onclick="filtrarMatEst('limpeza',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🧹 Limpeza</button>
-          <button onclick="filtrarMatEst('alimentacao',this)" class="mat-filtro-est" style="padding:6px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;font-size:12px;font-weight:600;color:#5A7A8F;cursor:pointer">🍱 Alimentação</button>
+
+        <!-- Tabs -->
+        <div style="display:flex;gap:6px;margin-bottom:1rem;background:#fff;border-radius:12px;padding:6px;border:1px solid #EBF1F5">
+          <button id="pat-tab-btn-geral" onclick="mudarTabPat('geral',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📦 Geral</button>
+          <button id="pat-tab-btn-motoboy" onclick="mudarTabPat('motoboy',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👤 Por Motoboy</button>
+          <button id="pat-tab-btn-pendencias" onclick="mudarTabPat('pendencias',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pendências</button>
+          <button id="pat-tab-btn-historico" onclick="mudarTabPat('historico',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Histórico</button>
         </div>
-        <input type="text" id="busca-mat-est" placeholder="🔍 Buscar item..." oninput="renderMateriaisEst()"
-          style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A;margin-bottom:.8rem"/>
-        <div id="lista-materiais-est"></div>
-        <button onclick="abrirModalCadMat()"
-          style="width:100%;padding:11px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:13px;cursor:pointer;margin-top:.5rem">
-          ➕ Cadastrar Item
-        </button>
-      </div>
 
-            <div class="view" id="view-patrimonios">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <div style="font-size:16px;font-weight:800;color:#0F4C7A">🔒 Patrimônios</div>
-      <button onclick="abrirModalPatCad('')" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Cadastrar item</button>
-    </div>
+        <!-- Aba Geral -->
+        <div id="pat-tab-geral">
+          <!-- Com código -->
+          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
+            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
+              <span style="font-size:13px;font-weight:700;color:#0F4C7A">📡 Com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Rastreador · Baú · Cooler P · Cooler G)</span></span>
+              <span style="color:#94A8B8;font-size:16px">›</span>
+            </div>
+            <div style="display:none;border-top:1px solid #EBF1F5;padding:12px" id="pat-categorias-lista"></div>
+          </div>
 
-    <!-- KPIs -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
-      <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-        <div style="font-size:22px;font-weight:800;color:#0F4C7A" id="pat-total">—</div>
-        <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Total itens</div>
-      </div>
-      <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-        <div style="font-size:22px;font-weight:800;color:#0F9B78" id="pat-disp">—</div>
-        <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Disponíveis</div>
-      </div>
-      <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-        <div style="font-size:22px;font-weight:800;color:#1E9FD9" id="pat-uso">—</div>
-        <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Em uso</div>
-      </div>
-    </div>
-
-    <!-- Tabs -->
-    <div style="display:flex;gap:6px;margin-bottom:1rem;background:#fff;border-radius:12px;padding:6px;border:1px solid #EBF1F5">
-      <button id="pat-tab-btn-geral" onclick="mudarTabPat('geral',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📦 Geral</button>
-      <button id="pat-tab-btn-motoboy" onclick="mudarTabPat('motoboy',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👤 Por Motoboy</button>
-      <button id="pat-tab-btn-pendencias" onclick="mudarTabPat('pendencias',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pendências</button>
-      <button id="pat-tab-btn-historico" onclick="mudarTabPat('historico',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Histórico</button>
-    </div>
-
-    <!-- Aba Geral -->
-    <div id="pat-tab-geral">
-      <!-- Com código -->
-      <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
-        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
-          <span style="font-size:13px;font-weight:700;color:#0F4C7A">📡 Com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Rastreador · Baú · Cooler P · Cooler G)</span></span>
-          <span style="color:#94A8B8;font-size:16px">›</span>
+          <!-- Sem código -->
+          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
+            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
+              <span style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Sem código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Colete · Camisetas · Blusa · Crachá · Bolsa)</span></span>
+              <span style="color:#94A8B8;font-size:16px">›</span>
+            </div>
+            <div style="display:none;border-top:1px solid #EBF1F5;padding:12px">
+              <!-- Itens com tamanho -->
+              <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Com tamanho</div>
+              <div id="pat-uniformes-lista"></div>
+              <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin-top:8px">+ Entrada de uniforme</button>
+              <!-- Itens sem tamanho -->
+              <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px">Sem tamanho</div>
+              <div id="pat-simples-lista2"></div>
+            </div>
+          </div>
         </div>
-        <div style="display:none;border-top:1px solid #EBF1F5;padding:12px" id="pat-categorias-lista"></div>
-      </div>
 
-      <!-- Sem código -->
-      <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
-        <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
-          <span style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Sem código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Colete · Camisetas · Blusa · Crachá · Bolsa)</span></span>
-          <span style="color:#94A8B8;font-size:16px">›</span>
+        <!-- Aba Por Motoboy -->
+        <div id="pat-tab-motoboy" style="display:none">
+          <select id="pat-sel-motoboy" onchange="carregarChecklistMotoboy(this.value)"
+            style="width:100%;border-radius:10px;border:1.5px solid #8B5CF6;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;background:#F3F0FF;font-weight:600;margin-bottom:1rem">
+            <option value="">Selecione o motoboy...</option>
+          </select>
+          <div id="pat-checklist-motoboy"></div>
+          <div id="est-resumo-todos" style="margin-top:1rem"></div>
         </div>
-        <div style="display:none;border-top:1px solid #EBF1F5;padding:12px">
-          <!-- Itens com tamanho -->
-          <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Com tamanho</div>
-          <div id="pat-uniformes-lista"></div>
-          <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin-top:8px">+ Entrada de uniforme</button>
-          <!-- Itens sem tamanho -->
-          <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px">Sem tamanho</div>
-          <div id="pat-simples-lista2"></div>
+
+        <!-- Aba Pendências -->
+        <div id="pat-tab-pendencias" style="display:none">
+          <div id="pend-resumo" style="font-size:12px;color:#5A7A8F;margin-bottom:1rem"></div>
+          <div id="lista-pendencias"></div>
         </div>
+
+        <!-- Aba Histórico -->
+        <div id="pat-tab-historico" style="display:none">
+          <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
+            <button class="hist-filtro" onclick="filtrarHistorico('todos',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">Todos</button>
+            <button class="hist-filtro" onclick="filtrarHistorico('entrega',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">✓ Entregas</button>
+            <button class="hist-filtro" onclick="filtrarHistorico('troca',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">⇄ Trocas</button>
+            <button class="hist-filtro" onclick="filtrarHistorico('descarte',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">↩ Devoluções</button>
+          </div>
+          <div id="lista-historico"></div>
+        </div>
+
       </div>
-    </div>
-
-    <!-- Aba Por Motoboy -->
-    <div id="pat-tab-motoboy" style="display:none">
-      <select id="pat-sel-motoboy" onchange="carregarChecklistMotoboy(this.value)"
-        style="width:100%;border-radius:10px;border:1.5px solid #8B5CF6;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;background:#F3F0FF;font-weight:600;margin-bottom:1rem">
-        <option value="">Selecione o motoboy...</option>
-      </select>
-      <div id="pat-checklist-motoboy"></div>
-      <div id="est-resumo-todos" style="margin-top:1rem"></div>
-    </div>
-
-    <!-- Aba Pendências -->
-    <div id="pat-tab-pendencias" style="display:none">
-      <div id="pend-resumo" style="font-size:12px;color:#5A7A8F;margin-bottom:1rem"></div>
-      <div id="lista-pendencias"></div>
-    </div>
-
-    <!-- Aba Histórico -->
-    <div id="pat-tab-historico" style="display:none">
-      <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
-        <button class="hist-filtro" onclick="filtrarHistorico('todos',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">Todos</button>
-        <button class="hist-filtro" onclick="filtrarHistorico('entrega',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">✓ Entregas</button>
-        <button class="hist-filtro" onclick="filtrarHistorico('troca',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">⇄ Trocas</button>
-        <button class="hist-filtro" onclick="filtrarHistorico('descarte',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">↩ Devoluções</button>
-      </div>
-      <div id="lista-historico"></div>
-    </div>
-
-  </div>
 
       <div class="view" id="view-importacao">
-    <div style="padding:1rem">
-    <div style="font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem">📁 Importação e Registro</div>
+        <div style="padding:1rem">
+          <div style="font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:1rem">📁 Importação e Registro</div>
 
-    <!-- Download Checklist -->
-    <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
-      <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Download de Checklists</div>
-        <div style="font-size:11px;color:#5A7A8F">Exportar em PDF</div>
-      </div>
-      <div style="padding:14px">
-        <div style="display:flex;gap:8px;margin-bottom:12px">
-          <div style="flex:1">
-            <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">DATA</label>
-            <input type="date" id="chk-download-data" onchange="atualizarMotoboysChecklist()" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit"/>
+          <!-- Download Checklist -->
+          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
+            <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Download de Checklists</div>
+              <div style="font-size:11px;color:#5A7A8F">Exportar em PDF</div>
+            </div>
+            <div style="padding:14px">
+              <div style="display:flex;gap:8px;margin-bottom:12px">
+                <div style="flex:1">
+                  <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">DATA</label>
+                  <input type="date" id="chk-download-data" onchange="atualizarMotoboysChecklist()" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit"/>
+                </div>
+                <div style="flex:1">
+                  <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">MOTOBOY (opcional)</label>
+                  <select id="chk-download-motoboy" onchange="" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;background:#fff">
+                    <option value="">Todos</option>
+                  </select>
+                  <div id="chk-download-info" style="font-size:11px;color:#5A7A8F;margin-top:4px"></div>
+                </div>
+              </div>
+              <button onclick="downloadChecklistPDF()" style="width:100%;height:38px;border-radius:9px;border:none;background:linear-gradient(135deg,#0F4C7A,#1E9FD9);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
+                📥 Baixar PDF dos checklists
+              </button>
+              <div id="msg-chk-download" class="msg" style="margin-top:8px"></div>
+            </div>
           </div>
-          <div style="flex:1">
-            <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:4px">MOTOBOY (opcional)</label>
-            <select id="chk-download-motoboy" onchange="" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit;background:#fff">
-              <option value="">Todos</option>
-            </select>
-            <div id="chk-download-info" style="font-size:11px;color:#5A7A8F;margin-top:4px"></div>
+
+          <!-- Importação -->
+          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
+            <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5">
+              <div style="font-size:13px;font-weight:700;color:#0F4C7A">📤 Importação de rotas</div>
+            </div>
+            <div style="padding:14px">
+              <button onclick="window.location.href='importar.html'" style="width:100%;height:38px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
+                Abrir página de importação →
+              </button>
+            </div>
+          </div>
+
+          <!-- Quilometragem pendente -->
+          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;opacity:.5">
+            <div style="padding:13px 14px;display:flex;align-items:center;justify-content:space-between">
+              <div style="font-size:13px;font-weight:700;color:#0F4C7A">📏 Registro de Quilometragem</div>
+              <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">pendente</span>
+            </div>
           </div>
         </div>
-        <button onclick="downloadChecklistPDF()" style="width:100%;height:38px;border-radius:9px;border:none;background:linear-gradient(135deg,#0F4C7A,#1E9FD9);color:#fff;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit">
-          📥 Baixar PDF dos checklists
-        </button>
-        <div id="msg-chk-download" class="msg" style="margin-top:8px"></div>
       </div>
-    </div>
-
-    <!-- Importação -->
-    <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
-      <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5">
-        <div style="font-size:13px;font-weight:700;color:#0F4C7A">📤 Importação de rotas</div>
-      </div>
-      <div style="padding:14px">
-        <button onclick="window.location.href='importar.html'" style="width:100%;height:38px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">
-          Abrir página de importação →
-        </button>
-      </div>
-    </div>
-
-    <!-- Quilometragem pendente -->
-    <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;opacity:.5">
-      <div style="padding:13px 14px;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-size:13px;font-weight:700;color:#0F4C7A">📏 Registro de Quilometragem</div>
-        <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">pendente</span>
-      </div>
-    </div>
-  </div>
-  <!-- FIM VIEW IMPORTAÇÃO -->
-
-
-
-<div id="chat-window" style="display:none;position:fixed;bottom:100px;right:24px;width:600px;max-width:calc(100vw - 48px);height:500px;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);overflow:hidden;z-index:9999;flex-direction:row">
-  <div style="width:230px;background:#F7FBFD;border-right:1px solid #EBF1F5;display:flex;flex-direction:column">
-    <div style="padding:14px 16px;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center">
-      💬 Conversas
-      <button onclick="fecharChat()" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer">×</button>
-    </div>
-    <div style="padding:8px">
-      <input id="chat-busca" placeholder="🔍 Buscar..." style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;font-size:12px;background:#fff" oninput="filtrarMotoboys()"/>
-    </div>
-    <div id="chat-lista" style="flex:1;overflow-y:auto">
-      <div style="padding:1rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
-    </div>
-  </div>
-  
-  <div style="flex:1;display:flex;flex-direction:column;background:#F0F4F8;min-width:0">
-    <div id="chat-conv-header" style="padding:14px 16px;background:#fff;border-bottom:1px solid #EBF1F5;display:none;align-items:center;gap:10px">
-      <div id="chat-conv-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5DCAA5,#0F9B78);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">--</div>
-      <div>
-        <div id="chat-conv-nome" style="font-size:14px;font-weight:700;color:#0F4C7A">--</div>
-        <div id="chat-conv-rota" style="font-size:11px;color:#0F9B78">--</div>
-      </div>
-    </div>
-    <div id="chat-conv-msgs" style="flex:1;overflow-y:auto;padding:14px;background:#F7FBFD;display:flex;flex-direction:column">
-      <div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Selecione um motoboy<br/>para iniciar uma conversa</div>
-    </div>
-    <div id="chat-conv-input" style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:none;gap:8px">
-      <input id="chat-input-text" placeholder="Digite uma mensagem..." style="flex:1;padding:9px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:13px;outline:none" onkeydown="if(event.key==='Enter') enviarChat()"/>
-      <button onclick="enviarChat()" style="padding:0 16px;border-radius:20px;border:none;background:#1E9FD9;color:#fff;cursor:pointer;font-weight:600;font-size:14px">➤</button>
-    </div>
-  </div>
-</div>
-    </div>
 
       <div class="view" id="view-ponto-rh">
-    <div style="padding:0">
+        <div style="padding:0">
 
-      <!-- Topbar interna -->
-      <div style="background:linear-gradient(135deg,#1E3A8A,#1D4ED8);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
-        <span style="color:#fff;font-size:14px;font-weight:700">📋 PONTO LOGLIFE</span>
-        <div style="display:flex;gap:6px" id="ponto-topbar-pills" style="display:none">
-          <span id="pill-ponto-periodo" style="display:none;background:rgba(255,255,255,.15);color:#93C5FD;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600"></span>
-          <span id="pill-ponto-records" style="display:none;background:rgba(255,255,255,.15);color:#93C5FD;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600"></span>
-        </div>
-      </div>
-
-      <!-- Sub tabs -->
-      <div style="background:#fff;border-bottom:2px solid #EBF1F5;display:flex;overflow-x:auto;scrollbar-width:none" id="ponto-tabs-bar">
-        <button id="ponto-tab-btn-upload" onclick="mudarTabPonto('upload',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#1D4ED8;border-bottom:2px solid #1D4ED8;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">📤 Planilha</button>
-        <button id="ponto-tab-btn-panorama" onclick="mudarTabPonto('panorama',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">📅 Panorama</button>
-        <button id="ponto-tab-btn-home" onclick="mudarTabPonto('home',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">🏠 Home Off.</button>
-        <button id="ponto-tab-btn-banco" onclick="mudarTabPonto('banco',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">⏳ Banco Hrs</button>
-        <button id="ponto-tab-btn-ferias" onclick="mudarTabPonto('ferias',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">🌴 Férias</button>
-        <button id="ponto-tab-btn-historico" onclick="mudarTabPonto('historico',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">📅 Histórico</button>
-        <button id="ponto-tab-btn-config" onclick="mudarTabPonto('config',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">⚙️ Config</button>
-      </div>
-
-      <!-- Botões de ação (aparecem após processar) -->
-      <div id="ponto-action-bar" style="display:none;background:#F9FAFB;border-bottom:1px solid #E5E7EB;padding:8px 12px;display:none;gap:6px;flex-wrap:wrap">
-        <button onclick="pontoRenderAvisosModal()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">🔔 Avisos</button>
-        <button onclick="pontoExportarExcel()" style="padding:5px 10px;border-radius:6px;border:none;background:#16A34A;color:#fff;font-size:11px;font-weight:600;cursor:pointer">📥 Excel</button>
-        <button onclick="pontoGerarPDF()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">📄 PDF</button>
-        <button onclick="pontoPrintZap()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">📸 Print Zap</button>
-        <button onclick="pontoSalvarResumo()" style="padding:5px 10px;border-radius:6px;border:none;background:#1D4ED8;color:#fff;font-size:11px;font-weight:600;cursor:pointer">💾 Salvar mês</button>
-        <button onclick="pontoResetar()" style="padding:5px 10px;border-radius:6px;border:1px solid #DC2626;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#DC2626">🔄 Nova planilha</button>
-      </div>
-
-      <div style="padding:1rem">
-
-        <!-- UPLOAD -->
-        <div id="ponto-tab-upload">
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem">1. Planilha principal (obrigatório)</div>
-            <label id="ponto-zone-main" style="display:block;border:2px dashed #D6E5EE;border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:#F8FBFD;transition:.2s;position:relative">
-              <input type="file" id="ponto-file-main" accept=".xlsx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="pontoLerPrincipal(this.files[0])"/>
-              <div style="font-size:28px;margin-bottom:8px">📄</div>
-              <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:4px">CONTROLE_RH_MÊS.xlsx</div>
-              <div style="font-size:11px;color:#94A8B8">Abas: BASE INFRACTAL · BANCO DE HORAS · FERIAS · ENDEREÇO</div>
-            </label>
-            <div id="ponto-status-main" style="display:none;margin-top:8px;text-align:center"></div>
-          </div>
-
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #D1FAE5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem">2. Extrato banco de horas <span style="font-weight:400;color:#94A8B8">(opcional)</span></div>
-            <label id="ponto-zone-extrato" style="display:block;border:2px dashed #D1FAE5;border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:#F0FDF4;transition:.2s;position:relative">
-              <input type="file" id="ponto-file-extrato" accept=".xlsx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="pontoLerExtrato(this.files[0])"/>
-              <div style="font-size:24px;margin-bottom:6px">🏦</div>
-              <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:2px">Extrato_do_banco_de_horas_MÊS.xlsx</div>
-              <div style="font-size:11px;color:#4ADE80">Adiciona coluna Saldo Real</div>
-            </label>
-            <div id="ponto-status-extrato" style="display:none;margin-top:8px;text-align:center"></div>
-          </div>
-
-          <button id="ponto-btn-processar" onclick="pontoProcessar()" style="display:none;width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1D4ED8,#1E3A8A);color:#fff;font-weight:700;font-size:14px;cursor:pointer">
-            ▶ Processar e visualizar
-          </button>
-        </div>
-
-        <!-- PANORAMA GERAL -->
-        <div id="ponto-tab-panorama" style="display:none">
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">📅 Panorama Geral — registros de ponto por dia</div>
-            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-panorama"></div></div>
-          </div>
-        </div>
-
-        <!-- HOME OFFICE -->
-        <div id="ponto-tab-home" style="display:none">
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">🏠 Ranking Home Office</div>
-            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-home"></div></div>
-          </div>
-        </div>
-
-        <!-- BANCO DE HORAS -->
-        <div id="ponto-tab-banco" style="display:none">
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A;display:flex;align-items:center;justify-content:space-between">
-              ⏳ Banco de Horas
-              <span id="ponto-badge-saldo-real" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✅ saldo real</span>
+          <!-- Topbar interna -->
+          <div style="background:linear-gradient(135deg,#1E3A8A,#1D4ED8);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+            <span style="color:#fff;font-size:14px;font-weight:700">📋 PONTO LOGLIFE</span>
+            <div style="display:flex;gap:6px" id="ponto-topbar-pills" style="display:none">
+              <span id="pill-ponto-periodo" style="display:none;background:rgba(255,255,255,.15);color:#93C5FD;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600"></span>
+              <span id="pill-ponto-records" style="display:none;background:rgba(255,255,255,.15);color:#93C5FD;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600"></span>
             </div>
-            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-banco"></div></div>
           </div>
-        </div>
 
-        <!-- FÉRIAS -->
-        <div id="ponto-tab-ferias" style="display:none">
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">🌴 Controle de Férias</div>
-            <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-ferias"></div></div>
+          <!-- Sub tabs -->
+          <div style="background:#fff;border-bottom:2px solid #EBF1F5;display:flex;overflow-x:auto;scrollbar-width:none" id="ponto-tabs-bar">
+            <button id="ponto-tab-btn-upload" onclick="mudarTabPonto('upload',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#1D4ED8;border-bottom:2px solid #1D4ED8;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">📤 Planilha</button>
+            <button id="ponto-tab-btn-panorama" onclick="mudarTabPonto('panorama',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">📅 Panorama</button>
+            <button id="ponto-tab-btn-home" onclick="mudarTabPonto('home',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">🏠 Home Off.</button>
+            <button id="ponto-tab-btn-banco" onclick="mudarTabPonto('banco',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">⏳ Banco Hrs</button>
+            <button id="ponto-tab-btn-ferias" onclick="mudarTabPonto('ferias',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px;display:none">🌴 Férias</button>
+            <button id="ponto-tab-btn-historico" onclick="mudarTabPonto('historico',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">📅 Histórico</button>
+            <button id="ponto-tab-btn-config" onclick="mudarTabPonto('config',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;white-space:nowrap;min-width:70px">⚙️ Config</button>
           </div>
-        </div>
 
-        <!-- HISTÓRICO -->
-        <div id="ponto-tab-historico" style="display:none">
-          <div id="ponto-hist-lista"><div class="empty"><span class="spinner"></span></div></div>
-        </div>
+          <!-- Botões de ação (aparecem após processar) -->
+          <div id="ponto-action-bar" style="display:none;background:#F9FAFB;border-bottom:1px solid #E5E7EB;padding:8px 12px;display:none;gap:6px;flex-wrap:wrap">
+            <button onclick="pontoRenderAvisosModal()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">🔔 Avisos</button>
+            <button onclick="pontoExportarExcel()" style="padding:5px 10px;border-radius:6px;border:none;background:#16A34A;color:#fff;font-size:11px;font-weight:600;cursor:pointer">📥 Excel</button>
+            <button onclick="pontoGerarPDF()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">📄 PDF</button>
+            <button onclick="pontoPrintZap()" style="padding:5px 10px;border-radius:6px;border:1px solid #E5E7EB;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#4B5563">📸 Print Zap</button>
+            <button onclick="pontoSalvarResumo()" style="padding:5px 10px;border-radius:6px;border:none;background:#1D4ED8;color:#fff;font-size:11px;font-weight:600;cursor:pointer">💾 Salvar mês</button>
+            <button onclick="pontoResetar()" style="padding:5px 10px;border-radius:6px;border:1px solid #DC2626;background:#fff;font-size:11px;font-weight:600;cursor:pointer;color:#DC2626">🔄 Nova planilha</button>
+          </div>
 
-        <!-- CONFIG -->
-        <div id="ponto-tab-config" style="display:none">
-          <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
-            <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem">🚫 Colaboradores Desligados</div>
-            <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Serão ignorados nos cálculos e aparecerão como <strong>DESLIGADO</strong>.</div>
-            <div style="display:flex;gap:8px;margin-bottom:1rem">
-              <input type="text" id="ponto-desl-nome" placeholder="Nome do colaborador..."
-                style="flex:1;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A"/>
-              <button onclick="pontoAdicionarDesligado()" style="padding:9px 14px;border-radius:10px;border:none;background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">+ Desligar</button>
+          <div style="padding:1rem">
+
+            <!-- UPLOAD -->
+            <div id="ponto-tab-upload">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem">1. Planilha principal (obrigatório)</div>
+                <label id="ponto-zone-main" style="display:block;border:2px dashed #D6E5EE;border-radius:10px;padding:28px;text-align:center;cursor:pointer;background:#F8FBFD;transition:.2s;position:relative">
+                  <input type="file" id="ponto-file-main" accept=".xlsx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="pontoLerPrincipal(this.files[0])"/>
+                  <div style="font-size:28px;margin-bottom:8px">📄</div>
+                  <div style="font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:4px">CONTROLE_RH_MÊS.xlsx</div>
+                  <div style="font-size:11px;color:#94A8B8">Abas: BASE INFRACTAL · BANCO DE HORAS · FERIAS · ENDEREÇO</div>
+                </label>
+                <div id="ponto-status-main" style="display:none;margin-top:8px;text-align:center"></div>
+              </div>
+
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #D1FAE5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:12px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:.5px;margin-bottom:.8rem">2. Extrato banco de horas <span style="font-weight:400;color:#94A8B8">(opcional)</span></div>
+                <label id="ponto-zone-extrato" style="display:block;border:2px dashed #D1FAE5;border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:#F0FDF4;transition:.2s;position:relative">
+                  <input type="file" id="ponto-file-extrato" accept=".xlsx" style="position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%" onchange="pontoLerExtrato(this.files[0])"/>
+                  <div style="font-size:24px;margin-bottom:6px">🏦</div>
+                  <div style="font-size:12px;font-weight:700;color:#166534;margin-bottom:2px">Extrato_do_banco_de_horas_MÊS.xlsx</div>
+                  <div style="font-size:11px;color:#4ADE80">Adiciona coluna Saldo Real</div>
+                </label>
+                <div id="ponto-status-extrato" style="display:none;margin-top:8px;text-align:center"></div>
+              </div>
+
+              <button id="ponto-btn-processar" onclick="pontoProcessar()" style="display:none;width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1D4ED8,#1E3A8A);color:#fff;font-weight:700;font-size:14px;cursor:pointer">
+                ▶ Processar e visualizar
+              </button>
             </div>
-            <div id="ponto-desl-lista"><div class="empty">Nenhum desligado</div></div>
+
+            <!-- PANORAMA GERAL -->
+            <div id="ponto-tab-panorama" style="display:none">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">📅 Panorama Geral — registros de ponto por dia</div>
+                <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-panorama"></div></div>
+              </div>
+            </div>
+
+            <!-- HOME OFFICE -->
+            <div id="ponto-tab-home" style="display:none">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">🏠 Ranking Home Office</div>
+                <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-home"></div></div>
+              </div>
+            </div>
+
+            <!-- BANCO DE HORAS -->
+            <div id="ponto-tab-banco" style="display:none">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A;display:flex;align-items:center;justify-content:space-between">
+                  ⏳ Banco de Horas
+                  <span id="ponto-badge-saldo-real" style="display:none;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✅ saldo real</span>
+                </div>
+                <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-banco"></div></div>
+              </div>
+            </div>
+
+            <!-- FÉRIAS -->
+            <div id="ponto-tab-ferias" style="display:none">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="padding:10px 12px;border-bottom:1px solid #EBF1F5;font-size:13px;font-weight:700;color:#0F4C7A">🌴 Controle de Férias</div>
+                <div style="overflow-x:auto;max-height:520px"><div id="ponto-tbl-ferias"></div></div>
+              </div>
+            </div>
+
+            <!-- HISTÓRICO -->
+            <div id="ponto-tab-historico" style="display:none">
+              <div id="ponto-hist-lista"><div class="empty"><span class="spinner"></span></div></div>
+            </div>
+
+            <!-- CONFIG -->
+            <div id="ponto-tab-config" style="display:none">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:1.2rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.05)">
+                <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:.5rem">🚫 Colaboradores Desligados</div>
+                <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Serão ignorados nos cálculos e aparecerão como <strong>DESLIGADO</strong>.</div>
+                <div style="display:flex;gap:8px;margin-bottom:1rem">
+                  <input type="text" id="ponto-desl-nome" placeholder="Nome do colaborador..."
+                    style="flex:1;border-radius:10px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;outline:none;color:#0F4C7A"/>
+                  <button onclick="pontoAdicionarDesligado()" style="padding:9px 14px;border-radius:10px;border:none;background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">+ Desligar</button>
+                </div>
+                <div id="ponto-desl-lista"><div class="empty">Nenhum desligado</div></div>
+              </div>
+            </div>
+
           </div>
         </div>
-
       </div>
-    </div>
-  </div>
 
-    </div><!-- app-content -->
-  </div><!-- app-main -->
-</div><!-- app-layout -->
+    </div><!-- /app-content -->
+  </div><!-- /app-main -->
+</div><!-- /app-layout -->
 
 <!-- MODAL PAT ADD -->
 <div id="modal-pat-add" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;padding:1rem;overflow-y:auto">
@@ -1452,8 +1417,42 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
+<div id="chat-window" style="display:none;position:fixed;bottom:100px;right:24px;width:600px;max-width:calc(100vw - 48px);height:500px;background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.2);overflow:hidden;z-index:9999;flex-direction:row">
+  <div style="width:230px;background:#F7FBFD;border-right:1px solid #EBF1F5;display:flex;flex-direction:column">
+    <div style="padding:14px 16px;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;font-size:14px;display:flex;justify-content:space-between;align-items:center">
+      💬 Conversas
+      <button onclick="fecharChat()" style="background:transparent;border:none;color:#fff;font-size:18px;cursor:pointer">×</button>
+    </div>
+    <div style="padding:8px">
+      <input id="chat-busca" placeholder="🔍 Buscar..." style="width:100%;padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;font-size:12px;background:#fff" oninput="filtrarMotoboys()"/>
+    </div>
+    <div id="chat-lista" style="flex:1;overflow-y:auto">
+      <div style="padding:1rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
+    </div>
+  </div>
+  
+  <div style="flex:1;display:flex;flex-direction:column;background:#F0F4F8;min-width:0">
+    <div id="chat-conv-header" style="padding:14px 16px;background:#fff;border-bottom:1px solid #EBF1F5;display:none;align-items:center;gap:10px">
+      <div id="chat-conv-avatar" style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#5DCAA5,#0F9B78);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">--</div>
+      <div>
+        <div id="chat-conv-nome" style="font-size:14px;font-weight:700;color:#0F4C7A">--</div>
+        <div id="chat-conv-rota" style="font-size:11px;color:#0F9B78">--</div>
+      </div>
+    </div>
+    <div id="chat-conv-msgs" style="flex:1;overflow-y:auto;padding:14px;background:#F7FBFD;display:flex;flex-direction:column">
+      <div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Selecione um motoboy<br/>para iniciar uma conversa</div>
+    </div>
+    <div id="chat-conv-input" style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:none;gap:8px">
+      <input id="chat-input-text" placeholder="Digite uma mensagem..." style="flex:1;padding:9px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:13px;outline:none" onkeydown="if(event.key==='Enter') enviarChat()"/>
+      <button onclick="enviarChat()" style="padding:0 16px;border-radius:20px;border:none;background:#1E9FD9;color:#fff;cursor:pointer;font-weight:600;font-size:14px">➤</button>
+    </div>
+  </div>
+</div>
+
 <div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 4px 16px rgba(30,159,217,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9998">💬
   <div id="chat-fab-badge" style="position:absolute;top:-4px;right:-4px;background:#DC2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
+</div>
+
 <div id="btn-versao-fab" onclick="atualizarVersaoApp()" style="position:fixed;bottom:156px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);box-shadow:0 4px 14px rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:9997" title="Publicar nova versão do app">📲</div>
 <div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
 
