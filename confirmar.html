@@ -75,6 +75,7 @@
 <body>
 <div class="container">
 
+  <!-- VIEW 1: CONFIRMAÇÃO -->
   <div class="view active" id="view-confirmacao">
     <a class="back-link" href="index.html">← Voltar</a>
     <div class="card">
@@ -101,6 +102,7 @@
     </div>
   </div>
 
+  <!-- VIEW 2: CHECKLIST -->
   <div class="view" id="view-checklist">
     <div class="card">
       <div class="checklist-header">
@@ -228,6 +230,7 @@
 
 </div>
 
+<!-- MODAL: SELEÇÃO DE ROTAS -->
 <div class="modal-overlay hidden" id="modal-rotas">
   <div class="modal">
     <h2>🛣️ Selecione sua rota</h2>
@@ -250,13 +253,6 @@
     nomeUsuario = localStorage.getItem('nome_temp');
     if (!telefoneSalvo || !nomeUsuario) { window.location.href = 'index.html'; return; }
     document.getElementById('info-nome').textContent = nomeUsuario;
-    
-    // REATIVAÇÃO AUTOMÁTICA DE GPS
-    if (localStorage.getItem('portador_tel') && localStorage.getItem('portador_nome')) {
-      console.log('[Sistema] Sessão recuperada. A reativar GPS automático...');
-      ativarGPS();
-    }
-
     await carregarRotas();
   });
 
@@ -286,7 +282,7 @@
     }
     const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
     setBtns(true);
-    showMsg('A enviar...', 'loading');
+    showMsg('Enviando...', 'loading');
     try {
       const r = await fetch(API + '/', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -297,15 +293,12 @@
       try { d = JSON.parse(texto); } catch(e) { showMsg('Erro na resposta do servidor', 'error'); setBtns(false); return; }
 
       if (d.status === 'ok' || d.status === 'duplicado') {
-        localStorage.setItem('portador_tel', telefoneSalvo);
-        localStorage.setItem('portador_nome', nomeUsuario);
+        localStorage.setItem('motoboy_tel', telefoneSalvo);
+        localStorage.setItem('motoboy_nome', nomeUsuario);
 
         if (resp === 'sim') {
-          // ── ATIVAR GPS ────────────────────────────────────────
-          ativarGPS();
-          // Avisar app nativo (Capacitor) que o portador confirmou
+          // Avisar app nativo (Capacitor) que motoboy confirmou
           if (window.parent !== window) {
-            window.parent.postMessage({ type: 'PORTADOR_CONFIRMOU', nome: nomeUsuario }, '*');
           }
           // ─────────────────────────────────────────────────────
 
@@ -321,177 +314,18 @@
           }
           abrirChecklist();
         } else {
-          showMsg('Entendido. Até à próxima! 👋', 'success');
+          showMsg('Entendido. Até a próxima! 👋', 'success');
           setTimeout(() => voltarInicial(), 2000);
         }
       } else {
-        showMsg('Erro ao enviar. Tenta novamente.', 'error');
+        showMsg('Erro ao enviar. Tente novamente.', 'error');
         setBtns(false);
       }
     } catch(e) {
-      showMsg('Erro de ligação.', 'error');
+      showMsg('Erro de conexão.', 'error');
       setBtns(false);
     }
   }
-
-  // ── GPS + BACKGROUND SYNC ──────────────────────────────────
-  let fallbackInterval = null;
-  let gpsWatcherId = null;
-
-  // Detetar se está a correr dentro do APK Capacitor
-  const isCapacitor = !!(window.Capacitor && window.Capacitor.isNative);
-
-  async function ativarGPS() {
-    if (isCapacitor) {
-      await ativarGPSCapacitor();
-    } else {
-      await ativarGPSWeb();
-    }
-    mostrarGPSBadge();
-  }
-
-  // ── GPS via Capacitor (APK) — funciona em background ────────
-  async function ativarGPSCapacitor() {
-    try {
-      const { BackgroundGeolocation } = window.Capacitor.Plugins;
-      if (!BackgroundGeolocation) { await ativarGPSWeb(); return; }
-
-      if (gpsWatcherId) {
-        try { await BackgroundGeolocation.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
-      }
-
-      gpsWatcherId = await BackgroundGeolocation.addWatcher(
-        {
-          backgroundMessage: nomeUsuario + ' — GPS ativo na rota',
-          backgroundTitle: 'Loglife em execução',
-          requestPermissions: true,
-          stale: false,
-          distanceFilter: 15 // Atualiza a cada 15 metros para o Android não matar o processo
-        },
-        async (pos, err) => {
-          if (err || !pos) return;
-          
-          // Tratamento de erro crucial para manter o rastreamento vivo se a rede oscilar
-          try {
-            await enviarPosicao({ 
-              coords: { 
-                latitude: pos.latitude, 
-                longitude: pos.longitude, 
-                accuracy: pos.accuracy 
-              } 
-            });
-          } catch (networkError) {
-            console.warn('[GPS] Falha de rede em background. O watcher continuará a tentar no próximo ponto.', networkError);
-          }
-        }
-      );
-      console.log('[GPS] Capacitor Background GPS ativo ✓');
-    } catch(e) {
-      console.warn('[GPS Capacitor]', e);
-      await ativarGPSWeb();
-    }
-  }
-
-  // ── GPS via Web (browser) — fallback ────────────────────────
-  async function ativarGPSWeb() {
-    if (!('geolocation' in navigator)) return;
-    try {
-      navigator.geolocation.getCurrentPosition(
-        pos => enviarPosicao(pos), () => {},
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({ type: 'SALVAR_NOME', nome: nomeUsuario });
-      }
-      await registrarPeriodicSync();
-    } catch(e) { console.warn('[GPS Web]', e); }
-  }
-
-  async function registrarPeriodicSync() {
-    try {
-      const reg = await navigator.serviceWorker.ready;
-      if ('periodicSync' in reg) {
-        const perm = await navigator.permissions.query({ name: 'periodic-background-sync' });
-        if (perm.state === 'granted') {
-          await reg.periodicSync.register('enviar-localizacao', { minInterval: 60 * 1000 });
-          console.log('[GPS] Periodic Background Sync registado ✓');
-          return;
-        }
-      }
-    } catch(e) {}
-    iniciarFallbackSync();
-  }
-
-  function iniciarFallbackSync() {
-    if (fallbackInterval) return;
-    fallbackInterval = setInterval(() => {
-      navigator.geolocation.getCurrentPosition(
-        pos => enviarPosicao(pos), () => {},
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
-      );
-    }, 60 * 1000);
-    console.log('[GPS] Fallback sync ativo ✓');
-  }
-
-  // >>> FUNÇÃO DE DEBUG INSERIDA AQUI <<<
-  async function enviarPosicao(pos) {
-    try {
-      // Cria um aviso visual rápido no topo do ecrã para sabermos que o GPS leu a coordenada
-      const debugDiv = document.createElement('div');
-      debugDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#F2CC70;color:#92400E;font-size:11px;padding:4px;text-align:center;z-index:9999;';
-      debugDiv.textContent = `A enviar GPS... Lat: ${pos.coords.latitude.toFixed(4)}`;
-      document.body.appendChild(debugDiv);
-      setTimeout(() => debugDiv.remove(), 2000);
-
-      const r = await fetch(API + '/localizacao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nome: nomeUsuario,
-          lat: pos.coords.latitude,
-          lng: pos.coords.longitude,
-          precisao: pos.coords.accuracy,
-          timestamp: Date.now()
-        })
-      });
-
-      // Se o Worker devolver algum erro (500, 429, 403, etc), vai piscar no ecrã
-      if (!r.ok) {
-         alert('Erro no Worker! Status: ' + r.status);
-      }
-
-    } catch(e) {
-      // Se não conseguir nem ligar ao Worker (CORS ou sem internet), avisa aqui
-      alert('Falha na comunicação com o servidor: ' + e.message);
-      throw e;
-    }
-  }
-
-  function mostrarGPSBadge() {
-    if (document.getElementById('gps-badge')) return;
-    const badge = document.createElement('div');
-    badge.id = 'gps-badge';
-    badge.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:20px;box-shadow:0 3px 12px rgba(15,155,120,.4);display:flex;align-items:center;gap:6px;z-index:999';
-    badge.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:gpsblink 1.5s infinite"></span> 📍 GPS ativo';
-    document.body.appendChild(badge);
-  }
-
-  async function pararGPS() {
-    if (fallbackInterval) { clearInterval(fallbackInterval); fallbackInterval = null; }
-    if (gpsWatcherId && isCapacitor) {
-      try {
-        const { BackgroundGeolocation } = window.Capacitor.Plugins;
-        if (BackgroundGeolocation) await BackgroundGeolocation.removeWatcher({ id: gpsWatcherId });
-      } catch(e) {}
-      gpsWatcherId = null;
-    }
-    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: 'LIMPAR_NOME' });
-    }
-    const badge = document.getElementById('gps-badge');
-    if (badge) badge.remove();
-  }
-  // ──────────────────────────────────────────────────────────
 
   function abrirChecklist() {
     const rota = rotasDisponivel.length === 1 ? rotasDisponivel[0].rota : rotasDisponivel.map(r => r.rota).join(', ');
@@ -569,7 +403,7 @@
     const qtd_gelox = document.getElementById('qtd_gelox').value;
     const qtd_gelo_seco = document.getElementById('qtd_gelo_seco').value;
     if (!placa) { showMsgChecklist('Digite a placa do veículo', 'error'); return; }
-    showMsgChecklist('A enviar checklist...', 'loading');
+    showMsgChecklist('Enviando checklist...', 'loading');
     const rota = rotasDisponivel.length > 0 ? rotasDisponivel.map(r => r.rota).join(', ') : '';
     const agora = new Date();
     const agoraSP = new Date(agora.getTime() - 3*60*60*1000);
@@ -606,20 +440,20 @@
           else {
             const semRota = new URLSearchParams(window.location.search).get('sem_rota') === '1';
             if (semRota) {
-              localStorage.setItem('portador_tel', telefoneSalvo);
-              localStorage.setItem('portador_nome', nomeUsuario);
+              localStorage.setItem('motoboy_tel', telefoneSalvo);
+              localStorage.setItem('motoboy_nome', nomeUsuario);
               showMsgChecklist('✓ Checklist concluído!', 'success');
               setTimeout(() => mostrarPopupSemRota(), 800);
             } else {
-              showMsgChecklist('✓ Checklist concluído!\n\nNão tens rota cadastrada para hoje.', 'success');
+              showMsgChecklist('✓ Checklist concluído!\n\nVocê não tem rota cadastrada para hoje.', 'success');
               setTimeout(() => voltarInicial(), 2000);
             }
           }
         }, 1000);
       } else {
-        showMsgChecklist('Erro ao enviar. Tenta novamente.', 'error');
+        showMsgChecklist('Erro ao enviar. Tente novamente.', 'error');
       }
-    } catch(e) { showMsgChecklist('Erro de ligação.', 'error'); }
+    } catch(e) { showMsgChecklist('Erro de conexão.', 'error'); }
   }
 
   function mostrarSelecaoRotas() {
@@ -634,7 +468,7 @@
   }
 
   function irParaRota(rota) {
-    localStorage.setItem('portador_rota', rota);
+    localStorage.setItem('motoboy_rota', rota);
     window.location.href = 'rota.html';
   }
 
@@ -645,7 +479,7 @@
       <div style="background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
         <div style="font-size:44px;margin-bottom:1rem">📋</div>
         <h3 style="font-size:17px;color:#0F4C7A;margin-bottom:8px;font-weight:700">Checklist concluído!</h3>
-        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Não tens rota cadastrada para hoje.<br/>O que desejas fazer?</p>
+        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Você não tem rota cadastrada para hoje.<br/>O que deseja fazer?</p>
         <div style="display:flex;flex-direction:column;gap:10px">
           <button onclick="irParaChat()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">💬 Falar com o administrador</button>
           <button onclick="sairApp()" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">🚪 Sair</button>
@@ -658,10 +492,8 @@
   function sairApp() { localStorage.clear(); window.location.href = 'index.html'; }
 
   function voltarInicial() {
-    pararGPS();
-    // Avisar app nativo que o portador saiu
+    // Avisar app nativo que motoboy saiu
     if (window.parent !== window) {
-      window.parent.postMessage({ type: 'PORTADOR_SAIU' }, '*');
     }
     localStorage.removeItem('telefone_temp');
     localStorage.removeItem('nome_temp');
