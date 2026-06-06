@@ -1,80 +1,79 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Loglife — Confirmação de Presença</title>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;padding:1.5rem 1rem}
-    .container{width:100%;max-width:480px;margin:0 auto}
-    .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.25rem;font-weight:500}
-    .back-link:hover{color:#0F4C7A}
-    .card{background:#fff;border-radius:20px;padding:1.5rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1rem}
-    .logo-area{text-align:center;margin-bottom:1rem}
-    .logo-img{height:44px;width:auto}
-    h1{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:4px;text-align:center}
-    .subtitle{font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;text-align:center}
-    .info-card{background:#E8F4FB;border:1.5px solid #1E9FD9;border-radius:12px;padding:12px;margin-bottom:1rem;text-align:center}
-    .info-nome{font-size:15px;font-weight:700;color:#0F4C7A}
-    .info-label{font-size:10px;color:#94A8B8;text-transform:uppercase;font-weight:700;letter-spacing:.4px;margin-bottom:2px}
-    .btn-group{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
-    .btn{width:100%;padding:13px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px}
-    .btn:disabled{opacity:.5;cursor:not-allowed}
-    .btn-sim{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
-    .btn-sim:hover:not(:disabled){background:#c8f0e0}
-    .btn-nao{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
-    .btn-nao:hover:not(:disabled){background:#fad5d5}
-    .obs-area{display:none;margin-top:10px;animation:fadeIn .2s ease}
-    .obs-area.visible{display:block}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
-    textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:8px;background:#F7FBFD}
-    textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
-    label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:600}
-    .msg{border-radius:10px;padding:12px 14px;font-size:13px;text-align:center;margin-top:10px;display:none;font-weight:500}
-    .msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:block}
-    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
-    .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
-    .checklist-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #EBF1F5}
-    .checklist-icon{width:40px;height:40px;border-radius:50%;background:#1E9FD9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-    .checklist-title{font-size:16px;font-weight:700;color:#0F4C7A}
-    .checklist-sub{font-size:12px;color:#5A7A8F}
-    .progress-bar{background:#EBF1F5;border-radius:99px;height:6px;margin-bottom:1.25rem;overflow:hidden}
-    .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .4s}
-    .campo{margin-bottom:1.25rem}
-    .campo-label{font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-    .campo-num{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-    .opcoes{display:flex;gap:6px;flex-wrap:wrap}
-    .opcao{padding:8px 14px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;flex:1;text-align:center}
-    .opcao:hover{border-color:#1E9FD9}
-    .opcao.sel-verde{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
-    .opcao.sel-vermelho{background:#FCEBEB;color:#791F1F;border-color:#F09595}
-    .opcao.sel-amarelo{background:#FEF9EC;color:#92400E;border-color:#F2CC70}
-    .opcao.sel-azul{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
-    .input-num{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:16px;padding:0 12px;color:#0F4C7A;text-align:center;outline:none}
-    .input-num:focus{border-color:#1E9FD9}
-    .input-text{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;outline:none;text-transform:uppercase}
-    .input-text:focus{border-color:#1E9FD9}
-    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.6);z-index:200;display:flex;align-items:center;justify-content:center}
-    .modal-overlay.hidden{display:none}
-    .modal{background:#fff;border-radius:20px;padding:2rem 1.75rem;width:90%;max-width:340px;text-align:center}
-    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
-    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
-    .modal-btns{display:flex;flex-direction:column;gap:10px}
-    .modal-btn{padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center}
-    .modal-btn.sim{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
-    .modal-btn.nao{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE}
-    .rota-option{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:8px;cursor:pointer;transition:all .2s}
-    .rota-option:hover{border-color:#1E9FD9;background:#F7FBFD}
-    .rota-name{font-size:14px;font-weight:700;color:#0F4C7A}
-    .rota-arrow{color:#1E9FD9;font-size:18px;font-weight:bold}
-    .view{display:none}.view.active{display:block}
-    @keyframes gpsblink{0%,100%{opacity:1}50%{opacity:.3}}
-  </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Loglife — Confirmação de Presença</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;padding:1.5rem 1rem}
+.container{width:100%;max-width:480px;margin:0 auto}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.25rem;font-weight:500}
+.back-link:hover{color:#0F4C7A}
+.card{background:#fff;border-radius:20px;padding:1.5rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1rem}
+.logo-area{text-align:center;margin-bottom:1rem}
+.logo-img{height:44px;width:auto}
+h1{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:4px;text-align:center}
+.subtitle{font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;text-align:center}
+.info-card{background:#E8F4FB;border:1.5px solid #1E9FD9;border-radius:12px;padding:12px;margin-bottom:1rem;text-align:center}
+.info-nome{font-size:15px;font-weight:700;color:#0F4C7A}
+.info-label{font-size:10px;color:#94A8B8;text-transform:uppercase;font-weight:700;letter-spacing:.4px;margin-bottom:2px}
+.btn-group{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
+.btn{width:100%;padding:13px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-sim{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
+.btn-sim:hover:not(:disabled){background:#c8f0e0}
+.btn-nao{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
+.btn-nao:hover:not(:disabled){background:#fad5d5}
+.obs-area{display:none;margin-top:10px;animation:fadeIn .2s ease}
+.obs-area.visible{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
+textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:8px;background:#F7FBFD}
+textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
+label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:600}
+.msg{border-radius:10px;padding:12px 14px;font-size:13px;text-align:center;margin-top:10px;display:none;font-weight:500}
+.msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:block}
+.msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
+.msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
+.checklist-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #EBF1F5}
+.checklist-icon{width:40px;height:40px;border-radius:50%;background:#1E9FD9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.checklist-title{font-size:16px;font-weight:700;color:#0F4C7A}
+.checklist-sub{font-size:12px;color:#5A7A8F}
+.progress-bar{background:#EBF1F5;border-radius:99px;height:6px;margin-bottom:1.25rem;overflow:hidden}
+.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .4s}
+.campo{margin-bottom:1.25rem}
+.campo-label{font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.campo-num{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opcoes{display:flex;gap:6px;flex-wrap:wrap}
+.opcao{padding:8px 14px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;flex:1;text-align:center}
+.opcao:hover{border-color:#1E9FD9}
+.opcao.sel-verde{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
+.opcao.sel-vermelho{background:#FCEBEB;color:#791F1F;border-color:#F09595}
+.opcao.sel-amarelo{background:#FEF9EC;color:#92400E;border-color:#F2CC70}
+.opcao.sel-azul{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
+.input-num{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:16px;padding:0 12px;color:#0F4C7A;text-align:center;outline:none}
+.input-num:focus{border-color:#1E9FD9}
+.input-text{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;outline:none;text-transform:uppercase}
+.input-text:focus{border-color:#1E9FD9}
+.modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.6);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal-overlay.hidden{display:none}
+.modal{background:#fff;border-radius:20px;padding:2rem 1.75rem;width:90%;max-width:340px;text-align:center}
+.modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+.modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
+.modal-btns{display:flex;flex-direction:column;gap:10px}
+.modal-btn{padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center}
+.modal-btn.sim{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+.modal-btn.nao{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE}
+.rota-option{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:8px;cursor:pointer;transition:all .2s}
+.rota-option:hover{border-color:#1E9FD9;background:#F7FBFD}
+.rota-name{font-size:14px;font-weight:700;color:#0F4C7A}
+.rota-arrow{color:#1E9FD9;font-size:18px;font-weight:bold}
+.view{display:none}.view.active{display:block}
+@keyframes gpsblink{0%,100%{opacity:1}50%{opacity:.3}}
+</style>
 </head>
 <body>
 <div class="container">
-
   <!-- VIEW 1: CONFIRMAÇÃO -->
   <div class="view active" id="view-confirmacao">
     <a class="back-link" href="index.html">← Voltar</a>
@@ -101,7 +100,6 @@
       <div class="msg" id="msg"></div>
     </div>
   </div>
-
   <!-- VIEW 2: CHECKLIST -->
   <div class="view" id="view-checklist">
     <div class="card">
@@ -227,9 +225,7 @@
       <button class="btn btn-sim" onclick="enviarChecklist()" style="margin-top:.5rem">✓ Enviar Checklist</button>
     </div>
   </div>
-
 </div>
-
 <!-- MODAL: SELEÇÃO DE ROTAS -->
 <div class="modal-overlay hidden" id="modal-rotas">
   <div class="modal">
@@ -239,7 +235,6 @@
     <button class="modal-btn nao" onclick="voltarInicial()" style="margin-top:8px;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F">Não, voltar ao início</button>
   </div>
 </div>
-
 <script>
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let telefoneSalvo = null;
@@ -248,11 +243,69 @@
   let rotasCarregadas = false;
   let respostas = {};
 
+  // ────────────────────────────────────────────────────────────
+  // MOTOR DE GPS — usa Capacitor BackgroundGeolocation
+  // ────────────────────────────────────────────────────────────
+  async function ligarMotorGPS(nome) {
+    console.log("[Motor] Iniciando rastreamento para:", nome);
+    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
+    if (!BG) { console.warn("[Motor] Plugin GPS não encontrado."); return; }
+
+    try { await BG.removeAllWatchers(); } catch(e) {}
+
+    await BG.addWatcher({
+      backgroundMessage: 'Loglife rastreando: ' + nome,
+      backgroundTitle: 'Rastreio Ativo',
+      requestPermissions: true,
+      stale: false,
+      distanceFilter: 15
+    }, async (pos, err) => {
+      if (err || !pos) return;
+      try {
+        await fetch(API + '/localizacao', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            nome: nome,
+            lat: pos.latitude,
+            lng: pos.longitude,
+            precisao: pos.accuracy,
+            timestamp: Date.now()
+          })
+        });
+      } catch(e) {}
+    });
+    mostrarGPSBadge();
+  }
+
+  async function pararMotorGPS() {
+    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
+    if (BG) { try { await BG.removeAllWatchers(); } catch(e) {} }
+    const badge = document.getElementById('gps-badge');
+    if (badge) badge.remove();
+    console.log("[Motor] Rastreamento parado.");
+  }
+
+  function mostrarGPSBadge() {
+    if (document.getElementById('gps-badge')) return;
+    const badge = document.createElement('div');
+    badge.id = 'gps-badge';
+    badge.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:20px;box-shadow:0 3px 12px rgba(15,155,120,.4);display:flex;align-items:center;gap:6px;z-index:999';
+    badge.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:gpsblink 1.5s infinite"></span> 📍 GPS ativo';
+    document.body.appendChild(badge);
+  }
+  // ────────────────────────────────────────────────────────────
+
   window.addEventListener('load', async () => {
     telefoneSalvo = localStorage.getItem('telefone_temp');
     nomeUsuario = localStorage.getItem('nome_temp');
     if (!telefoneSalvo || !nomeUsuario) { window.location.href = 'index.html'; return; }
     document.getElementById('info-nome').textContent = nomeUsuario;
+
+    // Se já tem motoboy_nome salvo (já confirmou antes), retomar GPS
+    const motoboySalvo = localStorage.getItem('motoboy_nome');
+    if (motoboySalvo) await ligarMotorGPS(motoboySalvo);
+
     await carregarRotas();
   });
 
@@ -291,17 +344,13 @@
       const texto = await r.text();
       let d;
       try { d = JSON.parse(texto); } catch(e) { showMsg('Erro na resposta do servidor', 'error'); setBtns(false); return; }
-
       if (d.status === 'ok' || d.status === 'duplicado') {
         localStorage.setItem('motoboy_tel', telefoneSalvo);
         localStorage.setItem('motoboy_nome', nomeUsuario);
-
         if (resp === 'sim') {
-          // Avisar app nativo (Capacitor) que motoboy confirmou
-          if (window.parent !== window) {
-          }
-          // ─────────────────────────────────────────────────────
-
+          // ── LIGAR MOTOR DE GPS ──
+          await ligarMotorGPS(nomeUsuario);
+          // ────────────────────────
           showMsg('', '');
           for (const r of rotasDisponivel) {
             try {
@@ -489,12 +538,10 @@
   }
 
   function irParaChat() { window.location.href = 'semrota.html'; }
-  function sairApp() { localStorage.clear(); window.location.href = 'index.html'; }
+  async function sairApp() { await pararMotorGPS(); localStorage.clear(); window.location.href = 'index.html'; }
 
-  function voltarInicial() {
-    // Avisar app nativo que motoboy saiu
-    if (window.parent !== window) {
-    }
+  async function voltarInicial() {
+    await pararMotorGPS();
     localStorage.removeItem('telefone_temp');
     localStorage.removeItem('nome_temp');
     window.location.href = 'index.html';
@@ -506,13 +553,11 @@
       if (el) el.disabled = disabled;
     });
   }
-
   function showMsg(text, type) {
     const el = document.getElementById('msg');
     if (!text) { el.className = 'msg'; return; }
     el.textContent = text; el.className = 'msg ' + type;
   }
-
   function showMsgChecklist(text, type) {
     const el = document.getElementById('msg-checklist');
     if (!text) { el.className = 'msg'; return; }
