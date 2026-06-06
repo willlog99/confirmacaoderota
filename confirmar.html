@@ -246,39 +246,60 @@ label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:6
   // ────────────────────────────────────────────────────────────
   // MOTOR DE GPS — usa Capacitor BackgroundGeolocation
   // ────────────────────────────────────────────────────────────
+  let gpsTimerForcado = null;
+  let nomeGPSAtivo = null;
+
   async function ligarMotorGPS(nome) {
     console.log("[Motor] Iniciando rastreamento para:", nome);
     const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
     if (!BG) { console.warn("[Motor] Plugin GPS não encontrado."); return; }
 
+    nomeGPSAtivo = nome;
     try { await BG.removeAllWatchers(); } catch(e) {}
 
+    // Watcher por movimento
     await BG.addWatcher({
       backgroundMessage: 'Loglife rastreando: ' + nome,
       backgroundTitle: 'Rastreio Ativo',
       requestPermissions: true,
       stale: false,
-      distanceFilter: 15
+      distanceFilter: 0
     }, async (pos, err) => {
       if (err || !pos) return;
-      try {
-        await fetch(API + '/localizacao', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            nome: nome,
-            lat: pos.latitude,
-            lng: pos.longitude,
-            precisao: pos.accuracy,
-            timestamp: Date.now()
-          })
-        });
-      } catch(e) {}
+      await enviarPosicaoGPS(nome, pos.latitude, pos.longitude, pos.accuracy);
     });
+
+    // Timer forçado a cada 1 min — pega posição mesmo se motoboy parado
+    if (gpsTimerForcado) clearInterval(gpsTimerForcado);
+    gpsTimerForcado = setInterval(async () => {
+      const n = nomeGPSAtivo;
+      if (!n) return;
+      try {
+        const Geo = window.Capacitor?.Plugins?.Geolocation;
+        if (Geo) {
+          const p = await Geo.getCurrentPosition({ enableHighAccuracy: true, timeout: 15000 });
+          await enviarPosicaoGPS(n, p.coords.latitude, p.coords.longitude, p.coords.accuracy);
+          console.log("[Motor] Timer forçado enviou posição");
+        }
+      } catch(e) { console.warn("[Motor] Timer erro:", e); }
+    }, 60 * 1000);
+
     mostrarGPSBadge();
   }
 
+  async function enviarPosicaoGPS(nome, lat, lng, precisao) {
+    try {
+      await fetch(API + '/localizacao', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ nome, lat, lng, precisao, timestamp: Date.now() })
+      });
+    } catch(e) {}
+  }
+
   async function pararMotorGPS() {
+    nomeGPSAtivo = null;
+    if (gpsTimerForcado) { clearInterval(gpsTimerForcado); gpsTimerForcado = null; }
     const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
     if (BG) { try { await BG.removeAllWatchers(); } catch(e) {} }
     const badge = document.getElementById('gps-badge');
