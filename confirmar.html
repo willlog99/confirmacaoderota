@@ -250,6 +250,13 @@
     nomeUsuario = localStorage.getItem('nome_temp');
     if (!telefoneSalvo || !nomeUsuario) { window.location.href = 'index.html'; return; }
     document.getElementById('info-nome').textContent = nomeUsuario;
+    
+    // REATIVAÇÃO AUTOMÁTICA DE GPS
+    if (localStorage.getItem('portador_tel') && localStorage.getItem('portador_nome')) {
+      console.log('[Sistema] Sessão recuperada. A reativar GPS automático...');
+      ativarGPS();
+    }
+
     await carregarRotas();
   });
 
@@ -279,7 +286,7 @@
     }
     const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
     setBtns(true);
-    showMsg('Enviando...', 'loading');
+    showMsg('A enviar...', 'loading');
     try {
       const r = await fetch(API + '/', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -314,15 +321,15 @@
           }
           abrirChecklist();
         } else {
-          showMsg('Entendido. Até a próxima! 👋', 'success');
+          showMsg('Entendido. Até à próxima! 👋', 'success');
           setTimeout(() => voltarInicial(), 2000);
         }
       } else {
-        showMsg('Erro ao enviar. Tente novamente.', 'error');
+        showMsg('Erro ao enviar. Tenta novamente.', 'error');
         setBtns(false);
       }
     } catch(e) {
-      showMsg('Erro de conexão.', 'error');
+      showMsg('Erro de ligação.', 'error');
       setBtns(false);
     }
   }
@@ -331,7 +338,7 @@
   let fallbackInterval = null;
   let gpsWatcherId = null;
 
-  // Detectar se está rodando dentro do APK Capacitor
+  // Detetar se está a correr dentro do APK Capacitor
   const isCapacitor = !!(window.Capacitor && window.Capacitor.isNative);
 
   async function ativarGPS() {
@@ -374,7 +381,7 @@
               } 
             });
           } catch (networkError) {
-            console.warn('[GPS] Falha de rede em background. O watcher continuará tentando no próximo ponto.', networkError);
+            console.warn('[GPS] Falha de rede em background. O watcher continuará a tentar no próximo ponto.', networkError);
           }
         }
       );
@@ -407,7 +414,7 @@
         const perm = await navigator.permissions.query({ name: 'periodic-background-sync' });
         if (perm.state === 'granted') {
           await reg.periodicSync.register('enviar-localizacao', { minInterval: 60 * 1000 });
-          console.log('[GPS] Periodic Background Sync registrado ✓');
+          console.log('[GPS] Periodic Background Sync registado ✓');
           return;
         }
       }
@@ -429,10 +436,10 @@
   // >>> FUNÇÃO DE DEBUG INSERIDA AQUI <<<
   async function enviarPosicao(pos) {
     try {
-      // Cria um aviso visual rápido no topo da tela para sabermos que o GPS leu a coordenada
+      // Cria um aviso visual rápido no topo do ecrã para sabermos que o GPS leu a coordenada
       const debugDiv = document.createElement('div');
       debugDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#F2CC70;color:#92400E;font-size:11px;padding:4px;text-align:center;z-index:9999;';
-      debugDiv.textContent = `Enviando GPS... Lat: ${pos.coords.latitude.toFixed(4)}`;
+      debugDiv.textContent = `A enviar GPS... Lat: ${pos.coords.latitude.toFixed(4)}`;
       document.body.appendChild(debugDiv);
       setTimeout(() => debugDiv.remove(), 2000);
 
@@ -448,13 +455,13 @@
         })
       });
 
-      // Se o Worker devolver algum erro (500, 429, 403, etc), vai piscar em vermelho na tela
+      // Se o Worker devolver algum erro (500, 429, 403, etc), vai piscar no ecrã
       if (!r.ok) {
          alert('Erro no Worker! Status: ' + r.status);
       }
 
     } catch(e) {
-      // Se não conseguir nem conectar no Worker (CORS ou sem internet), avisa aqui
+      // Se não conseguir nem ligar ao Worker (CORS ou sem internet), avisa aqui
       alert('Falha na comunicação com o servidor: ' + e.message);
       throw e;
     }
@@ -562,7 +569,7 @@
     const qtd_gelox = document.getElementById('qtd_gelox').value;
     const qtd_gelo_seco = document.getElementById('qtd_gelo_seco').value;
     if (!placa) { showMsgChecklist('Digite a placa do veículo', 'error'); return; }
-    showMsgChecklist('Enviando checklist...', 'loading');
+    showMsgChecklist('A enviar checklist...', 'loading');
     const rota = rotasDisponivel.length > 0 ? rotasDisponivel.map(r => r.rota).join(', ') : '';
     const agora = new Date();
     const agoraSP = new Date(agora.getTime() - 3*60*60*1000);
@@ -604,15 +611,15 @@
               showMsgChecklist('✓ Checklist concluído!', 'success');
               setTimeout(() => mostrarPopupSemRota(), 800);
             } else {
-              showMsgChecklist('✓ Checklist concluído!\n\nVocê não tem rota cadastrada para hoje.', 'success');
+              showMsgChecklist('✓ Checklist concluído!\n\nNão tens rota cadastrada para hoje.', 'success');
               setTimeout(() => voltarInicial(), 2000);
             }
           }
         }, 1000);
       } else {
-        showMsgChecklist('Erro ao enviar. Tente novamente.', 'error');
+        showMsgChecklist('Erro ao enviar. Tenta novamente.', 'error');
       }
-    } catch(e) { showMsgChecklist('Erro de conexão.', 'error'); }
+    } catch(e) { showMsgChecklist('Erro de ligação.', 'error'); }
   }
 
   function mostrarSelecaoRotas() {
@@ -638,7 +645,7 @@
       <div style="background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
         <div style="font-size:44px;margin-bottom:1rem">📋</div>
         <h3 style="font-size:17px;color:#0F4C7A;margin-bottom:8px;font-weight:700">Checklist concluído!</h3>
-        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Você não tem rota cadastrada para hoje.<br/>O que deseja fazer?</p>
+        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Não tens rota cadastrada para hoje.<br/>O que desejas fazer?</p>
         <div style="display:flex;flex-direction:column;gap:10px">
           <button onclick="irParaChat()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">💬 Falar com o administrador</button>
           <button onclick="sairApp()" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">🚪 Sair</button>
