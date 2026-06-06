@@ -426,9 +426,17 @@
     console.log('[GPS] Fallback sync ativo ✓');
   }
 
+  // >>> FUNÇÃO DE DEBUG INSERIDA AQUI <<<
   async function enviarPosicao(pos) {
     try {
-      await fetch(API + '/localizacao', {
+      // Cria um aviso visual rápido no topo da tela para sabermos que o GPS leu a coordenada
+      const debugDiv = document.createElement('div');
+      debugDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:#F2CC70;color:#92400E;font-size:11px;padding:4px;text-align:center;z-index:9999;';
+      debugDiv.textContent = `Enviando GPS... Lat: ${pos.coords.latitude.toFixed(4)}`;
+      document.body.appendChild(debugDiv);
+      setTimeout(() => debugDiv.remove(), 2000);
+
+      const r = await fetch(API + '/localizacao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -439,9 +447,16 @@
           timestamp: Date.now()
         })
       });
+
+      // Se o Worker devolver algum erro (500, 429, 403, etc), vai piscar em vermelho na tela
+      if (!r.ok) {
+         alert('Erro no Worker! Status: ' + r.status);
+      }
+
     } catch(e) {
-      // Re-throw para ser capturado no try/catch do Capacitor
-      throw e; 
+      // Se não conseguir nem conectar no Worker (CORS ou sem internet), avisa aqui
+      alert('Falha na comunicação com o servidor: ' + e.message);
+      throw e;
     }
   }
 
