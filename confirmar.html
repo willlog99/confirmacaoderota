@@ -236,7 +236,6 @@ label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:6
   </div>
 </div>
 <script>
-  const API = 'https://confirmacaoderota.willlog99.workers.dev';
   let telefoneSalvo = null;
   let nomeUsuario = null;
   let rotasDisponivel = [];
@@ -244,64 +243,58 @@ label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:6
   let respostas = {};
 
   // ────────────────────────────────────────────────────────────
-  // MOTOR DE GPS — usa Capacitor BackgroundGeolocation
+  // MOTOR DE GPS — usa cordova-plugin-mauron85-background-geolocation
+  // Envia HTTP direto do código nativo, funciona em background sem WebView
   // ────────────────────────────────────────────────────────────
-  let gpsTimerForcado = null;
   let nomeGPSAtivo = null;
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
 
   async function ligarMotorGPS(nome) {
     console.log("[Motor] Iniciando rastreamento para:", nome);
-    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
-    if (!BG) { console.warn("[Motor] Plugin GPS não encontrado."); return; }
-
     nomeGPSAtivo = nome;
-    try { await BG.removeAllWatchers(); } catch(e) {}
+    localStorage.setItem('motoboy_nome', nome);
 
-    // Watcher por movimento
-    await BG.addWatcher({
-      backgroundMessage: 'Loglife rastreando: ' + nome,
-      backgroundTitle: 'Rastreio Ativo',
-      requestPermissions: true,
-      stale: false,
-      distanceFilter: 0
-    }, async (pos, err) => {
-      if (err || !pos) return;
-      await enviarPosicaoGPS(nome, pos.latitude, pos.longitude, pos.accuracy);
+    const bgGeo = window.BackgroundGeolocation;
+    if (!bgGeo) { console.warn("[Motor] Plugin nativo não disponível"); return; }
+
+    // Configurar plugin nativo
+    bgGeo.configure({
+      locationProvider: bgGeo.DISTANCE_FILTER_PROVIDER,
+      desiredAccuracy: bgGeo.HIGH_ACCURACY,
+      stationaryRadius: 20,
+      distanceFilter: 30,
+      notificationTitle: 'Loglife em execução',
+      notificationText: 'Rastreando: ' + nome,
+      notificationIconColor: '#0F4C7A',
+      debug: false,
+      interval: 60000,           // 1 minuto
+      fastestInterval: 30000,    // 30s mínimo
+      activitiesInterval: 60000,
+      stopOnTerminate: false,    // continua mesmo se app fechado
+      startOnBoot: true,         // inicia ao ligar celular
+      url: API + '/localizacao', // envia HTTP direto
+      httpHeaders: { 'Content-Type': 'application/json' },
+      postTemplate: {
+        nome: nome,
+        lat: '@latitude',
+        lng: '@longitude',
+        precisao: '@accuracy',
+        timestamp: '@time'
+      }
     });
 
-    // Timer forçado a cada 1 min — pega posição mesmo se motoboy parado
-    if (gpsTimerForcado) clearInterval(gpsTimerForcado);
-    gpsTimerForcado = setInterval(async () => {
-      const n = nomeGPSAtivo;
-      if (!n) return;
-      try {
-        const Geo = window.Capacitor?.Plugins?.Geolocation;
-        if (Geo) {
-          const p = await Geo.getCurrentPosition({ enableHighAccuracy: true, timeout: 15000 });
-          await enviarPosicaoGPS(n, p.coords.latitude, p.coords.longitude, p.coords.accuracy);
-          console.log("[Motor] Timer forçado enviou posição");
-        }
-      } catch(e) { console.warn("[Motor] Timer erro:", e); }
-    }, 60 * 1000);
-
+    // Iniciar
+    bgGeo.start();
+    console.log("[Motor] BackgroundGeolocation nativo iniciado");
     mostrarGPSBadge();
-  }
-
-  async function enviarPosicaoGPS(nome, lat, lng, precisao) {
-    try {
-      await fetch(API + '/localizacao', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ nome, lat, lng, precisao, timestamp: Date.now() })
-      });
-    } catch(e) {}
   }
 
   async function pararMotorGPS() {
     nomeGPSAtivo = null;
-    if (gpsTimerForcado) { clearInterval(gpsTimerForcado); gpsTimerForcado = null; }
-    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
-    if (BG) { try { await BG.removeAllWatchers(); } catch(e) {} }
+    const bgGeo = window.BackgroundGeolocation;
+    if (bgGeo) {
+      try { bgGeo.stop(); } catch(e) {}
+    }
     const badge = document.getElementById('gps-badge');
     if (badge) badge.remove();
     console.log("[Motor] Rastreamento parado.");
