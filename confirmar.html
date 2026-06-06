@@ -332,31 +332,63 @@
 
   // ── GPS + BACKGROUND SYNC ──────────────────────────────────
   let fallbackInterval = null;
+  let gpsWatcherId = null;
+
+  // Detectar se está rodando dentro do APK Capacitor
+  const isCapacitor = !!(window.Capacitor && window.Capacitor.isNative);
 
   async function ativarGPS() {
-    if (!('geolocation' in navigator)) return;
-    try {
-      // Posição imediata
-      navigator.geolocation.getCurrentPosition(
-        pos => enviarPosicao(pos),
-        () => {},
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
+    if (isCapacitor) {
+      await ativarGPSCapacitor();
+    } else {
+      await ativarGPSWeb();
+    }
+    mostrarGPSBadge();
+  }
 
-      // Salvar nome no Service Worker para background sync
-      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
-        navigator.serviceWorker.controller.postMessage({
-          type: 'SALVAR_NOME', nome: nomeUsuario
-        });
+  // ── GPS via Capacitor (APK) — funciona em background ────────
+  async function ativarGPSCapacitor() {
+    try {
+      const { BackgroundGeolocation } = window.Capacitor.Plugins;
+      if (!BackgroundGeolocation) { await ativarGPSWeb(); return; }
+
+      if (gpsWatcherId) {
+        try { await BackgroundGeolocation.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
       }
 
-      // Tentar Periodic Background Sync (Android Chrome)
+      gpsWatcherId = await BackgroundGeolocation.addWatcher(
+        {
+          backgroundMessage: nomeUsuario + ' — GPS ativo',
+          backgroundTitle: 'Loglife em execucao',
+          requestPermissions: true,
+          stale: false,
+          distanceFilter: 0
+        },
+        async (pos, err) => {
+          if (err || !pos) return;
+          await enviarPosicao({ coords: { latitude: pos.latitude, longitude: pos.longitude, accuracy: pos.accuracy } });
+        }
+      );
+      console.log('[GPS] Capacitor Background GPS ativo ✓');
+    } catch(e) {
+      console.warn('[GPS Capacitor]', e);
+      await ativarGPSWeb();
+    }
+  }
+
+  // ── GPS via Web (browser) — fallback ────────────────────────
+  async function ativarGPSWeb() {
+    if (!('geolocation' in navigator)) return;
+    try {
+      navigator.geolocation.getCurrentPosition(
+        pos => enviarPosicao(pos), () => {},
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.controller.postMessage({ type: 'SALVAR_NOME', nome: nomeUsuario });
+      }
       await registrarPeriodicSync();
-
-      // Badge visual discreto
-      mostrarGPSBadge();
-
-    } catch(e) { console.warn('[GPS]', e); }
+    } catch(e) { console.warn('[GPS Web]', e); }
   }
 
   async function registrarPeriodicSync() {
@@ -365,13 +397,12 @@
       if ('periodicSync' in reg) {
         const perm = await navigator.permissions.query({ name: 'periodic-background-sync' });
         if (perm.state === 'granted') {
-          await reg.periodicSync.register('enviar-localizacao', { minInterval: 2 * 60 * 1000 });
+          await reg.periodicSync.register('enviar-localizacao', { minInterval: 60 * 1000 });
           console.log('[GPS] Periodic Background Sync registrado ✓');
           return;
         }
       }
     } catch(e) {}
-    // Fallback: enquanto app estiver aberto
     iniciarFallbackSync();
   }
 
@@ -379,11 +410,10 @@
     if (fallbackInterval) return;
     fallbackInterval = setInterval(() => {
       navigator.geolocation.getCurrentPosition(
-        pos => enviarPosicao(pos),
-        () => {},
+        pos => enviarPosicao(pos), () => {},
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
       );
-    }, 2 * 60 * 1000);
+    }, 60 * 1000);
     console.log('[GPS] Fallback sync ativo ✓');
   }
 
@@ -412,8 +442,15 @@
     document.body.appendChild(badge);
   }
 
-  function pararGPS() {
+  async function pararGPS() {
     if (fallbackInterval) { clearInterval(fallbackInterval); fallbackInterval = null; }
+    if (gpsWatcherId && isCapacitor) {
+      try {
+        const { BackgroundGeolocation } = window.Capacitor.Plugins;
+        if (BackgroundGeolocation) await BackgroundGeolocation.removeWatcher({ id: gpsWatcherId });
+      } catch(e) {}
+      gpsWatcherId = null;
+    }
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'LIMPAR_NOME' });
     }
