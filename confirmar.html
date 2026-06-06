@@ -243,10 +243,11 @@ label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:6
   let respostas = {};
 
   // ────────────────────────────────────────────────────────────
-  // MOTOR DE GPS — usa cordova-plugin-mauron85-background-geolocation
-  // Envia HTTP direto do código nativo, funciona em background sem WebView
+  // MOTOR DE GPS — usa @capgo/capacitor-background-geolocation
+  // Usa Google Location API, funciona horas em background
   // ────────────────────────────────────────────────────────────
   let nomeGPSAtivo = null;
+  let gpsWatcherId = null;
   const API = 'https://confirmacaoderota.willlog99.workers.dev';
 
   async function ligarMotorGPS(nome) {
@@ -254,46 +255,45 @@ label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:6
     nomeGPSAtivo = nome;
     localStorage.setItem('motoboy_nome', nome);
 
-    const bgGeo = window.BackgroundGeolocation;
-    if (!bgGeo) { console.warn("[Motor] Plugin nativo não disponível"); return; }
+    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
+    if (!BG) { console.warn("[Motor] Plugin não disponível"); return; }
 
-    // Configurar plugin nativo
-    bgGeo.configure({
-      locationProvider: bgGeo.DISTANCE_FILTER_PROVIDER,
-      desiredAccuracy: bgGeo.HIGH_ACCURACY,
-      stationaryRadius: 20,
-      distanceFilter: 30,
-      notificationTitle: 'Loglife em execução',
-      notificationText: 'Rastreando: ' + nome,
-      notificationIconColor: '#0F4C7A',
-      debug: false,
-      interval: 60000,           // 1 minuto
-      fastestInterval: 30000,    // 30s mínimo
-      activitiesInterval: 60000,
-      stopOnTerminate: false,    // continua mesmo se app fechado
-      startOnBoot: true,         // inicia ao ligar celular
-      url: API + '/localizacao', // envia HTTP direto
-      httpHeaders: { 'Content-Type': 'application/json' },
-      postTemplate: {
-        nome: nome,
-        lat: '@latitude',
-        lng: '@longitude',
-        precisao: '@accuracy',
-        timestamp: '@time'
-      }
+    try { if (gpsWatcherId !== null) await BG.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
+
+    gpsWatcherId = await BG.addWatcher({
+      backgroundMessage: 'Loglife rastreando: ' + nome,
+      backgroundTitle: 'Loglife em execução',
+      requestPermissions: true,
+      stale: false,
+      distanceFilter: 0
+    }, async (pos, err) => {
+      if (err || !pos) return;
+      try {
+        await fetch(API + '/localizacao', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            nome: nome,
+            lat: pos.latitude,
+            lng: pos.longitude,
+            precisao: pos.accuracy,
+            timestamp: Date.now()
+          })
+        });
+        console.log("[Motor] GPS enviado:", pos.latitude, pos.longitude);
+      } catch(e) { console.warn("[Motor] Erro envio:", e); }
     });
 
-    // Iniciar
-    bgGeo.start();
-    console.log("[Motor] BackgroundGeolocation nativo iniciado");
+    console.log("[Motor] Watcher iniciado, ID:", gpsWatcherId);
     mostrarGPSBadge();
   }
 
   async function pararMotorGPS() {
     nomeGPSAtivo = null;
-    const bgGeo = window.BackgroundGeolocation;
-    if (bgGeo) {
-      try { bgGeo.stop(); } catch(e) {}
+    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
+    if (BG && gpsWatcherId !== null) {
+      try { await BG.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
+      gpsWatcherId = null;
     }
     const badge = document.getElementById('gps-badge');
     if (badge) badge.remove();
