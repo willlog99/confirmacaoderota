@@ -75,7 +75,6 @@
 <body>
 <div class="container">
 
-  <!-- VIEW 1: CONFIRMAÇÃO -->
   <div class="view active" id="view-confirmacao">
     <a class="back-link" href="index.html">← Voltar</a>
     <div class="card">
@@ -102,7 +101,6 @@
     </div>
   </div>
 
-  <!-- VIEW 2: CHECKLIST -->
   <div class="view" id="view-checklist">
     <div class="card">
       <div class="checklist-header">
@@ -230,7 +228,6 @@
 
 </div>
 
-<!-- MODAL: SELEÇÃO DE ROTAS -->
 <div class="modal-overlay hidden" id="modal-rotas">
   <div class="modal">
     <h2>🛣️ Selecione sua rota</h2>
@@ -293,15 +290,15 @@
       try { d = JSON.parse(texto); } catch(e) { showMsg('Erro na resposta do servidor', 'error'); setBtns(false); return; }
 
       if (d.status === 'ok' || d.status === 'duplicado') {
-        localStorage.setItem('motoboy_tel', telefoneSalvo);
-        localStorage.setItem('motoboy_nome', nomeUsuario);
+        localStorage.setItem('portador_tel', telefoneSalvo);
+        localStorage.setItem('portador_nome', nomeUsuario);
 
         if (resp === 'sim') {
           // ── ATIVAR GPS ────────────────────────────────────────
           ativarGPS();
-          // Avisar app nativo (Capacitor) que motoboy confirmou
+          // Avisar app nativo (Capacitor) que o portador confirmou
           if (window.parent !== window) {
-            window.parent.postMessage({ type: 'MOTOBOY_CONFIRMOU', nome: nomeUsuario }, '*');
+            window.parent.postMessage({ type: 'PORTADOR_CONFIRMOU', nome: nomeUsuario }, '*');
           }
           // ─────────────────────────────────────────────────────
 
@@ -358,15 +355,27 @@
 
       gpsWatcherId = await BackgroundGeolocation.addWatcher(
         {
-          backgroundMessage: nomeUsuario + ' — GPS ativo',
-          backgroundTitle: 'Loglife em execucao',
+          backgroundMessage: nomeUsuario + ' — GPS ativo na rota',
+          backgroundTitle: 'Loglife em execução',
           requestPermissions: true,
           stale: false,
-          distanceFilter: 0
+          distanceFilter: 15 // Atualiza a cada 15 metros para o Android não matar o processo
         },
         async (pos, err) => {
           if (err || !pos) return;
-          await enviarPosicao({ coords: { latitude: pos.latitude, longitude: pos.longitude, accuracy: pos.accuracy } });
+          
+          // Tratamento de erro crucial para manter o rastreamento vivo se a rede oscilar
+          try {
+            await enviarPosicao({ 
+              coords: { 
+                latitude: pos.latitude, 
+                longitude: pos.longitude, 
+                accuracy: pos.accuracy 
+              } 
+            });
+          } catch (networkError) {
+            console.warn('[GPS] Falha de rede em background. O watcher continuará tentando no próximo ponto.', networkError);
+          }
         }
       );
       console.log('[GPS] Capacitor Background GPS ativo ✓');
@@ -430,7 +439,10 @@
           timestamp: Date.now()
         })
       });
-    } catch(e) {}
+    } catch(e) {
+      // Re-throw para ser capturado no try/catch do Capacitor
+      throw e; 
+    }
   }
 
   function mostrarGPSBadge() {
@@ -572,8 +584,8 @@
           else {
             const semRota = new URLSearchParams(window.location.search).get('sem_rota') === '1';
             if (semRota) {
-              localStorage.setItem('motoboy_tel', telefoneSalvo);
-              localStorage.setItem('motoboy_nome', nomeUsuario);
+              localStorage.setItem('portador_tel', telefoneSalvo);
+              localStorage.setItem('portador_nome', nomeUsuario);
               showMsgChecklist('✓ Checklist concluído!', 'success');
               setTimeout(() => mostrarPopupSemRota(), 800);
             } else {
@@ -600,7 +612,7 @@
   }
 
   function irParaRota(rota) {
-    localStorage.setItem('motoboy_rota', rota);
+    localStorage.setItem('portador_rota', rota);
     window.location.href = 'rota.html';
   }
 
@@ -625,9 +637,9 @@
 
   function voltarInicial() {
     pararGPS();
-    // Avisar app nativo que motoboy saiu
+    // Avisar app nativo que o portador saiu
     if (window.parent !== window) {
-      window.parent.postMessage({ type: 'MOTOBOY_SAIU' }, '*');
+      window.parent.postMessage({ type: 'PORTADOR_SAIU' }, '*');
     }
     localStorage.removeItem('telefone_temp');
     localStorage.removeItem('nome_temp');
