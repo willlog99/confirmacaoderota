@@ -179,8 +179,8 @@ function iniciarMiniMapa() {
   if (!miniMapaInst) {
     miniMapaInst = L.map('mini-mapa-painel', { zoomControl:false, dragging:false, scrollWheelZoom:false })
       .setView([-23.5505, -46.6330], 13);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap', maxZoom:19
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      attribution: '© OpenStreetMap © CARTO', maxZoom:19, subdomains:'abcd'
     }).addTo(miniMapaInst);
   }
   carregarMiniMapa();
@@ -247,18 +247,18 @@ let leafletMap = null;
 let leafletMarkers = {};
 let mapaRefreshInterval = null;
 let mapaSyncTimer = null;
-let mapaSyncSegundos = 60;
+let mapaSyncSegundos = 120;
 const CORES_MB = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
 function iniciarAutoRefreshMapa() {
   pararAutoRefreshMapa();
-  mapaSyncSegundos = 60;
+  mapaSyncSegundos = 120;
   mapaSyncTimer = setInterval(() => {
     mapaSyncSegundos--;
     const el = document.getElementById('mapa-sync-countdown');
     const bar = document.getElementById('mapa-sync-bar');
     if (el) el.textContent = Math.floor(mapaSyncSegundos/60)+':'+String(mapaSyncSegundos%60).padStart(2,'0');
     if (bar) bar.style.width = ((120-mapaSyncSegundos)/120*100)+'%';
-    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 60; carregarMapa(); carregarKMDia(); }
+    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 120; carregarMapa(); carregarKMDia(); }
   }, 1000);
 }
 function pararAutoRefreshMapa() {
@@ -271,9 +271,9 @@ function iniciarLeafletMap() {
   if (!el) return;
   if (typeof L === 'undefined') { setTimeout(iniciarLeafletMap, 500); return; }
   leafletMap = L.map('leaflet-map', { zoomControl: true }).setView([-23.5505, -46.6330], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    maxZoom: 19
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © <a href="https://carto.com/attributions">CARTO</a>',
+    maxZoom: 19, subdomains: 'abcd'
   }).addTo(leafletMap);
 }
 function criarIconeLeaflet(cor, iniciais, status) {
