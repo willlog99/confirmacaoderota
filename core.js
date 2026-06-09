@@ -251,14 +251,14 @@ let mapaSyncSegundos = 120;
 const CORES_MB = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
 function iniciarAutoRefreshMapa() {
   pararAutoRefreshMapa();
-  mapaSyncSegundos = 120;
+  mapaSyncSegundos = 10;
   mapaSyncTimer = setInterval(() => {
     mapaSyncSegundos--;
     const el = document.getElementById('mapa-sync-countdown');
     const bar = document.getElementById('mapa-sync-bar');
-    if (el) el.textContent = Math.floor(mapaSyncSegundos/60)+':'+String(mapaSyncSegundos%60).padStart(2,'0');
-    if (bar) bar.style.width = ((120-mapaSyncSegundos)/120*100)+'%';
-    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 120; carregarMapa(); carregarKMDia(); }
+    if (el) el.textContent = '0:'+String(mapaSyncSegundos).padStart(2,'0');
+    if (bar) bar.style.width = ((10-mapaSyncSegundos)/10*100)+'%';
+    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 10; carregarMapa(); carregarKMDia(); }
   }, 1000);
 }
 function pararAutoRefreshMapa() {
