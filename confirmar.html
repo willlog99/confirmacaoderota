@@ -271,7 +271,6 @@ alert(
 
 return;
 }
-
     try { if (gpsWatcherId !== null) await BG.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
 
     gpsWatcherId = await BG.addWatcher({
