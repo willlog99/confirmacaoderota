@@ -1,549 +1,282 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Loglife — Confirmação de Presença</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;padding:1.5rem 1rem}
-.container{width:100%;max-width:480px;margin:0 auto}
-.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#5A7A8F;cursor:pointer;margin-bottom:1.25rem;font-weight:500}
-.back-link:hover{color:#0F4C7A}
-.card{background:#fff;border-radius:20px;padding:1.5rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1rem}
-.logo-area{text-align:center;margin-bottom:1rem}
-.logo-img{height:44px;width:auto}
-h1{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:4px;text-align:center}
-.subtitle{font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;text-align:center}
-.info-card{background:#E8F4FB;border:1.5px solid #1E9FD9;border-radius:12px;padding:12px;margin-bottom:1rem;text-align:center}
-.info-nome{font-size:15px;font-weight:700;color:#0F4C7A}
-.info-label{font-size:10px;color:#94A8B8;text-transform:uppercase;font-weight:700;letter-spacing:.4px;margin-bottom:2px}
-.btn-group{display:flex;flex-direction:column;gap:8px;margin-bottom:1rem}
-.btn{width:100%;padding:13px;border-radius:11px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center;gap:8px}
-.btn:disabled{opacity:.5;cursor:not-allowed}
-.btn-sim{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5}
-.btn-sim:hover:not(:disabled){background:#c8f0e0}
-.btn-nao{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595}
-.btn-nao:hover:not(:disabled){background:#fad5d5}
-.obs-area{display:none;margin-top:10px;animation:fadeIn .2s ease}
-.obs-area.visible{display:block}
-@keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1}}
-textarea{width:100%;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;font-family:inherit;padding:10px 12px;resize:vertical;min-height:80px;color:#111;margin-bottom:8px;background:#F7FBFD}
-textarea:focus{outline:none;border-color:#1E9FD9;background:#fff}
-label{font-size:12px;color:#0F4C7A;display:block;margin-bottom:5px;font-weight:600}
-.msg{border-radius:10px;padding:12px 14px;font-size:13px;text-align:center;margin-top:10px;display:none;font-weight:500}
-.msg.success{background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;display:block}
-.msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
-.msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
-.checklist-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid #EBF1F5}
-.checklist-icon{width:40px;height:40px;border-radius:50%;background:#1E9FD9;color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-.checklist-title{font-size:16px;font-weight:700;color:#0F4C7A}
-.checklist-sub{font-size:12px;color:#5A7A8F}
-.progress-bar{background:#EBF1F5;border-radius:99px;height:6px;margin-bottom:1.25rem;overflow:hidden}
-.progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .4s}
-.campo{margin-bottom:1.25rem}
-.campo-label{font-size:13px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;align-items:center;gap:6px}
-.campo-num{width:22px;height:22px;border-radius:50%;background:#E8F4FB;color:#1E9FD9;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.opcoes{display:flex;gap:6px;flex-wrap:wrap}
-.opcao{padding:8px 14px;border-radius:9px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;flex:1;text-align:center}
-.opcao:hover{border-color:#1E9FD9}
-.opcao.sel-verde{background:#E1F5EE;color:#085041;border-color:#5DCAA5}
-.opcao.sel-vermelho{background:#FCEBEB;color:#791F1F;border-color:#F09595}
-.opcao.sel-amarelo{background:#FEF9EC;color:#92400E;border-color:#F2CC70}
-.opcao.sel-azul{background:#E8F4FB;color:#0F4C7A;border-color:#1E9FD9}
-.input-num{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:16px;padding:0 12px;color:#0F4C7A;text-align:center;outline:none}
-.input-num:focus{border-color:#1E9FD9}
-.input-text{width:100%;height:42px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:0 12px;color:#0F4C7A;outline:none;text-transform:uppercase}
-.input-text:focus{border-color:#1E9FD9}
-.modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.6);z-index:200;display:flex;align-items:center;justify-content:center}
-.modal-overlay.hidden{display:none}
-.modal{background:#fff;border-radius:20px;padding:2rem 1.75rem;width:90%;max-width:340px;text-align:center}
-.modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
-.modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
-.modal-btns{display:flex;flex-direction:column;gap:10px}
-.modal-btn{padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center}
-.modal-btn.sim{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
-.modal-btn.nao{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE}
-.rota-option{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:8px;cursor:pointer;transition:all .2s}
-.rota-option:hover{border-color:#1E9FD9;background:#F7FBFD}
-.rota-name{font-size:14px;font-weight:700;color:#0F4C7A}
-.rota-arrow{color:#1E9FD9;font-size:18px;font-weight:bold}
-.view{display:none}.view.active{display:block}
-@keyframes gpsblink{0%,100%{opacity:1}50%{opacity:.3}}
-</style>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Loglife — Operação Loglife/Pardini</title>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#1E9FD9"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="Loglife"/>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:linear-gradient(180deg,#E8F4FB 0%,#F0F4F8 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem 1rem}
+    .container{width:100%;max-width:420px}
+    .card{background:#fff;border-radius:24px;padding:2rem 1.75rem;box-shadow:0 4px 20px rgba(30,159,217,0.12);margin-bottom:1rem}
+    .logo-area{text-align:center;margin-bottom:1.5rem}
+    .logo-img{height:64px;width:auto;margin-bottom:.5rem}
+    .mascote-wrap{display:flex;justify-content:center;margin-bottom:1.25rem}
+    .mascote-img{height:140px;width:auto;border-radius:50%;box-shadow:0 4px 16px rgba(30,159,217,0.2)}
+    h1{font-size:20px;font-weight:700;color:#0F4C7A;text-align:center;margin-bottom:6px}
+    .subtitle{font-size:14px;color:#5A7A8F;text-align:center;margin-bottom:1.75rem}
+    label{font-size:13px;color:#0F4C7A;font-weight:600;display:block;margin-bottom:6px}
+    input{width:100%;height:48px;border-radius:12px;border:1.5px solid #D6E5EE;font-size:15px;padding:0 14px;color:#111;margin-bottom:14px;background:#F7FBFD}
+    input:focus{outline:none;border-color:#1E9FD9;background:#fff}
+    .btn-login{width:100%;padding:14px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;margin-bottom:1rem;box-shadow:0 4px 12px rgba(30,159,217,0.3)}
+    .btn-login:disabled{opacity:.5;cursor:not-allowed}
+    .msg{border-radius:11px;padding:12px 16px;font-size:14px;text-align:center;display:none;font-weight:500;margin-top:4px}
+    .msg.error{background:#FCEBEB;color:#791F1F;border:1.5px solid #F09595;display:block}
+    .msg.loading{background:#E8F4FB;color:#0F4C7A;border:1.5px solid #BFE0F0;display:block}
+    .footer{text-align:center;font-size:11px;color:#94A8B8;margin-top:.75rem}
+
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,75,122,0.6);z-index:200;display:flex;align-items:center;justify-content:center}
+    .modal-overlay.hidden{display:none}
+    .modal{background:#fff;border-radius:20px;padding:2rem 1.75rem;width:90%;max-width:380px;text-align:center}
+    .modal h2{font-size:18px;font-weight:700;color:#0F4C7A;margin-bottom:1rem}
+    .modal p{font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5}
+    .modal-btns{display:flex;flex-direction:column;gap:10px}
+    .modal-btn{padding:13px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:none;display:flex;align-items:center;justify-content:center}
+    .modal-btn.primary{background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff}
+    .modal-btn.secondary{background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE}
+
+    .rota-option{display:flex;align-items:center;justify-content:space-between;padding:14px;border-radius:11px;border:1.5px solid #D6E5EE;background:#fff;margin-bottom:8px;cursor:pointer;transition:all .2s;text-align:left}
+    .rota-option:hover{border-color:#1E9FD9;background:#F7FBFD;transform:translateY(-1px)}
+    .rota-option-info{flex:1;min-width:0}
+    .rota-name{font-size:14px;font-weight:700;color:#0F4C7A}
+    .rota-arrow{color:#1E9FD9;font-size:18px;font-weight:bold;flex-shrink:0}
+  </style>
 </head>
 <body>
 <div class="container">
-  <!-- VIEW 1: CONFIRMAÇÃO -->
-  <div class="view active" id="view-confirmacao">
-    <a class="back-link" href="index.html">← Voltar</a>
-    <div class="card">
-      <div class="logo-area">
-        <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="logo-img"/>
-        <img src="HERMES PARDINI.png" alt="Hermes Pardini" style="height:36px;width:auto;margin-top:8px;display:block;margin-left:auto;margin-right:auto"/>
+  <div class="card">
+    <div class="logo-area">
+      <div class="mascote-wrap">
+        <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="Loglife" class="mascote-img"/>
       </div>
-      <h1>Confirmação de Presença</h1>
-      <p class="subtitle">Confirme sua presença</p>
-      <div class="info-card">
-        <div class="info-label">Biocondutor</div>
-        <div class="info-nome" id="info-nome">—</div>
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-sim" id="btn-sim" onclick="confirmarPresenca('sim')">✓ Confirmar presença</button>
-        <button class="btn btn-nao" id="btn-nao" onclick="abrirMotivo()">✗ Não irei</button>
-      </div>
-      <div class="obs-area" id="obs-area">
-        <label>Motivo</label>
-        <textarea id="obs-text" placeholder="Ex: ficou doente, veículo quebrou..."></textarea>
-        <button class="btn btn-nao" id="btn-send" onclick="confirmarPresenca('nao')">Confirmar não presença</button>
-      </div>
-      <div class="msg" id="msg"></div>
+      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife" class="logo-img"/>
     </div>
+    <h1>Operação Loglife/Pardini</h1>
+    <p class="subtitle">Digite seu telefone para continuar</p>
+    <label for="telefone">Número de telefone</label>
+    <input type="tel" id="telefone" placeholder="(11) 99999-9999" maxlength="15"/>
+    <button class="btn-login" id="btn-entrar">Continuar</button>
+    <div class="msg" id="msg"></div>
   </div>
-  <!-- VIEW 2: CHECKLIST -->
-  <div class="view" id="view-checklist">
-    <div class="card">
-      <div class="checklist-header">
-        <div class="checklist-icon">📋</div>
-        <div>
-          <div class="checklist-title">Checklist do Veículo</div>
-          <div class="checklist-sub" id="checklist-sub">—</div>
-        </div>
-      </div>
-      <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
-      <div class="campo" id="campo-1">
-        <div class="campo-label"><div class="campo-num">1</div> Placa do Veículo</div>
-        <input type="text" class="input-text" id="placa" placeholder="Ex: ABC1D23" maxlength="8"/>
-      </div>
-      <div class="campo" id="campo-2">
-        <div class="campo-label"><div class="campo-num">2</div> Conservação da Moto</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'conservacao','Limpa','sel-verde')">Limpa</div>
-          <div class="opcao" onclick="sel(this,'conservacao','Suja','sel-vermelho')">Suja</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-3">
-        <div class="campo-label"><div class="campo-num">3</div> Pneu Dianteiro</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'pneu_dianteiro','Dentro do padrão','sel-verde')">Dentro do padrão</div>
-          <div class="opcao" onclick="sel(this,'pneu_dianteiro','Fora do padrão','sel-vermelho')">Fora do padrão</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-4">
-        <div class="campo-label"><div class="campo-num">4</div> Pneu Traseiro</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'pneu_traseiro','Dentro do padrão','sel-verde')">Dentro do padrão</div>
-          <div class="opcao" onclick="sel(this,'pneu_traseiro','Fora do padrão','sel-vermelho')">Fora do padrão</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-5">
-        <div class="campo-label"><div class="campo-num">5</div> Bolsa Térmica — Limpeza</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'bolsa_limpeza','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'bolsa_limpeza','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-6">
-        <div class="campo-label"><div class="campo-num">6</div> Bolsa Térmica — Estado Geral</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'bolsa_estado','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'bolsa_estado','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-7">
-        <div class="campo-label"><div class="campo-num">7</div> Bolsa Térmica — Identificação</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'bolsa_identificacao','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'bolsa_identificacao','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-8">
-        <div class="campo-label"><div class="campo-num">8</div> Colete Refletivo</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'colete','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'colete','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-9">
-        <div class="campo-label"><div class="campo-num">9</div> Documento do Veículo</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'documento','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'documento','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-10">
-        <div class="campo-label"><div class="campo-num">10</div> Mata Cachorro</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'mata_cachorro','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'mata_cachorro','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-11">
-        <div class="campo-label"><div class="campo-num">11</div> Caixa Refrigerada</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'caixa_refrigerada','Conforme','sel-verde')">Conforme</div>
-          <div class="opcao" onclick="sel(this,'caixa_refrigerada','Não Conforme','sel-vermelho')">Não Conforme</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-12">
-        <div class="campo-label"><div class="campo-num">12</div> Quantidade de Gelox</div>
-        <input type="number" class="input-num" id="qtd_gelox" placeholder="0" min="0"/>
-      </div>
-      <div class="campo" id="campo-13">
-        <div class="campo-label"><div class="campo-num">13</div> Quantidade de Gelo Seco</div>
-        <input type="number" class="input-num" id="qtd_gelo_seco" placeholder="0" min="0"/>
-      </div>
-      <div class="campo" id="campo-14">
-        <div class="campo-label"><div class="campo-num">14</div> Caixa Ambiente</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'caixa_ambiente','Sim','sel-verde')">Sim</div>
-          <div class="opcao" onclick="sel(this,'caixa_ambiente','Não','sel-vermelho')">Não</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-15">
-        <div class="campo-label"><div class="campo-num">15</div> A caixa térmica tem Identificação?</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'caixa_identificacao','Sim','sel-verde')">Sim</div>
-          <div class="opcao" onclick="sel(this,'caixa_identificacao','Não','sel-vermelho')">Não</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-16">
-        <div class="campo-label"><div class="campo-num">16</div> Há amostras pendentes do dia anterior no cooler?</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'amostras_pendentes','Sim','sel-vermelho')">Sim</div>
-          <div class="opcao" onclick="sel(this,'amostras_pendentes','Não','sel-verde')">Não</div>
-        </div>
-      </div>
-      <div class="campo" id="campo-17">
-        <div class="campo-label"><div class="campo-num">17</div> Seu baú está com cadeado?</div>
-        <div class="opcoes">
-          <div class="opcao" onclick="sel(this,'bau_cadeado','Sim','sel-verde')">Sim</div>
-          <div class="opcao" onclick="sel(this,'bau_cadeado','Não','sel-vermelho')">Não</div>
-        </div>
-      </div>
-      <div class="msg" id="msg-checklist"></div>
-      <button class="btn btn-sim" onclick="enviarChecklist()" style="margin-top:.5rem">✓ Enviar Checklist</button>
+  <div class="footer">Loglife &mdash; Operação Loglife/Pardini</div>
+</div>
+
+<!-- MODAL: CONFIRMAR OU ACESSAR ROTA -->
+<div class="modal-overlay hidden" id="modal-opcoes">
+  <div class="modal">
+    <h2>O que deseja fazer?</h2>
+    <p>Escolha uma opção para continuar</p>
+    <div class="modal-btns">
+      <button class="modal-btn primary" onclick="irParaConfirmacao()">✓ Confirmar presença</button>
+      <button class="modal-btn secondary" onclick="mostrarSelecaoRotas('acessar')">🚚 Acessar minha rota</button>
     </div>
   </div>
 </div>
+
 <!-- MODAL: SELEÇÃO DE ROTAS -->
 <div class="modal-overlay hidden" id="modal-rotas">
   <div class="modal">
     <h2>🛣️ Selecione sua rota</h2>
-    <p>Escolha qual rota deseja abrir:</p>
+    <p>Você tem múltiplas rotas. Escolha qual deseja abrir:</p>
     <div id="lista-rotas-modal"></div>
-    <button class="modal-btn nao" onclick="voltarInicial()" style="margin-top:8px;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F">Não, voltar ao início</button>
   </div>
 </div>
+
 <script>
+  const API = 'https://confirmacaoderota.willlog99.workers.dev';
+  const input = document.getElementById('telefone');
+  const btn = document.getElementById('btn-entrar');
   let telefoneSalvo = null;
   let nomeUsuario = null;
   let rotasDisponivel = [];
-  let rotasCarregadas = false;
-  let respostas = {};
+  let proximoFluxo = null;
 
-  // ────────────────────────────────────────────────────────────
-  // MOTOR DE GPS — usa @capgo/capacitor-background-geolocation
-  // Usa Google Location API, funciona horas em background
-  // ────────────────────────────────────────────────────────────
-  let nomeGPSAtivo = null;
-  let gpsWatcherId = null;
-  const API = 'https://confirmacaoderota.willlog99.workers.dev';
-
-  async function ligarMotorGPS(nome) {
-    console.log("[Motor] Iniciando rastreamento para:", nome);
-    nomeGPSAtivo = nome;
-    localStorage.setItem('motoboy_nome', nome);
-
-   const pluginsDisponiveis = Object.keys(window.Capacitor?.Plugins || {});
-
-alert(
-  "Plugins carregados:\n\n" +
-  pluginsDisponiveis.join("\n")
-);
-
-alert(
-  "Capacitor existe: " +
-  (window.Capacitor ? "SIM" : "NAO") +
-  "\n\nPlugins:\n" +
-  pluginsDisponiveis.join("\n")
-);
-
-return;
-}
-    try { if (gpsWatcherId !== null) await BG.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
-
-    gpsWatcherId = await BG.addWatcher({
-      backgroundMessage: 'Loglife rastreando: ' + nome,
-      backgroundTitle: 'Loglife em execução',
-      requestPermissions: true,
-      stale: false,
-      distanceFilter: 0
-    }, async (pos, err) => {
-      if (err || !pos) return;
-      try {
-        await fetch(API + '/localizacao', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            nome: nome,
-            lat: pos.latitude,
-            lng: pos.longitude,
-            precisao: pos.accuracy,
-            timestamp: Date.now()
-          })
-        });
-        console.log("[Motor] GPS enviado:", pos.latitude, pos.longitude);
-      } catch(e) { console.warn("[Motor] Erro envio:", e); }
-    });
-
-    console.log("[Motor] Watcher iniciado, ID:", gpsWatcherId);
-    mostrarGPSBadge();
-  }
-
-  async function pararMotorGPS() {
-    nomeGPSAtivo = null;
-    const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
-    if (BG && gpsWatcherId !== null) {
-      try { await BG.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
-      gpsWatcherId = null;
-    }
-    const badge = document.getElementById('gps-badge');
-    if (badge) badge.remove();
-    console.log("[Motor] Rastreamento parado.");
-  }
-
-  function mostrarGPSBadge() {
-    if (document.getElementById('gps-badge')) return;
-    const badge = document.createElement('div');
-    badge.id = 'gps-badge';
-    badge.style.cssText = 'position:fixed;bottom:16px;right:16px;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;padding:8px 14px;border-radius:20px;box-shadow:0 3px 12px rgba(15,155,120,.4);display:flex;align-items:center;gap:6px;z-index:999';
-    badge.innerHTML = '<span style="width:7px;height:7px;border-radius:50%;background:#fff;display:inline-block;animation:gpsblink 1.5s infinite"></span> 📍 GPS ativo';
-    document.body.appendChild(badge);
-  }
-  // ────────────────────────────────────────────────────────────
-
-  window.addEventListener('load', async () => {
-    telefoneSalvo = localStorage.getItem('telefone_temp');
-    nomeUsuario = localStorage.getItem('nome_temp');
-    if (!telefoneSalvo || !nomeUsuario) { window.location.href = 'index.html'; return; }
-    document.getElementById('info-nome').textContent = nomeUsuario;
-
-    // Se já tem motoboy_nome salvo (já confirmou antes), retomar GPS
-    const motoboySalvo = localStorage.getItem('motoboy_nome');
-    if (motoboySalvo) await ligarMotorGPS(motoboySalvo);
-
-    await carregarRotas();
+  // Formatar telefone
+  input.addEventListener('input', function() {
+    let v = this.value.replace(/\D/g,'').slice(0,11);
+    if (v.length > 10) v = v.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    else if (v.length > 6) v = v.replace(/^(\d{2})(\d{4})(\d*)$/, '($1) $2-$3');
+    else if (v.length > 2) v = v.replace(/^(\d{2})(\d*)$/, '($1) $2');
+    this.value = v;
   });
 
-  async function carregarRotas() {
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') entrar(); });
+  btn.addEventListener('click', entrar);
+
+  async function entrar() {
+    const tel = input.value.replace(/\D/g,'');
+    if (tel.length < 10) { showMsg('Digite um telefone válido.', 'error'); return; }
+    
+    btn.disabled = true;
+    showMsg('Buscando...', 'loading');
+    
     try {
       const r = await fetch(API + '/login', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ telefone: telefoneSalvo })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefone: tel })
       });
       const d = await r.json();
-      if (d.status === 'ok') {
-        rotasDisponivel = (d.rotas_info || []).filter(r => r.status !== 'travada');
-        rotasCarregadas = true;
+
+      // Gestor puro — vai direto para o painel
+      if (d.status === 'gestor') {
+        localStorage.setItem('telefone_temp', tel);
+        localStorage.setItem('nome_temp', d.nome || 'Gestor');
+        window.location.href = 'painel.html';
+        return;
       }
-    } catch(e) { setTimeout(carregarRotas, 2000); }
-  }
 
-  function abrirMotivo() {
-    document.getElementById('obs-area').classList.add('visible');
-    document.getElementById('obs-text').focus();
-  }
+      // Gestor E motoboy — popup para escolher
+      if (d.status === 'gestor_e_motoboy') {
+        localStorage.setItem('telefone_temp', tel);
+        localStorage.setItem('nome_temp', d.nome);
+        mostrarPopupGestorMotoboy(d.nome);
+        return;
+      }
 
-  async function confirmarPresenca(resp) {
-    if (resp === 'nao') {
-      const obs = (document.getElementById('obs-text').value || '').trim();
-      if (!obs) { showMsg('⚠️ Por favor, descreva o motivo de sua ausência.', 'error'); return; }
-    }
-    const obs = resp === 'nao' ? (document.getElementById('obs-text').value || '').trim() : '';
-    setBtns(true);
-    showMsg('Enviando...', 'loading');
-    try {
-      const r = await fetch(API + '/', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ biocondutor: nomeUsuario, resposta: resp, obs })
-      });
-      const texto = await r.text();
-      let d;
-      try { d = JSON.parse(texto); } catch(e) { showMsg('Erro na resposta do servidor', 'error'); setBtns(false); return; }
-      if (d.status === 'ok' || d.status === 'duplicado') {
-        localStorage.setItem('motoboy_tel', telefoneSalvo);
-        localStorage.setItem('motoboy_nome', nomeUsuario);
-        if (resp === 'sim') {
-          // ── LIGAR MOTOR DE GPS ──
-          await ligarMotorGPS(nomeUsuario);
-          // ────────────────────────
-          showMsg('', '');
-          for (const r of rotasDisponivel) {
-            try {
-              await fetch(API + '/abrir-rota', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ telefone: telefoneSalvo, rota: r.rota, nome: nomeUsuario })
-              });
-            } catch(e) {}
+      if (d.status === 'ok') {
+        telefoneSalvo = tel;
+        nomeUsuario = d.nome;
+        rotasDisponivel = d.rotas_info || [];
+        
+        // Verificar se já confirmou hoje
+        const confirmouHoje = await verificarConfirmacao(tel);
+        
+        if (confirmouHoje) {
+          // Já confirmou → verifica se preencheu checklist antes
+          const precisaChecklist = await verificarChecklistObrigatorio();
+          if (precisaChecklist) {
+            alert('⚠️ Você precisa preencher seu checklist antes de continuar!\n\nClique em OK para preencher.');
+            localStorage.setItem('telefone_temp', telefoneSalvo);
+            localStorage.setItem('nome_temp', nomeUsuario);
+            window.location.href = 'confirmar.html?checklist_obrigatorio=true';
+            return;
           }
-          abrirChecklist();
+          // Já confirmou e fez checklist → vai direto pro modal de seleção de rotas
+          mostrarSelecaoRotas('acessar');
         } else {
-          showMsg('Entendido. Até a próxima! 👋', 'success');
-          setTimeout(() => voltarInicial(), 2000);
+          // Não confirmou → mostra opções (confirmar ou acessar)
+          document.getElementById('modal-opcoes').classList.remove('hidden');
+        }
+      } else if (d.status === 'sem_rota') {
+        // Motoboy existe mas não tem rota → vai para confirmação e depois chat
+        telefoneSalvo = tel;
+        nomeUsuario = d.nome;
+        rotasDisponivel = [];
+        localStorage.setItem('telefone_temp', tel);
+        localStorage.setItem('nome_temp', d.nome);
+        
+        // Verificar se já confirmou hoje
+        const confirmouHoje = await verificarConfirmacao(tel);
+        if (confirmouHoje) {
+          // Já confirmou → verifica checklist
+          const precisaChecklist = await verificarChecklistObrigatorio();
+          if (precisaChecklist) {
+            alert('⚠️ Você precisa preencher seu checklist antes de continuar!\n\nClique em OK para preencher.');
+            window.location.href = 'confirmar.html?checklist_obrigatorio=true&sem_rota=1';
+            return;
+          }
+          // Já fez tudo → mostra popup com opções
+          localStorage.setItem('motoboy_tel', tel);
+          localStorage.setItem('motoboy_nome', d.nome);
+          mostrarPopupSemRota();
+        } else {
+          // Não confirmou → vai para confirmação de presença
+          window.location.href = 'confirmar.html?sem_rota=1';
         }
       } else {
-        showMsg('Erro ao enviar. Tente novamente.', 'error');
-        setBtns(false);
+        showMsg('Telefone não encontrado. Fale com o organizador.', 'error');
       }
     } catch(e) {
       showMsg('Erro de conexão.', 'error');
-      setBtns(false);
     }
+    btn.disabled = false;
   }
 
-  function abrirChecklist() {
-    const rota = rotasDisponivel.length === 1 ? rotasDisponivel[0].rota : rotasDisponivel.map(r => r.rota).join(', ');
-    document.getElementById('checklist-sub').textContent = nomeUsuario + (rota ? ' · ' + rota : '');
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-checklist').classList.add('active');
-    window.scrollTo(0, 0);
-    atualizarProgresso();
-  }
-
-  function sel(el, campo, valor, classe) {
-    const grupo = el.parentElement;
-    grupo.querySelectorAll('.opcao').forEach(o => o.className = 'opcao');
-    el.classList.add(classe);
-    respostas[campo] = valor;
-    salvarEstadoChecklist();
-    atualizarProgresso();
-  }
-
-  function atualizarProgresso() {
-    const total = 17;
-    const preenchidos = Object.keys(respostas).length +
-      (document.getElementById('placa').value.trim() ? 1 : 0) +
-      (document.getElementById('qtd_gelox').value !== '' ? 1 : 0) +
-      (document.getElementById('qtd_gelo_seco').value !== '' ? 1 : 0);
-    const pct = Math.min(100, Math.round(preenchidos / total * 100));
-    document.getElementById('progress-fill').style.width = pct + '%';
-  }
-
-  function salvarEstadoChecklist() {
-    const estado = {
-      respostas, placa: document.getElementById('placa').value,
-      qtd_gelox: document.getElementById('qtd_gelox').value,
-      qtd_gelo_seco: document.getElementById('qtd_gelo_seco').value,
-      nomeUsuario, timestamp: new Date().getTime()
-    };
-    localStorage.setItem('checklist_incompleto_' + nomeUsuario, JSON.stringify(estado));
-  }
-
-  function carregarEstadoChecklist() {
-    if (!nomeUsuario) return;
-    const salvo = localStorage.getItem('checklist_incompleto_' + nomeUsuario);
-    if (!salvo) return;
+  async function verificarConfirmacao(tel) {
     try {
-      const estado = JSON.parse(salvo);
-      const diasPassados = Math.floor((new Date().getTime() - estado.timestamp) / (1000*60*60*24));
-      if (diasPassados > 0) return;
-      respostas = estado.respostas || {};
-      document.getElementById('placa').value = estado.placa || '';
-      document.getElementById('qtd_gelox').value = estado.qtd_gelox || '';
-      document.getElementById('qtd_gelo_seco').value = estado.qtd_gelo_seco || '';
-      Object.keys(respostas).forEach(campo => {
-        document.querySelectorAll('.opcao').forEach(o => {
-          if (o.textContent.trim() === respostas[campo]) o.click();
-        });
-      });
-      atualizarProgresso();
-    } catch(e) {}
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    ['placa','qtd_gelox','qtd_gelo_seco'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.addEventListener('input', () => { salvarEstadoChecklist(); atualizarProgresso(); });
-    });
-    carregarEstadoChecklist();
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('direto_checklist') === '1' || params.get('checklist_obrigatorio') === 'true' || params.get('continuar') === 'true') {
-      setTimeout(() => abrirChecklist(), 800);
-    }
-  });
-
-  async function enviarChecklist() {
-    const placa = document.getElementById('placa').value.trim();
-    const qtd_gelox = document.getElementById('qtd_gelox').value;
-    const qtd_gelo_seco = document.getElementById('qtd_gelo_seco').value;
-    if (!placa) { showMsgChecklist('Digite a placa do veículo', 'error'); return; }
-    showMsgChecklist('Enviando checklist...', 'loading');
-    const rota = rotasDisponivel.length > 0 ? rotasDisponivel.map(r => r.rota).join(', ') : '';
-    const agora = new Date();
-    const agoraSP = new Date(agora.getTime() - 3*60*60*1000);
-    const dia = String(agoraSP.getUTCDate()).padStart(2,'0');
-    const mes = String(agoraSP.getUTCMonth()+1).padStart(2,'0');
-    const ano = agoraSP.getUTCFullYear();
-    const hh = String(agoraSP.getUTCHours()).padStart(2,'0');
-    const mm = String(agoraSP.getUTCMinutes()).padStart(2,'0');
-    const data = `${dia}/${mes}/${ano} ${hh}:${mm}`;
-    const payload = {
-      biocondutor: nomeUsuario, rota, data_checklist: data, timestamp: agora.getTime(),
-      placa: placa.toUpperCase(),
-      conservacao_moto: respostas.conservacao || '', pneu_dianteiro: respostas.pneu_dianteiro || '',
-      pneu_traseiro: respostas.pneu_traseiro || '', bolsa_limpeza: respostas.bolsa_limpeza || '',
-      bolsa_estado: respostas.bolsa_estado || '', bolsa_identificacao: respostas.bolsa_identificacao || '',
-      colete: respostas.colete || '', documento: respostas.documento || '',
-      mata_cachorro: respostas.mata_cachorro || '', caixa_refrigerada: respostas.caixa_refrigerada || '',
-      caixa_ambiente: respostas.caixa_ambiente || '', caixa_identificacao: respostas.caixa_identificacao || '',
-      amostras_pendentes: respostas.amostras_pendentes || '', bau_cadeado: respostas.bau_cadeado || '',
-      qtd_gelox: parseInt(qtd_gelox) || 0, qtd_gelo_seco: parseInt(qtd_gelo_seco) || 0
-    };
-    try {
-      const r = await fetch(API + '/checklist', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      const r = await fetch(API + '/');
       const d = await r.json();
-      if (d.status === 'ok') {
-        showMsgChecklist('✓ Checklist enviado com sucesso!', 'success');
-        localStorage.removeItem('checklist_incompleto_' + nomeUsuario);
-        setTimeout(() => {
-          if (!rotasCarregadas) carregarRotas();
-          if (rotasDisponivel.length > 0) mostrarSelecaoRotas();
-          else {
-            const semRota = new URLSearchParams(window.location.search).get('sem_rota') === '1';
-            if (semRota) {
-              localStorage.setItem('motoboy_tel', telefoneSalvo);
-              localStorage.setItem('motoboy_nome', nomeUsuario);
-              showMsgChecklist('✓ Checklist concluído!', 'success');
-              setTimeout(() => mostrarPopupSemRota(), 800);
-            } else {
-              showMsgChecklist('✓ Checklist concluído!\n\nVocê não tem rota cadastrada para hoje.', 'success');
-              setTimeout(() => voltarInicial(), 2000);
-            }
-          }
-        }, 1000);
-      } else {
-        showMsgChecklist('Erro ao enviar. Tente novamente.', 'error');
-      }
-    } catch(e) { showMsgChecklist('Erro de conexão.', 'error'); }
+      const confirmacoes = d.confirmacoes || [];
+      // Verifica se ESTE biocondutor já confirmou hoje
+      return confirmacoes.some(c => c.biocondutor === nomeUsuario);
+    } catch(e) {
+      return false;
+    }
   }
 
-  function mostrarSelecaoRotas() {
-    if (rotasDisponivel.length === 1) { irParaRota(rotasDisponivel[0].rota); return; }
+  function irParaConfirmacao() {
+    document.getElementById('modal-opcoes').classList.add('hidden');
+    localStorage.setItem('telefone_temp', telefoneSalvo);
+    localStorage.setItem('nome_temp', nomeUsuario);
+    
+    // Verificar se precisa preencher checklist obrigatório (confirmou mas não preencheu)
+    verificarChecklistObrigatorio().then(precisa => {
+      if (precisa) {
+        alert('⚠️ Você confirmou presença mas ainda não preencheu seu checklist!\n\nVocê precisa preencher o checklist para continuar.');
+        window.location.href = 'confirmar.html?checklist_obrigatorio=true';
+        return;
+      }
+      
+      // Verificar se tem checklist incompleto
+      const checklistIncompleto = localStorage.getItem('checklist_incompleto_' + nomeUsuario);
+      if (checklistIncompleto) {
+        if (confirm('Você tem um checklist incompleto. Deseja continuar preenchendo?')) {
+          window.location.href = 'confirmar.html?continuar=true';
+          return;
+        } else {
+          localStorage.removeItem('checklist_incompleto_' + nomeUsuario);
+        }
+      }
+      
+      window.location.href = 'confirmar.html';
+    });
+  }
+
+  async function verificarChecklistObrigatorio() {
+    try {
+      const r = await fetch(API + '/checklist/verificar?nome=' + encodeURIComponent(nomeUsuario));
+      const d = await r.json();
+      return d.precisa_preencher === true;
+    } catch(e) { return false; }
+  }
+
+  function mostrarSelecaoRotas(fluxo) {
+    proximoFluxo = fluxo;
+    
+    if (rotasDisponivel.length === 0) {
+      showMsg('Você não tem rotas disponíveis.', 'error');
+      return;
+    }
+
+    if (rotasDisponivel.length === 1) {
+      irParaRota(rotasDisponivel[0].rota);
+      return;
+    }
+
+    // Múltiplas rotas → mostra modal
     const lista = document.getElementById('lista-rotas-modal');
     lista.innerHTML = rotasDisponivel.map(r => `
-      <div class="rota-option" onclick="irParaRota('${r.rota.replace(/'/g,"\\'")}')">
-        <div class="rota-name">🚚 ${r.rota}</div>
+      <div class="rota-option" onclick="irParaRota('${r.rota.replace(/'/g,"\\'")}')" style="cursor:pointer">
+        <div class="rota-option-info">
+          <div class="rota-name">🚚 ${r.rota}</div>
+        </div>
         <div class="rota-arrow">→</div>
-      </div>`).join('');
+      </div>
+    `).join('');
+
+    document.getElementById('modal-opcoes').classList.add('hidden');
     document.getElementById('modal-rotas').classList.remove('hidden');
   }
 
-  function irParaRota(rota) {
+  async function irParaRota(rota) {
+    localStorage.setItem('motoboy_tel', telefoneSalvo);
+    localStorage.setItem('motoboy_nome', nomeUsuario);
     localStorage.setItem('motoboy_rota', rota);
     window.location.href = 'rota.html';
   }
@@ -551,45 +284,93 @@ return;
   function mostrarPopupSemRota() {
     const modal = document.createElement('div');
     modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem';
-    modal.innerHTML = `
-      <div style="background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
-        <div style="font-size:44px;margin-bottom:1rem">📋</div>
-        <h3 style="font-size:17px;color:#0F4C7A;margin-bottom:8px;font-weight:700">Checklist concluído!</h3>
-        <p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Você não tem rota cadastrada para hoje.<br/>O que deseja fazer?</p>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <button onclick="irParaChat()" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">💬 Falar com o administrador</button>
-          <button onclick="sairApp()" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">🚪 Sair</button>
-        </div>
-      </div>`;
+    modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'
+      + '<div style="font-size:44px;margin-bottom:1rem">📋</div>'
+      + '<h3 style="font-size:17px;color:#0F4C7A;margin-bottom:8px;font-weight:700">Olá, ' + (localStorage.getItem('motoboy_nome') || '') + '!</h3>'
+      + '<p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">Você não tem rota cadastrada para hoje.<br/>O que deseja fazer?</p>'
+      + '<div style="display:flex;flex-direction:column;gap:10px">'
+      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'semrota.html\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">💬 Falar com o administrador</button>'
+      + '<button onclick="localStorage.clear();window.location.href=\'index.html\'" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">🚪 Sair</button>'
+      + '</div></div>';
     document.body.appendChild(modal);
   }
 
-  function irParaChat() { window.location.href = 'semrota.html'; }
-  async function sairApp() { await pararMotorGPS(); localStorage.clear(); window.location.href = 'index.html'; }
-
-  async function voltarInicial() {
-    await pararMotorGPS();
-    localStorage.removeItem('telefone_temp');
-    localStorage.removeItem('nome_temp');
-    window.location.href = 'index.html';
+  function mostrarPopupGestorMotoboy(nome) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;padding:1.5rem';
+    modal.innerHTML = '<div style="background:#fff;border-radius:16px;padding:2rem;max-width:360px;width:100%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3)">'
+      + '<div style="font-size:44px;margin-bottom:1rem">👋</div>'
+      + '<h3 style="font-size:17px;color:#0F4C7A;margin-bottom:8px;font-weight:700">Olá, ' + nome + '!</h3>'
+      + '<p style="font-size:14px;color:#5A7A8F;margin-bottom:1.5rem;line-height:1.5">O que deseja fazer?</p>'
+      + '<div style="display:flex;flex-direction:column;gap:10px">'
+      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'painel.html\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;font-weight:700;cursor:pointer;font-size:14px">📊 Abrir Painel</button>'
+      + '<button onclick="document.body.removeChild(this.closest(\'[style*=fixed]\'));window.location.href=\'painel.html#gestor\'" style="width:100%;padding:13px;border-radius:10px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;cursor:pointer;font-size:14px">📝 Fazer Auditoria</button>'
+      + '<button onclick="localStorage.clear();window.location.href=\'index.html\'" style="width:100%;padding:13px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:600;cursor:pointer;font-size:14px">🚪 Sair</button>'
+      + '</div></div>';
+    document.body.appendChild(modal);
   }
 
-  function setBtns(disabled) {
-    ['btn-sim','btn-nao','btn-send'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.disabled = disabled;
-    });
-  }
   function showMsg(text, type) {
     const el = document.getElementById('msg');
-    if (!text) { el.className = 'msg'; return; }
-    el.textContent = text; el.className = 'msg ' + type;
+    el.textContent = text;
+    el.className = 'msg ' + type;
   }
-  function showMsgChecklist(text, type) {
-    const el = document.getElementById('msg-checklist');
-    if (!text) { el.className = 'msg'; return; }
-    el.textContent = text; el.className = 'msg ' + type;
+
+  // Verificar flag de refresh do admin a cada 10s
+  let ultimaFlagVistaIdx = null;
+  async function verificarRefreshFlagIdx() {
+    try {
+      const r = await fetch(API + '/refresh-flag');
+      const d = await r.json();
+      if (!d.flag) return;
+      if (ultimaFlagVistaIdx === null) {
+        ultimaFlagVistaIdx = d.flag;
+        return;
+      }
+      if (d.flag !== ultimaFlagVistaIdx) {
+        ultimaFlagVistaIdx = d.flag;
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        await limparCacheERecarregarIdx();
+      }
+    } catch(e) {}
   }
+
+  async function limparCacheERecarregarIdx() {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+    } catch(e) {}
+    window.location.reload(true);
+  }
+  setInterval(verificarRefreshFlagIdx, 10000);
+  setTimeout(verificarRefreshFlagIdx, 2000);
+
+  // Registrar Service Worker (PWA)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/confirmacaoderota/sw.js')
+        .catch(err => console.log('SW erro:', err));
+    });
+    navigator.serviceWorker.addEventListener('message', e => {
+      if (e.data && e.data.type === 'RELOAD') {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
+      }
+    });
+  }
+  try {
+    const bc = new BroadcastChannel('loglife_refresh');
+    bc.onmessage = e => {
+      if (e.data && e.data.type === 'RELOAD') {
+        alert('🔄 O administrador enviou uma atualização. O app será recarregado.');
+        window.location.reload();
+      }
+    };
+  } catch(e) {}
 </script>
 </body>
 </html>
