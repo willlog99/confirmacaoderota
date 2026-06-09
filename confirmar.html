@@ -262,15 +262,14 @@ alert(
   pluginsDisponiveis.join("\n")
 );
 
-const BG = window.Capacitor?.Plugins?.BackgroundGeolocation;
+alert(
+  "Capacitor existe: " +
+  (window.Capacitor ? "SIM" : "NAO") +
+  "\n\nPlugins:\n" +
+  pluginsDisponiveis.join("\n")
+);
 
-if (!BG) {
-  alert(
-    "ERRO: BackgroundGeolocation não encontrado.\n\n" +
-    "Plugins disponíveis:\n" +
-    pluginsDisponiveis.join("\n")
-  );
-  return;
+return;
 }
 
     try { if (gpsWatcherId !== null) await BG.removeWatcher({ id: gpsWatcherId }); } catch(e) {}
