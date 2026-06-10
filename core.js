@@ -456,6 +456,20 @@ function focarMotoboy(nome) {
     marker.openPopup();
   }
 }
+function iconeFabricante(fab) {
+  if (!fab) return '';
+  const f = fab.toLowerCase();
+  if (f.includes('samsung'))  return '🔵'; // Samsung
+  if (f.includes('xiaomi') || f.includes('redmi') || f.includes('poco')) return '🟠'; // Xiaomi
+  if (f.includes('huawei') || f.includes('honor')) return '🔴'; // Huawei
+  if (f.includes('motorola') || f.includes('moto')) return '⚫'; // Motorola
+  if (f.includes('oppo') || f.includes('realme') || f.includes('oneplus')) return '🟢'; // Oppo/OnePlus
+  if (f.includes('vivo')) return '🟡'; // Vivo
+  if (f.includes('lg')) return '🟣'; // LG
+  if (f.includes('sony')) return '⬜'; // Sony
+  return '📱'; // outros
+}
+
 function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
   const el = document.getElementById('mapa-lista-motoboys');
   if (!el) return;
@@ -471,10 +485,11 @@ function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
     const stBg  = isOnline?'#DCFCE7':'#FEF9EC';
     const stCor = isOnline?'#16A34A':'#92400E';
     const stTxt = isOnline?'● online':'⚠ parado';
+    const fabIcon = iconeFabricante(l.fabricante || '');
     html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
       <div style="width:34px;height:34px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
       <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:#0F2940">${l.nome}</div>
+        <div style="font-size:13px;font-weight:600;color:#0F2940">${l.nome} ${fabIcon}</div>
         <div style="font-size:11px;color:#5A7A8F;margin-top:1px">${l.lat.toFixed(4)}°S · ${tempo}</div>
       </div>
       <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap">${stTxt}</span>
