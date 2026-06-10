@@ -615,43 +615,68 @@ async function carregarKmCompleto() {
   const elAtivos = document.getElementById('km-ativos-dia');
   const elLabel = document.getElementById('km-data-label');
   const filtroEl = document.getElementById('km-data-filtro');
+
   if (filtroEl && !filtroEl.value) {
     const hoje = new Date();
-    const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+    const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
     filtroEl.value = diaSP.toISOString().split('T')[0];
   }
-  const data = filtroEl?.value || new Date().toISOString().split('T')[0];
-  const [ano, mes, dia] = data.split('-');
-  if (elLabel) elLabel.textContent = `${dia}/${mes}/${ano}`;
+  const data = (filtroEl && filtroEl.value) ? filtroEl.value : new Date().toISOString().split('T')[0];
+  const partes = data.split('-');
+  if (elLabel) elLabel.textContent = partes[2] + '/' + partes[1] + '/' + partes[0];
   if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
   try {
-    const [rMb] = await Promise.all([fetch(API + '/motoboys?todos=1&agrupado=1')]);
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
-    const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
-    const promises = nomes.map(async nome => {
-      try {
-        const r = await fetch(`${API}/km-rodado?nome=${encodeURIComponent(nome)}&data=${data}`);
-        const d = await r.json();
-        return { nome, km: d.km || 0, horario: d.horario };
-      } catch(e) { return { nome, km: 0 }; }
+    const nomes = Array.from(new Set((dMb.motoboys || []).map(function(m) { return m.nome; }))).sort();
+
+    const promises = nomes.map(function(nome) {
+      return fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data)
+        .then(function(r) { return r.json(); })
+        .then(function(d) { return { nome: nome, km: d.km || 0, horario: d.horario }; })
+        .catch(function() { return { nome: nome, km: 0 }; });
     });
+
     const resultados = await Promise.all(promises);
-    const comKm = resultados.filter(r => r.km > 0);
-    resultados.sort((a,b) => b.km - a.km);
-    const totalKm = comKm.reduce((s,r) => s + r.km, 0);
+    const comKm = resultados.filter(function(r) { return r.km > 0; });
+    resultados.sort(function(a, b) { return b.km - a.km; });
+
+    const totalKm = comKm.reduce(function(s, r) { return s + r.km; }, 0);
     const mediaKm = comKm.length > 0 ? (totalKm / comKm.length).toFixed(1) : 0;
+    const maxKm = Math.max.apply(null, resultados.map(function(x) { return x.km; }).concat([1]));
+
     if (elTotal) elTotal.textContent = totalKm.toFixed(1) + 'km';
     if (elMedia) elMedia.textContent = mediaKm + 'km';
     if (elAtivos) elAtivos.textContent = comKm.length;
+
     if (!lista) return;
-    if (!resultados.length) { lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>'; return; }
-    lista.innerHTML = resultados.map(r => {
-      const cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : '#5A7A8F';
-      const barPct = Math.min(100, (r.km / Math.max(...resultados.map(x=>x.km), 1)) * 100);
-      const iniciais = r.nome.split(' ).map(p=>p[0]).slice(0,2).join(');
-      const horario = r.horario ? `${r.horario.inicio} – ${r.horario.fim}` : '—';
-      return `<div style="padding:12px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:12px"><div style="width:34px;height:34px;border-radius:50%;background:${r.km>0?'#E8F4FB':'#F3F4F6'};color:${r.km>0?'#0F4C7A':'#9CA3AF'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome}</div><div style="font-size:10px;color:#94A8B8;margin-top:2px">⏰ ${horario}</div><div style="margin-top:5px;height:4px;background:#F0F4F8;border-radius:4px;overflow:hidden"><div style="height:100%;width:${barPct}%;background:${cor};border-radius:4px"></div></div></div><div style="font-size:16px;font-weight:800;color:${cor};flex-shrink:0;min-width:52px;text-align:right">${r.km > 0 ? r.km+'km' : '—'}</div></div>`;
-    }).join(');
+    if (!resultados.length) {
+      lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>';
+      return;
+    }
+
+    var html = '';
+    resultados.forEach(function(r) {
+      var cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : '#5A7A8F';
+      var barPct = Math.min(100, (r.km / maxKm) * 100);
+      var iniciais = r.nome.split(' ').map(function(p) { return p[0]; }).slice(0, 2).join('');
+      var horario = r.horario ? (r.horario.inicio + ' – ' + r.horario.fim) : '—';
+      var bgCor = r.km > 0 ? '#E8F4FB' : '#F3F4F6';
+      var txtCor = r.km > 0 ? '#0F4C7A' : '#9CA3AF';
+      var kmTxt = r.km > 0 ? r.km + 'km' : '—';
+      html += '<div style="padding:12px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:12px">';
+      html += '<div style="width:34px;height:34px;border-radius:50%;background:' + bgCor + ';color:' + txtCor + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">' + iniciais + '</div>';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.nome + '</div>';
+      html += '<div style="font-size:10px;color:#94A8B8;margin-top:2px">⏰ ' + horario + '</div>';
+      html += '<div style="margin-top:5px;height:4px;background:#F0F4F8;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + barPct + '%;background:' + cor + ';border-radius:4px"></div></div>';
+      html += '</div>';
+      html += '<div style="font-size:16px;font-weight:800;color:' + cor + ';flex-shrink:0;min-width:52px;text-align:right">' + kmTxt + '</div>';
+      html += '</div>';
+    });
+    lista.innerHTML = html;
+
   } catch(e) {
     if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
   }
