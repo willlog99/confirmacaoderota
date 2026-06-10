@@ -384,7 +384,9 @@ async function carregarMapa() {
     const IDLE_LIM   = 10*60*1000;
     const online  = locs.filter(l => agora-l.timestamp < ONLINE_LIM);
     const idle    = locs.filter(l => agora-l.timestamp >= ONLINE_LIM && agora-l.timestamp < IDLE_LIM);
-    const comSinal = new Set(locs.map(l => l.nome));
+    // Quem passou de 10min sem enviar vai para offline
+    const locsAtivos = locs.filter(l => agora-l.timestamp < IDLE_LIM);
+    const comSinal = new Set(locsAtivos.map(l => l.nome));
     const offline  = todosMotoboys.filter(n => !comSinal.has(n));
     const elOn = document.getElementById('mapa-count-online');
     const elId = document.getElementById('mapa-count-idle');
@@ -438,9 +440,9 @@ async function carregarMapa() {
         leafletMap.fitBounds(bounds,{padding:[50,50],maxZoom:15});
       }
     }
-    renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM);
+    renderizarListaMapa(locsAtivos, offline, agora, ONLINE_LIM, IDLE_LIM);
     // Salva para atualização de tempo a cada segundo
-    _ultimosLocsMapa = locs;
+    _ultimosLocsMapa = locsAtivos;
     _ultimosOfflineMapa = offline;
   } catch(e) {
     const el = document.getElementById('mapa-lista-motoboys');
@@ -1064,6 +1066,16 @@ function kmExportarPDF() {
   a.href = URL.createObjectURL(blob);
   a.download = 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.html';
   a.click();
+}
+
+async function limparGPSOffline() {
+  if (!confirm('Remover do mapa todos os motoboys sem GPS há mais de 24h?')) return;
+  try {
+    const r = await fetch(API + '/limpar-localizacoes', { method: 'POST' });
+    const d = await r.json();
+    toast('✓ ' + (d.deletados || 0) + ' registro(s) removido(s)');
+    if (typeof carregarMapa === 'function') carregarMapa();
+  } catch(e) { toast('Erro ao limpar'); }
 }
 
 async function configurarHorarios() {
