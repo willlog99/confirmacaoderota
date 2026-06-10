@@ -476,14 +476,21 @@ async function carregarConfirmacoes() {
 
 async function carregarMotoristasList() {
   const el = document.getElementById('lista-mb-view');
-  el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
+  if (!el) return;
+  el.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
   try {
-    const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const r = await fetch(API + '/motoboys?todos=1&agrupado=1', { signal: controller.signal });
+    clearTimeout(timeoutId);
     const d = await r.json();
     motoboysListaCompleta = d.motoboys || [];
     if (!motoboysListaCompleta.length) { el.innerHTML = '<div class="empty">Nenhum motorista cadastrado</div>'; return; }
     renderizarMotoristasFiltrados();
-  } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+  } catch(e) {
+    const msg = e.name === 'AbortError' ? '⏱ Timeout — tente novamente' : '❌ ' + e.message;
+    el.innerHTML = '<div class="empty" style="color:#A32D2D">' + msg + ' <button onclick="carregarMotoristasList()" style="margin-left:8px;padding:4px 10px;border-radius:6px;border:1px solid #A32D2D;background:#fff;color:#A32D2D;cursor:pointer;font-size:12px">🔄 Tentar novamente</button></div>';
+  }
 }
 
 
