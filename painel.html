@@ -1067,37 +1067,98 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div style="background:linear-gradient(135deg,#0F9B78,#0a6f57);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
             <span style="color:#fff;font-size:14px;font-weight:700">📏 QUILOMETRAGEM</span>
             <div style="display:flex;gap:6px;align-items:center">
-              <input type="date" id="km-data-filtro" style="height:28px;border-radius:6px;border:none;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none" onchange="carregarKmCompleto()"/>
-              <button onclick="carregarKmCompleto()" style="height:28px;padding:0 10px;border-radius:6px;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔄 Atualizar</button>
+              <button onclick="kmExportarExcel()" style="height:28px;padding:0 10px;border-radius:6px;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:600;cursor:pointer">📥 Excel</button>
+              <button onclick="kmExportarPDF()" style="height:28px;padding:0 10px;border-radius:6px;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:11px;font-weight:600;cursor:pointer">📄 PDF</button>
             </div>
+          </div>
+
+          <!-- Abas -->
+          <div style="background:#fff;border-bottom:2px solid #EBF1F5;display:flex">
+            <button id="km-tab-btn-dia" onclick="kmMudarAba('dia',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#0F9B78;border-bottom:2px solid #0F9B78;margin-bottom:-2px;cursor:pointer">📅 Por Dia</button>
+            <button id="km-tab-btn-periodo" onclick="kmMudarAba('periodo',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">📆 Período</button>
+            <button id="km-tab-btn-motoboy" onclick="kmMudarAba('motoboy',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">🏍️ Por Motoboy</button>
+            <button id="km-tab-btn-rota" onclick="kmMudarAba('rota',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">🗺️ Por Rota</button>
           </div>
 
           <div style="padding:1rem">
 
+            <!-- FILTROS -->
+            <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:1rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+
+              <!-- Filtro dia -->
+              <div id="km-filtro-dia" style="display:flex;gap:8px;align-items:center;flex:1">
+                <input type="date" id="km-data-filtro" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;flex:1"/>
+                <button onclick="carregarKmCompleto()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
+              </div>
+
+              <!-- Filtro período -->
+              <div id="km-filtro-periodo" style="display:none;gap:8px;align-items:center;flex:1">
+                <input type="date" id="km-data-inicio" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;flex:1"/>
+                <span style="font-size:11px;color:#5A7A8F">até</span>
+                <input type="date" id="km-data-fim" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;flex:1"/>
+                <button onclick="carregarKmPeriodo()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
+              </div>
+
+              <!-- Filtro motoboy -->
+              <div id="km-filtro-motoboy" style="display:none;gap:8px;align-items:center;flex:1">
+                <select id="km-sel-motoboy" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;flex:1;background:#fff">
+                  <option value="">Selecione o motoboy...</option>
+                </select>
+                <input type="date" id="km-motoboy-inicio" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none;width:130px"/>
+                <span style="font-size:11px;color:#5A7A8F">até</span>
+                <input type="date" id="km-motoboy-fim" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none;width:130px"/>
+                <button onclick="carregarKmMotoboy()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
+              </div>
+
+              <!-- Filtro rota -->
+              <div id="km-filtro-rota" style="display:none;gap:8px;align-items:center;flex:1">
+                <select id="km-sel-rota" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;flex:1;background:#fff">
+                  <option value="">Selecione a rota...</option>
+                </select>
+                <input type="date" id="km-rota-data" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;width:140px"/>
+                <button onclick="carregarKmRota()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
+              </div>
+
+            </div>
+
             <!-- KPIs -->
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem">
               <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
-                <div style="font-size:22px;font-weight:800;color:#0F9B78" id="km-total-dia">—</div>
+                <div style="font-size:20px;font-weight:800;color:#0F9B78" id="km-total-dia">—</div>
                 <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">KM total</div>
               </div>
               <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
-                <div style="font-size:22px;font-weight:800;color:#1E9FD9" id="km-media-dia">—</div>
+                <div style="font-size:20px;font-weight:800;color:#1E9FD9" id="km-media-dia">—</div>
                 <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Média/motoboy</div>
               </div>
               <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
-                <div style="font-size:22px;font-weight:800;color:#0F4C7A" id="km-ativos-dia">—</div>
+                <div style="font-size:20px;font-weight:800;color:#0F4C7A" id="km-ativos-dia">—</div>
                 <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Motoboys</div>
+              </div>
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
+                <div style="font-size:20px;font-weight:800;color:#7C3AED" id="km-maior-dia">—</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Maior KM</div>
               </div>
             </div>
 
-            <!-- Lista -->
+            <!-- Tabela -->
             <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;overflow:hidden">
               <div style="padding:12px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
-                <span style="font-size:13px;font-weight:700;color:#0F4C7A">KM por motoboy</span>
+                <span style="font-size:13px;font-weight:700;color:#0F4C7A" id="km-tabela-titulo">KM por motoboy</span>
                 <span id="km-data-label" style="font-size:11px;color:#5A7A8F"></span>
               </div>
-              <div id="km-lista-completa" style="max-height:calc(100vh - 320px);overflow-y:auto">
-                <div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
+
+              <!-- Cabeçalho tabela -->
+              <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 80px;padding:8px 14px;background:#F8FBFD;border-bottom:1px solid #EBF1F5">
+                <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em">Motoboy</span>
+                <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;text-align:center">Início</span>
+                <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;text-align:center">Fim</span>
+                <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;text-align:center">Pontos</span>
+                <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;text-align:right">KM</span>
+              </div>
+
+              <div id="km-lista-completa" style="max-height:calc(100vh - 420px);overflow-y:auto">
+                <div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Selecione um filtro e clique em Buscar</div>
               </div>
             </div>
 
