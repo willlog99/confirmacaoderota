@@ -295,6 +295,7 @@ async function publicarBundle() {
 // ── MAPA RASTREAMENTO ────────────────────────────────────────
 let leafletMap = null;
 let leafletMarkers = {};
+let leafletTrajetos = {}; // polylines de trajeto por motoboy
 let mapaRefreshInterval = null;
 let mapaSyncTimer = null;
 let mapaSyncSegundos = 120;
@@ -417,6 +418,10 @@ async function carregarMapa() {
           <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">🕐 ${tempo}</div>
           <div style="font-size:11px;color:#5A7A8F;margin-bottom:6px">🎯 Precisão: ${Math.round(l.precisao||0)}m</div>
           <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${stBg};color:${stCor}">${stTxt}</span>
+          <div style="margin-top:8px;display:flex;gap:6px">
+            <button onclick="verTrajeto('${l.nome.replace(/'/g,"\\'")}',this)" style="flex:1;padding:5px 8px;border-radius:7px;border:none;background:#0F4C7A;color:#fff;font-size:11px;font-weight:700;cursor:pointer">🗺️ Trajeto</button>
+            <button onclick="limparTrajeto('${l.nome.replace(/'/g,"\\'")}',this)" style="flex:1;padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:600;cursor:pointer">✕ Limpar</button>
+          </div>
         </div>`;
         if (leafletMarkers[l.nome]) {
           leafletMarkers[l.nome].setLatLng([l.lat,l.lng]);
@@ -449,6 +454,79 @@ async function carregarMapa() {
     if(el) el.innerHTML = '<div class="empty">Erro ao carregar</div>';
   }
 }
+async function verTrajeto(nome, btn) {
+  if (!leafletMap) return;
+  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
+
+  try {
+    const hoje = new Date();
+    const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+    const data = diaSP.toISOString().split('T')[0];
+
+    const r = await fetch(API + '/localizacao?dia=' + data);
+    const d = await r.json();
+    const pontos = (d.historico || []).filter(p => p.nome === nome);
+
+    if (pontos.length < 2) {
+      toast('Menos de 2 pontos GPS hoje para ' + nome.split(' ')[0]);
+      if (btn) { btn.textContent = '🗺️ Trajeto'; btn.disabled = false; }
+      return;
+    }
+
+    // Remove trajeto anterior se existir
+    limparTrajeto(nome);
+
+    // Cor baseada no índice do motoboy
+    const CORES_MB = ['#1E9FD9','#0F9B78','#F59E0B','#8B5CF6','#EF4444','#EC4899','#06B6D4','#84CC16'];
+    const idx = Object.keys(leafletMarkers).indexOf(nome);
+    const cor = CORES_MB[idx % CORES_MB.length] || '#1E9FD9';
+
+    // Desenha a linha do trajeto
+    const coords = pontos.map(p => [p.lat, p.lng]);
+    const polyline = L.polyline(coords, {
+      color: cor,
+      weight: 3,
+      opacity: 0.8,
+      dashArray: null
+    }).addTo(leafletMap);
+
+    // Marca início e fim
+    const inicio = pontos[0];
+    const fim = pontos[pontos.length - 1];
+    const marcadorInicio = L.circleMarker([inicio.lat, inicio.lng], {
+      radius: 7, color: '#fff', fillColor: '#16A34A', fillOpacity: 1, weight: 2
+    }).addTo(leafletMap).bindTooltip('🟢 Início ' + new Date(inicio.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
+
+    const marcadorFim = L.circleMarker([fim.lat, fim.lng], {
+      radius: 7, color: '#fff', fillColor: cor, fillOpacity: 1, weight: 2
+    }).addTo(leafletMap).bindTooltip('📍 Último ponto ' + new Date(fim.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
+
+    leafletTrajetos[nome] = { polyline, marcadorInicio, marcadorFim };
+
+    // Zoom no trajeto
+    leafletMap.fitBounds(polyline.getBounds(), { padding: [40, 40] });
+    toast('✓ Trajeto de ' + nome.split(' ')[0] + ' — ' + pontos.length + ' pontos');
+
+  } catch(e) {
+    toast('Erro ao carregar trajeto');
+  }
+  if (btn) { btn.textContent = '🗺️ Trajeto'; btn.disabled = false; }
+}
+
+function limparTrajeto(nome, btn) {
+  if (leafletTrajetos[nome]) {
+    const t = leafletTrajetos[nome];
+    if (t.polyline) leafletMap.removeLayer(t.polyline);
+    if (t.marcadorInicio) leafletMap.removeLayer(t.marcadorInicio);
+    if (t.marcadorFim) leafletMap.removeLayer(t.marcadorFim);
+    delete leafletTrajetos[nome];
+  }
+}
+
+function limparTodosTrajetos() {
+  Object.keys(leafletTrajetos).forEach(nome => limparTrajeto(nome));
+}
+
 function focarMotoboy(nome) {
   const marker = leafletMarkers[nome];
   if (marker && leafletMap) {
