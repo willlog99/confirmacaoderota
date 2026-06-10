@@ -520,12 +520,9 @@ let cachePainel = null;
 function trocarFiltroDia(dia) {
   filtroDia = dia;
   renderizarFiltroDias();
-  // Se tem cache, renderiza imediatamente sem novo fetch
-  if (cachePainel) {
-    renderizarPainel(cachePainel);
-  } else {
-    carregarPainel();
-  }
+  // Sempre busca dados novos ao trocar de dia para garantir dados atualizados
+  cachePainel = null;
+  carregarPainel();
 }
 
 renderizarFiltroDias();
@@ -587,10 +584,11 @@ async function carregarMotoboysGerenciar() {
 async function adicionarMotoboy() {
   const nome = document.getElementById('mb-nome').value.trim().toUpperCase();
   const tel = document.getElementById('mb-tel').value.trim();
+  const tipo = document.getElementById('mb-tipo')?.value || 'motoboy';
   if (!nome || !tel) { showMsg('msg-mb','Preencha nome e telefone','error'); return; }
   showMsg('msg-mb','Salvando...','loading');
   try {
-    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:''}) });
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:'', tipo}) });
 
     // Criar checklist automático com todos os itens como Pendente
     if (!checklistsMotoboys[nome]) {
