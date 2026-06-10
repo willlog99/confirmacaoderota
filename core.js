@@ -232,16 +232,65 @@ async function carregarMiniMapa() {
   } catch(e) {}
 }
 function atualizarVersaoApp() {
-  const novaVersao = prompt('Digite a nova versão do app:\n(Ex: 1.0.1)\n\nAo salvar, todos os apps verão o banner de atualização.');
-  if (!novaVersao) return;
-  fetch(API + '/app-versao', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ versao: novaVersao.trim() })
-  }).then(r => r.json()).then(d => {
-    if (d.status === 'ok') toast('✓ Versão ' + d.versao + ' publicada');
-    else toast('Erro ao publicar versão');
-  }).catch(() => toast('Erro de conexão'));
+  // Cria modal de publicação
+  if (document.getElementById('modal-live-update')) {
+    document.getElementById('modal-live-update').style.display = 'flex';
+    return;
+  }
+  const modal = document.createElement('div');
+  modal.id = 'modal-live-update';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,75,122,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:1.75rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+        <div style="font-size:16px;font-weight:700;color:#0F4C7A">📲 Publicar Atualização</div>
+        <button onclick="document.getElementById('modal-live-update').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;display:block;margin-bottom:5px">Versão (ex: 1.0.1)</label>
+        <input type="text" id="lu-versao" placeholder="1.0.1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+      </div>
+      <div style="margin-bottom:1rem">
+        <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;display:block;margin-bottom:5px">Bundle (.zip com arquivos www/)</label>
+        <input type="file" id="lu-arquivo" accept=".zip" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A"/>
+      </div>
+      <div style="background:#F7FBFD;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#5A7A8F;line-height:1.5">
+        💡 Zipar apenas o conteúdo da pasta <strong>www/</strong> (sem a pasta raiz)<br>
+        O app vai baixar e aplicar automaticamente ao abrir
+      </div>
+      <div id="lu-msg" style="display:none;margin-bottom:1rem"></div>
+      <button onclick="publicarBundle()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:14px;font-weight:700;cursor:pointer">🚀 Publicar agora</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+async function publicarBundle() {
+  const versao  = document.getElementById('lu-versao')?.value?.trim();
+  const arquivo = document.getElementById('lu-arquivo')?.files?.[0];
+  const msg = document.getElementById('lu-msg');
+
+  if (!versao) { if(msg){msg.style.display='block';msg.innerHTML='<div style="color:#EF4444;font-size:12px">⚠️ Informe a versão</div>'} return; }
+  if (!arquivo) { if(msg){msg.style.display='block';msg.innerHTML='<div style="color:#EF4444;font-size:12px">⚠️ Selecione o arquivo .zip</div>'} return; }
+
+  if(msg){msg.style.display='block';msg.innerHTML='<div style="color:#8B5CF6;font-size:12px">⏳ Enviando bundle...</div>'}
+
+  const form = new FormData();
+  form.append('bundle', arquivo);
+  form.append('versao', versao);
+
+  try {
+    const r = await fetch(API + '/publicar-update', { method: 'POST', body: form });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      if(msg){msg.innerHTML='<div style="color:#0F9B78;font-size:12px">✅ Versão ' + d.versao + ' publicada! Os apps vão atualizar ao abrir.</div>'}
+      toast('✓ Versão ' + d.versao + ' publicada com sucesso');
+    } else {
+      if(msg){msg.innerHTML='<div style="color:#EF4444;font-size:12px">❌ Erro: ' + (d.msg||'falha desconhecida') + '</div>'}
+    }
+  } catch(e) {
+    if(msg){msg.innerHTML='<div style="color:#EF4444;font-size:12px">❌ Erro de conexão</div>'}
+  }
 }
 // ── MAPA RASTREAMENTO ────────────────────────────────────────
 let leafletMap = null;
