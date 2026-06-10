@@ -70,6 +70,7 @@ function setView(id, el) {
     }, 100);
   }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
+  if (id === 'quilometragem' && typeof carregarKmCompleto === 'function') carregarKmCompleto();
 }
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
@@ -604,6 +605,55 @@ async function carregarKMDia() {
     }).join('');
   } catch(e) {
     el.innerHTML = '<div style="font-size:11px;color:#94A8B8;text-align:center;padding:8px">Erro ao carregar</div>';
+  }
+}
+
+async function carregarKmCompleto() {
+  const lista = document.getElementById('km-lista-completa');
+  const elTotal = document.getElementById('km-total-dia');
+  const elMedia = document.getElementById('km-media-dia');
+  const elAtivos = document.getElementById('km-ativos-dia');
+  const elLabel = document.getElementById('km-data-label');
+  const filtroEl = document.getElementById('km-data-filtro');
+  if (filtroEl && !filtroEl.value) {
+    const hoje = new Date();
+    const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+    filtroEl.value = diaSP.toISOString().split('T')[0];
+  }
+  const data = filtroEl?.value || new Date().toISOString().split('T')[0];
+  const [ano, mes, dia] = data.split('-');
+  if (elLabel) elLabel.textContent = `${dia}/${mes}/${ano}`;
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+  try {
+    const [rMb] = await Promise.all([fetch(API + '/motoboys?todos=1&agrupado=1')]);
+    const dMb = await rMb.json();
+    const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
+    const promises = nomes.map(async nome => {
+      try {
+        const r = await fetch(`${API}/km-rodado?nome=${encodeURIComponent(nome)}&data=${data}`);
+        const d = await r.json();
+        return { nome, km: d.km || 0, horario: d.horario };
+      } catch(e) { return { nome, km: 0 }; }
+    });
+    const resultados = await Promise.all(promises);
+    const comKm = resultados.filter(r => r.km > 0);
+    resultados.sort((a,b) => b.km - a.km);
+    const totalKm = comKm.reduce((s,r) => s + r.km, 0);
+    const mediaKm = comKm.length > 0 ? (totalKm / comKm.length).toFixed(1) : 0;
+    if (elTotal) elTotal.textContent = totalKm.toFixed(1) + 'km';
+    if (elMedia) elMedia.textContent = mediaKm + 'km';
+    if (elAtivos) elAtivos.textContent = comKm.length;
+    if (!lista) return;
+    if (!resultados.length) { lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>'; return; }
+    lista.innerHTML = resultados.map(r => {
+      const cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : '#5A7A8F';
+      const barPct = Math.min(100, (r.km / Math.max(...resultados.map(x=>x.km), 1)) * 100);
+      const iniciais = r.nome.split(' ).map(p=>p[0]).slice(0,2).join(');
+      const horario = r.horario ? `${r.horario.inicio} – ${r.horario.fim}` : '—';
+      return `<div style="padding:12px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:12px"><div style="width:34px;height:34px;border-radius:50%;background:${r.km>0?'#E8F4FB':'#F3F4F6'};color:${r.km>0?'#0F4C7A':'#9CA3AF'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome}</div><div style="font-size:10px;color:#94A8B8;margin-top:2px">⏰ ${horario}</div><div style="margin-top:5px;height:4px;background:#F0F4F8;border-radius:4px;overflow:hidden"><div style="height:100%;width:${barPct}%;background:${cor};border-radius:4px"></div></div></div><div style="font-size:16px;font-weight:800;color:${cor};flex-shrink:0;min-width:52px;text-align:right">${r.km > 0 ? r.km+'km' : '—'}</div></div>`;
+    }).join(');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
   }
 }
 async function configurarHorarios() {
