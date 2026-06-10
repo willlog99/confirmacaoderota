@@ -395,7 +395,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
       <div class="nav-group-lbl">Importação e Registro</div>
       <button class="nav-item" onclick="setView('importacao',this)"><span class="nav-ic">📥</span>Importação</button>
-      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📏</span>Quilometragem<span class="nav-tag">pendente</span></button>
+      <button class="nav-item" onclick="setView('quilometragem',this)"><span class="nav-ic">📏</span>Quilometragem</button>
 
       <div class="nav-group-lbl">Sistema</div>
       <button class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span>Atualização APK</button>
@@ -1050,12 +1050,57 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
 
-          <!-- Quilometragem pendente -->
-          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;opacity:.5">
+          <!-- Quilometragem -->
+          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;cursor:pointer" onclick="setView('quilometragem',document.querySelector('.nav-item[onclick*=quilometragem]'))">
             <div style="padding:13px 14px;display:flex;align-items:center;justify-content:space-between">
               <div style="font-size:13px;font-weight:700;color:#0F4C7A">📏 Registro de Quilometragem</div>
-              <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">pendente</span>
+              <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#16A34A">ativo</span>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="view" id="view-quilometragem">
+        <div style="padding:0">
+
+          <!-- Topbar -->
+          <div style="background:linear-gradient(135deg,#0F9B78,#0a6f57);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
+            <span style="color:#fff;font-size:14px;font-weight:700">📏 QUILOMETRAGEM</span>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="date" id="km-data-filtro" style="height:28px;border-radius:6px;border:none;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none" onchange="carregarKmCompleto()"/>
+              <button onclick="carregarKmCompleto()" style="height:28px;padding:0 10px;border-radius:6px;border:none;background:rgba(255,255,255,.2);color:#fff;font-size:12px;font-weight:600;cursor:pointer">🔄 Atualizar</button>
+            </div>
+          </div>
+
+          <div style="padding:1rem">
+
+            <!-- KPIs -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
+                <div style="font-size:22px;font-weight:800;color:#0F9B78" id="km-total-dia">—</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">KM total</div>
+              </div>
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
+                <div style="font-size:22px;font-weight:800;color:#1E9FD9" id="km-media-dia">—</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Média/motoboy</div>
+              </div>
+              <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;text-align:center">
+                <div style="font-size:22px;font-weight:800;color:#0F4C7A" id="km-ativos-dia">—</div>
+                <div style="font-size:10px;color:#5A7A8F;font-weight:600;text-transform:uppercase;letter-spacing:.06em">Motoboys</div>
+              </div>
+            </div>
+
+            <!-- Lista -->
+            <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;overflow:hidden">
+              <div style="padding:12px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:13px;font-weight:700;color:#0F4C7A">KM por motoboy</span>
+                <span id="km-data-label" style="font-size:11px;color:#5A7A8F"></span>
+              </div>
+              <div id="km-lista-completa" style="max-height:calc(100vh - 320px);overflow-y:auto">
+                <div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
