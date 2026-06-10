@@ -57,6 +57,7 @@ async function carregarPainel(silent) {
 
 
 async function renderizarPainel(data) {
+  try {
   const todasRotas = data.rotas || [];
   const clientesPorRota = data.clientes_por_rota || {};
   const confirmacoes = data.confirmacoes || [];
@@ -111,7 +112,7 @@ async function renderizarPainel(data) {
     const el = document.getElementById('painel-rotas');
     if (!rotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; }
     else {
-      el.innerHTML = rotas.map((r, i) => {
+      const renderCard = (r, i) => {
         const cls = clientesPorRota[r.rota] || [];
         const total = cls.length;
         const feitas = cls.filter(c => c.status === 'entregue').length;
@@ -123,10 +124,8 @@ async function renderizarPainel(data) {
         const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
         const motoStr = r.motoboy_aberto || 'Sem motorista';
         const expandida = cardExpandido === r.rota ? 'expanded' : '';
-
         const ent = cls.filter(c => c.status === 'entregue');
         const pend = cls.filter(c => c.status !== 'entregue');
-
         const renderPrev = (c, tipo) => {
           const ico = tipo === 'feito' ? '✓' : tipo === 'imp' ? '✕' : '⏳';
           const btnVoltar = (tipo === 'feito' || tipo === 'imp')
@@ -140,32 +139,47 @@ async function renderizarPainel(data) {
             ${btnVoltar}
           </div>`;
         };
-
         const prodList = ent.filter(c => c.produtividade !== 'improdutiva').map(c => renderPrev(c, 'feito')).join('');
-        const impList = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
+        const impList  = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
         const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
+        return `
+          <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
+            <div class="rota-top">
+              <div class="rota-nome">${r.rota}</div>
+              <span class="rota-badge ${badgeCls}">${badgeLabel}</span>
+            </div>
+            <div class="rota-meta"><span>🏍️ ${motoStr}</span></div>
+            <div class="rota-progress">
+              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+              <div class="progress-txt">${feitas}/${total}</div>
+            </div>
+            <div class="rota-preview">
+              ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
+              ${prodList ? `<div class="preview-sec" style="margin-top:8px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
+              ${impList  ? `<div class="preview-sec" style="margin-top:8px">✕ Improdutivas</div>${impList}` : ''}
+              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')" style="margin-top:10px;background:#1E9FD9;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
+            </div>
+          </div>`;
+      };
 
-      return `
-        <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
-          <div class="rota-top">
-            <div class="rota-nome">${r.rota}</div>
-            <span class="rota-badge ${badgeCls}">${badgeLabel}</span>
-          </div>
-          <div class="rota-meta">
-            <span>🏍️ ${motoStr}</span>
-          </div>
-          <div class="rota-progress">
-            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-            <div class="progress-txt">${feitas}/${total}</div>
-          </div>
-          <div class="rota-preview">
-            ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
-            ${prodList ? `<div class="preview-sec" style="margin-top:8px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
-            ${impList ? `<div class="preview-sec" style="margin-top:8px">✕ Improdutivas</div>${impList}` : ''}
-            <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')" style="margin-top:10px;background:#1E9FD9;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
-          </div>
-        </div>`;
-    }).join('');
+      if (filtroDia === 'todos') {
+        // Agrupa por dia com separador
+        const grupos = [
+          { key: 'seg-sex', label: '📅 Segunda a Sexta' },
+          { key: 'sabado',  label: '📅 Sábado' },
+          { key: 'domingo', label: '📅 Domingo' }
+        ];
+        let html = '';
+        grupos.forEach(g => {
+          const rotasGrupo = rotas.filter(r => r.dia_semana === g.key);
+          if (!rotasGrupo.length) return;
+          html += `<div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;padding:10px 0 6px;border-top:1px solid #EBF1F5;margin-top:4px">${g.label} <span style="background:#E8F4FB;color:#1E9FD9;border-radius:20px;padding:1px 7px;font-size:10px">${rotasGrupo.length}</span></div>`;
+          html += rotasGrupo.map((r, i) => renderCard(r, i)).join('');
+        });
+        el.innerHTML = html || '<div class="empty">Nenhuma rota cadastrada</div>';
+      } else {
+        el.innerHTML = rotas.map((r, i) => renderCard(r, i)).join('');
+      }
     } // fim else rotas
 
     // Calcular atrasos — só rotas ativas com checklist feito
@@ -241,6 +255,11 @@ async function renderizarPainel(data) {
     // Checklist carrega DEPOIS das rotas — sem bloquear
     carregarChecklist(confirmacoes);
 
+  } catch(e) {
+    console.error('[renderizarPainel] Erro:', e);
+    const el = document.getElementById('painel-rotas');
+    if (el) el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro ao renderizar: ' + e.message + '</div>';
+  }
 } // fim renderizarPainel
 
 
