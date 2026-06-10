@@ -681,6 +681,342 @@ async function carregarKmCompleto() {
     if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
   }
 }
+// ── QUILOMETRAGEM ─────────────────────────────────────────────
+let _kmDadosAtual = []; // Cache para exportação
+let _kmAbaAtual = 'dia';
+
+function kmMudarAba(aba, el) {
+  _kmAbaAtual = aba;
+  document.querySelectorAll('[id^="km-tab-btn-"]').forEach(b => {
+    b.style.color = '#6B7280';
+    b.style.borderBottomColor = 'transparent';
+  });
+  el.style.color = '#0F9B78';
+  el.style.borderBottomColor = '#0F9B78';
+
+  // Mostra filtro certo
+  ['dia','periodo','motoboy','rota'].forEach(a => {
+    const el2 = document.getElementById('km-filtro-' + a);
+    if (el2) el2.style.display = a === aba ? 'flex' : 'none';
+  });
+
+  // Popula selects se necessário
+  if (aba === 'motoboy') kmPopularSelectMotoboy();
+  if (aba === 'rota') kmPopularSelectRota();
+
+  // Título da tabela
+  const titulos = { dia: 'KM por motoboy', periodo: 'KM por motoboy no período', motoboy: 'Histórico do motoboy', rota: 'KM por rota' };
+  const t = document.getElementById('km-tabela-titulo');
+  if (t) t.textContent = titulos[aba] || 'KM';
+
+  // Limpa resultados
+  const lista = document.getElementById('km-lista-completa');
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Selecione os filtros e clique em Buscar</div>';
+  kmZerarKPIs();
+}
+
+function kmZerarKPIs() {
+  ['km-total-dia','km-media-dia','km-ativos-dia','km-maior-dia'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = '—';
+  });
+}
+
+async function kmPopularSelectMotoboy() {
+  const sel = document.getElementById('km-sel-motoboy');
+  if (!sel || sel.options.length > 1) return;
+  try {
+    const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const d = await r.json();
+    const nomes = [...new Set((d.motoboys||[]).map(m => m.nome))].sort();
+    nomes.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
+  } catch(e) {}
+}
+
+async function kmPopularSelectRota() {
+  const sel = document.getElementById('km-sel-rota');
+  if (!sel || sel.options.length > 1) return;
+  try {
+    const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
+    const d = await r.json();
+    (d.rotas||[]).forEach(r => { const o = document.createElement('option'); o.value = r.rota; o.textContent = r.rota; sel.appendChild(o); });
+  } catch(e) {}
+}
+
+function kmDataAtual() {
+  const hoje = new Date();
+  const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+  return diaSP.toISOString().split('T')[0];
+}
+
+function kmFormatarData(data) {
+  const p = data.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function kmAtualizarKPIs(resultados) {
+  const comKm = resultados.filter(r => r.km > 0);
+  const totalKm = comKm.reduce((s,r) => s + r.km, 0);
+  const mediaKm = comKm.length > 0 ? (totalKm / comKm.length).toFixed(1) : 0;
+  const maiorKm = comKm.length > 0 ? Math.max(...comKm.map(r => r.km)) : 0;
+  const elTotal = document.getElementById('km-total-dia');
+  const elMedia = document.getElementById('km-media-dia');
+  const elAtivos = document.getElementById('km-ativos-dia');
+  const elMaior = document.getElementById('km-maior-dia');
+  if (elTotal) elTotal.textContent = totalKm.toFixed(1) + 'km';
+  if (elMedia) elMedia.textContent = mediaKm + 'km';
+  if (elAtivos) elAtivos.textContent = comKm.length;
+  if (elMaior) elMaior.textContent = maiorKm + 'km';
+}
+
+function kmRenderizarLinha(r, maxKm) {
+  const cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : r.km > 0 ? '#5A7A8F' : '#D1D5DB';
+  const barPct = maxKm > 0 ? Math.min(100, (r.km / maxKm) * 100) : 0;
+  const iniciais = (r.nome || '').split(' ').map(p => p[0]).slice(0,2).join('');
+  const bgCor = r.km > 0 ? '#E8F4FB' : '#F3F4F6';
+  const txtCor = r.km > 0 ? '#0F4C7A' : '#9CA3AF';
+  const kmTxt = r.km > 0 ? r.km + 'km' : '—';
+  const inicio = r.horario ? r.horario.inicio : (r.inicio || '—');
+  const fim = r.horario ? r.horario.fim : (r.fim || '—');
+  const pontos = r.pontos || '—';
+
+  return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 80px;padding:11px 14px;border-bottom:1px solid #F5F9FC;align-items:center">' +
+    '<div style="display:flex;align-items:center;gap:10px">' +
+      '<div style="width:32px;height:32px;border-radius:50%;background:' + bgCor + ';color:' + txtCor + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">' + iniciais + '</div>' +
+      '<div style="min-width:0">' +
+        '<div style="font-size:13px;font-weight:600;color:' + (r.km > 0 ? '#0F2940' : '#9CA3AF') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.nome || r.rota || '—') + '</div>' +
+        '<div style="margin-top:3px;height:3px;background:#F0F4F8;border-radius:3px;overflow:hidden;max-width:120px">' +
+          '<div style="height:100%;width:' + barPct + '%;background:' + cor + ';border-radius:3px"></div>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:12px;color:#5A7A8F;text-align:center">' + inicio + '</div>' +
+    '<div style="font-size:12px;color:#5A7A8F;text-align:center">' + fim + '</div>' +
+    '<div style="font-size:12px;color:#94A8B8;text-align:center">' + pontos + '</div>' +
+    '<div style="font-size:15px;font-weight:800;color:' + cor + ';text-align:right">' + kmTxt + '</div>' +
+  '</div>';
+}
+
+async function carregarKmCompleto() {
+  const lista = document.getElementById('km-lista-completa');
+  const filtroEl = document.getElementById('km-data-filtro');
+  if (filtroEl && !filtroEl.value) filtroEl.value = kmDataAtual();
+  const data = (filtroEl && filtroEl.value) ? filtroEl.value : kmDataAtual();
+  const elLabel = document.getElementById('km-data-label');
+  if (elLabel) elLabel.textContent = kmFormatarData(data);
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+  kmZerarKPIs();
+
+  try {
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const dMb = await rMb.json();
+    const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
+    const promises = nomes.map(nome =>
+      fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data)
+        .then(r => r.json())
+        .then(d => ({ nome, km: d.km || 0, horario: d.horario, pontos: d.pontos || 0 }))
+        .catch(() => ({ nome, km: 0, pontos: 0 }))
+    );
+    const resultados = await Promise.all(promises);
+    resultados.sort((a,b) => b.km - a.km);
+    _kmDadosAtual = resultados.map(r => ({ ...r, data }));
+    kmAtualizarKPIs(resultados);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
+    if (!lista) return;
+    if (!resultados.length) { lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>'; return; }
+    lista.innerHTML = resultados.map(r => kmRenderizarLinha(r, maxKm)).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
+  }
+}
+
+async function carregarKmPeriodo() {
+  const inicio = document.getElementById('km-data-inicio')?.value;
+  const fim = document.getElementById('km-data-fim')?.value;
+  if (!inicio || !fim) { alert('Selecione data início e fim'); return; }
+  const lista = document.getElementById('km-lista-completa');
+  const elLabel = document.getElementById('km-data-label');
+  if (elLabel) elLabel.textContent = kmFormatarData(inicio) + ' a ' + kmFormatarData(fim);
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+  kmZerarKPIs();
+
+  try {
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const dMb = await rMb.json();
+    const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
+
+    // Gerar lista de datas no período
+    const datas = [];
+    let cur = new Date(inicio + 'T00:00:00');
+    const fim2 = new Date(fim + 'T00:00:00');
+    while (cur <= fim2) {
+      datas.push(cur.toISOString().split('T')[0]);
+      cur.setDate(cur.getDate() + 1);
+    }
+
+    // Buscar KM por motoboy somando todos os dias
+    const promises = nomes.map(async nome => {
+      let kmTotal = 0, pontosTotal = 0, horario = null;
+      for (const data of datas) {
+        try {
+          const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data);
+          const d = await r.json();
+          kmTotal += d.km || 0;
+          pontosTotal += d.pontos || 0;
+          if (!horario && d.horario) horario = d.horario;
+        } catch(e) {}
+      }
+      return { nome, km: Math.round(kmTotal * 10) / 10, pontos: pontosTotal, horario, dias: datas.length };
+    });
+
+    const resultados = await Promise.all(promises);
+    resultados.sort((a,b) => b.km - a.km);
+    _kmDadosAtual = resultados.map(r => ({ ...r, periodo: kmFormatarData(inicio) + ' a ' + kmFormatarData(fim) }));
+    kmAtualizarKPIs(resultados);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
+    if (!lista) return;
+    lista.innerHTML = resultados.map(r => kmRenderizarLinha(r, maxKm)).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
+  }
+}
+
+async function carregarKmMotoboy() {
+  const nome = document.getElementById('km-sel-motoboy')?.value;
+  const inicio = document.getElementById('km-motoboy-inicio')?.value;
+  const fim = document.getElementById('km-motoboy-fim')?.value;
+  if (!nome) { alert('Selecione um motoboy'); return; }
+  if (!inicio || !fim) { alert('Selecione o período'); return; }
+  const lista = document.getElementById('km-lista-completa');
+  const elLabel = document.getElementById('km-data-label');
+  if (elLabel) elLabel.textContent = nome + ' · ' + kmFormatarData(inicio) + ' a ' + kmFormatarData(fim);
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+  kmZerarKPIs();
+
+  try {
+    const datas = [];
+    let cur = new Date(inicio + 'T00:00:00');
+    const fim2 = new Date(fim + 'T00:00:00');
+    while (cur <= fim2) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); }
+
+    const promises = datas.map(async data => {
+      try {
+        const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data);
+        const d = await r.json();
+        return { nome, data, km: d.km || 0, pontos: d.pontos || 0, horario: d.horario };
+      } catch(e) { return { nome, data, km: 0, pontos: 0 }; }
+    });
+
+    const resultados = await Promise.all(promises);
+    _kmDadosAtual = resultados;
+    kmAtualizarKPIs(resultados);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
+    if (!lista) return;
+
+    // Renderiza com data em vez de nome
+    lista.innerHTML = resultados.map(r => {
+      const r2 = { ...r, nome: kmFormatarData(r.data) };
+      return kmRenderizarLinha(r2, maxKm);
+    }).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
+  }
+}
+
+async function carregarKmRota() {
+  const rota = document.getElementById('km-sel-rota')?.value;
+  const data = document.getElementById('km-rota-data')?.value || kmDataAtual();
+  if (!rota) { alert('Selecione uma rota'); return; }
+  const lista = document.getElementById('km-lista-completa');
+  const elLabel = document.getElementById('km-data-label');
+  if (elLabel) elLabel.textContent = rota + ' · ' + kmFormatarData(data);
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+  kmZerarKPIs();
+
+  try {
+    // Buscar motoboys que trabalharam nessa rota
+    const rMb = await fetch(API + '/motoboys?todos=1');
+    const dMb = await rMb.json();
+    const motoboysDaRota = [...new Set((dMb.motoboys||[]).filter(m => m.rota === rota).map(m => m.nome))];
+
+    const promises = motoboysDaRota.map(nome =>
+      fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data)
+        .then(r => r.json())
+        .then(d => ({ nome, rota, km: d.km || 0, pontos: d.pontos || 0, horario: d.horario }))
+        .catch(() => ({ nome, rota, km: 0, pontos: 0 }))
+    );
+
+    const resultados = await Promise.all(promises);
+    resultados.sort((a,b) => b.km - a.km);
+    _kmDadosAtual = resultados.map(r => ({ ...r, data }));
+    kmAtualizarKPIs(resultados);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
+    if (!lista) return;
+    if (!resultados.length) { lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum motoboy encontrado para esta rota</div>'; return; }
+    lista.innerHTML = resultados.map(r => kmRenderizarLinha(r, maxKm)).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
+  }
+}
+
+function kmExportarExcel() {
+  if (!_kmDadosAtual.length) { alert('Nenhum dado para exportar. Faça uma busca primeiro.'); return; }
+  const label = document.getElementById('km-data-label')?.textContent || 'relatorio-km';
+
+  let csv = 'Motoboy;Data/Período;Início;Fim;Pontos GPS;KM Rodado\n';
+  _kmDadosAtual.forEach(r => {
+    const inicio = r.horario ? r.horario.inicio : (r.inicio || '—');
+    const fim = r.horario ? r.horario.fim : (r.fim || '—');
+    csv += (r.nome||'—') + ';' + (r.data ? kmFormatarData(r.data) : r.periodo||'—') + ';' + inicio + ';' + fim + ';' + (r.pontos||0) + ';' + (r.km||0) + '\n';
+  });
+
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.csv';
+  a.click();
+}
+
+function kmExportarPDF() {
+  if (!_kmDadosAtual.length) { alert('Nenhum dado para exportar. Faça uma busca primeiro.'); return; }
+  const label = document.getElementById('km-data-label')?.textContent || '';
+  const total = document.getElementById('km-total-dia')?.textContent || '—';
+  const media = document.getElementById('km-media-dia')?.textContent || '—';
+  const ativos = document.getElementById('km-ativos-dia')?.textContent || '—';
+
+  const linhas = _kmDadosAtual.map(r => {
+    const inicio = r.horario ? r.horario.inicio : '—';
+    const fim = r.horario ? r.horario.fim : '—';
+    const data = r.data ? kmFormatarData(r.data) : (r.periodo || '—');
+    return '<tr><td>' + (r.nome||'—') + '</td><td>' + data + '</td><td>' + inicio + '</td><td>' + fim + '</td><td>' + (r.pontos||0) + '</td><td><strong>' + (r.km||0) + ' km</strong></td></tr>';
+  }).join('');
+
+  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Relatório KM Loglife</title>' +
+    '<style>body{font-family:Arial,sans-serif;padding:20px;color:#222}h1{color:#0F9B78;font-size:18px}' +
+    '.kpis{display:flex;gap:16px;margin-bottom:20px}.kpi{background:#F0FDF4;border-radius:8px;padding:12px 20px;text-align:center}' +
+    '.kpi-val{font-size:22px;font-weight:800;color:#0F9B78}.kpi-lbl{font-size:11px;color:#5A7A8F;text-transform:uppercase}' +
+    'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#0F9B78;color:#fff;padding:8px 12px;text-align:left}' +
+    'td{padding:7px 12px;border-bottom:1px solid #E5E7EB}tr:nth-child(even){background:#F9FAFB}' +
+    '.footer{margin-top:20px;font-size:11px;color:#9CA3AF}</style></head><body>' +
+    '<h1>📏 Relatório de Quilometragem — Loglife</h1>' +
+    '<p style="color:#5A7A8F;font-size:13px;margin-bottom:16px">' + label + '</p>' +
+    '<div class="kpis">' +
+      '<div class="kpi"><div class="kpi-val">' + total + '</div><div class="kpi-lbl">KM Total</div></div>' +
+      '<div class="kpi"><div class="kpi-val">' + media + '</div><div class="kpi-lbl">Média</div></div>' +
+      '<div class="kpi"><div class="kpi-val">' + ativos + '</div><div class="kpi-lbl">Motoboys</div></div>' +
+    '</div>' +
+    '<table><thead><tr><th>Motoboy</th><th>Data</th><th>Início</th><th>Fim</th><th>Pontos GPS</th><th>KM Rodado</th></tr></thead>' +
+    '<tbody>' + linhas + '</tbody></table>' +
+    '<div class="footer">Gerado em ' + new Date().toLocaleString('pt-BR') + ' · Loglife Sistema de Gestão</div>' +
+    '</body></html>';
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.html';
+  a.click();
+}
+
 async function configurarHorarios() {
   const modal = document.getElementById('modal-horarios');
   const lista = document.getElementById('horarios-lista');
