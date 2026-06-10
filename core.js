@@ -249,6 +249,11 @@ let mapaRefreshInterval = null;
 let mapaSyncTimer = null;
 let mapaSyncSegundos = 120;
 const CORES_MB = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
+// Dados da última busca — usados para atualizar tempos a cada segundo
+let _ultimosLocsMapa = [];
+let _ultimosOfflineMapa = [];
+let _timerTempoLista = null;
+
 function iniciarAutoRefreshMapa() {
   pararAutoRefreshMapa();
   mapaSyncSegundos = 10;
@@ -260,10 +265,21 @@ function iniciarAutoRefreshMapa() {
     if (bar) bar.style.width = ((10-mapaSyncSegundos)/10*100)+'%';
     if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 10; carregarMapa(); carregarKMDia(); }
   }, 1000);
+
+  // Atualiza só os tempos da lista a cada segundo sem nova requisição
+  _timerTempoLista = setInterval(() => {
+    if (_ultimosLocsMapa.length > 0) {
+      const agora = Date.now();
+      const ONLINE_LIM = 5*60*1000;
+      const IDLE_LIM = 10*60*1000;
+      renderizarListaMapa(_ultimosLocsMapa, _ultimosOfflineMapa, agora, ONLINE_LIM, IDLE_LIM);
+    }
+  }, 1000);
 }
 function pararAutoRefreshMapa() {
   if (mapaRefreshInterval) { clearInterval(mapaRefreshInterval); mapaRefreshInterval = null; }
   if (mapaSyncTimer) { clearInterval(mapaSyncTimer); mapaSyncTimer = null; }
+  if (_timerTempoLista) { clearInterval(_timerTempoLista); _timerTempoLista = null; }
 }
 function iniciarLeafletMap() {
   if (leafletMap) return;
@@ -373,6 +389,9 @@ async function carregarMapa() {
       }
     }
     renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM);
+    // Salva para atualização de tempo a cada segundo
+    _ultimosLocsMapa = locs;
+    _ultimosOfflineMapa = offline;
   } catch(e) {
     const el = document.getElementById('mapa-lista-motoboys');
     if(el) el.innerHTML = '<div class="empty">Erro ao carregar</div>';
