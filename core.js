@@ -1112,3 +1112,193 @@ async function salvarHorario(nome, id) {
     else toast('Erro ao salvar');
   } catch(e) { toast('Erro de conexão'); }
 }
+
+// ── CHAT DO PAINEL ────────────────────────────────────────────
+let chatMotoboyAtual = null;
+let chatMotoboys = [];
+let chatPollingTimer = null;
+let chatUltimoTs = 0;
+
+function abrirChat() {
+  const win = document.getElementById('chat-window');
+  if (!win) return;
+  win.style.display = 'flex';
+  carregarChatLista();
+  // Polling de novas mensagens a cada 5s
+  if (!chatPollingTimer) {
+    chatPollingTimer = setInterval(() => {
+      if (chatMotoboyAtual) carregarMensagens(chatMotoboyAtual, true);
+      atualizarBadgeChat();
+    }, 5000);
+  }
+}
+
+function fecharChat() {
+  const win = document.getElementById('chat-window');
+  if (win) win.style.display = 'none';
+  if (chatPollingTimer) { clearInterval(chatPollingTimer); chatPollingTimer = null; }
+}
+
+async function carregarChatLista() {
+  const lista = document.getElementById('chat-lista');
+  if (!lista) return;
+  try {
+    const r = await fetch(API + '/chat/lista');
+    const d = await r.json();
+    chatMotoboys = d.lista || [];
+    renderizarChatLista(chatMotoboys);
+  } catch(e) {
+    lista.innerHTML = '<div style="padding:1rem;color:#EF4444;font-size:12px">Erro ao carregar</div>';
+  }
+}
+
+function renderizarChatLista(lista) {
+  const el = document.getElementById('chat-lista');
+  if (!el) return;
+  if (!lista.length) {
+    el.innerHTML = '<div style="padding:1rem;text-align:center;color:#94A8B8;font-size:12px">Nenhum motoboy</div>';
+    return;
+  }
+  el.innerHTML = lista.map(m => {
+    const iniciais = (m.nome || '').split(' ').map(p => p[0]).slice(0,2).join('');
+    const temNaoLidas = m.nao_lidas > 0;
+    const ativo = chatMotoboyAtual === m.telefone;
+    const ultimaMsg = m.ultima_msg ? (m.ultima_msg.length > 28 ? m.ultima_msg.slice(0,28) + '…' : m.ultima_msg) : 'Sem mensagens';
+    const tsLabel = m.ultima_ts ? new Date(m.ultima_ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
+    return `<div onclick="abrirConversa('${m.telefone}','${(m.nome||'').replace(/'/g,"\\'")}')" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;gap:10px;background:${ativo ? '#E8F4FB' : 'transparent'};transition:.15s">
+      <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${iniciais}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:${temNaoLidas ? '700' : '600'};color:#0F4C7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.nome || m.telefone}</div>
+        <div style="font-size:11px;color:${temNaoLidas ? '#1E9FD9' : '#94A8B8'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${ultimaMsg}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
+        ${tsLabel ? `<div style="font-size:10px;color:#94A8B8">${tsLabel}</div>` : ''}
+        ${temNaoLidas ? `<div style="background:#DC2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${m.nao_lidas}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filtrarMotoboys() {
+  const busca = (document.getElementById('chat-busca')?.value || '').toLowerCase();
+  const filtrados = chatMotoboys.filter(m => (m.nome || '').toLowerCase().includes(busca) || (m.telefone || '').includes(busca));
+  renderizarChatLista(filtrados);
+}
+
+async function abrirConversa(tel, nome) {
+  chatMotoboyAtual = tel;
+  chatUltimoTs = 0;
+
+  // Header da conversa
+  const header = document.getElementById('chat-conv-header');
+  const avatarEl = document.getElementById('chat-conv-avatar');
+  const nomeEl = document.getElementById('chat-conv-nome');
+  const rotaEl = document.getElementById('chat-conv-rota');
+  const inputEl = document.getElementById('chat-conv-input');
+
+  if (header) header.style.display = 'flex';
+  if (inputEl) inputEl.style.display = 'flex';
+  if (nomeEl) nomeEl.textContent = nome;
+
+  const mb = chatMotoboys.find(m => m.telefone === tel);
+  if (rotaEl) rotaEl.textContent = mb?.rota || '';
+  if (avatarEl) avatarEl.textContent = nome.split(' ').map(p => p[0]).slice(0,2).join('');
+
+  // Foca no input
+  setTimeout(() => document.getElementById('chat-input-text')?.focus(), 100);
+
+  // Atualiza lista (para remover badge)
+  renderizarChatLista(chatMotoboys);
+
+  await carregarMensagens(tel, false);
+
+  // Marca como lido
+  fetch(API + '/chat/marcar-lido', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ telefone_motoboy: tel, remetente: 'motoboy' })
+  });
+}
+
+async function carregarMensagens(tel, silent) {
+  const msgs = document.getElementById('chat-conv-msgs');
+  if (!msgs) return;
+  if (!silent) msgs.innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
+  try {
+    const r = await fetch(API + '/chat/mensagens?telefone=' + encodeURIComponent(tel));
+    const d = await r.json();
+    const lista = d.mensagens || [];
+
+    // Se silent e não há novas mensagens, não re-renderiza
+    if (silent && lista.length > 0 && lista[lista.length-1].timestamp === chatUltimoTs) return;
+    if (lista.length > 0) chatUltimoTs = lista[lista.length-1].timestamp;
+
+    if (!lista.length) {
+      msgs.innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Nenhuma mensagem ainda</div>';
+      return;
+    }
+
+    msgs.innerHTML = lista.map(m => {
+      const isAdmin = m.remetente === 'admin';
+      const hora = new Date(m.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+      return `<div style="display:flex;justify-content:${isAdmin ? 'flex-end' : 'flex-start'};margin-bottom:8px">
+        <div style="max-width:75%;padding:9px 12px;border-radius:${isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};background:${isAdmin ? 'linear-gradient(135deg,#1E9FD9,#0F7BB0)' : '#fff'};color:${isAdmin ? '#fff' : '#0F2940'};font-size:13px;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+          <div>${m.mensagem}</div>
+          <div style="font-size:10px;opacity:.6;margin-top:3px;text-align:right">${hora}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Scroll para o fim
+    msgs.scrollTop = msgs.scrollHeight;
+  } catch(e) {}
+}
+
+async function enviarChat() {
+  if (!chatMotoboyAtual) return;
+  const input = document.getElementById('chat-input-text');
+  const msg = input?.value?.trim();
+  if (!msg) return;
+  input.value = '';
+  input.disabled = true;
+
+  try {
+    const mb = chatMotoboys.find(m => m.telefone === chatMotoboyAtual);
+    await fetch(API + '/chat/enviar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        telefone_motoboy: chatMotoboyAtual,
+        nome_motoboy: mb?.nome || '',
+        remetente: 'admin',
+        mensagem: msg
+      })
+    });
+    await carregarMensagens(chatMotoboyAtual, false);
+    await carregarChatLista();
+  } catch(e) {}
+  input.disabled = false;
+  input.focus();
+}
+
+async function atualizarBadgeChat() {
+  try {
+    const r = await fetch(API + '/chat/nao-lidas');
+    const d = await r.json();
+    const badge = document.getElementById('chat-fab-badge');
+    if (badge) {
+      if (d.total > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = d.total;
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+  } catch(e) {}
+}
+
+// Verifica badge a cada 15s
+setInterval(atualizarBadgeChat, 15000);
+setTimeout(atualizarBadgeChat, 2000);
+// ── FIM CHAT DO PAINEL ────────────────────────────────────────
