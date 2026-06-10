@@ -30,9 +30,13 @@ async function carregarPainel(silent) {
     const timeoutId = setTimeout(() => controller.abort(), 20000);
 
     // Busca o dia atual — mais rápido que todos_dias=1
-    const diaParam = filtroDia && filtroDia !== 'todos' ? '&dia_semana=' + filtroDia : '';
-    const todosDias = filtroDia === 'todos' ? '&todos_dias=1' : '';
-    const res = await fetch(API + '/painel-dados?' + diaParam + todosDias, { signal: controller.signal });
+    let urlPainel = API + '/painel-dados';
+    if (filtroDia === 'todos') {
+      urlPainel += '?todos_dias=1';
+    } else if (filtroDia) {
+      urlPainel += '?dia_semana=' + filtroDia;
+    }
+    const res = await fetch(urlPainel, { signal: controller.signal });
     clearTimeout(timeoutId);
     const data = await res.json();
 
