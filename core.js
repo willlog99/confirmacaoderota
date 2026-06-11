@@ -259,10 +259,23 @@ function atualizarVersaoApp() {
         O app vai baixar e aplicar automaticamente ao abrir
       </div>
       <div id="lu-msg" style="display:none;margin-bottom:1rem"></div>
-      <button onclick="publicarBundle()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:14px;font-weight:700;cursor:pointer">🚀 Publicar agora</button>
+      <button onclick="publicarBundle()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">🚀 Publicar agora</button>
+      <button onclick="limparUpdate()" style="width:100%;padding:11px;border-radius:12px;border:1.5px solid #E2E8F0;background:#fff;color:#EF4444;font-size:13px;font-weight:600;cursor:pointer">🗑 Limpar update ativo (remove banner do app)</button>
     </div>
   `;
   document.body.appendChild(modal);
+}
+
+async function limparUpdate() {
+  if (!confirm('Remover o update ativo? O banner vai sumir do app.')) return;
+  try {
+    const r = await fetch(API + '/limpar-update', { method: 'POST' });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      toast('✓ Update removido — banner não aparece mais');
+      document.getElementById('modal-live-update').style.display = 'none';
+    }
+  } catch(e) { toast('Erro ao limpar update'); }
 }
 
 async function publicarBundle() {
