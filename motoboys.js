@@ -625,6 +625,7 @@ async function carregarMotoboysGerenciar() {
           ${tipoBadge}
         </div>
         <div style="font-size:12px;color:#5A7A8F;margin-top:3px">📱 ${m.telefone}</div>
+        ${m.placa ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🏍️ Placa: <strong>${m.placa}</strong></div>` : ''}
         ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:3px">Sem rotas cadastradas</div>'}
         <div class="list-item-actions">
           <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}')">✏️ Editar tipo</button>
@@ -693,11 +694,12 @@ async function salvarTipoMotoboy(telefone) {
 async function adicionarMotoboy() {
   const nome = document.getElementById('mb-nome').value.trim().toUpperCase();
   const tel = document.getElementById('mb-tel').value.trim();
+  const placa = (document.getElementById('mb-placa')?.value || '').trim().toUpperCase();
   const tipo = document.getElementById('mb-tipo')?.value || 'motoboy';
   if (!nome || !tel) { showMsg('msg-mb','Preencha nome e telefone','error'); return; }
   showMsg('msg-mb','Salvando...','loading');
   try {
-    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:'', tipo}) });
+    await fetch(API + '/motoboys', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nome, telefone:tel, rota:'', dia_semana:'', tipo, placa}) });
 
     // Criar checklist automático com todos os itens como Pendente
     if (!checklistsMotoboys[nome]) {
@@ -713,6 +715,7 @@ async function adicionarMotoboy() {
 
     document.getElementById('mb-nome').value = '';
     document.getElementById('mb-tel').value = '';
+    if (document.getElementById('mb-placa')) document.getElementById('mb-placa').value = '';
     showMsg('msg-mb','✅ Motorista adicionado! Checklist criado.','success');
     carregarMotoboysGerenciar();
   } catch(e) { showMsg('msg-mb','Erro: '+e.message,'error'); }
