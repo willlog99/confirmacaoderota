@@ -646,7 +646,7 @@ async function carregarMotoboysGerenciar() {
         ${m.placa ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🏍️ Placa: <strong>${m.placa}</strong></div>` : ''}
         ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:3px">Sem rotas cadastradas</div>'}
         <div class="list-item-actions">
-          <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}')">✏️ Editar tipo</button>
+          <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}',${m.precisa_checklist !== false})">✏️ Editar tipo</button>
           <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy('${m.telefone}')">🗑 Excluir</button>
         </div>
       </div>`;
@@ -657,34 +657,41 @@ async function carregarMotoboysGerenciar() {
   }
 }
 
-function editarTipoMotoboy(telefone, nome, tipoAtual) {
-  // Remove modal anterior se existir
+function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual) {
   const anterior = document.getElementById('modal-editar-tipo');
   if (anterior) anterior.remove();
+
+  const checklist = precisaChecklistAtual !== false;
 
   const modal = document.createElement('div');
   modal.id = 'modal-editar-tipo';
   modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
   modal.innerHTML = `
     <div style="background:#fff;border-radius:16px;padding:1.75rem;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-      <div style="font-size:16px;font-weight:700;color:#0F2940;margin-bottom:4px">Editar tipo</div>
+      <div style="font-size:16px;font-weight:700;color:#0F2940;margin-bottom:4px">Editar configuração</div>
       <div style="font-size:13px;color:#64748B;margin-bottom:1.25rem">${nome}</div>
-      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1.25rem">
+
+      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Tipo</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
         <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid ${tipoAtual === 'motoboy' ? '#0F4C7A' : '#E2E8F0'};cursor:pointer;background:${tipoAtual === 'motoboy' ? '#EFF6FF' : '#fff'}">
           <input type="radio" name="tipo-edit" value="motoboy" ${tipoAtual === 'motoboy' ? 'checked' : ''} style="accent-color:#0F4C7A"/>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#0F2940">🛵 Motoboy</div>
-            <div style="font-size:11px;color:#64748B">Trabalha com rota de coletas</div>
-          </div>
+          <div><div style="font-size:14px;font-weight:700;color:#0F2940">🛵 Motoboy</div><div style="font-size:11px;color:#64748B">Trabalha com rota de coletas</div></div>
         </label>
         <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid ${tipoAtual === 'rastreador' ? '#0F4C7A' : '#E2E8F0'};cursor:pointer;background:${tipoAtual === 'rastreador' ? '#EFF6FF' : '#fff'}">
           <input type="radio" name="tipo-edit" value="rastreador" ${tipoAtual === 'rastreador' ? 'checked' : ''} style="accent-color:#0F4C7A"/>
-          <div>
-            <div style="font-size:14px;font-weight:700;color:#0F2940">📡 Rastreador</div>
-            <div style="font-size:11px;color:#64748B">Só GPS, sem rota de coletas</div>
-          </div>
+          <div><div style="font-size:14px;font-weight:700;color:#0F2940">📡 Rastreador</div><div style="font-size:11px;color:#64748B">Só GPS, sem rota de coletas</div></div>
         </label>
       </div>
+
+      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Checklist</div>
+      <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1.5px solid #EBF1F5;cursor:pointer;margin-bottom:1.25rem">
+        <input type="checkbox" id="cb-checklist" ${checklist ? 'checked' : ''} style="width:18px;height:18px;accent-color:#0F4C7A;cursor:pointer"/>
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#0F2940">Precisa preencher checklist</div>
+          <div style="font-size:11px;color:#64748B">Obrigatório antes de iniciar a rota</div>
+        </div>
+      </label>
+
       <div style="display:flex;gap:8px">
         <button onclick="document.getElementById('modal-editar-tipo').remove()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
         <button onclick="salvarTipoMotoboy('${telefone}')" style="flex:1;padding:11px;border-radius:10px;border:none;background:#0F4C7A;color:#fff;font-weight:700;font-size:13px;cursor:pointer">Salvar</button>
@@ -695,15 +702,16 @@ function editarTipoMotoboy(telefone, nome, tipoAtual) {
 
 async function salvarTipoMotoboy(telefone) {
   const tipo = document.querySelector('input[name="tipo-edit"]:checked')?.value;
+  const precisa_checklist = document.getElementById('cb-checklist')?.checked !== false;
   if (!tipo) return;
   try {
     await fetch(API + '/motoboys/tipo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telefone, tipo })
+      body: JSON.stringify({ telefone, tipo, precisa_checklist })
     });
     document.getElementById('modal-editar-tipo')?.remove();
-    toast('✓ Tipo atualizado');
+    toast('✓ Configuração atualizada');
     carregarMotoboysGerenciar();
   } catch(e) { toast('Erro ao salvar'); }
 }
