@@ -187,6 +187,132 @@ async function removerGeofence(rota, dia_semana) {
   } catch(e) { toast('Erro ao remover'); }
 }
 
+// ── NOTIFICAÇÕES MOTOBOY ─────────────────────────────────────
+function abrirNotificacoes() {
+  const win = document.getElementById('notif-window');
+  if (win) { win.style.display = win.style.display === 'none' ? 'flex' : 'none'; if (win.style.display === 'flex') carregarNotificacoes(); return; }
+
+  const el = document.createElement('div');
+  el.id = 'notif-window';
+  el.style.cssText = 'position:fixed;bottom:20px;right:60px;width:380px;max-width:calc(100vw - 80px);background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);z-index:9998;display:flex;flex-direction:column;max-height:560px';
+  el.innerHTML = `
+    <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-size:14px;font-weight:700;color:#0F4C7A">📢 Notificações aos Motoboys</div>
+      <button onclick="document.getElementById('notif-window').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A8B8">✕</button>
+    </div>
+
+    <!-- Formulário -->
+    <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;flex-shrink:0">
+      <input id="notif-titulo" type="text" placeholder="Título (opcional)" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;color:#0F4C7A;margin-bottom:8px"/>
+      <textarea id="notif-msg" placeholder="Mensagem para os motoboys..." style="width:100%;height:70px;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px 10px;font-size:12px;outline:none;color:#0F4C7A;resize:none;margin-bottom:8px;font-family:inherit"></textarea>
+      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+        <input id="notif-img" type="text" placeholder="URL da imagem (opcional)" style="flex:1;height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:11px;outline:none;color:#0F4C7A"/>
+      </div>
+      <div style="display:flex;gap:6px">
+        <select id="notif-dest" style="flex:1;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+          <option value="todos">📢 Todos os motoboys</option>
+        </select>
+        <button onclick="enviarNotificacao()" style="padding:0 14px;height:34px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Enviar</button>
+      </div>
+    </div>
+
+    <!-- Lista enviadas -->
+    <div style="flex:1;overflow-y:auto">
+      <div id="notif-lista" style="padding:8px"></div>
+    </div>`;
+  document.body.appendChild(el);
+
+  // Popula select de destinatários
+  fetch(API + '/motoboys?todos=1&agrupado=1').then(r => r.json()).then(d => {
+    const sel = document.getElementById('notif-dest');
+    if (!sel) return;
+    const nomes = [...new Set((d.motoboys||[]).map(m => m.nome))].sort();
+    nomes.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = '👤 ' + n; sel.appendChild(o); });
+  }).catch(() => {});
+
+  carregarNotificacoes();
+}
+
+async function enviarNotificacao() {
+  const titulo = document.getElementById('notif-titulo')?.value?.trim();
+  const mensagem = document.getElementById('notif-msg')?.value?.trim();
+  const imagem_url = document.getElementById('notif-img')?.value?.trim();
+  const destinatario = document.getElementById('notif-dest')?.value;
+  if (!mensagem) { toast('Digite uma mensagem'); return; }
+  try {
+    await fetch(API + '/notificacao-motoboy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, mensagem, imagem_url, destinatario, enviada_por: 'admin' })
+    });
+    document.getElementById('notif-titulo').value = '';
+    document.getElementById('notif-msg').value = '';
+    document.getElementById('notif-img').value = '';
+    toast('✓ Notificação enviada!');
+    carregarNotificacoes();
+  } catch(e) { toast('Erro ao enviar'); }
+}
+
+async function carregarNotificacoes() {
+  const lista = document.getElementById('notif-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Carregando...</div>';
+  try {
+    const [rNotif, rMb] = await Promise.all([
+      fetch(API + '/notificacao-motoboy?admin=1'),
+      fetch(API + '/motoboys?todos=1&agrupado=1')
+    ]);
+    const dNotif = await rNotif.json();
+    const dMb = await rMb.json();
+    const totalMotoboys = (dMb.motoboys || []).length;
+    const notifs = dNotif.notificacoes || [];
+
+    if (!notifs.length) {
+      lista.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#94A8B8;font-size:12px">Nenhuma notificação enviada hoje</div>';
+      return;
+    }
+
+    lista.innerHTML = notifs.map(n => {
+      let lidas = [];
+      try { lidas = JSON.parse(n.lida_por || '[]'); } catch(e) {}
+      const qtdLidas = lidas.length;
+      const total = n.destinatario === 'todos' ? totalMotoboys : 1;
+      const hora = new Date(n.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+      const pct = total > 0 ? Math.round(qtdLidas/total*100) : 0;
+      const corPct = pct === 100 ? '#0F9B78' : pct > 0 ? '#F59E0B' : '#94A8B8';
+
+      return `<div style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid #EBF1F5">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
+          <div style="flex:1;min-width:0">
+            ${n.titulo ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:2px">${n.titulo}</div>` : ''}
+            <div style="font-size:12px;color:#0F2940;line-height:1.4">${n.mensagem}</div>
+            ${n.imagem_url ? `<img src="${n.imagem_url}" style="margin-top:6px;max-width:100%;border-radius:6px;max-height:120px;object-fit:cover"/>` : ''}
+          </div>
+          <button onclick="deletarNotificacao(${n.id})" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer;flex-shrink:0">✕</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:10px;color:#94A8B8">${hora} · ${n.destinatario === 'todos' ? 'Todos' : n.destinatario}</span>
+          <div style="flex:1;height:3px;background:#E2E8F0;border-radius:99px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${corPct};border-radius:99px;transition:width .4s"></div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${corPct}">${qtdLidas}/${total} viram</span>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#EF4444;font-size:12px">Erro ao carregar</div>';
+  }
+}
+
+async function deletarNotificacao(id) {
+  if (!confirm('Remover esta notificação?')) return;
+  try {
+    await fetch(API + '/notificacao-motoboy', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    toast('✓ Removida');
+    carregarNotificacoes();
+  } catch(e) { toast('Erro ao remover'); }
+}
+
 // ── MANUTENÇÃO ────────────────────────────────────────────────
 let _manutencaoAtiva = false;
 
