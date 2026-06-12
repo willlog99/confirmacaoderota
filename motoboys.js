@@ -155,27 +155,28 @@ async function renderizarPainel(data) {
         const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
         return `
           <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
-            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px">
+            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px">
               <div style="min-width:0">
-                <div style="display:flex;align-items:center;gap:6px">
+                <div style="display:flex;align-items:center;gap:5px">
                   ${confBadge}
-                  <div class="rota-nome" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.rota}</div>
+                  <div class="rota-nome" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.rota}</div>
                 </div>
-                <div class="rota-meta" style="margin:2px 0 0;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏍️ ${motoStr}</div>
+                <div class="rota-meta" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏍️ ${motoStr}</div>
               </div>
-              <div style="font-size:12px;font-weight:700;color:#5A7A8F;white-space:nowrap;flex-shrink:0">${feitas}/${total}</div>
-              <div style="display:flex;align-items:center;gap:5px;min-width:80px;flex-shrink:0">
-                <div style="flex:1;height:4px;background:#E2E8F0;border-radius:99px;overflow:hidden">
-                  <div style="height:100%;width:${pct}%;background:${corBarra};border-radius:99px;transition:width .4s"></div>
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;white-space:nowrap;flex-shrink:0">${feitas}/${total}</div>
+              <div style="display:flex;align-items:center;gap:5px;min-width:70px;flex-shrink:0">
+                <div style="flex:1;height:3px;background:#E2E8F0;border-radius:99px;overflow:hidden">
+                  <div style="height:100%;width:${pct}%;background:${corBarra};border-radius:99px"></div>
                 </div>
-                <div style="font-size:11px;font-weight:800;color:${corPct};min-width:28px;text-align:right">${total > 0 ? pct+'%' : '—'}</div>
+                <div style="font-size:11px;font-weight:800;color:${corPct};min-width:26px;text-align:right">${total > 0 ? pct+'%' : '—'}</div>
               </div>
             </div>
-            <div class="rota-preview">
+            <div class="rota-popover" onclick="event.stopPropagation()">
+              <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #EBF1F5">${r.rota} · ${motoStr}</div>
               ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
-              ${prodList ? `<div class="preview-sec" style="margin-top:8px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
-              ${impList  ? `<div class="preview-sec" style="margin-top:8px">✕ Improdutivas</div>${impList}` : ''}
-              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')" style="margin-top:10px;background:#1E9FD9;color:#fff;border:none;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
+              ${prodList ? `<div class="preview-sec" style="margin-top:6px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
+              ${impList  ? `<div class="preview-sec" style="margin-top:6px">✕ Improdutivas</div>${impList}` : ''}
+              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')}" style="margin-top:8px;background:#1E9FD9;color:#fff;border:none;padding:6px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
             </div>
           </div>`;
       };
