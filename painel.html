@@ -202,6 +202,7 @@
   --border:#D6E5EE;--border2:#EBF1F5;
   --txt:#0F2940;--mut:#5A7A8F;--mut2:#94A8B8;
   --sidebar-w:220px;
+  --sidebar-collapsed:60px;
 }
 html,body{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
@@ -211,53 +212,70 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* ══ SIDEBAR ══ */
 .app-sidebar{
-  width:var(--sidebar-w);background:var(--az);
+  width:var(--sidebar-collapsed);background:var(--az);
   display:flex;flex-direction:column;flex-shrink:0;
-  overflow:hidden;
+  overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1);
+  position:relative;z-index:100;
 }
-.sidebar-logo{
-  padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.1);
-  flex-shrink:0;display:flex;align-items:center;gap:10px;
+.app-sidebar:hover{width:var(--sidebar-w)}
+
+/* Mascote no topo quando colapsado */
+.sidebar-mascote{
+  padding:12px;display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0;min-height:60px;
 }
-.sidebar-logo img{height:32px;width:auto;filter:brightness(0) invert(1)}
+.sidebar-mascote img{width:36px;height:36px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
+.sidebar-mascote-txt{
+  margin-left:10px;white-space:nowrap;overflow:hidden;
+  opacity:0;transition:opacity .15s;pointer-events:none;
+}
+.app-sidebar:hover .sidebar-mascote-txt{opacity:1}
 .sidebar-logo-txt{font-size:13px;font-weight:700;color:#fff}
 .sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
 
-.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:none}
+.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:none;overflow-x:hidden}
 .sidebar-nav::-webkit-scrollbar{display:none}
 
 .nav-group-lbl{
   font-size:9px;font-weight:700;color:rgba(255,255,255,.3);
   text-transform:uppercase;letter-spacing:.12em;
-  padding:10px 16px 4px;
+  padding:10px 16px 4px;white-space:nowrap;overflow:hidden;
+  opacity:0;transition:opacity .15s;height:0;padding:0;
 }
+.app-sidebar:hover .nav-group-lbl{opacity:1;height:auto;padding:10px 16px 4px}
+
 .nav-item{
   display:flex;align-items:center;gap:8px;
   padding:8px 16px;font-size:13px;font-weight:500;
   color:rgba(255,255,255,.55);cursor:pointer;
   border-left:2px solid transparent;transition:.15s;
   background:none;border-top:none;border-right:none;border-bottom:none;
-  width:100%;text-align:left;font-family:inherit;
+  width:100%;text-align:left;font-family:inherit;white-space:nowrap;
 }
 .nav-item:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.05)}
 .nav-item.active{color:#fff;background:rgba(30,159,217,.18);border-left-color:var(--az2);font-weight:600}
-.nav-ic{font-size:13px;width:18px;text-align:center;flex-shrink:0}
-.nav-badge-red{margin-left:auto;font-size:10px;font-weight:700;background:var(--rd);color:#fff;padding:1px 6px;border-radius:20px}
-.nav-tag{margin-left:auto;font-size:9px;color:rgba(255,255,255,.25);background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px}
-.nav-live{margin-left:auto;display:flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.15);padding:2px 6px;border-radius:20px}
+.nav-ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+
+/* Texto dos itens some quando colapsado */
+.nav-item-txt{overflow:hidden;opacity:0;transition:opacity .15s;white-space:nowrap}
+.app-sidebar:hover .nav-item-txt{opacity:1}
+
+.nav-badge-red{margin-left:auto;font-size:10px;font-weight:700;background:var(--rd);color:#fff;padding:1px 6px;border-radius:20px;flex-shrink:0}
+.nav-tag{margin-left:auto;font-size:9px;color:rgba(255,255,255,.25);background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;flex-shrink:0}
+.nav-live{margin-left:auto;display:flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.15);padding:2px 6px;border-radius:20px;flex-shrink:0}
 .nav-live-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse2 1.4s infinite}
 
 .sidebar-footer{
   padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;gap:8px;flex-shrink:0;
+  display:flex;align-items:center;gap:8px;flex-shrink:0;overflow:hidden;
 }
 .sf-av{width:28px;height:28px;border-radius:50%;background:var(--az2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
-.sf-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.8)}
-.sf-role{font-size:10px;color:rgba(255,255,255,.35)}
+.sf-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;opacity:0;transition:opacity .15s}
+.sf-role{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap;opacity:0;transition:opacity .15s}
+.app-sidebar:hover .sf-name,.app-sidebar:hover .sf-role{opacity:1}
 
 /* ══ MAIN ══ */
 .app-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
-
 /* Topbar */
 .app-topbar{
   background:var(--card);border-bottom:1px solid var(--border2);
@@ -358,51 +376,50 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 <div class="app-layout">
 
   <div class="app-sidebar">
-    <div class="sidebar-logo">
-      <img src="20050686-7618-4EE2-86F2-0E0E1EE012BE.png" alt="Loglife"/>
-      <div>
+    <div class="sidebar-mascote">
+      <img src="761B1410-BF55-4955-AD0E-BA388B9E6625.png" alt="Loglife"/>
+      <div class="sidebar-mascote-txt">
         <div class="sidebar-logo-txt">Loglife</div>
         <div class="sidebar-logo-sub">Hermes Pardini</div>
       </div>
     </div>
-
     <div class="sidebar-nav">
       <div class="nav-group-lbl">OPS</div>
-      <button class="nav-item active" onclick="setView('painel',this)"><span class="nav-ic">🏠</span>Painel<span class="nav-badge-red" id="nav-badge-painel" style="display:none">0</span></button>
-      <button class="nav-item" onclick="setView('confirmacoes',this)"><span class="nav-ic">✓</span>Confirmações</button>
-      <button class="nav-item" onclick="setView('mapa-rastreamento',this)"><span class="nav-ic">🗺️</span>Rastreamento<div class="nav-live"><div class="nav-live-dot"></div>LIVE</div></button>
-      <button class="nav-item" onclick="setView('checklist-view',this)"><span class="nav-ic">📋</span>Checklist</button>
-      <button class="nav-item" onclick="setView('motoristas',this)"><span class="nav-ic">👤</span>Motoristas</button>
+      <button class="nav-item active" onclick="setView('painel',this)"><span class="nav-ic">🏠</span><span class="nav-item-txt">Painel<span class="nav-badge-red" id="nav-badge-painel" style="display:none">0</span></span></button>
+      <button class="nav-item" onclick="setView('confirmacoes',this)"><span class="nav-ic">✓</span><span class="nav-item-txt">Confirmações</span></button>
+      <button class="nav-item" onclick="setView('mapa-rastreamento',this)"><span class="nav-ic">🗺️</span><span class="nav-item-txt">Rastreamento<div class="nav-live" style="display:inline-flex;margin-left:6px"><div class="nav-live-dot"></div>LIVE</div></span></button>
+      <button class="nav-item" onclick="setView('checklist-view',this)"><span class="nav-ic">📋</span><span class="nav-item-txt">Checklist</span></button>
+      <button class="nav-item" onclick="setView('motoristas',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Motoristas</span></button>
 
       <div class="nav-group-lbl">Gente e Gestão</div>
-      <button class="nav-item" onclick="setView('estoque-view',this)"><span class="nav-ic">📦</span>PMC Estoque</button>
-      <button class="nav-item" onclick="setView('ponto-rh',this)"><span class="nav-ic">⏱️</span>Ponto RH</button>
-      <button class="nav-item" onclick="setView('patrimonios',this)"><span class="nav-ic">🔒</span>Patrimônios</button>
-      <button class="nav-item" onclick="setView('presencas',this)"><span class="nav-ic">📋</span>Presenças</button>
+      <button class="nav-item" onclick="setView('estoque-view',this)"><span class="nav-ic">📦</span><span class="nav-item-txt">PMC Estoque</span></button>
+      <button class="nav-item" onclick="setView('ponto-rh',this)"><span class="nav-ic">⏱️</span><span class="nav-item-txt">Ponto RH</span></button>
+      <button class="nav-item" onclick="setView('patrimonios',this)"><span class="nav-ic">🔒</span><span class="nav-item-txt">Patrimônios</span></button>
+      <button class="nav-item" onclick="setView('presencas',this)"><span class="nav-ic">📋</span><span class="nav-item-txt">Presenças</span></button>
 
       <div class="nav-group-lbl">Qualidade</div>
-      <button class="nav-item" onclick="setView('gestor',this)"><span class="nav-ic">👔</span>Auditoria</button>
-      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📚</span>Treinamentos<span class="nav-tag">em breve</span></button>
+      <button class="nav-item" onclick="setView('gestor',this)"><span class="nav-ic">👔</span><span class="nav-item-txt">Auditoria</span></button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📚</span><span class="nav-item-txt">Treinamentos<span class="nav-tag">em breve</span></span></button>
 
       <div class="nav-group-lbl">Gestão de Rota</div>
-      <button class="nav-item" onclick="window.location.href='criar-rota.html'"><span class="nav-ic">➕</span>Criar rota</button>
-      <button class="nav-item" onclick="window.location.href='rotas.html'"><span class="nav-ic">✏️</span>Alterar rota</button>
-      <button class="nav-item" onclick="setView('buscar',this)"><span class="nav-ic">🔎</span>Buscar cliente</button>
-      <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span>Criar cliente</button>
-      <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span>Motoboys</button>
-      <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span>Ativar/Desativar cliente</button>
-      <button class="nav-item" onclick="setView('geofence-config',this)"><span class="nav-ic">📍</span>Geofence</button>
+      <button class="nav-item" onclick="window.location.href='criar-rota.html'"><span class="nav-ic">➕</span><span class="nav-item-txt">Criar rota</span></button>
+      <button class="nav-item" onclick="window.location.href='rotas.html'"><span class="nav-ic">✏️</span><span class="nav-item-txt">Alterar rota</span></button>
+      <button class="nav-item" onclick="setView('buscar',this)"><span class="nav-ic">🔎</span><span class="nav-item-txt">Buscar cliente</span></button>
+      <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar cliente</span></button>
+      <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span><span class="nav-item-txt">Motoboys</span></button>
+      <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span><span class="nav-item-txt">Ativar/Desativar cliente</span></button>
+      <button class="nav-item" onclick="setView('geofence-config',this)"><span class="nav-ic">📍</span><span class="nav-item-txt">Geofence</span></button>
 
       <div class="nav-group-lbl">Importação e Registro</div>
-      <button class="nav-item" onclick="setView('importacao',this)"><span class="nav-ic">📥</span>Importação</button>
-      <button class="nav-item" onclick="setView('quilometragem',this)"><span class="nav-ic">📏</span>Quilometragem</button>
+      <button class="nav-item" onclick="setView('importacao',this)"><span class="nav-ic">📥</span><span class="nav-item-txt">Importação</span></button>
+      <button class="nav-item" onclick="setView('quilometragem',this)"><span class="nav-ic">📏</span><span class="nav-item-txt">Quilometragem</span></button>
 
       <div class="nav-group-lbl">Sistema</div>
-      <button class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span>Atualização APK</button>
-      <button class="nav-item" onclick="confirmarRefresh()"><span class="nav-ic">🔄</span>Forçar atualização</button>
-      <button class="nav-item" onclick="limparGPSOffline()"><span class="nav-ic">🧹</span>Limpar GPS offline</button>
-      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">👤</span>Criar usuário<span class="nav-tag">pendente</span></button>
-      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">⚙️</span>Administrar usuários<span class="nav-tag">pendente</span></button>
+      <button class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span><span class="nav-item-txt">Atualização APK</span></button>
+      <button class="nav-item" onclick="confirmarRefresh()"><span class="nav-ic">🔄</span><span class="nav-item-txt">Forçar atualização</span></button>
+      <button class="nav-item" onclick="limparGPSOffline()"><span class="nav-ic">🧹</span><span class="nav-item-txt">Limpar GPS offline</span></button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar usuário<span class="nav-tag">pendente</span></span></button>
+      <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">⚙️</span><span class="nav-item-txt">Administrar usuários<span class="nav-tag">pendente</span></span></button>
     </div>
 
     <div class="sidebar-footer">
@@ -1641,12 +1658,29 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<div id="chat-fab" onclick="abrirChat()" style="position:fixed;bottom:20px;right:20px;width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);box-shadow:0 4px 16px rgba(30,159,217,.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9998">💬
-  <div id="chat-fab-badge" style="position:absolute;top:-4px;right:-4px;background:#DC2626;color:#fff;border-radius:50%;width:20px;height:20px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
+<!-- Painel de ações do sistema -->
+<div id="system-panel" style="position:fixed;bottom:20px;right:0;z-index:9998;display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+  <style>
+    .sys-btn{display:flex;align-items:center;gap:10px;padding:10px 14px 10px 12px;border-radius:12px 0 0 12px;cursor:pointer;border:none;color:#fff;font-size:13px;font-weight:700;box-shadow:-2px 2px 12px rgba(0,0,0,.2);transition:max-width .2s ease,padding .2s ease;max-width:46px;overflow:hidden;white-space:nowrap;justify-content:flex-end}
+    .sys-btn:hover{max-width:220px;padding-left:16px}
+    .sys-btn-ic{font-size:18px;flex-shrink:0}
+    .sys-btn-lbl{opacity:0;transition:opacity .1s;white-space:nowrap;pointer-events:none}
+    .sys-btn:hover .sys-btn-lbl{opacity:1}
+  </style>
+  <div class="sys-btn" onclick="toggleManutencao()" id="btn-manutencao-fab" style="background:linear-gradient(135deg,#F59E0B,#D97706)">
+    <span class="sys-btn-lbl">Modo manutenção</span><span class="sys-btn-ic">🔧</span>
+  </div>
+  <div class="sys-btn" onclick="atualizarVersaoApp()" style="background:linear-gradient(135deg,#8B5CF6,#5B21B6)">
+    <span class="sys-btn-lbl">Publicar versão APK</span><span class="sys-btn-ic">📲</span>
+  </div>
+  <div class="sys-btn" onclick="confirmarRefresh()" style="background:linear-gradient(135deg,#0F9B78,#085041)">
+    <span class="sys-btn-lbl">Forçar atualização</span><span class="sys-btn-ic">🔄</span>
+  </div>
+  <div class="sys-btn" onclick="abrirChat()" style="position:relative;background:linear-gradient(135deg,#1E9FD9,#0F7BB0)">
+    <span class="sys-btn-lbl">Chat motoboys</span><span class="sys-btn-ic">💬</span>
+    <div id="chat-fab-badge" style="position:absolute;top:-4px;right:-4px;background:#DC2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:none;align-items:center;justify-content:center;border:2px solid #fff">0</div>
+  </div>
 </div>
-
-<div id="btn-versao-fab" onclick="atualizarVersaoApp()" style="position:fixed;bottom:156px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#8B5CF6,#5B21B6);box-shadow:0 4px 14px rgba(139,92,246,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;cursor:pointer;z-index:9997" title="Publicar nova versão do app">📲</div>
-<div id="btn-refresh-fab" onclick="confirmarRefresh()" style="position:fixed;bottom:96px;right:24px;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#0F9B78,#085041);box-shadow:0 4px 14px rgba(15,155,120,0.4);display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;cursor:pointer;z-index:9997" title="Forçar atualização em todos os apps">🔄</div>
 
 <!-- MODAL HORARIOS MOTOBOY -->
 <div id="modal-horarios" style="display:none;position:fixed;inset:0;background:rgba(15,75,122,.5);z-index:500;align-items:center;justify-content:center">
