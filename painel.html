@@ -732,33 +732,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
 
-          <!-- Configurar rota -->
+          <!-- Configurar rota + dia -->
           <div style="background:#F8FBFD;border-radius:12px;padding:14px;border:1.5px solid #EBF1F5;margin-bottom:1.25rem">
-            <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Configurar rota</div>
-            
-            <select id="gf-rota-sel" style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;margin-bottom:10px">
-              <option value="">Selecione uma rota...</option>
-            </select>
+            <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Adicionar configuração</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Rota</div>
+                <select id="gf-rota-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+                  <option value="">Selecione...</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Dia da semana</div>
+                <select id="gf-dia-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+                  <option value="seg">Segunda-feira</option>
+                  <option value="ter">Terça-feira</option>
+                  <option value="qua">Quarta-feira</option>
+                  <option value="qui">Quinta-feira</option>
+                  <option value="sex">Sexta-feira</option>
+                  <option value="sab">Sábado</option>
+                  <option value="dom">Domingo</option>
+                </select>
+              </div>
+            </div>
 
             <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:6px">Passagens no Ponto Final</div>
             <div style="display:flex;gap:6px;margin-bottom:12px">
-              <button onclick="gfSelecionarPassagem(1,this)" id="gf-btn-1" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">1ª</button>
+              <button onclick="gfSelecionarPassagem(1,this)" id="gf-btn-1" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #0F4C7A;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">1ª</button>
               <button onclick="gfSelecionarPassagem(2,this)" id="gf-btn-2" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">2ª</button>
               <button onclick="gfSelecionarPassagem(3,this)" id="gf-btn-3" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">3ª</button>
             </div>
 
-            <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:6px">Dias da semana</div>
-            <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap">
-              <button onclick="gfToggleDia('seg-sex',this)" id="gf-dia-seg-sex" style="padding:6px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">Seg-Sex</button>
-              <button onclick="gfToggleDia('sabado',this)" id="gf-dia-sabado" style="padding:6px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">Sábado</button>
-              <button onclick="gfToggleDia('domingo',this)" id="gf-dia-domingo" style="padding:6px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">Domingo</button>
-            </div>
-
-            <button onclick="salvarGeofence()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar configuração</button>
+            <button onclick="salvarGeofence()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar</button>
           </div>
 
           <!-- Lista configuradas -->
-          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Rotas configuradas</div>
+          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Configurações salvas</div>
           <div id="gf-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
             <div class="empty"><span class="spinner"></span> Carregando...</div>
           </div>
