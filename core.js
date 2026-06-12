@@ -187,6 +187,57 @@ async function removerGeofence(rota, dia_semana) {
   } catch(e) { toast('Erro ao remover'); }
 }
 
+// ── MANUTENÇÃO ────────────────────────────────────────────────
+let _manutencaoAtiva = false;
+
+async function verificarStatusManutencao() {
+  try {
+    const r = await fetch(API + '/manutencao');
+    const d = await r.json();
+    _manutencaoAtiva = d.ativo;
+    const btn = document.getElementById('btn-manutencao-fab');
+    if (btn) {
+      btn.style.background = _manutencaoAtiva
+        ? 'linear-gradient(135deg,#EF4444,#DC2626)'
+        : 'linear-gradient(135deg,#F59E0B,#D97706)';
+      btn.title = _manutencaoAtiva ? '🔧 Manutenção ATIVA — clique para desligar' : 'Ativar modo manutenção';
+      btn.textContent = _manutencaoAtiva ? '🚨' : '🔧';
+    }
+  } catch(e) {}
+}
+
+async function toggleManutencao() {
+  const novoStatus = !_manutencaoAtiva;
+  if (novoStatus) {
+    const msg = prompt('Mensagem para os motoboys (deixe em branco para padrão):', 'Sistema em manutenção. Voltamos em breve!');
+    if (msg === null) return; // cancelou
+    try {
+      await fetch(API + '/manutencao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ativo: true, mensagem: msg || 'Sistema em manutenção. Voltamos em breve!' })
+      });
+      _manutencaoAtiva = true;
+      toast('🔧 Sistema em manutenção — app bloqueado para motoboys');
+    } catch(e) { toast('Erro ao ativar manutenção'); }
+  } else {
+    if (!confirm('Desligar modo manutenção? Os motoboys poderão acessar o app novamente.')) return;
+    try {
+      await fetch(API + '/manutencao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ativo: false })
+      });
+      _manutencaoAtiva = false;
+      toast('✓ Sistema online — motoboys podem acessar novamente');
+    } catch(e) { toast('Erro ao desligar manutenção'); }
+  }
+  verificarStatusManutencao();
+}
+
+// Verifica status ao carregar
+setTimeout(verificarStatusManutencao, 1000);
+
 function iniciarAutoRefresh() {
   pararAutoRefresh();
   autoRefreshInterval = setInterval(() => {
