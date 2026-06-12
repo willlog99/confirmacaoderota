@@ -121,10 +121,20 @@ async function renderizarPainel(data) {
         const completa = feitas === total && total > 0;
         const emAndamento = r.ativa;
         const status = completa ? 'completa' : emAndamento ? 'em-andamento' : 'livre';
-        const badgeLabel = completa ? '✓ Completa' : emAndamento ? '🔒 Em andamento' : 'Livre';
-        const badgeCls = completa ? 'badge-completa' : emAndamento ? 'badge-andamento' : 'badge-livre';
         const motoStr = r.motoboy_aberto || 'Sem motorista';
         const expandida = cardExpandido === r.rota ? 'expanded' : '';
+
+        // Confirmação de presença
+        const confirmou = confirmacoes.some(c => c.biocondutor === motoStr && c.resposta === 'sim');
+        const confBadge = r.motoboy_aberto
+          ? (confirmou
+            ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#DCFCE7;color:#14532D;white-space:nowrap;flex-shrink:0">✓</span>`
+            : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FEF2F2;color:#991B1B;white-space:nowrap;flex-shrink:0">✕</span>`)
+          : '';
+
+        const corBarra = completa ? '#0F9B78' : emAndamento ? '#1E9FD9' : '#D6E5EE';
+        const corPct = completa ? '#0F9B78' : emAndamento ? '#0F4C7A' : '#94A8B8';
+
         const ent = cls.filter(c => c.status === 'entregue');
         const pend = cls.filter(c => c.status !== 'entregue');
         const renderPrev = (c, tipo) => {
@@ -145,14 +155,21 @@ async function renderizarPainel(data) {
         const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
         return `
           <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
-            <div class="rota-top">
-              <div class="rota-nome">${r.rota}</div>
-              <span class="rota-badge ${badgeCls}">${badgeLabel}</span>
-            </div>
-            <div class="rota-meta"><span>🏍️ ${motoStr}</span></div>
-            <div class="rota-progress">
-              <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
-              <div class="progress-txt">${feitas}/${total}</div>
+            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px">
+              <div style="min-width:0">
+                <div style="display:flex;align-items:center;gap:6px">
+                  ${confBadge}
+                  <div class="rota-nome" style="font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.rota}</div>
+                </div>
+                <div class="rota-meta" style="margin:2px 0 0;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏍️ ${motoStr}</div>
+              </div>
+              <div style="font-size:12px;font-weight:700;color:#5A7A8F;white-space:nowrap;flex-shrink:0">${feitas}/${total}</div>
+              <div style="display:flex;align-items:center;gap:5px;min-width:80px;flex-shrink:0">
+                <div style="flex:1;height:4px;background:#E2E8F0;border-radius:99px;overflow:hidden">
+                  <div style="height:100%;width:${pct}%;background:${corBarra};border-radius:99px;transition:width .4s"></div>
+                </div>
+                <div style="font-size:11px;font-weight:800;color:${corPct};min-width:28px;text-align:right">${total > 0 ? pct+'%' : '—'}</div>
+              </div>
             </div>
             <div class="rota-preview">
               ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
