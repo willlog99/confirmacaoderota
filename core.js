@@ -91,10 +91,33 @@ function formatarTelefone(t) {
   return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
 }
 // ── GEOFENCE CONFIG ──────────────────────────────────────────
+let _gfPassagens = 1;
+let _gfDias = new Set(['seg-sex', 'sabado', 'domingo']);
+
+function gfSelecionarPassagem(n, btn) {
+  _gfPassagens = n;
+  [1,2,3].forEach(i => {
+    const b = document.getElementById('gf-btn-' + i);
+    if (b) { b.style.background = i === n ? '#0F4C7A' : '#fff'; b.style.color = i === n ? '#fff' : '#5A7A8F'; b.style.borderColor = i === n ? '#0F4C7A' : '#D6E5EE'; }
+  });
+}
+
+function gfToggleDia(dia, btn) {
+  if (_gfDias.has(dia)) { _gfDias.delete(dia); btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#D6E5EE'; }
+  else { _gfDias.add(dia); btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A'; }
+}
+
 async function carregarGeofenceConfig() {
   const lista = document.getElementById('gf-lista');
   const sel = document.getElementById('gf-rota-sel');
   if (!lista) return;
+
+  // Reset botões dias para padrão (todos ativos)
+  _gfDias = new Set(['seg-sex', 'sabado', 'domingo']);
+  ['seg-sex','sabado','domingo'].forEach(d => {
+    const b = document.getElementById('gf-dia-' + d);
+    if (b) { b.style.background = '#0F4C7A'; b.style.color = '#fff'; b.style.borderColor = '#0F4C7A'; }
+  });
 
   try {
     const [rRes, gRes] = await Promise.all([
@@ -106,52 +129,65 @@ async function carregarGeofenceConfig() {
 
     const rotas = (dRotas.rotas || []).map(r => r.rota).sort();
     const configs = {};
-    (dGeo.configs || []).forEach(c => { configs[c.rota] = c.passagens; });
+    (dGeo.configs || []).forEach(c => { configs[c.rota] = c; });
 
-    // Popular select
     if (sel) {
       sel.innerHTML = '<option value="">Selecione uma rota...</option>';
       rotas.forEach(r => {
         const o = document.createElement('option');
-        o.value = r; o.textContent = r + (configs[r] ? ` — ${configs[r]}ª passagem` : '');
+        o.value = r;
+        const c = configs[r];
+        o.textContent = r + (c ? ` — ${c.passagens}ª passagem` : '');
         sel.appendChild(o);
       });
     }
 
-    // Renderizar lista
     const configuradas = rotas.filter(r => configs[r]);
     if (!configuradas.length) {
-      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhuma rota configurada — todas usam 1ª passagem</div>';
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhuma rota configurada — todas usam 1ª passagem em todos os dias</div>';
       return;
     }
-    lista.innerHTML = configuradas.map(r => `
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
-        <div style="flex:1;font-size:13px;font-weight:600;color:#0F4C7A">${r}</div>
-        <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:${configs[r]===2?'#FEF9EC':'#EFF6FF'};color:${configs[r]===2?'#92400E':'#1D4ED8'}">${configs[r]}ª passagem</span>
-        <button onclick="removerGeofence('${r.replace(/'/g,"\\'")}') " style="background:none;border:none;color:#EF4444;font-size:14px;cursor:pointer">✕</button>
-      </div>`).join('');
+
+    const labelDias = dias => {
+      if (!dias || dias === 'seg-sex,sabado,domingo') return 'Todos os dias';
+      return dias.split(',').map(d => d === 'seg-sex' ? 'Seg-Sex' : d === 'sabado' ? 'Sáb' : 'Dom').join(', ');
+    };
+
+    lista.innerHTML = configuradas.map(r => {
+      const c = configs[r];
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:600;color:#0F4C7A">${r}</div>
+          <div style="font-size:11px;color:#94A8B8;margin-top:1px">📅 ${labelDias(c.dias_semana)}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:${c.passagens===3?'#FEF2F2':c.passagens===2?'#FEF9EC':'#EFF6FF'};color:${c.passagens===3?'#991B1B':c.passagens===2?'#92400E':'#1D4ED8'};white-space:nowrap">${c.passagens}ª passagem</span>
+        <button onclick="removerGeofence('${r.replace(/'/g,"\\'")}') " style="background:none;border:none;color:#EF4444;font-size:14px;cursor:pointer;flex-shrink:0">✕</button>
+      </div>`;
+    }).join('');
   } catch(e) {
     if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
   }
 }
 
-async function setGeofencePassagem(passagens) {
+async function salvarGeofence() {
   const sel = document.getElementById('gf-rota-sel');
   const rota = sel?.value;
   if (!rota) { toast('Selecione uma rota'); return; }
+  if (_gfDias.size === 0) { toast('Selecione pelo menos um dia'); return; }
+  const dias_semana = Array.from(_gfDias).join(',');
   try {
     await fetch(API + '/geofence-config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, passagens })
+      body: JSON.stringify({ rota, passagens: _gfPassagens, dias_semana })
     });
-    toast('✓ Rota ' + rota + ' — ' + passagens + 'ª passagem salva');
+    toast('✓ ' + rota + ' — ' + _gfPassagens + 'ª passagem salva');
     carregarGeofenceConfig();
   } catch(e) { toast('Erro ao salvar'); }
 }
 
 async function removerGeofence(rota) {
-  if (!confirm('Remover configuração da ' + rota + '? Vai usar 1ª passagem.')) return;
+  if (!confirm('Remover configuração da ' + rota + '? Vai usar 1ª passagem em todos os dias.')) return;
   try {
     await fetch(API + '/geofence-config', {
       method: 'DELETE',
