@@ -82,25 +82,24 @@
     .leaflet-popup-content{margin:10px 14px!important;font-family:-apple-system,sans-serif}
     .panel-body{padding:1rem 1.5rem;max-height:400px;overflow-y:auto}
 
-    .rota-card{background:#fff;border-radius:10px;padding:.65rem 1rem;margin-bottom:6px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .2s;position:relative}
-    .rota-card:hover{border-color:#1E9FD9;box-shadow:0 4px 12px rgba(30,159,217,0.12)}
-    .rota-card.em-andamento{border-left:4px solid #1E9FD9}
-    .rota-card.completa{border-left:4px solid #0F9B78;background:#F0FAF7}
-    .rota-card.livre{border-left:4px solid #D6E5EE}
-    .rota-top{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-    .rota-nome{font-size:15px;font-weight:800;color:#0F4C7A;flex:1}
-    .rota-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px}
-    .badge-andamento{background:#E8F4FB;color:#0F4C7A}
-    .badge-completa{background:#E1F5EE;color:#085041}
-    .badge-livre{background:#F0F4F8;color:#94A8B8}
-    .rota-meta{display:flex;align-items:center;gap:12px;font-size:12px;color:#5A7A8F;margin-bottom:8px}
+    .rota-card{background:#fff;border-radius:8px;padding:.45rem .85rem;margin-bottom:4px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .15s;position:relative}
+    .rota-card:hover{border-color:#1E9FD9;background:#F8FBFF;z-index:2}
+    .rota-card.em-andamento{border-left:3px solid #1E9FD9}
+    .rota-card.completa{border-left:3px solid #0F9B78;background:#F8FFFE}
+    .rota-card.completa:hover{background:#F0FAF7}
+    .rota-card.livre{border-left:3px solid #D6E5EE}
+    .rota-nome{font-size:12px;font-weight:700;color:#0F4C7A;flex:1}
+    .rota-meta{font-size:10px;color:#94A8B8}
     .rota-progress{display:flex;align-items:center;gap:10px}
-    .progress-bar{flex:1;height:8px;border-radius:99px;background:#EBF1F5;overflow:hidden}
+    .progress-bar{flex:1;height:3px;border-radius:99px;background:#EBF1F5;overflow:hidden}
     .progress-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#1E9FD9,#0F7BB0);transition:width .6s}
     .rota-card.completa .progress-fill{background:linear-gradient(90deg,#0F9B78,#085041)}
-    .progress-txt{font-size:13px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:55px;text-align:right}
+    .progress-txt{font-size:11px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:42px;text-align:right}
 
-    .rota-preview{margin-top:10px;padding-top:10px;border-top:1px solid #EBF1F5;display:none;animation:fadeIn .2s}
+    /* Popover hover */
+    .rota-popover{position:absolute;left:calc(100% + 8px);top:0;width:280px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(15,40,64,.18);border:1.5px solid #E2E8F0;z-index:999;display:none;padding:12px;animation:fadeIn .15s}
+    .rota-card:hover .rota-popover{display:block}
+    .rota-preview{display:none}
     .rota-card.expanded .rota-preview{display:block}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
     .preview-sec{font-size:10px;font-weight:800;color:#5A7A8F;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
@@ -433,14 +432,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div>
             <!-- Rotas -->
             <div class="panel">
-              <div class="ph">
+              <div class="ph" onclick="toggleRotasLista()" style="cursor:pointer;user-select:none">
                 <div class="pt">🛵 Rotas em operação <span class="pbadge" id="rotas-badge">0</span></div>
                 <div style="display:flex;align-items:center;gap:8px">
-                  <div id="filtro-dias" style="display:flex;gap:4px"></div>
-                  <div class="plive"><div class="live-dot"></div>Live</div>
+                  <div id="filtro-dias" style="display:flex;gap:4px" onclick="event.stopPropagation()"></div>
+                  <div class="plive" onclick="event.stopPropagation()"><div class="live-dot"></div>Live</div>
+                  <div id="rotas-toggle-btn" style="width:24px;height:24px;border-radius:6px;background:#F0F4F8;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5A7A8F;transition:.2s">▾</div>
                 </div>
               </div>
-              <div id="painel-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+              <div id="painel-rotas-wrap">
+                <div id="painel-rotas"><div class="empty"><span class="spinner"></span> Carregando...</div></div>
+              </div>
             </div>
 
             <!-- KPIs -->
