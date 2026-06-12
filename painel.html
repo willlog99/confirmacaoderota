@@ -707,11 +707,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="card">
           <div class="card-title">📍 Configuração de Geofence</div>
           <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
-            Configure quantas passagens pelo <strong>Ponto Final (Fleury/Polaris)</strong> cada rota precisa antes do GPS parar.<br>
+            Configure as passagens pelo <strong>Ponto Final (Fleury/Polaris)</strong> por rota e dia da semana.<br>
             A <strong>Base Loglife</strong> registra apenas o horário de chegada.
           </p>
 
-          <!-- Mapa com os dois pontos -->
+          <!-- Pontos cadastrados -->
           <div style="background:#F0F4F8;border-radius:12px;padding:12px;margin-bottom:1.25rem">
             <div style="font-size:12px;font-weight:700;color:#5A7A8F;margin-bottom:8px">📌 Pontos cadastrados</div>
             <div style="display:flex;flex-direction:column;gap:8px">
@@ -732,19 +732,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
 
-          <!-- Config por rota -->
-          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Passagens por rota no Ponto Final</div>
-          <div style="margin-bottom:1rem">
-            <select id="gf-rota-sel" style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;margin-bottom:8px">
+          <!-- Configurar rota -->
+          <div style="background:#F8FBFD;border-radius:12px;padding:14px;border:1.5px solid #EBF1F5;margin-bottom:1.25rem">
+            <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Configurar rota</div>
+            
+            <select id="gf-rota-sel" style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;margin-bottom:10px">
               <option value="">Selecione uma rota...</option>
             </select>
-            <div style="display:flex;gap:8px">
-              <button onclick="setGeofencePassagem(1)" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer" id="gf-btn-1">1ª passagem</button>
-              <button onclick="setGeofencePassagem(2)" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer" id="gf-btn-2">2ª passagem</button>
+
+            <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:6px">Passagens no Ponto Final</div>
+            <div style="display:flex;gap:6px;margin-bottom:12px">
+              <button onclick="gfSelecionarPassagem(1,this)" id="gf-btn-1" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">1ª</button>
+              <button onclick="gfSelecionarPassagem(2,this)" id="gf-btn-2" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">2ª</button>
+              <button onclick="gfSelecionarPassagem(3,this)" id="gf-btn-3" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">3ª</button>
             </div>
+
+            <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:6px">Dias da semana</div>
+            <div style="display:flex;gap:5px;margin-bottom:12px;flex-wrap:wrap">
+              <button onclick="gfToggleDia('seg-sex',this)" id="gf-dia-seg-sex" style="padding:6px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">Seg-Sex</button>
+              <button onclick="gfToggleDia('sabado',this)" id="gf-dia-sabado" style="padding:6px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">Sábado</button>
+              <button onclick="gfToggleDia('domingo',this)" id="gf-dia-domingo" style="padding:6px 10px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">Domingo</button>
+            </div>
+
+            <button onclick="salvarGeofence()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar configuração</button>
           </div>
 
-          <!-- Lista de rotas configuradas -->
+          <!-- Lista configuradas -->
           <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Rotas configuradas</div>
           <div id="gf-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
             <div class="empty"><span class="spinner"></span> Carregando...</div>
