@@ -69,6 +69,7 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
+  if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') carregarGeofenceConfig();
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
   if (id === 'quilometragem' && typeof carregarKmCompleto === 'function') carregarKmCompleto();
 }
@@ -89,6 +90,79 @@ function formatarTelefone(t) {
   const s = String(t||'').replace(/\D/g,'');
   return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
 }
+// ── GEOFENCE CONFIG ──────────────────────────────────────────
+async function carregarGeofenceConfig() {
+  const lista = document.getElementById('gf-lista');
+  const sel = document.getElementById('gf-rota-sel');
+  if (!lista) return;
+
+  try {
+    const [rRes, gRes] = await Promise.all([
+      fetch(API + '/rotas-disponiveis?todos_dias=1'),
+      fetch(API + '/geofence-config')
+    ]);
+    const dRotas = await rRes.json();
+    const dGeo = await gRes.json();
+
+    const rotas = (dRotas.rotas || []).map(r => r.rota).sort();
+    const configs = {};
+    (dGeo.configs || []).forEach(c => { configs[c.rota] = c.passagens; });
+
+    // Popular select
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecione uma rota...</option>';
+      rotas.forEach(r => {
+        const o = document.createElement('option');
+        o.value = r; o.textContent = r + (configs[r] ? ` — ${configs[r]}ª passagem` : '');
+        sel.appendChild(o);
+      });
+    }
+
+    // Renderizar lista
+    const configuradas = rotas.filter(r => configs[r]);
+    if (!configuradas.length) {
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhuma rota configurada — todas usam 1ª passagem</div>';
+      return;
+    }
+    lista.innerHTML = configuradas.map(r => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
+        <div style="flex:1;font-size:13px;font-weight:600;color:#0F4C7A">${r}</div>
+        <span style="font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;background:${configs[r]===2?'#FEF9EC':'#EFF6FF'};color:${configs[r]===2?'#92400E':'#1D4ED8'}">${configs[r]}ª passagem</span>
+        <button onclick="removerGeofence('${r.replace(/'/g,"\\'")}') " style="background:none;border:none;color:#EF4444;font-size:14px;cursor:pointer">✕</button>
+      </div>`).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+async function setGeofencePassagem(passagens) {
+  const sel = document.getElementById('gf-rota-sel');
+  const rota = sel?.value;
+  if (!rota) { toast('Selecione uma rota'); return; }
+  try {
+    await fetch(API + '/geofence-config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rota, passagens })
+    });
+    toast('✓ Rota ' + rota + ' — ' + passagens + 'ª passagem salva');
+    carregarGeofenceConfig();
+  } catch(e) { toast('Erro ao salvar'); }
+}
+
+async function removerGeofence(rota) {
+  if (!confirm('Remover configuração da ' + rota + '? Vai usar 1ª passagem.')) return;
+  try {
+    await fetch(API + '/geofence-config', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rota })
+    });
+    toast('✓ Configuração removida');
+    carregarGeofenceConfig();
+  } catch(e) { toast('Erro ao remover'); }
+}
+
 function iniciarAutoRefresh() {
   pararAutoRefresh();
   autoRefreshInterval = setInterval(() => {
