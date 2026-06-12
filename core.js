@@ -137,7 +137,7 @@ async function carregarGeofenceConfig() {
     const porRota = {};
     configs.forEach(c => { if (!porRota[c.rota]) porRota[c.rota] = []; porRota[c.rota].push(c); });
 
-    const labelDia = d => d === 'seg-sex' ? 'Seg-Sex' : d === 'sabado' ? 'Sáb' : 'Dom';
+    const labelDia = d => ({ seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado', dom:'Domingo' })[d] || d;
     const corPass = p => p === 3 ? { bg:'#FEF2F2', cor:'#991B1B' } : p === 2 ? { bg:'#FEF9EC', cor:'#92400E' } : { bg:'#EFF6FF', cor:'#1D4ED8' };
 
     lista.innerHTML = Object.entries(porRota).map(([rota, dias]) => `
