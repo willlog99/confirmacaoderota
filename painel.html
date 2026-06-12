@@ -391,6 +391,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span>Criar cliente</button>
       <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span>Motoboys</button>
       <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span>Ativar/Desativar cliente</button>
+      <button class="nav-item" onclick="setView('geofence-config',this)"><span class="nav-ic">📍</span>Geofence</button>
 
       <div class="nav-group-lbl">Importação e Registro</div>
       <button class="nav-item" onclick="setView('importacao',this)"><span class="nav-ic">📥</span>Importação</button>
@@ -698,6 +699,56 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="card">
           <div class="card-title">🛣️ Rotas</div>
           <div id="lista-rotas-view"><div class="empty"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- GEOFENCE CONFIG -->
+      <div class="view" id="view-geofence-config">
+        <div class="card">
+          <div class="card-title">📍 Configuração de Geofence</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
+            Configure quantas passagens pelo <strong>Ponto Final (Fleury/Polaris)</strong> cada rota precisa antes do GPS parar.<br>
+            A <strong>Base Loglife</strong> registra apenas o horário de chegada.
+          </p>
+
+          <!-- Mapa com os dois pontos -->
+          <div style="background:#F0F4F8;border-radius:12px;padding:12px;margin-bottom:1.25rem">
+            <div style="font-size:12px;font-weight:700;color:#5A7A8F;margin-bottom:8px">📌 Pontos cadastrados</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:8px;padding:10px 12px;border:1.5px solid #EBF1F5">
+                <div style="width:10px;height:10px;border-radius:50%;background:#1E9FD9;flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#0F4C7A">Base Loglife</div>
+                  <div style="font-size:11px;color:#94A8B8">-23.637780, -46.655334 · Registra chegada</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;background:#fff;border-radius:8px;padding:10px 12px;border:1.5px solid #EBF1F5">
+                <div style="width:10px;height:10px;border-radius:50%;background:#0F9B78;flex-shrink:0"></div>
+                <div>
+                  <div style="font-size:13px;font-weight:700;color:#0F4C7A">Fleury/Polaris</div>
+                  <div style="font-size:11px;color:#94A8B8">-23.622738, -46.685425 · Para o GPS</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Config por rota -->
+          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Passagens por rota no Ponto Final</div>
+          <div style="margin-bottom:1rem">
+            <select id="gf-rota-sel" style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;margin-bottom:8px">
+              <option value="">Selecione uma rota...</option>
+            </select>
+            <div style="display:flex;gap:8px">
+              <button onclick="setGeofencePassagem(1)" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer" id="gf-btn-1">1ª passagem</button>
+              <button onclick="setGeofencePassagem(2)" style="flex:1;padding:10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer" id="gf-btn-2">2ª passagem</button>
+            </div>
+          </div>
+
+          <!-- Lista de rotas configuradas -->
+          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Rotas configuradas</div>
+          <div id="gf-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div class="empty"><span class="spinner"></span> Carregando...</div>
+          </div>
         </div>
       </div>
 
