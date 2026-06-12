@@ -205,9 +205,17 @@ function abrirNotificacoes() {
     <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;flex-shrink:0">
       <input id="notif-titulo" type="text" placeholder="Título (opcional)" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;color:#0F4C7A;margin-bottom:8px"/>
       <textarea id="notif-msg" placeholder="Mensagem para os motoboys..." style="width:100%;height:70px;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px 10px;font-size:12px;outline:none;color:#0F4C7A;resize:none;margin-bottom:8px;font-family:inherit"></textarea>
-      <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
-        <input id="notif-img" type="text" placeholder="URL da imagem (opcional)" style="flex:1;height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:11px;outline:none;color:#0F4C7A"/>
+      
+      <!-- Upload de imagem -->
+      <div style="margin-bottom:8px">
+        <input type="file" id="notif-img-file" accept="image/*" style="display:none" onchange="previewNotifImagem(this)"/>
+        <div id="notif-img-preview" style="display:none;margin-bottom:6px;position:relative">
+          <img id="notif-img-thumb" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1.5px solid #EBF1F5"/>
+          <button onclick="removerNotifImagem()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
+        </div>
+        <button onclick="document.getElementById('notif-img-file').click()" style="width:100%;height:32px;border-radius:8px;border:1.5px dashed #D6E5EE;background:#F8FBFD;color:#5A7A8F;font-size:12px;cursor:pointer">📎 Anexar imagem</button>
       </div>
+
       <div style="display:flex;gap:6px">
         <select id="notif-dest" style="flex:1;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
           <option value="todos">📢 Todos os motoboys</option>
@@ -233,12 +241,46 @@ function abrirNotificacoes() {
   carregarNotificacoes();
 }
 
+function previewNotifImagem(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const thumb = document.getElementById('notif-img-thumb');
+    const preview = document.getElementById('notif-img-preview');
+    if (thumb) thumb.src = e.target.result;
+    if (preview) preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removerNotifImagem() {
+  const input = document.getElementById('notif-img-file');
+  const preview = document.getElementById('notif-img-preview');
+  if (input) input.value = '';
+  if (preview) preview.style.display = 'none';
+}
+
 async function enviarNotificacao() {
   const titulo = document.getElementById('notif-titulo')?.value?.trim();
   const mensagem = document.getElementById('notif-msg')?.value?.trim();
-  const imagem_url = document.getElementById('notif-img')?.value?.trim();
   const destinatario = document.getElementById('notif-dest')?.value;
+  const imgFile = document.getElementById('notif-img-file')?.files?.[0];
   if (!mensagem) { toast('Digite uma mensagem'); return; }
+
+  let imagem_url = '';
+
+  // Upload da imagem se houver
+  if (imgFile) {
+    try {
+      const form = new FormData();
+      form.append('imagem', imgFile);
+      const r = await fetch(API + '/upload-imagem', { method: 'POST', body: form });
+      const d = await r.json();
+      if (d.url) imagem_url = d.url;
+    } catch(e) { toast('Erro ao enviar imagem'); return; }
+  }
+
   try {
     await fetch(API + '/notificacao-motoboy', {
       method: 'POST',
@@ -247,7 +289,7 @@ async function enviarNotificacao() {
     });
     document.getElementById('notif-titulo').value = '';
     document.getElementById('notif-msg').value = '';
-    document.getElementById('notif-img').value = '';
+    removerNotifImagem();
     toast('✓ Notificação enviada!');
     carregarNotificacoes();
   } catch(e) { toast('Erro ao enviar'); }
