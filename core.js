@@ -231,6 +231,20 @@ async function carregarMiniMapa() {
     }
   } catch(e) {}
 }
+let _rotasListaAberta = true;
+function toggleRotasLista() {
+  const wrap = document.getElementById('painel-rotas-wrap');
+  const btn = document.getElementById('rotas-toggle-btn');
+  if (!wrap) return;
+  _rotasListaAberta = !_rotasListaAberta;
+  wrap.style.display = _rotasListaAberta ? 'block' : 'none';
+  if (btn) {
+    btn.textContent = _rotasListaAberta ? '▾' : '▸';
+    btn.style.background = _rotasListaAberta ? '#F0F4F8' : '#E8F4FB';
+    btn.style.color = _rotasListaAberta ? '#5A7A8F' : '#1E9FD9';
+  }
+}
+
 function atualizarVersaoApp() {
   // Cria modal de publicação
   if (document.getElementById('modal-live-update')) {
