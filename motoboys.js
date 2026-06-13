@@ -646,7 +646,7 @@ async function carregarMotoboysGerenciar() {
         ${m.placa ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🏍️ Placa: <strong>${m.placa}</strong></div>` : ''}
         ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:3px">Sem rotas cadastradas</div>'}
         <div class="list-item-actions">
-          <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}',${m.precisa_checklist !== false})">✏️ Editar tipo</button>
+          <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}',${m.precisa_checklist !== false},${m.rastrear !== false})">✏️ Editar tipo</button>
           <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy('${m.telefone}')">🗑 Excluir</button>
         </div>
       </div>`;
@@ -657,11 +657,12 @@ async function carregarMotoboysGerenciar() {
   }
 }
 
-function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual) {
+function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual, rastrearAtual) {
   const anterior = document.getElementById('modal-editar-tipo');
   if (anterior) anterior.remove();
 
   const checklist = precisaChecklistAtual !== false;
+  const rastrear = rastrearAtual !== false;
 
   const modal = document.createElement('div');
   modal.id = 'modal-editar-tipo';
@@ -683,14 +684,23 @@ function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual) {
         </label>
       </div>
 
-      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Checklist</div>
-      <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1.5px solid #EBF1F5;cursor:pointer;margin-bottom:1.25rem">
-        <input type="checkbox" id="cb-checklist" ${checklist ? 'checked' : ''} style="width:18px;height:18px;accent-color:#0F4C7A;cursor:pointer"/>
-        <div>
-          <div style="font-size:14px;font-weight:700;color:#0F2940">Precisa preencher checklist</div>
-          <div style="font-size:11px;color:#64748B">Obrigatório antes de iniciar a rota</div>
-        </div>
-      </label>
+      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Configurações</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
+        <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1.5px solid #EBF1F5;cursor:pointer">
+          <input type="checkbox" id="cb-rastrear" ${rastrear ? 'checked' : ''} style="width:18px;height:18px;accent-color:#0F4C7A;cursor:pointer"/>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#0F2940">📍 Rastrear GPS</div>
+            <div style="font-size:11px;color:#64748B">CLT — desmarcar para MEI</div>
+          </div>
+        </label>
+        <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1.5px solid #EBF1F5;cursor:pointer">
+          <input type="checkbox" id="cb-checklist" ${checklist ? 'checked' : ''} style="width:18px;height:18px;accent-color:#0F4C7A;cursor:pointer"/>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#0F2940">📋 Precisa de checklist</div>
+            <div style="font-size:11px;color:#64748B">Obrigatório antes de iniciar a rota</div>
+          </div>
+        </label>
+      </div>
 
       <div style="display:flex;gap:8px">
         <button onclick="document.getElementById('modal-editar-tipo').remove()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
@@ -703,12 +713,13 @@ function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual) {
 async function salvarTipoMotoboy(telefone) {
   const tipo = document.querySelector('input[name="tipo-edit"]:checked')?.value;
   const precisa_checklist = document.getElementById('cb-checklist')?.checked !== false;
+  const rastrear = document.getElementById('cb-rastrear')?.checked !== false;
   if (!tipo) return;
   try {
     await fetch(API + '/motoboys/tipo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telefone, tipo, precisa_checklist })
+      body: JSON.stringify({ telefone, tipo, precisa_checklist, rastrear })
     });
     document.getElementById('modal-editar-tipo')?.remove();
     toast('✓ Configuração atualizada');
