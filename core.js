@@ -69,7 +69,7 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
-  if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') carregarGeofenceConfig();
+  if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') { carregarGeofenceConfig(); carregarHorariosTrabalho(); }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
   if (id === 'quilometragem' && typeof carregarKmCompleto === 'function') carregarKmCompleto();
 }
@@ -90,7 +90,97 @@ function formatarTelefone(t) {
   const s = String(t||'').replace(/\D/g,'');
   return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
 }
-// ── GEOFENCE CONFIG ──────────────────────────────────────────
+// ── HORÁRIOS DE TRABALHO ─────────────────────────────────────
+async function carregarHorariosTrabalho() {
+  const lista = document.getElementById('ht-lista');
+  const sel   = document.getElementById('ht-motoboy-sel');
+  if (!lista) return;
+  try {
+    const [rMb, rHt] = await Promise.all([
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
+      fetch(API + '/horario-trabalho')
+    ]);
+    const dMb = await rMb.json();
+    const dHt = await rHt.json();
+    const motoboys = (dMb.motoboys || []).sort((a,b) => a.nome.localeCompare(b.nome));
+    const horarios = dHt.horarios || [];
+
+    // Popula select de motoboys
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecione...</option>';
+      motoboys.forEach(m => {
+        const o = document.createElement('option');
+        o.value = m.telefone; o.textContent = m.nome;
+        sel.appendChild(o);
+      });
+    }
+
+    if (!horarios.length) {
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhum horário cadastrado</div>';
+      return;
+    }
+
+    const labelDia = d => ({ seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado', dom:'Domingo' })[d] || d;
+
+    // Agrupa por nome
+    const porNome = {};
+    horarios.forEach(h => {
+      const key = h.nome || h.telefone;
+      if (!porNome[key]) porNome[key] = { telefone: h.telefone, nome: h.nome, dias: [] };
+      porNome[key].dias.push(h);
+    });
+
+    lista.innerHTML = Object.values(porNome).map(p => `
+      <div style="border-bottom:1px solid #F0F4F8">
+        <div style="padding:8px 14px;font-size:12px;font-weight:700;color:#0F4C7A;background:#F8FBFD;display:flex;align-items:center;justify-content:space-between">
+          <span>👤 ${p.nome || p.telefone}</span>
+          <button onclick="removerHorarioTrabalho('${p.telefone}',null)" style="background:none;border:none;color:#EF4444;font-size:11px;cursor:pointer">Remover todos</button>
+        </div>
+        ${p.dias.map(d => `
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 14px 8px 24px">
+            <div style="flex:1;font-size:12px;color:#5A7A8F">${labelDia(d.dia_semana)}</div>
+            <span style="font-size:12px;font-weight:700;color:#0F4C7A">${d.inicio} — ${d.fim}</span>
+            <button onclick="removerHorarioTrabalho('${p.telefone}','${d.dia_semana}')" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer">✕</button>
+          </div>`).join('')}
+      </div>`).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+async function salvarHorarioTrabalho() {
+  const telefone = document.getElementById('ht-motoboy-sel')?.value;
+  const nome     = document.getElementById('ht-motoboy-sel')?.options[document.getElementById('ht-motoboy-sel')?.selectedIndex]?.text;
+  const dia_semana = document.getElementById('ht-dia-sel')?.value;
+  const inicio   = document.getElementById('ht-inicio')?.value;
+  const fim      = document.getElementById('ht-fim')?.value;
+  if (!telefone) { toast('Selecione um motoboy'); return; }
+  if (!inicio || !fim) { toast('Informe início e fim'); return; }
+  if (inicio >= fim) { toast('Fim deve ser depois do início'); return; }
+  try {
+    await fetch(API + '/horario-trabalho', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone, nome, dia_semana, inicio, fim })
+    });
+    toast('✓ Horário salvo');
+    carregarHorariosTrabalho();
+  } catch(e) { toast('Erro ao salvar'); }
+}
+
+async function removerHorarioTrabalho(telefone, dia_semana) {
+  const msg = dia_semana ? 'Remover este horário?' : 'Remover todos os horários deste motoboy?';
+  if (!confirm(msg)) return;
+  try {
+    await fetch(API + '/horario-trabalho', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone, dia_semana })
+    });
+    toast('✓ Removido');
+    carregarHorariosTrabalho();
+  } catch(e) { toast('Erro ao remover'); }
+}
 let _gfPassagens = 1;
 
 function gfSelecionarPassagem(n, btn) {
@@ -148,6 +238,7 @@ async function carregarGeofenceConfig() {
           return `<div style="display:flex;align-items:center;gap:8px;padding:8px 14px 8px 24px">
             <div style="flex:1;font-size:12px;color:#5A7A8F">${labelDia(c.dia_semana)}</div>
             <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${cp.bg};color:${cp.cor}">${c.passagens}ª passagem</span>
+            ${c.horario_limite ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">⏰ até ${c.horario_limite}</span>` : ''}
             <button onclick="removerGeofence('${rota.replace(/'/g,"\\'")}','${c.dia_semana}')" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer;flex-shrink:0">✕</button>
           </div>`;
         }).join('')}
@@ -160,13 +251,14 @@ async function carregarGeofenceConfig() {
 async function salvarGeofence() {
   const rota = document.getElementById('gf-rota-sel')?.value;
   const dia_semana = document.getElementById('gf-dia-sel')?.value;
+  const horario_limite = document.getElementById('gf-horario-limite')?.value || null;
   if (!rota) { toast('Selecione uma rota'); return; }
   if (!dia_semana) { toast('Selecione o dia'); return; }
   try {
     await fetch(API + '/geofence-config', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, dia_semana, passagens: _gfPassagens })
+      body: JSON.stringify({ rota, dia_semana, passagens: _gfPassagens, horario_limite: horario_limite || null })
     });
     toast('✓ ' + rota + ' · ' + dia_semana + ' — ' + _gfPassagens + 'ª passagem salva');
     carregarGeofenceConfig();
@@ -194,51 +286,340 @@ function abrirNotificacoes() {
 
   const el = document.createElement('div');
   el.id = 'notif-window';
-  el.style.cssText = 'position:fixed;bottom:20px;right:60px;width:380px;max-width:calc(100vw - 80px);background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);z-index:9998;display:flex;flex-direction:column;max-height:560px';
+  el.style.cssText = 'position:fixed;bottom:20px;right:60px;width:420px;max-width:calc(100vw - 80px);background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);z-index:9998;display:flex;flex-direction:column;max-height:620px';
   el.innerHTML = `
     <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div style="font-size:14px;font-weight:700;color:#0F4C7A">📢 Notificações aos Motoboys</div>
       <button onclick="document.getElementById('notif-window').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A8B8">✕</button>
     </div>
 
-    <!-- Formulário -->
-    <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;flex-shrink:0">
-      <input id="notif-titulo" type="text" placeholder="Título (opcional)" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;color:#0F4C7A;margin-bottom:8px"/>
-      <textarea id="notif-msg" placeholder="Mensagem para os motoboys..." style="width:100%;height:70px;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px 10px;font-size:12px;outline:none;color:#0F4C7A;resize:none;margin-bottom:8px;font-family:inherit"></textarea>
-      
-      <!-- Upload de imagem -->
-      <div style="margin-bottom:8px">
-        <input type="file" id="notif-img-file" accept="image/*" style="display:none" onchange="previewNotifImagem(this)"/>
-        <div id="notif-img-preview" style="display:none;margin-bottom:6px;position:relative">
-          <img id="notif-img-thumb" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1.5px solid #EBF1F5"/>
-          <button onclick="removerNotifImagem()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
-        </div>
-        <button onclick="document.getElementById('notif-img-file').click()" style="width:100%;height:32px;border-radius:8px;border:1.5px dashed #D6E5EE;background:#F8FBFD;color:#5A7A8F;font-size:12px;cursor:pointer">📎 Anexar imagem</button>
-      </div>
+    <!-- Abas -->
+    <div style="display:flex;border-bottom:1px solid #EBF1F5;flex-shrink:0">
+      <button onclick="notifAba('enviar')" id="notif-aba-enviar" style="flex:1;padding:10px;border:none;background:#EFF6FF;color:#0F4C7A;font-size:12px;font-weight:700;cursor:pointer;border-bottom:2px solid #0F4C7A">📤 Enviar agora</button>
+      <button onclick="notifAba('agendadas')" id="notif-aba-agendadas" style="flex:1;padding:10px;border:none;background:#fff;color:#94A8B8;font-size:12px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent">⏰ Agendadas</button>
+    </div>
 
-      <div style="display:flex;gap:6px">
-        <select id="notif-dest" style="flex:1;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
-          <option value="todos">📢 Todos os motoboys</option>
-        </select>
-        <button onclick="enviarNotificacao()" style="padding:0 14px;height:34px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Enviar</button>
+    <!-- Painel Enviar -->
+    <div id="notif-panel-enviar" style="flex-shrink:0">
+      <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5">
+        <input id="notif-titulo" type="text" placeholder="Título (opcional)" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;color:#0F4C7A;margin-bottom:8px;box-sizing:border-box"/>
+        <textarea id="notif-msg" placeholder="Mensagem para os motoboys..." style="width:100%;height:70px;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px 10px;font-size:12px;outline:none;color:#0F4C7A;resize:none;margin-bottom:8px;font-family:inherit;box-sizing:border-box"></textarea>
+        <div style="margin-bottom:8px">
+          <input type="file" id="notif-img-file" accept="image/*" style="display:none" onchange="previewNotifImagem(this)"/>
+          <div id="notif-img-preview" style="display:none;margin-bottom:6px;position:relative">
+            <img id="notif-img-thumb" style="width:100%;max-height:120px;object-fit:cover;border-radius:8px;border:1.5px solid #EBF1F5"/>
+            <button onclick="removerNotifImagem()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
+          </div>
+          <button onclick="document.getElementById('notif-img-file').click()" style="width:100%;height:32px;border-radius:8px;border:1.5px dashed #D6E5EE;background:#F8FBFD;color:#5A7A8F;font-size:12px;cursor:pointer">📎 Anexar imagem</button>
+        </div>
+        <div style="display:flex;gap:6px">
+          <select id="notif-dest" style="flex:1;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+            <option value="todos">📢 Todos os motoboys</option>
+          </select>
+          <button onclick="enviarNotificacao()" style="padding:0 14px;height:34px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Enviar</button>
+        </div>
+      </div>
+      <div style="flex:1;overflow-y:auto;max-height:200px">
+        <div id="notif-lista" style="padding:8px"></div>
       </div>
     </div>
 
-    <!-- Lista enviadas -->
-    <div style="flex:1;overflow-y:auto">
-      <div id="notif-lista" style="padding:8px"></div>
+    <!-- Painel Agendadas -->
+    <div id="notif-panel-agendadas" style="display:none;flex-direction:column;flex:1;overflow:hidden">
+      <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;flex-shrink:0">
+        <input id="ag-titulo" type="text" placeholder="Título (opcional)" style="width:100%;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;color:#0F4C7A;margin-bottom:8px;box-sizing:border-box"/>
+        <textarea id="ag-msg" placeholder="Mensagem automática..." style="width:100%;height:60px;border-radius:8px;border:1.5px solid #D6E5EE;padding:8px 10px;font-size:12px;outline:none;color:#0F4C7A;resize:none;margin-bottom:8px;font-family:inherit;box-sizing:border-box"></textarea>
+
+        <!-- Upload imagem agendada -->
+        <div style="margin-bottom:8px">
+          <input type="file" id="ag-img-file" accept="image/*" style="display:none" onchange="previewAgImagem(this)"/>
+          <div id="ag-img-preview" style="display:none;margin-bottom:6px;position:relative">
+            <img id="ag-img-thumb" style="width:100%;max-height:100px;object-fit:cover;border-radius:8px;border:1.5px solid #EBF1F5"/>
+            <button onclick="removerAgImagem()" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);border:none;color:#fff;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:12px">✕</button>
+          </div>
+          <button onclick="document.getElementById('ag-img-file').click()" style="width:100%;height:30px;border-radius:8px;border:1.5px dashed #D6E5EE;background:#F8FBFD;color:#5A7A8F;font-size:11px;cursor:pointer">📎 Anexar imagem</button>
+        </div>
+
+        <!-- Tipo de recorrência -->
+        <div style="font-size:10px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Recorrência</div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <button onclick="agTipoRecorrencia('semanal',this)" id="ag-rec-semanal" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid #0F4C7A;background:#0F4C7A;color:#fff;font-size:11px;font-weight:700;cursor:pointer">📅 Por dias</button>
+          <button onclick="agTipoRecorrencia('intervalo',this)" id="ag-rec-intervalo" style="flex:1;padding:7px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">🔁 Intervalo</button>
+        </div>
+
+        <!-- Painel semanal -->
+        <div id="ag-painel-semanal">
+          <div style="font-size:10px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Dias da semana</div>
+          <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
+            ${['seg','ter','qua','qui','sex','sab','dom'].map(d => `
+            <button onclick="agToggleDia('${d}',this)" id="ag-dia-${d}" style="padding:4px 8px;border-radius:6px;border:1.5px solid #0F4C7A;background:#0F4C7A;color:#fff;font-size:10px;font-weight:700;cursor:pointer">${d.charAt(0).toUpperCase()+d.slice(1)}</button>`).join('')}
+          </div>
+        </div>
+
+        <!-- Painel intervalo -->
+        <div id="ag-painel-intervalo" style="display:none">
+          <div style="font-size:10px;font-weight:700;color:#5A7A8F;margin-bottom:4px">A cada quantos dias?</div>
+          <input id="ag-intervalo" type="number" min="1" max="365" value="15" style="width:100%;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;outline:none;color:#0F4C7A;margin-bottom:8px;box-sizing:border-box"/>
+        </div>
+
+        <!-- Horários múltiplos -->
+        <div style="font-size:10px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Horários de disparo</div>
+        <div id="ag-horarios-lista" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px"></div>
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <input id="ag-horario-input" type="time" style="flex:1;height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none"/>
+          <button onclick="agAdicionarHorario()" style="padding:0 12px;height:32px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Adicionar</button>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-bottom:10px">
+          <div style="flex:1">
+            <div style="font-size:10px;font-weight:700;color:#5A7A8F;margin-bottom:3px">Destinatário</div>
+            <select id="ag-dest" style="width:100%;height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 6px;font-size:11px;color:#0F4C7A;outline:none">
+              <option value="todos">📢 Todos</option>
+            </select>
+          </div>
+        </div>
+
+        <button onclick="salvarMensagemAgendada()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">⏰ Agendar mensagem</button>
+      </div>
+      <div style="flex:1;overflow-y:auto">
+        <div id="ag-lista" style="padding:8px"><div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Carregando...</div></div>
+      </div>
     </div>`;
   document.body.appendChild(el);
 
-  // Popula select de destinatários
+  // Popula selects de destinatários
   fetch(API + '/motoboys?todos=1&agrupado=1').then(r => r.json()).then(d => {
-    const sel = document.getElementById('notif-dest');
-    if (!sel) return;
     const nomes = [...new Set((d.motoboys||[]).map(m => m.nome))].sort();
-    nomes.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = '👤 ' + n; sel.appendChild(o); });
+    ['notif-dest','ag-dest'].forEach(id => {
+      const sel = document.getElementById(id);
+      if (!sel) return;
+      sel.innerHTML = `
+        <option value="todos">📢 Todos os motoboys</option>
+        <option value="grupo_clt">🔵 Grupo CLT</option>
+        <option value="grupo_mei">🟡 Grupo MEI</option>`;
+      nomes.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = '👤 ' + n; sel.appendChild(o); });
+    });
   }).catch(() => {});
 
   carregarNotificacoes();
+  carregarMensagensAgendadas();
+}
+
+function notifAba(aba) {
+  const enviar = document.getElementById('notif-panel-enviar');
+  const agendadas = document.getElementById('notif-panel-agendadas');
+  const btnEnviar = document.getElementById('notif-aba-enviar');
+  const btnAg = document.getElementById('notif-aba-agendadas');
+  if (aba === 'enviar') {
+    enviar.style.display = 'block';
+    agendadas.style.display = 'none';
+    btnEnviar.style.background = '#EFF6FF'; btnEnviar.style.color = '#0F4C7A'; btnEnviar.style.borderBottomColor = '#0F4C7A';
+    btnAg.style.background = '#fff'; btnAg.style.color = '#94A8B8'; btnAg.style.borderBottomColor = 'transparent';
+  } else {
+    enviar.style.display = 'none';
+    agendadas.style.display = 'flex';
+    btnAg.style.background = '#EFF6FF'; btnAg.style.color = '#0F4C7A'; btnAg.style.borderBottomColor = '#0F4C7A';
+    btnEnviar.style.background = '#fff'; btnEnviar.style.color = '#94A8B8'; btnEnviar.style.borderBottomColor = 'transparent';
+    carregarMensagensAgendadas();
+  }
+}
+
+// Dias selecionados para agendamento
+let _agDias = new Set(['seg','ter','qua','qui','sex','sab','dom']);
+let _agHorarios = new Set();
+let _agTipoRecorrencia = 'semanal';
+
+function agTipoRecorrencia(tipo, btn) {
+  _agTipoRecorrencia = tipo;
+  const btnSemanal = document.getElementById('ag-rec-semanal');
+  const btnIntervalo = document.getElementById('ag-rec-intervalo');
+  const painelSemanal = document.getElementById('ag-painel-semanal');
+  const painelIntervalo = document.getElementById('ag-painel-intervalo');
+  if (tipo === 'semanal') {
+    btnSemanal.style.background='#0F4C7A'; btnSemanal.style.color='#fff'; btnSemanal.style.borderColor='#0F4C7A';
+    btnIntervalo.style.background='#fff'; btnIntervalo.style.color='#5A7A8F'; btnIntervalo.style.borderColor='#D6E5EE';
+    painelSemanal.style.display='block'; painelIntervalo.style.display='none';
+  } else {
+    btnIntervalo.style.background='#0F4C7A'; btnIntervalo.style.color='#fff'; btnIntervalo.style.borderColor='#0F4C7A';
+    btnSemanal.style.background='#fff'; btnSemanal.style.color='#5A7A8F'; btnSemanal.style.borderColor='#D6E5EE';
+    painelIntervalo.style.display='block'; painelSemanal.style.display='none';
+  }
+}
+
+function agAdicionarHorario() {
+  const input = document.getElementById('ag-horario-input');
+  const horario = input?.value;
+  if (!horario) { toast('Selecione um horário'); return; }
+  if (_agHorarios.has(horario)) { toast('Horário já adicionado'); return; }
+  _agHorarios.add(horario);
+  renderizarHorarios();
+  input.value = '';
+}
+
+function agRemoverHorario(h) {
+  _agHorarios.delete(h);
+  renderizarHorarios();
+}
+
+function renderizarHorarios() {
+  const lista = document.getElementById('ag-horarios-lista');
+  if (!lista) return;
+  const sorted = Array.from(_agHorarios).sort();
+  lista.innerHTML = sorted.map(h => `
+    <div style="display:flex;align-items:center;gap:4px;background:#EFF6FF;border-radius:6px;padding:4px 8px">
+      <span style="font-size:12px;font-weight:700;color:#0F4C7A">⏰ ${h}</span>
+      <button onclick="agRemoverHorario('${h}')" style="background:none;border:none;color:#EF4444;font-size:12px;cursor:pointer;padding:0;line-height:1">✕</button>
+    </div>`).join('');
+}
+
+function previewAgImagem(input) {
+  const file = input.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const thumb = document.getElementById('ag-img-thumb');
+    const preview = document.getElementById('ag-img-preview');
+    if (thumb) thumb.src = e.target.result;
+    if (preview) preview.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+function removerAgImagem() {
+  const input = document.getElementById('ag-img-file');
+  const preview = document.getElementById('ag-img-preview');
+  if (input) input.value = '';
+  if (preview) preview.style.display = 'none';
+}
+
+async function salvarMensagemAgendada() {
+  const titulo = document.getElementById('ag-titulo')?.value?.trim();
+  const mensagem = document.getElementById('ag-msg')?.value?.trim();
+  const destinatario = document.getElementById('ag-dest')?.value;
+  const imgFile = document.getElementById('ag-img-file')?.files?.[0];
+  const intervalo_dias = parseInt(document.getElementById('ag-intervalo')?.value || '1');
+
+  if (!mensagem) { toast('Digite uma mensagem'); return; }
+  if (_agHorarios.size === 0) { toast('Adicione pelo menos um horário'); return; }
+  if (_agTipoRecorrencia === 'semanal' && _agDias.size === 0) { toast('Selecione pelo menos um dia'); return; }
+
+  let imagem_url = '';
+  if (imgFile) {
+    try {
+      const form = new FormData(); form.append('imagem', imgFile);
+      const r = await fetch(API + '/upload-imagem', { method: 'POST', body: form });
+      const d = await r.json();
+      if (d.url) imagem_url = d.url;
+    } catch(e) { toast('Erro ao enviar imagem'); return; }
+  }
+
+  try {
+    await fetch(API + '/mensagem-agendada', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        titulo, mensagem, imagem_url, destinatario,
+        horarios: Array.from(_agHorarios).sort(),
+        horario: Array.from(_agHorarios).sort()[0],
+        dias_semana: _agTipoRecorrencia === 'semanal' ? Array.from(_agDias).join(',') : 'todos',
+        tipo_recorrencia: _agTipoRecorrencia,
+        intervalo_dias
+      })
+    });
+    document.getElementById('ag-titulo').value = '';
+    document.getElementById('ag-msg').value = '';
+    _agHorarios.clear();
+    renderizarHorarios();
+    removerAgImagem();
+    toast('✓ Mensagem agendada!');
+    carregarMensagensAgendadas();
+  } catch(e) { toast('Erro ao agendar'); }
+}
+
+async function carregarMensagensAgendadas() {
+  const lista = document.getElementById('ag-lista');
+  if (!lista) return;
+  try {
+    const [rMsg, rMb] = await Promise.all([
+      fetch(API + '/mensagem-agendada'),
+      fetch(API + '/motoboys?todos=1&agrupado=1')
+    ]);
+    const dMsg = await rMsg.json();
+    const dMb  = await rMb.json();
+    const msgs = dMsg.mensagens || [];
+    const totalMotoboys = (dMb.motoboys || []).length;
+
+    if (!msgs.length) { lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Nenhuma mensagem agendada</div>'; return; }
+
+    const labelDest = d => d === 'todos' ? 'Todos' : d === 'grupo_clt' ? '🔵 CLT' : d === 'grupo_mei' ? '🟡 MEI' : d;
+    const labelDias = ds => {
+      if (!ds || ds === 'seg,ter,qua,qui,sex,sab,dom') return 'Todos os dias';
+      return ds.split(',').map(d => d.charAt(0).toUpperCase()+d.slice(1)).join(', ');
+    };
+
+    // Busca leituras de todas as mensagens disparadas hoje
+    const leituras = {};
+    await Promise.all(msgs.filter(m => m.ultima_execucao).map(async m => {
+      try {
+        const r = await fetch(API + '/mensagem-agendada-leitura?id=' + m.id);
+        const d = await r.json();
+        leituras[m.id] = d.leituras || [];
+      } catch(e) { leituras[m.id] = []; }
+    }));
+
+    lista.innerHTML = msgs.map(m => {
+      const lidas = leituras[m.id] || [];
+      const qtdLidas = lidas.length;
+      const total = m.destinatario === 'todos' ? totalMotoboys : 1;
+      const pct = total > 0 ? Math.round(qtdLidas/total*100) : 0;
+      const corPct = pct === 100 ? '#0F9B78' : pct > 0 ? '#F59E0B' : '#94A8B8';
+      const foiDisparada = !!m.ultima_execucao;
+
+      return `
+      <div style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid #EBF1F5">
+        <div style="display:flex;align-items:flex-start;gap:8px">
+          <div style="flex:1;min-width:0">
+            ${m.titulo ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:2px">${m.titulo}</div>` : ''}
+            <div style="font-size:12px;color:#0F2940;line-height:1.4;margin-bottom:4px">${m.mensagem}</div>
+            ${m.imagem_url ? `<img src="${m.imagem_url}" style="max-width:100%;border-radius:6px;max-height:80px;object-fit:cover;margin-bottom:4px"/>` : ''}
+            <div style="font-size:10px;color:#94A8B8">
+              ⏰ ${(m.horarios || m.horario || '').split(',').join(' · ')} · 
+              ${m.tipo_recorrencia === 'intervalo' ? `A cada ${m.intervalo_dias} dia(s)` : labelDias(m.dias_semana)} · 
+              ${labelDest(m.destinatario)}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+            <button onclick="toggleMensagemAgendada(${m.id},${m.ativa})" style="background:none;border:1.5px solid #D6E5EE;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;color:${m.ativa?'#0F9B78':'#94A8B8'}">${m.ativa?'✓ Ativa':'Pausada'}</button>
+            <button onclick="deletarMensagemAgendada(${m.id})" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        ${foiDisparada ? `
+        <div style="margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <div style="flex:1;height:3px;background:#E2E8F0;border-radius:99px;overflow:hidden">
+              <div style="height:100%;width:${pct}%;background:${corPct};border-radius:99px;transition:width .4s"></div>
+            </div>
+            <span style="font-size:10px;font-weight:700;color:${corPct};white-space:nowrap">${qtdLidas}/${total} leram</span>
+          </div>
+          ${lidas.length ? `<div style="font-size:10px;color:#94A8B8">✓ ${lidas.map(l => l.nome || l.telefone).join(', ')}</div>` : ''}
+        </div>` : `<div style="margin-top:6px;font-size:10px;color:#94A8B8">Ainda não disparada hoje</div>`}
+      </div>`;
+    }).join('');
+  } catch(e) { lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#EF4444;font-size:12px">Erro ao carregar</div>'; }
+}
+
+async function toggleMensagemAgendada(id, ativa) {
+  try {
+    await fetch(API + '/mensagem-agendada', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, ativa: !ativa }) });
+    carregarMensagensAgendadas();
+  } catch(e) { toast('Erro'); }
+}
+
+async function deletarMensagemAgendada(id) {
+  if (!confirm('Remover esta mensagem agendada?')) return;
+  try {
+    await fetch(API + '/mensagem-agendada', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+    toast('✓ Removida');
+    carregarMensagensAgendadas();
+  } catch(e) { toast('Erro'); }
 }
 
 function previewNotifImagem(input) {
@@ -333,7 +714,7 @@ async function carregarNotificacoes() {
           <button onclick="deletarNotificacao(${n.id})" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer;flex-shrink:0">✕</button>
         </div>
         <div style="display:flex;align-items:center;gap:8px">
-          <span style="font-size:10px;color:#94A8B8">${hora} · ${n.destinatario === 'todos' ? 'Todos' : n.destinatario}</span>
+          <span style="font-size:10px;color:#94A8B8">${hora} · ${labelDest(n.destinatario)}</span>
           <div style="flex:1;height:3px;background:#E2E8F0;border-radius:99px;overflow:hidden">
             <div style="height:100%;width:${pct}%;background:${corPct};border-radius:99px;transition:width .4s"></div>
           </div>
@@ -405,6 +786,48 @@ async function toggleManutencao() {
 
 // Verifica status ao carregar
 setTimeout(verificarStatusManutencao, 1000);
+
+// ── POPOVER DE ROTA (position:fixed para não ser cortado pelo overflow) ───
+let _popoverTimer = null;
+document.addEventListener('mouseover', e => {
+  const card = e.target.closest('.rota-card');
+  if (!card) return;
+  const popover = card.querySelector('.rota-popover');
+  if (!popover) return;
+  clearTimeout(_popoverTimer);
+  // Posiciona o popover fixo em relação ao card
+  const rect = card.getBoundingClientRect();
+  const spaceRight = window.innerWidth - rect.right;
+  const spaceLeft  = rect.left;
+  if (spaceRight >= 296) {
+    popover.style.left = (rect.right + 8) + 'px';
+    popover.style.right = 'auto';
+  } else {
+    popover.style.right = (window.innerWidth - rect.left + 8) + 'px';
+    popover.style.left = 'auto';
+  }
+  const topPos = Math.min(rect.top, window.innerHeight - 420);
+  popover.style.top  = Math.max(8, topPos) + 'px';
+  popover.style.display = 'block';
+});
+
+document.addEventListener('mouseout', e => {
+  const card = e.target.closest('.rota-card');
+  if (!card) return;
+  const popover = card.querySelector('.rota-popover');
+  if (!popover) return;
+  // Pequeno delay para não fechar ao mover para o popover
+  _popoverTimer = setTimeout(() => { popover.style.display = 'none'; }, 120);
+});
+
+document.addEventListener('mouseover', e => {
+  if (e.target.closest('.rota-popover')) clearTimeout(_popoverTimer);
+});
+document.addEventListener('mouseout', e => {
+  const pop = e.target.closest('.rota-popover');
+  if (!pop) return;
+  _popoverTimer = setTimeout(() => { pop.style.display = 'none'; }, 120);
+});
 
 function iniciarAutoRefresh() {
   pararAutoRefresh();
