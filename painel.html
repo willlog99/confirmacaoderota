@@ -80,9 +80,9 @@
     @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
     @keyframes pulse2{0%,100%{opacity:1}50%{opacity:.2}}
     .leaflet-popup-content{margin:10px 14px!important;font-family:-apple-system,sans-serif}
-    .panel-body{padding:1rem 1.5rem;max-height:400px;overflow-y:auto}
+    .panel-body{padding:1rem 1.5rem;max-height:400px;overflow-y:auto;overflow-x:visible}
 
-    .rota-card{background:#fff;border-radius:8px;padding:.45rem .85rem;margin-bottom:4px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .15s;position:relative}
+    .rota-card{background:#fff;border-radius:8px;padding:.45rem .85rem;margin-bottom:4px;border:1.5px solid #EBF1F5;cursor:pointer;transition:all .15s;position:relative;overflow:visible}
     .rota-card:hover{border-color:#1E9FD9;background:#F8FBFF;z-index:2}
     .rota-card.em-andamento{border-left:3px solid #1E9FD9}
     .rota-card.completa{border-left:3px solid #0F9B78;background:#F8FFFE}
@@ -97,8 +97,9 @@
     .progress-txt{font-size:11px;font-weight:800;color:#0F4C7A;flex-shrink:0;min-width:42px;text-align:right}
 
     /* Popover hover */
-    .rota-popover{position:absolute;left:calc(100% + 8px);top:0;width:280px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(15,40,64,.18);border:1.5px solid #E2E8F0;z-index:999;display:none;padding:12px;animation:fadeIn .15s}
-    .rota-card:hover .rota-popover{display:block}
+    .rota-popover{position:fixed;width:280px;background:#fff;border-radius:12px;box-shadow:0 8px 32px rgba(15,40,64,.18);border:1.5px solid #E2E8F0;z-index:9990;display:none;padding:12px;animation:fadeIn .15s;max-height:400px;overflow-y:auto;pointer-events:auto}
+    /* popover controlado por JS */
+    .rota-popover.popover-esquerda{left:auto;right:calc(100% + 8px)}
     .rota-preview{display:none}
     .rota-card.expanded .rota-preview{display:block}
     @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
@@ -781,12 +782,71 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <button onclick="gfSelecionarPassagem(3,this)" id="gf-btn-3" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">3ª</button>
             </div>
 
+            <div style="display:flex;align-items:center;gap:10px;background:#FEF9EC;border-radius:8px;padding:10px 12px;margin-top:12px;margin-bottom:12px;border:1.5px solid #FDE68A">
+              <div style="flex:1">
+                <div style="font-size:11px;font-weight:700;color:#92400E;margin-bottom:2px">⏰ Horário limite (opcional)</div>
+                <div style="font-size:10px;color:#B45309">GPS e notificações param neste horário mesmo sem chegar ao ponto</div>
+              </div>
+              <input id="gf-horario-limite" type="time" style="width:100px;height:34px;border-radius:8px;border:1.5px solid #FDE68A;padding:0 8px;font-size:13px;color:#92400E;outline:none;background:#fff;font-weight:700"/>
+            </div>
+
             <button onclick="salvarGeofence()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar</button>
           </div>
 
           <!-- Lista configuradas -->
           <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Configurações salvas</div>
           <div id="gf-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div class="empty"><span class="spinner"></span> Carregando...</div>
+          </div>
+        </div>
+
+        <!-- HORÁRIOS DE TRABALHO -->
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title">🕐 Horários de trabalho</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
+            Configure o turno de cada motoboy por dia da semana. Aparece no app do rastreador.
+          </p>
+
+          <div style="background:#F8FBFD;border-radius:12px;padding:14px;border:1.5px solid #EBF1F5;margin-bottom:1.25rem">
+            <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Adicionar horário</div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Motoboy</div>
+                <select id="ht-motoboy-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+                  <option value="">Selecione...</option>
+                </select>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Dia da semana</div>
+                <select id="ht-dia-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+                  <option value="seg">Segunda-feira</option>
+                  <option value="ter">Terça-feira</option>
+                  <option value="qua">Quarta-feira</option>
+                  <option value="qui">Quinta-feira</option>
+                  <option value="sex">Sexta-feira</option>
+                  <option value="sab">Sábado</option>
+                  <option value="dom">Domingo</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Início</div>
+                <input id="ht-inicio" type="time" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-weight:700"/>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Fim</div>
+                <input id="ht-fim" type="time" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none;font-weight:700"/>
+              </div>
+            </div>
+
+            <button onclick="salvarHorarioTrabalho()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar horário</button>
+          </div>
+
+          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Horários salvos</div>
+          <div id="ht-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
             <div class="empty"><span class="spinner"></span> Carregando...</div>
           </div>
         </div>
