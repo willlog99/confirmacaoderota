@@ -995,9 +995,22 @@ function toggleRotasLista() {
   }
 }
 
-function atualizarVersaoApp() {
-  // Cria modal de publicação
+async function atualizarVersaoApp() {
+  // Busca versão atual para incrementar automaticamente
+  let versaoAtual = '1.0.0';
+  try {
+    const r = await fetch(API + '/app-versao');
+    const d = await r.json();
+    if (d.versao) versaoAtual = d.versao;
+  } catch(e) {}
+
+  // Auto-incrementa patch version (ex: 1.0.3 → 1.0.4)
+  const partes = versaoAtual.split('.').map(Number);
+  partes[2] = (partes[2] || 0) + 1;
+  const proxVersao = partes.join('.');
+
   if (document.getElementById('modal-live-update')) {
+    document.getElementById('lu-versao-display').textContent = proxVersao;
     document.getElementById('modal-live-update').style.display = 'flex';
     return;
   }
@@ -1010,20 +1023,24 @@ function atualizarVersaoApp() {
         <div style="font-size:16px;font-weight:700;color:#0F4C7A">📲 Publicar Atualização</div>
         <button onclick="document.getElementById('modal-live-update').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
       </div>
-      <div style="margin-bottom:1rem">
-        <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;display:block;margin-bottom:5px">Versão (ex: 1.0.1)</label>
-        <input type="text" id="lu-versao" placeholder="1.0.1" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
+      <div style="background:#EFF6FF;border-radius:10px;padding:10px 14px;margin-bottom:1rem;display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">🔢</span>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Nova versão (automática)</div>
+          <div style="font-size:18px;font-weight:800;color:#0F4C7A" id="lu-versao-display">${proxVersao}</div>
+        </div>
       </div>
+      <input type="hidden" id="lu-versao" value="${proxVersao}"/>
       <div style="margin-bottom:1rem">
         <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;display:block;margin-bottom:5px">Bundle (.zip com arquivos www/)</label>
         <input type="file" id="lu-arquivo" accept=".zip" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A"/>
       </div>
       <div style="background:#F7FBFD;border-radius:10px;padding:10px 12px;margin-bottom:1rem;font-size:12px;color:#5A7A8F;line-height:1.5">
         💡 Zipar apenas o conteúdo da pasta <strong>www/</strong> (sem a pasta raiz)<br>
-        O app vai baixar e aplicar automaticamente ao abrir
+        O app vai baixar e aplicar automaticamente ao abrir. Quem já atualizou não vê mais o banner.
       </div>
       <div id="lu-msg" style="display:none;margin-bottom:1rem"></div>
-      <button onclick="publicarBundle()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">🚀 Publicar agora</button>
+      <button onclick="publicarBundle()" style="width:100%;padding:13px;border-radius:12px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">🚀 Publicar versão ${proxVersao}</button>
       <button onclick="limparUpdate()" style="width:100%;padding:11px;border-radius:12px;border:1.5px solid #E2E8F0;background:#fff;color:#EF4444;font-size:13px;font-weight:600;cursor:pointer">🗑 Limpar update ativo (remove banner do app)</button>
     </div>
   `;
