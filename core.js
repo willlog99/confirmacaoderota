@@ -195,6 +195,95 @@ function gfSelecionarPassagem(n, btn) {
   });
 }
 
+// ── MÉTRICAS KM ──────────────────────────────────────────────
+async function carregarMetricas() {
+  const periodoSel = document.getElementById('km-metricas-periodo')?.value || 'mes';
+  const inicioInp  = document.getElementById('km-metricas-inicio')?.value;
+  const fimInp     = document.getElementById('km-metricas-fim')?.value;
+
+  const hoje = new Date();
+  let dataInicio, dataFim = hoje.toISOString().split('T')[0];
+
+  if (inicioInp && fimInp) {
+    dataInicio = inicioInp; dataFim = fimInp;
+  } else if (periodoSel === 'hoje') {
+    dataInicio = dataFim;
+  } else if (periodoSel === 'semana') {
+    const d = new Date(hoje); d.setDate(d.getDate() - 7);
+    dataInicio = d.toISOString().split('T')[0];
+  } else {
+    const d = new Date(hoje); d.setDate(d.getDate() - 30);
+    dataInicio = d.toISOString().split('T')[0];
+  }
+
+  const label = dataInicio === dataFim ? dataInicio : dataInicio + ' → ' + dataFim;
+  const el = document.getElementById('km-metricas-label');
+  if (el) el.textContent = label;
+
+  const tbody = document.getElementById('km-metricas-tbody');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8"><span class="spinner"></span> Carregando...</td></tr>';
+
+  try {
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const dMb = await rMb.json();
+    const rastreadores = (dMb.motoboys || []).filter(m => m.tipo === 'rastreador');
+
+    if (!rastreadores.length) {
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8">Nenhum rastreador cadastrado</td></tr>';
+      return;
+    }
+
+    // Gera lista de datas no período
+    const datas = [];
+    const cur = new Date(dataInicio);
+    const fim = new Date(dataFim);
+    while (cur <= fim) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+
+    const metricas = await Promise.all(rastreadores.map(async m => {
+      let kmTotal = 0, diasComDados = 0, tempoTotalMin = 0;
+      for (const data of datas) {
+        try {
+          const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(m.nome) + '&data=' + data);
+          const d = await r.json();
+          if (d.km > 0) { kmTotal += d.km; diasComDados++; }
+          if (d.pontos > 1) {
+            // Estimativa de tempo baseada nos pontos (intervalo médio de 30s entre pontos)
+            tempoTotalMin += (d.pontos * 30) / 60;
+          }
+        } catch(e) {}
+      }
+      const dias = diasComDados || 1;
+      return {
+        nome: m.nome,
+        kmTotal: Math.round(kmTotal * 10) / 10,
+        kmd: Math.round((kmTotal / dias) * 10) / 10,
+        kmm: Math.round((kmTotal / dias) * 22 * 10) / 10,
+        tmd: tempoTotalMin / dias,
+        dias: diasComDados
+      };
+    }));
+
+    const formatMin = min => {
+      if (!min) return '—';
+      const h = Math.floor(min / 60);
+      const m2 = Math.round(min % 60);
+      return h + 'h' + String(m2).padStart(2,'0') + 'm';
+    };
+
+    if (tbody) tbody.innerHTML = metricas.map(m => `
+      <tr style="border-bottom:1px solid #F0F4F8">
+        <td style="padding:10px 12px;font-weight:600;color:#0F2940">${m.nome}</td>
+        <td style="padding:10px 8px;text-align:center;font-weight:700;color:#0F9B78">${m.kmd} km</td>
+        <td style="padding:10px 8px;text-align:center;font-weight:700;color:#1E9FD9">${m.kmm} km</td>
+        <td style="padding:10px 8px;text-align:center;font-weight:700;color:#7C3AED">${formatMin(m.tmd)}</td>
+        <td style="padding:10px 8px;text-align:center;color:#5A7A8F">${m.kmTotal} km</td>
+        <td style="padding:10px 8px;text-align:center;color:#5A7A8F">${m.dias}</td>
+      </tr>`).join('');
+  } catch(e) {
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar métricas</td></tr>';
+  }
+}
+
 async function carregarGeofenceConfig() {
   const lista = document.getElementById('gf-lista');
   const sel = document.getElementById('gf-rota-sel');
@@ -1633,22 +1722,30 @@ function kmMudarAba(aba, el) {
   el.style.borderBottomColor = '#0F9B78';
 
   // Mostra filtro certo
-  ['dia','periodo','motoboy','rota'].forEach(a => {
+  ['dia','periodo','motoboy','rota','metricas'].forEach(a => {
     const el2 = document.getElementById('km-filtro-' + a);
     if (el2) el2.style.display = a === aba ? 'flex' : 'none';
   });
+
+  // Mostra conteúdo certo
+  const lista = document.getElementById('km-lista-completa');
+  const metricas = document.getElementById('km-metricas-conteudo');
+  if (aba === 'metricas') {
+    if (lista) lista.style.display = 'none';
+    if (metricas) metricas.style.display = 'block';
+  } else {
+    if (lista) lista.style.display = 'block';
+    if (metricas) metricas.style.display = 'none';
+  }
 
   // Popula selects se necessário
   if (aba === 'motoboy') kmPopularSelectMotoboy();
   if (aba === 'rota') kmPopularSelectRota();
 
   // Título da tabela
-  const titulos = { dia: 'KM por motoboy', periodo: 'KM por motoboy no período', motoboy: 'Histórico do motoboy', rota: 'KM por rota' };
+  const titulos = { dia: 'KM por motoboy', periodo: 'KM por motoboy no período', motoboy: 'Histórico do motoboy', rota: 'KM por rota', metricas: 'Métricas' };
   const t = document.getElementById('km-tabela-titulo');
   if (t) t.textContent = titulos[aba] || 'KM';
-
-  // Limpa resultados
-  const lista = document.getElementById('km-lista-completa');
   if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Selecione os filtros e clique em Buscar</div>';
   kmZerarKPIs();
 }
