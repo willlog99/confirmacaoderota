@@ -662,15 +662,23 @@ async function enviarNotificacao() {
   }
 
   try {
+    // Salva no D1 (para polling no app)
     await fetch(API + '/notificacao-motoboy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ titulo, mensagem, imagem_url, destinatario, enviada_por: 'admin' })
     });
+    // Dispara via FCM (notificação nativa mesmo com app fechado)
+    const fcmRes = await fetch(API + '/disparar-fcm', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ titulo, mensagem, imagem_url, destinatario })
+    });
+    const fcmData = await fcmRes.json();
     document.getElementById('notif-titulo').value = '';
     document.getElementById('notif-msg').value = '';
     removerNotifImagem();
-    toast('✓ Notificação enviada!');
+    toast('✓ Notificação enviada! FCM: ' + (fcmData.enviados || 0) + ' dispositivos');
     carregarNotificacoes();
   } catch(e) { toast('Erro ao enviar'); }
 }
