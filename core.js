@@ -549,7 +549,6 @@ async function carregarMensagensAgendadas() {
 
     if (!msgs.length) { lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Nenhuma mensagem agendada</div>'; return; }
 
-    const labelDest = d => d === 'todos' ? 'Todos' : d === 'grupo_clt' ? '🔵 CLT' : d === 'grupo_mei' ? '🟡 MEI' : d;
     const labelDias = ds => {
       if (!ds || ds === 'seg,ter,qua,qui,sex,sab,dom') return 'Todos os dias';
       return ds.split(',').map(d => d.charAt(0).toUpperCase()+d.slice(1)).join(', ');
@@ -675,6 +674,9 @@ async function enviarNotificacao() {
     carregarNotificacoes();
   } catch(e) { toast('Erro ao enviar'); }
 }
+
+// ── LABEL DESTINATÁRIO (global) ──────────────────────────────
+const labelDest = d => d === 'todos' ? 'Todos' : d === 'grupo_clt' ? '🔵 CLT' : d === 'grupo_mei' ? '🟡 MEI' : d;
 
 async function carregarNotificacoes() {
   const lista = document.getElementById('notif-lista');
