@@ -1429,138 +1429,103 @@ async function carregarMapa() {
     _ultimosLocsMapa = locsAtivos;
     _ultimosOfflineMapa = offline;
   } catch(e) {
-    const el = document.getElementById('mapa-lista-motoboys');
-    if(el) el.innerHTML = '<div class="empty">Erro ao carregar</div>';
-  }
-}
-async function verTrajeto(nome, btn) {
-  if (!leafletMap) return;
-  if (btn) { btn.textContent = '⏳'; btn.disabled = true; }
-
-  try {
-    const hoje = new Date();
-    const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
-    const data = diaSP.toISOString().split('T')[0];
-
-    const r = await fetch(API + '/localizacao?dia=' + data);
-    const d = await r.json();
-    const pontos = (d.historico || []).filter(p => p.nome === nome);
-
-    if (pontos.length < 2) {
-      toast('Menos de 2 pontos GPS hoje para ' + nome.split(' ')[0]);
-      if (btn) { btn.textContent = '🗺️ Trajeto'; btn.disabled = false; }
-      return;
-    }
-
-    // Remove trajeto anterior se existir
-    limparTrajeto(nome);
-
-    // Cor baseada no índice do motoboy
-    const CORES_MB = ['#1E9FD9','#0F9B78','#F59E0B','#8B5CF6','#EF4444','#EC4899','#06B6D4','#84CC16'];
-    const idx = Object.keys(leafletMarkers).indexOf(nome);
-    const cor = CORES_MB[idx % CORES_MB.length] || '#1E9FD9';
-
-    // Desenha a linha do trajeto
-    const coords = pontos.map(p => [p.lat, p.lng]);
-    const polyline = L.polyline(coords, {
-      color: cor,
-      weight: 3,
-      opacity: 0.8,
-      dashArray: null
-    }).addTo(leafletMap);
-
-    // Marca início e fim
-    const inicio = pontos[0];
-    const fim = pontos[pontos.length - 1];
-    const marcadorInicio = L.circleMarker([inicio.lat, inicio.lng], {
-      radius: 7, color: '#fff', fillColor: '#16A34A', fillOpacity: 1, weight: 2
-    }).addTo(leafletMap).bindTooltip('🟢 Início ' + new Date(inicio.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
-
-    const marcadorFim = L.circleMarker([fim.lat, fim.lng], {
-      radius: 7, color: '#fff', fillColor: cor, fillOpacity: 1, weight: 2
-    }).addTo(leafletMap).bindTooltip('📍 Último ponto ' + new Date(fim.timestamp).toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
-
-    leafletTrajetos[nome] = { polyline, marcadorInicio, marcadorFim };
-
-    // Zoom no trajeto
-    leafletMap.fitBounds(polyline.getBounds(), { padding: [40, 40] });
-    toast('✓ Trajeto de ' + nome.split(' ')[0] + ' — ' + pontos.length + ' pontos');
-
-  } catch(e) {
-    toast('Erro ao carregar trajeto');
-  }
-  if (btn) { btn.textContent = '🗺️ Trajeto'; btn.disabled = false; }
-}
-
-function limparTrajeto(nome, btn) {
-  if (leafletTrajetos[nome]) {
-    const t = leafletTrajetos[nome];
-    if (t.polyline) leafletMap.removeLayer(t.polyline);
-    if (t.marcadorInicio) leafletMap.removeLayer(t.marcadorInicio);
-    if (t.marcadorFim) leafletMap.removeLayer(t.marcadorFim);
-    delete leafletTrajetos[nome];
-  }
-}
-
-function limparTodosTrajetos() {
-  Object.keys(leafletTrajetos).forEach(nome => limparTrajeto(nome));
-}
-
-function focarMotoboy(nome) {
-  const marker = leafletMarkers[nome];
-  if (marker && leafletMap) {
-    leafletMap.setView(marker.getLatLng(), 16, { animate:true, duration:0.8 });
-    marker.openPopup();
-  }
-}
-function iconeFabricante(fab) {
-  if (!fab) return '';
-  const f = fab.toLowerCase();
-  if (f.includes('samsung'))  return '🔵'; // Samsung
-  if (f.includes('xiaomi') || f.includes('redmi') || f.includes('poco')) return '🟠'; // Xiaomi
-  if (f.includes('huawei') || f.includes('honor')) return '🔴'; // Huawei
-  if (f.includes('motorola') || f.includes('moto')) return '⚫'; // Motorola
-  if (f.includes('oppo') || f.includes('realme') || f.includes('oneplus')) return '🟢'; // Oppo/OnePlus
-  if (f.includes('vivo')) return '🟡'; // Vivo
-  if (f.includes('lg')) return '🟣'; // LG
-  if (f.includes('sony')) return '⬜'; // Sony
-  return '📱'; // outros
-}
-
-function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
   const el = document.getElementById('mapa-lista-motoboys');
   if (!el) return;
+
+  // Busca KM e geofence do dia
+  const hoje = new Date();
+  const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+  const dataHoje = diaSP.toISOString().split('T')[0];
+  let kmPontos = {}, geofenceEvts = {};
+  try {
+    const [rH, rG] = await Promise.all([
+      fetch(API + '/localizacao?dia=' + dataHoje),
+      fetch(API + '/geofence-evento?data=' + dataHoje).catch(() => ({json:()=>({eventos:[]})}))
+    ]);
+    const dH = await rH.json(); const dG = await rG.json();
+    (dH.historico || []).forEach(p => { if (!kmPontos[p.nome]) kmPontos[p.nome]=[]; kmPontos[p.nome].push(p); });
+    (dG.eventos || []).forEach(e => { if (!geofenceEvts[e.nome]) geofenceEvts[e.nome]=[]; geofenceEvts[e.nome].push(e); });
+  } catch(e) {}
+
+  function calcKm(pts) {
+    if (!pts || pts.length < 2) return 0;
+    const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
+    let km = 0;
+    for (let i = 1; i < s.length; i++) {
+      const R=6371,dLat=(s[i].lat-s[i-1].lat)*Math.PI/180,dLng=(s[i].lng-s[i-1].lng)*Math.PI/180;
+      const a=Math.sin(dLat/2)**2+Math.cos(s[i-1].lat*Math.PI/180)*Math.cos(s[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
+      const d=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+      if(d<5) km+=d;
+    }
+    return Math.round(km*10)/10;
+  }
+
+  function horaEvt(evts, tipo) {
+    if (!evts) return null;
+    const ev = evts.find(e => e.tipo && e.tipo.includes(tipo));
+    if (!ev) return null;
+    const sp = new Date(ev.timestamp - 3*60*60*1000);
+    return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+  }
+
   let html = '';
   locs.forEach((l, i) => {
     const cor = CORES_MB[i % CORES_MB.length];
-    const diff = agora-l.timestamp;
+    const diff = agora - l.timestamp;
     const isOnline = diff < ONLINE_LIM;
     const min = Math.floor(diff/60000);
     const seg = Math.floor((diff%60000)/1000);
     const tempo = min > 0 ? min+'min atrás' : seg+'s atrás';
     const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
-    const stBg  = isOnline?'#DCFCE7':'#FEF9EC';
-    const stCor = isOnline?'#16A34A':'#92400E';
-    const stTxt = isOnline?'● online':'⚠ parado';
-    const fabIcon = iconeFabricante(l.fabricante || '');
-    html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;display:flex;align-items:center;gap:10px;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
-      <div style="width:34px;height:34px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:13px;font-weight:600;color:#0F2940">${l.nome} ${fabIcon}</div>
-        <div style="font-size:11px;color:#5A7A8F;margin-top:1px">${l.lat.toFixed(4)}°S · ${tempo}</div>
+    const stBg  = isOnline ? '#DCFCE7' : '#FEF9EC';
+    const stCor = isOnline ? '#16A34A' : '#92400E';
+    const stTxt = isOnline ? '● online' : '⚠ parado';
+    const fab = (l.fabricante || '').toLowerCase();
+    const fabLabel = fab.includes('samsung')?'Samsung':fab.includes('motorola')?'Motorola':fab.includes('xiaomi')?'Xiaomi':fab?fab.charAt(0).toUpperCase()+fab.slice(1):'';
+    const km = calcKm(kmPontos[l.nome]);
+    const base = horaEvt(geofenceEvts[l.nome], 'base');
+    const polaris = horaEvt(geofenceEvts[l.nome], 'final');
+    const gpsOk = l.gps_background !== false && l.gps_background !== 0;
+
+    html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <div style="width:32px;height:32px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${iniciais}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</div>
+          <div style="font-size:10px;color:#94A8B8;margin-top:1px">${tempo}${fabLabel?' · '+fabLabel:''}</div>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap;flex-shrink:0">${stTxt}</span>
       </div>
-      <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap">${stTxt}</span>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+        <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:#0F9B78">${km>0?km+'km':'—'}</div>
+          <div style="font-size:9px;color:#5A7A8F">KM hoje</div>
+        </div>
+        <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:#1E9FD9">${base||'—'}</div>
+          <div style="font-size:9px;color:#5A7A8F">Base</div>
+        </div>
+        <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:#7C3AED">${polaris||'—'}</div>
+          <div style="font-size:9px;color:#5A7A8F">Polaris</div>
+        </div>
+        <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
+          <div style="font-size:11px;font-weight:800;color:${gpsOk?'#0F9B78':'#EF4444'}">${gpsOk?'✓ bg':'✗ bg'}</div>
+          <div style="font-size:9px;color:#5A7A8F">GPS</div>
+        </div>
+      </div>
     </div>`;
   });
   offline.forEach(nome => {
     const iniciais = nome.split(' ').map(p=>p[0]).slice(0,2).join('');
     html += `<div style="padding:10px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:10px;opacity:.4">
-      <div style="width:34px;height:34px;border-radius:50%;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">${iniciais}</div>
+      <div style="width:32px;height:32px;border-radius:50%;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${iniciais}</div>
       <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#0F2940">${nome}</div><div style="font-size:11px;color:#5A7A8F;margin-top:1px">Sem sinal de GPS</div></div>
       <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F3F4F6;color:#6B7280">○ offline</span>
     </div>`;
   });
   el.innerHTML = html || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
+}
 }
 // ── PRESENÇAS ─────────────────────────────────────────────────
 let presencasLista = [];
