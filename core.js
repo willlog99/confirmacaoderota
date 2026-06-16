@@ -1428,7 +1428,10 @@ async function carregarMapa() {
     // Salva para atualização de tempo a cada segundo
     _ultimosLocsMapa = locsAtivos;
     _ultimosOfflineMapa = offline;
-  } catch(e) {
+  } catch(e) { console.error('carregarMapa erro:', e); }
+}
+
+async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
   const el = document.getElementById('mapa-lista-motoboys');
   if (!el) return;
 
@@ -1525,7 +1528,6 @@ async function carregarMapa() {
     </div>`;
   });
   el.innerHTML = html || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
-}
 }
 // ── PRESENÇAS ─────────────────────────────────────────────────
 let presencasLista = [];
