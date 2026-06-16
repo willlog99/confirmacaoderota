@@ -69,6 +69,7 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
+  if (id === 'dispositivos') carregarDispositivos();
   if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') { carregarGeofenceConfig(); carregarHorariosTrabalho(); }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
   if (id === 'quilometragem' && typeof carregarKmCompleto === 'function') carregarKmCompleto();
@@ -282,6 +283,101 @@ async function carregarMetricas() {
   } catch(e) {
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar métricas</td></tr>';
   }
+}
+
+// ── DISPOSITIVOS ─────────────────────────────────────────────
+let _dispositivosTodos = [];
+
+async function carregarDispositivos() {
+  const lista = document.getElementById('disp-lista');
+  const resumo = document.getElementById('disp-resumo');
+  if (lista) lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const r = await fetch(API + '/status-dispositivos');
+    const d = await r.json();
+    _dispositivosTodos = d.dispositivos || [];
+    renderizarDispositivos(_dispositivosTodos);
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+function renderizarDispositivos(lista) {
+  const el = document.getElementById('disp-lista');
+  const resumo = document.getElementById('disp-resumo');
+  if (!el) return;
+
+  const contadores = { ok: 0, sem_app: 0, sem_gps: 0, offline: 0, problema: 0 };
+  lista.forEach(d => {
+    if (d.status === 'ok') contadores.ok++;
+    else if (d.status === 'sem_app') contadores.sem_app++;
+    else if (d.status === 'offline') contadores.offline++;
+    else contadores.problema++;
+  });
+
+  if (resumo) resumo.innerHTML = `
+    <div style="background:#DCFCE7;border-radius:10px;padding:10px;text-align:center;border:1px solid #86EFAC">
+      <div style="font-size:20px;font-weight:800;color:#166534">${contadores.ok}</div>
+      <div style="font-size:10px;font-weight:700;color:#166534">✅ OK</div>
+    </div>
+    <div style="background:#F1F5F9;border-radius:10px;padding:10px;text-align:center;border:1px solid #CBD5E1">
+      <div style="font-size:20px;font-weight:800;color:#475569">${contadores.sem_app}</div>
+      <div style="font-size:10px;font-weight:700;color:#475569">📵 Sem app</div>
+    </div>
+    <div style="background:#FEF9EC;border-radius:10px;padding:10px;text-align:center;border:1px solid #FDE68A">
+      <div style="font-size:20px;font-weight:800;color:#92400E">${contadores.problema}</div>
+      <div style="font-size:10px;font-weight:700;color:#92400E">⚠️ Problema</div>
+    </div>
+    <div style="background:#FEE2E2;border-radius:10px;padding:10px;text-align:center;border:1px solid #FECACA">
+      <div style="font-size:20px;font-weight:800;color:#991B1B">${contadores.offline}</div>
+      <div style="font-size:10px;font-weight:700;color:#991B1B">🔴 Offline</div>
+    </div>
+    <div style="background:#F8FBFD;border-radius:10px;padding:10px;text-align:center;border:1px solid #EBF1F5">
+      <div style="font-size:20px;font-weight:800;color:#0F4C7A">${lista.length}</div>
+      <div style="font-size:10px;font-weight:700;color:#5A7A8F">Total</div>
+    </div>`;
+
+  if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum dispositivo encontrado</div>'; return; }
+
+  const statusInfo = {
+    ok:         { badge: '✅ OK',                    bg: '#DCFCE7', cor: '#166534' },
+    sem_app:    { badge: '📵 Sem app',               bg: '#F1F5F9', cor: '#475569' },
+    sem_gps_bg: { badge: '🟡 GPS só durante uso',   bg: '#FEF9EC', cor: '#92400E' },
+    sem_notif:  { badge: '🔕 Notificação desligada', bg: '#FEF2F2', cor: '#991B1B' },
+    offline:    { badge: '🔴 Offline',               bg: '#FEE2E2', cor: '#991B1B' },
+  };
+
+  const formatTempo = min => {
+    if (min === null) return '—';
+    if (min < 60) return min + 'min atrás';
+    return Math.floor(min/60) + 'h' + String(min%60).padStart(2,'0') + 'min atrás';
+  };
+
+  el.innerHTML = lista.map(d => {
+    const s = statusInfo[d.status] || statusInfo.sem_app;
+    const tipo = d.tipo === 'rastreador' ? '📡 Rastreador' : d.rastrear ? '🛵 CLT' : '🛵 MEI';
+    return `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.nome}</div>
+        <div style="font-size:11px;color:#94A8B8;margin-top:1px">${tipo} ${d.fabricante ? '· ' + d.fabricante : ''} ${d.ultimo_gps ? '· ' + formatTempo(d.minutos_offline) : ''}</div>
+      </div>
+      <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:${s.bg};color:${s.cor};white-space:nowrap">${s.badge}</span>
+    </div>`;
+  }).join('');
+}
+
+function filtrarDispositivos(filtro, btn) {
+  document.querySelectorAll('[id^="disp-f-"]').forEach(b => {
+    b.style.background = '#fff'; b.style.color = '#5A7A8F'; b.style.border = '1.5px solid #D6E5EE';
+  });
+  if (btn) { btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.border = 'none'; }
+  let filtrado = _dispositivosTodos;
+  if (filtro === 'ok') filtrado = _dispositivosTodos.filter(d => d.status === 'ok');
+  else if (filtro === 'sem_app') filtrado = _dispositivosTodos.filter(d => d.status === 'sem_app');
+  else if (filtro === 'offline') filtrado = _dispositivosTodos.filter(d => d.status === 'offline');
+  else if (filtro === 'problema') filtrado = _dispositivosTodos.filter(d => d.status !== 'ok' && d.status !== 'sem_app');
+  renderizarDispositivos(filtrado);
 }
 
 async function carregarGeofenceConfig() {
