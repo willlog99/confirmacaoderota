@@ -1241,6 +1241,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <button id="km-tab-btn-periodo" onclick="kmMudarAba('periodo',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">📆 Período</button>
             <button id="km-tab-btn-motoboy" onclick="kmMudarAba('motoboy',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">🏍️ Por Motoboy</button>
             <button id="km-tab-btn-rota" onclick="kmMudarAba('rota',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">🗺️ Por Rota</button>
+            <button id="km-tab-btn-metricas" onclick="kmMudarAba('metricas',this)" style="flex:1;padding:10px 8px;border:none;background:none;font-size:11px;font-weight:600;color:#6B7280;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">📊 Métricas</button>
           </div>
 
           <div style="padding:1rem">
@@ -1280,6 +1281,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
                 </select>
                 <input type="date" id="km-rota-data" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;width:140px"/>
                 <button onclick="carregarKmRota()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
+              </div>
+
+              <!-- Filtro métricas -->
+              <div id="km-filtro-metricas" style="display:none;gap:8px;align-items:center;flex:1">
+                <select id="km-metricas-periodo" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;background:#fff">
+                  <option value="hoje">Hoje</option>
+                  <option value="semana">Últimos 7 dias</option>
+                  <option value="mes" selected>Últimos 30 dias</option>
+                </select>
+                <input type="date" id="km-metricas-inicio" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none;width:130px"/>
+                <span style="font-size:11px;color:#5A7A8F">até</span>
+                <input type="date" id="km-metricas-fim" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none;width:130px"/>
+                <button onclick="carregarMetricas()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
               </div>
 
             </div>
@@ -1322,6 +1336,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
               <div id="km-lista-completa" style="max-height:calc(100vh - 420px);overflow-y:auto">
                 <div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Selecione um filtro e clique em Buscar</div>
+              </div>
+
+              <!-- TABELA MÉTRICAS -->
+              <div id="km-metricas-conteudo" style="display:none">
+                <div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;overflow:hidden">
+                  <div style="padding:10px 14px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between">
+                    <span style="font-size:13px;font-weight:700;color:#0F4C7A">📊 Métricas por Rastreador</span>
+                    <span id="km-metricas-label" style="font-size:11px;color:#5A7A8F"></span>
+                  </div>
+                  <div style="overflow-x:auto">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px">
+                      <thead>
+                        <tr style="background:#F8FBFD">
+                          <th style="padding:10px 12px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #EBF1F5">Rastreador</th>
+                          <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #EBF1F5">KMD</th>
+                          <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #EBF1F5">KMM</th>
+                          <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #EBF1F5">TMD</th>
+                          <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #EBF1F5">KM Total</th>
+                          <th style="padding:10px 8px;text-align:center;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid #EBF1F5">Dias</th>
+                        </tr>
+                      </thead>
+                      <tbody id="km-metricas-tbody">
+                        <tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8">Carregando...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               </div>
             </div>
 
