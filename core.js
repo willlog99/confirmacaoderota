@@ -226,7 +226,7 @@ async function carregarMetricas() {
   try {
     const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
-    const rastreadores = (dMb.motoboys || []).filter(m => m.tipo === 'rastreador');
+    const rastreadores = (dMb.motoboys || []).filter(m => m.rastrear !== false && m.rastrear !== 0);
 
     if (!rastreadores.length) {
       if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8">Nenhum rastreador cadastrado</td></tr>';
