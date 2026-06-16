@@ -408,6 +408,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item" onclick="setView('buscar',this)"><span class="nav-ic">🔎</span><span class="nav-item-txt">Buscar cliente</span></button>
       <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar cliente</span></button>
       <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span><span class="nav-item-txt">Motoboys</span></button>
+      <button class="nav-item" onclick="setView('dispositivos',this)"><span class="nav-ic">📱</span><span class="nav-item-txt">Dispositivos</span></button>
       <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span><span class="nav-item-txt">Ativar/Desativar cliente</span></button>
       <button class="nav-item" onclick="setView('geofence-config',this)"><span class="nav-ic">📍</span><span class="nav-item-txt">Geofence</span></button>
 
@@ -647,7 +648,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div style="border-top:1px solid #EBF1F5;background:#F7FBFD">
               <div style="padding:8px 12px;display:flex;align-items:center;justify-content:space-between">
                 <span style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.07em">KM hoje</span>
-                <button onclick="configurarHorarios()" style="font-size:10px;font-weight:600;color:#1E9FD9;background:none;border:none;cursor:pointer;padding:2px 6px">⚙️ Horários</button>
               </div>
               <div id="mapa-km-lista" style="padding:0 8px 8px;max-height:140px;overflow-y:auto"></div>
             </div>
@@ -721,6 +721,41 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <!-- GEOFENCE CONFIG -->
+      <!-- VIEW DISPOSITIVOS -->
+      <div class="view" id="view-dispositivos">
+        <div class="card">
+          <div class="card-title">📱 Status dos Dispositivos</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5">Monitore quem instalou o app, quem está com permissões ok e quem está offline.</p>
+
+          <!-- Legenda -->
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem">
+            <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:#DCFCE7;color:#166534;font-weight:700">✅ OK</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:#FEF9EC;color:#92400E;font-weight:700">🟡 GPS só durante uso</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:#FEF2F2;color:#991B1B;font-weight:700">🔕 Notificação desligada</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:#F1F5F9;color:#475569;font-weight:700">📵 Sem app</span>
+            <span style="font-size:11px;padding:3px 10px;border-radius:20px;background:#FEE2E2;color:#991B1B;font-weight:700">🔴 Offline</span>
+          </div>
+
+          <!-- Filtro -->
+          <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+            <button onclick="filtrarDispositivos('todos',this)" id="disp-f-todos" style="padding:6px 14px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Todos</button>
+            <button onclick="filtrarDispositivos('ok',this)" id="disp-f-ok" style="padding:6px 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">✅ OK</button>
+            <button onclick="filtrarDispositivos('sem_app',this)" id="disp-f-sem_app" style="padding:6px 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">📵 Sem app</button>
+            <button onclick="filtrarDispositivos('problema',this)" id="disp-f-problema" style="padding:6px 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">⚠️ Problemas</button>
+            <button onclick="filtrarDispositivos('offline',this)" id="disp-f-offline" style="padding:6px 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">🔴 Offline</button>
+            <button onclick="carregarDispositivos()" style="padding:6px 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto">🔄 Atualizar</button>
+          </div>
+
+          <!-- Resumo -->
+          <div id="disp-resumo" style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:1rem"></div>
+
+          <!-- Lista -->
+          <div id="disp-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div class="empty"><span class="spinner"></span> Carregando...</div>
+          </div>
+        </div>
+      </div>
+
       <div class="view" id="view-geofence-config">
         <div class="card">
           <div class="card-title">📍 Configuração de Geofence</div>
@@ -1786,19 +1821,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   </div>
 </div>
 
-<!-- MODAL HORARIOS MOTOBOY -->
-<div id="modal-horarios" style="display:none;position:fixed;inset:0;background:rgba(15,75,122,.5);z-index:500;align-items:center;justify-content:center">
-  <div style="background:#fff;border-radius:16px;padding:1.5rem;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;margin:1rem">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
-      <h2 style="font-size:16px;font-weight:800;color:#0F4C7A">Horarios de servico</h2>
-      <button onclick="fecharModal('modal-horarios')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94A8B8">x</button>
-    </div>
-    <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Configure o horario de trabalho de cada motoboy para calcular o KM rodado corretamente.</div>
-    <div id="horarios-lista"></div>
-    <div id="msg-horarios" class="msg"></div>
-  </div>
-</div>
-
+<!-- SCRIPTS -->
 <script src="core.js"></script>
 <script src="motoboys.js"></script>
 <script src="gestor.js"></script>
