@@ -154,29 +154,20 @@ async function renderizarPainel(data) {
         const impList  = ent.filter(c => c.produtividade === 'improdutiva').map(c => renderPrev(c, 'imp')).join('');
         const pendList = pend.map(c => renderPrev(c, 'pend')).join('');
         return `
-          <div class="rota-card ${status} ${expandida}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="toggleRotaPreview(this, '${r.rota.replace(/'/g,"\\'")}')">
-            <div style="display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:8px">
-              <div style="min-width:0">
-                <div style="display:flex;align-items:center;gap:5px">
-                  ${confBadge}
-                  <div class="rota-nome" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.rota}</div>
-                </div>
-                <div class="rota-meta" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏍️ ${motoStr}</div>
+          <div class="rota-card ${status}" data-rota="${r.rota.replace(/"/g,'&quot;')}" onclick="abrirModalRota('${r.rota.replace(/'/g,"\\'")}','${motoStr.replace(/'/g,"\\'")}',${feitas},${total})">
+            <span style="font-size:15px;flex-shrink:0">${status === 'completa' ? '✅' : status === 'em-andamento' ? '🏍️' : '⏸️'}</span>
+            <div style="flex:1;min-width:0">
+              <div style="display:flex;align-items:center;gap:5px">
+                ${confBadge}
+                <div class="rota-nome" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.rota}</div>
               </div>
-              <div style="font-size:11px;font-weight:700;color:#5A7A8F;white-space:nowrap;flex-shrink:0">${feitas}/${total}</div>
-              <div style="display:flex;align-items:center;gap:5px;min-width:70px;flex-shrink:0">
-                <div style="flex:1;height:3px;background:#E2E8F0;border-radius:99px;overflow:hidden">
-                  <div style="height:100%;width:${pct}%;background:${corBarra};border-radius:99px"></div>
-                </div>
-                <div style="font-size:11px;font-weight:800;color:${corPct};min-width:26px;text-align:right">${total > 0 ? pct+'%' : '—'}</div>
-              </div>
+              <div class="rota-meta" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">🏍️ ${motoStr}</div>
             </div>
-            <div class="rota-popover" onclick="event.stopPropagation()">
-              <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #EBF1F5">${r.rota} · ${motoStr}</div>
-              ${pendList ? `<div class="preview-sec">⏳ Pendentes (${pend.length})</div>${pendList}` : ''}
-              ${prodList ? `<div class="preview-sec" style="margin-top:6px">✓ Coletadas (${ent.filter(c=>c.produtividade!=='improdutiva').length})</div>${prodList}` : ''}
-              ${impList  ? `<div class="preview-sec" style="margin-top:6px">✕ Improdutivas</div>${impList}` : ''}
-              <button onclick="event.stopPropagation();abrirDetalheRota('${r.rota.replace(/'/g,"\\'")}')}" style="margin-top:8px;background:#1E9FD9;color:#fff;border:none;padding:6px 12px;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;width:100%">Ver detalhes completos →</button>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+              <div style="width:48px;height:3px;background:#E2E8F0;border-radius:99px;overflow:hidden">
+                <div style="height:100%;width:${pct}%;background:${corBarra};border-radius:99px"></div>
+              </div>
+              <div style="font-size:11px;font-weight:800;color:${corPct};min-width:28px;text-align:right">${total > 0 ? pct+'%' : '—'}</div>
             </div>
           </div>`;
       };
@@ -362,15 +353,95 @@ async function carregarChecklist(confirmacoes) {
 }
 
 
-function toggleRotaPreview(card, rota) {
-  if (cardExpandido === rota) {
-    cardExpandido = null;
-    card.classList.remove('expanded');
-  } else {
-    document.querySelectorAll('.rota-card.expanded').forEach(c => c.classList.remove('expanded'));
-    cardExpandido = rota;
-    card.classList.add('expanded');
+async function abrirModalRota(rota, moto, feitas, total) {
+  // Cria modal se não existir
+  if (!document.getElementById('modal-rota')) {
+    const m = document.createElement('div');
+    m.id = 'modal-rota';
+    m.style.cssText = 'position:fixed;inset:0;background:rgba(15,40,64,.7);z-index:9999;display:none;align-items:flex-end;justify-content:center';
+    m.onclick = e => { if (e.target === m) fecharModalRota(); };
+    m.innerHTML = `
+      <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column;animation:slideUp .3s cubic-bezier(.34,1.1,.64,1) both">
+        <div style="padding:1rem 1.25rem .75rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+          <div>
+            <div id="mr-titulo" style="font-size:15px;font-weight:800;color:#0F4C7A"></div>
+            <div id="mr-sub" style="font-size:12px;color:#5A7A8F;margin-top:2px"></div>
+          </div>
+          <button onclick="fecharModalRota()" style="background:none;border:none;color:#5A7A8F;font-size:22px;cursor:pointer">✕</button>
+        </div>
+        <div id="mr-stats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:.875rem 1.25rem;border-bottom:1px solid #EBF1F5;flex-shrink:0"></div>
+        <div id="mr-lista" style="overflow-y:auto;flex:1;padding:.75rem 1.25rem"></div>
+        <div style="padding:.875rem 1.25rem;border-top:1px solid #EBF1F5;flex-shrink:0">
+          <button id="mr-btn-detalhe" style="width:100%;padding:11px;border-radius:10px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">Ver detalhes completos →</button>
+        </div>
+      </div>`;
+    document.body.appendChild(m);
   }
+
+  const modal = document.getElementById('modal-rota');
+  document.getElementById('mr-titulo').textContent = rota;
+  document.getElementById('mr-sub').textContent = '🏍️ ' + moto;
+  document.getElementById('mr-btn-detalhe').onclick = () => { fecharModalRota(); abrirDetalheRota(rota); };
+
+  const pct = total > 0 ? Math.round(feitas/total*100) : 0;
+  const corPct = pct === 100 ? '#0F9B78' : pct > 0 ? '#1E9FD9' : '#94A8B8';
+  document.getElementById('mr-stats').innerHTML = `
+    <div style="text-align:center;background:#F8FBFD;border-radius:8px;padding:8px">
+      <div style="font-size:18px;font-weight:800;color:#0F4C7A">${total}</div>
+      <div style="font-size:10px;color:#5A7A8F;margin-top:2px;text-transform:uppercase">Total</div>
+    </div>
+    <div style="text-align:center;background:#F8FBFD;border-radius:8px;padding:8px">
+      <div style="font-size:18px;font-weight:800;color:#0F9B78">${feitas}</div>
+      <div style="font-size:10px;color:#5A7A8F;margin-top:2px;text-transform:uppercase">Coletadas</div>
+    </div>
+    <div style="text-align:center;background:#F8FBFD;border-radius:8px;padding:8px">
+      <div style="font-size:18px;font-weight:800;color:${corPct}">${total-feitas}</div>
+      <div style="font-size:10px;color:#5A7A8F;margin-top:2px;text-transform:uppercase">Pendentes</div>
+    </div>`;
+
+  document.getElementById('mr-lista').innerHTML = '<div style="padding:1rem;text-align:center;color:#94A8B8"><span class="spinner"></span> Carregando...</div>';
+  modal.style.display = 'flex';
+
+  // Busca clientes
+  try {
+    const r = await fetch(API + '/rota?rota=' + encodeURIComponent(rota));
+    const d = await r.json();
+    const cls = d.clientes || [];
+    const pend = cls.filter(c => c.status !== 'entregue');
+    const ent  = cls.filter(c => c.status === 'entregue');
+    const prod = ent.filter(c => c.produtividade === 'produtiva');
+    const imp  = ent.filter(c => c.produtividade === 'improdutiva');
+
+    const renderCli = (c, tipo) => {
+      const corDot = tipo === 'prod' ? '#0F9B78' : tipo === 'imp' ? '#94A8B8' : '#F59E0B';
+      const badge = tipo === 'prod' ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#DCFCE7;color:#166534">Produtiva</span>'
+                  : tipo === 'imp'  ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F1F5F9;color:#475569">Improdutiva</span>' : '';
+      return `<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid #F5F9FC">
+        <span style="width:6px;height:6px;border-radius:50%;background:${corDot};flex-shrink:0"></span>
+        <span style="flex:1;font-size:13px;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${c.nome}</span>
+        <span style="font-size:11px;color:#94A8B8;flex-shrink:0">${c.horario || ''}</span>
+        ${badge}
+      </div>`;
+    };
+
+    let html = '';
+    if (pend.length) html += `<div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">⏳ Pendentes (${pend.length})</div>${pend.map(c=>renderCli(c,'pend')).join('')}`;
+    if (prod.length) html += `<div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">✓ Coletadas (${prod.length})</div>${prod.map(c=>renderCli(c,'prod')).join('')}`;
+    if (imp.length)  html += `<div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">✕ Improdutivas (${imp.length})</div>${imp.map(c=>renderCli(c,'imp')).join('')}`;
+
+    document.getElementById('mr-lista').innerHTML = html || '<div style="padding:1rem;text-align:center;color:#94A8B8">Nenhum cliente</div>';
+  } catch(e) {
+    document.getElementById('mr-lista').innerHTML = '<div style="padding:1rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
+  }
+}
+
+function fecharModalRota() {
+  const m = document.getElementById('modal-rota');
+  if (m) m.style.display = 'none';
+}
+
+function toggleRotaPreview(card, rota) {
+  // mantido por compatibilidade — não faz mais nada
 }
 
 let rotaDetalheAtual = null;
