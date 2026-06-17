@@ -1928,9 +1928,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div id="chat-conv-msgs" style="flex:1;overflow-y:auto;padding:14px;background:#F7FBFD;display:flex;flex-direction:column">
       <div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Selecione um motoboy<br/>para iniciar uma conversa</div>
     </div>
-    <div id="chat-conv-input" style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:none;gap:8px">
-      <input id="chat-input-text" placeholder="Digite uma mensagem..." style="flex:1;padding:9px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:13px;outline:none" onkeydown="if(event.key==='Enter') enviarChat()"/>
-      <button onclick="enviarChat()" style="padding:0 16px;border-radius:20px;border:none;background:#1E9FD9;color:#fff;cursor:pointer;font-weight:600;font-size:14px">➤</button>
+    <div id="chat-conv-input" style="padding:10px;background:#fff;border-top:1px solid #EBF1F5;display:none;flex-direction:column;gap:4px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="chat-input-text" placeholder="Digite uma mensagem..." style="flex:1;padding:9px 13px;border-radius:20px;border:1.5px solid #D6E5EE;font-size:13px;outline:none" onkeydown="if(event.key==='Enter') enviarChat()"/>
+        <button id="btn-gravar-admin" onmousedown="iniciarGravacaoAdmin(event)" onmouseup="pararGravacaoAdmin(event)" ontouchstart="iniciarGravacaoAdmin(event)" ontouchend="pararGravacaoAdmin(event)" style="width:38px;height:38px;border-radius:50%;border:none;background:#EFF6FF;color:#0F4C7A;font-size:18px;cursor:pointer;flex-shrink:0;user-select:none">🎤</button>
+        <button onclick="enviarChat()" style="width:38px;height:38px;border-radius:50%;border:none;background:#1E9FD9;color:#fff;cursor:pointer;font-size:16px;flex-shrink:0">➤</button>
+      </div>
+      <div id="gravacao-admin-indicator" style="display:none;align-items:center;gap:6px;padding:2px 4px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#EF4444;animation:blink 1s infinite;display:inline-block"></span>
+        <span style="font-size:11px;font-weight:700;color:#991B1B">Gravando... solte para enviar</span>
+        <span id="gravacao-admin-timer" style="font-size:11px;color:#991B1B;margin-left:auto">0s</span>
+      </div>
+    </div>
     </div>
   </div>
 </div>
