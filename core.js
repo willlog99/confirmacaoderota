@@ -2829,9 +2829,19 @@ async function carregarMensagens(tel, silent) {
     msgs.innerHTML = lista.map(m => {
       const isAdmin = m.remetente === 'admin';
       const hora = new Date(m.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+      const conteudo = (m.tipo === 'audio' && m.audio_url)
+        ? `<div style="display:flex;align-items:center;gap:8px">
+            <button onclick="this.nextElementSibling.paused?this.nextElementSibling.play()&&(this.textContent='⏸'):this.nextElementSibling.pause()&&(this.textContent='▶')" style="width:32px;height:32px;border-radius:50%;border:none;background:${isAdmin?'rgba(255,255,255,.3)':'#EFF6FF'};color:${isAdmin?'#fff':'#0F4C7A'};font-size:14px;cursor:pointer;flex-shrink:0">▶</button>
+            <audio src="${m.audio_url}" onended="this.previousElementSibling.textContent='▶'" style="display:none"></audio>
+            <div style="flex:1">
+              <div style="font-size:11px;opacity:.7">🎤 Áudio · ${m.duracao||0}s</div>
+              <div style="background:${isAdmin?'rgba(255,255,255,.2)':'#D6E5EE'};border-radius:99px;height:3px;margin-top:4px;width:80px"></div>
+            </div>
+          </div>`
+        : `<div>${m.mensagem}</div>`;
       return `<div style="display:flex;justify-content:${isAdmin ? 'flex-end' : 'flex-start'};margin-bottom:8px">
         <div style="max-width:75%;padding:9px 12px;border-radius:${isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};background:${isAdmin ? 'linear-gradient(135deg,#1E9FD9,#0F7BB0)' : '#fff'};color:${isAdmin ? '#fff' : '#0F2940'};font-size:13px;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,.08)">
-          <div>${m.mensagem}</div>
+          ${conteudo}
           <div style="font-size:10px;opacity:.6;margin-top:3px;text-align:right">${hora}</div>
         </div>
       </div>`;
