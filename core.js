@@ -336,8 +336,9 @@ async function carregarMotivos() {
 async function salvarMotivo() {
   const emoji = document.getElementById('mot-emoji').value.trim() || '📋';
   const label = document.getElementById('mot-label').value.trim();
-  const codigo = document.getElementById('mot-cod').value.trim();
-  if (!label || !codigo) { toast('Preencha descrição e código'); return; }
+  if (!label) { toast('Informe a descrição do motivo'); return; }
+  // Gera código automaticamente baseado na label
+  const codigo = 'OC-NP-' + Date.now();
   try {
     await fetch(API + '/motivos-ausencia', {
       method: 'POST',
@@ -346,7 +347,6 @@ async function salvarMotivo() {
     });
     document.getElementById('mot-emoji').value = '';
     document.getElementById('mot-label').value = '';
-    document.getElementById('mot-cod').value = '';
     toast('✓ Motivo adicionado');
     carregarMotivos();
   } catch(e) { toast('Erro ao salvar'); }
@@ -388,6 +388,141 @@ function ocMudarAba(aba, btn) {
 }
 let _ocorrenciaAtual = null;
 let _statusOcAtual = 'aberta';
+
+async function abrirCriarOcorrencia() {
+  const form = document.getElementById('form-criar-oc');
+  if (!form) return;
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  if (form.style.display === 'none') return;
+
+  // Popula select de motoboys
+  const selMoto = document.getElementById('oc-criar-motoboy');
+  if (selMoto && selMoto.options.length <= 1) {
+    try {
+      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
+      const d = await r.json();
+      (d.motoboys || []).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.nome; opt.textContent = m.nome;
+        selMoto.appendChild(opt);
+      });
+    } catch(e) {}
+  }
+
+  // Popula select de motivos
+  const selMot = document.getElementById('oc-criar-motivo-sel');
+  if (selMot && selMot.options.length <= 1) {
+    try {
+      const r = await fetch(API + '/motivos-ausencia');
+      const d = await r.json();
+      (d.motivos || []).filter(m => m.ativo !== 0).forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.label; opt.textContent = m.emoji + ' ' + m.label;
+        selMot.appendChild(opt);
+      });
+    } catch(e) {}
+  }
+}
+
+async function criarOcorrenciaGestor() {
+  const motoboy = document.getElementById('oc-criar-motoboy')?.value;
+  const tipo = document.getElementById('oc-criar-tipo')?.value || 'gestor';
+  const rota = document.getElementById('oc-criar-rota')?.value.trim();
+  const motivoSel = document.getElementById('oc-criar-motivo-sel')?.value;
+  const desc = document.getElementById('oc-criar-desc')?.value.trim();
+
+  if (!motoboy) { toast('Selecione o motoboy'); return; }
+  if (!desc && !motivoSel) { toast('Informe o motivo ou descrição'); return; }
+
+  try {
+    await fetch(API + '/ocorrencia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tipo,
+        motivo_label: motivoSel || '',
+        motoboy_nome: motoboy,
+        rota: rota || '',
+        motivo: desc || motivoSel || ''
+      })
+    });
+    document.getElementById('form-criar-oc').style.display = 'none';
+    document.getElementById('oc-criar-motoboy').value = '';
+    document.getElementById('oc-criar-rota').value = '';
+    document.getElementById('oc-criar-desc').value = '';
+    document.getElementById('oc-criar-motivo-sel').value = '';
+    toast('✓ Ocorrência registrada');
+    carregarOcorrencias();
+  } catch(e) { toast('Erro ao registrar'); }
+}
+
+async function gerarPdfDia() {
+  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+  try {
+    const r = await fetch(API + '/ocorrencia?data=' + data);
+    const d = await r.json();
+    const ocs = d.ocorrencias || [];
+    if (!ocs.length) { toast('Nenhuma ocorrência nesta data'); return; }
+
+    const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
+    const tipoLabel = t => t === 'nao_comparecimento' ? 'Não comparecimento' : t === 'atraso' ? 'Atraso' : t === 'gestor' ? 'Registrada pelo gestor' : t;
+    const statusLabel = s => s === 'resolvida' ? '✅ Resolvida' : s === 'em_andamento' ? '🔵 Em andamento' : '🟡 Aberta';
+
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+      <title>Ocorrências ${dataFmt}</title>
+      <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family: Arial, sans-serif; padding: 32px; color: #0F2940; font-size: 13px; }
+        .header { border-bottom: 3px solid #00AEEF; padding-bottom: 14px; margin-bottom: 20px; display:flex; justify-content:space-between; align-items:flex-end; }
+        .logo { font-size: 20px; font-weight: 800; color: #0F4C7A; }
+        .logo span { color: #00AEEF; }
+        h1 { font-size: 16px; font-weight: 800; color: #0F4C7A; margin-bottom: 4px; }
+        .sub { font-size: 12px; color: #5A7A8F; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th { background: #0F4C7A; color: #fff; padding: 8px 10px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+        td { padding: 8px 10px; border-bottom: 1px solid #EBF1F5; vertical-align: top; }
+        tr:nth-child(even) td { background: #F8FBFD; }
+        .footer { margin-top: 20px; border-top: 1px solid #EBF1F5; padding-top: 10px; font-size: 10px; color: #94A8B8; }
+        @media print { body { padding: 16px; } }
+      </style>
+    </head><body>
+      <div class="header">
+        <div class="logo">LOG<span>LIFE</span> <span style="font-size:12px;font-weight:400;color:#5A7A8F">Logística</span></div>
+        <div style="font-size:11px;color:#5A7A8F">Total: ${ocs.length} ocorrência(s)</div>
+      </div>
+      <h1>Relatório de Ocorrências</h1>
+      <div class="sub">Data: ${dataFmt} · Gerado em: ${new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'})}</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Tipo</th>
+            <th>Rota</th>
+            <th>Motivo</th>
+            <th>Obs. Gestor</th>
+            <th>Status</th>
+            <th>Horário</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ocs.map(o => `<tr>
+            <td><strong>${o.codigo || '—'}</strong></td>
+            <td>${tipoLabel(o.tipo)}${o.motivo_label ? '<br><span style="font-size:10px;color:#5A7A8F">' + o.motivo_label + '</span>' : ''}</td>
+            <td>${o.rota || '—'}</td>
+            <td style="font-size:11px">${o.motivo || '—'}</td>
+            <td style="font-size:11px">${o.obs_gestor || '—'}</td>
+            <td>${statusLabel(o.status)}</td>
+            <td>${new Date(o.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="footer">Loglife Logística · Documento gerado automaticamente</div>
+    </body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
+  } catch(e) { toast('Erro ao gerar PDF'); }
+}
 
 async function carregarOcorrencias() {
   const lista = document.getElementById('oc-lista');
