@@ -69,6 +69,7 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
+  if (id === 'painel-usuarios') carregarUsuariosPainel();
   if (id === 'ocorrencias') {
     const input = document.getElementById('oc-filtro-data');
     if (input && !input.value) input.value = new Date().toISOString().split('T')[0];
@@ -303,7 +304,220 @@ async function carregarMetricas() {
   }
 }
 
-// ── GRAVAÇÃO DE ÁUDIO — ADMIN ────────────────────────────────
+// ── LOGIN PAINEL ─────────────────────────────────────────────
+let _painelUsuario = null;
+
+async function fazerLoginPainel() {
+  const input = document.getElementById('login-tel');
+  const erroEl = document.getElementById('login-erro');
+  const btn = document.getElementById('btn-login-painel');
+  const tel = (input?.value || '').replace(/\D/g,'');
+  if (!tel || tel.length < 10) { if (erroEl) { erroEl.textContent = 'Digite um número válido'; erroEl.style.display='block'; } return; }
+  if (erroEl) erroEl.style.display = 'none';
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+  try {
+    const r = await fetch(API + '/painel-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone: tel })
+    });
+    const d = await r.json();
+    if (d.status !== 'ok') {
+      if (erroEl) { erroEl.textContent = d.msg || 'Acesso não autorizado'; erroEl.style.display = 'block'; }
+      if (btn) { btn.disabled = false; btn.textContent = 'Entrar →'; }
+      return;
+    }
+    _painelUsuario = { nome: d.nome, master: d.master, permissoes: d.permissoes || [] };
+    sessionStorage.setItem('painel_usuario', JSON.stringify(_painelUsuario));
+    aplicarLoginPainel();
+  } catch(e) {
+    if (erroEl) { erroEl.textContent = 'Erro de conexão'; erroEl.style.display = 'block'; }
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar →'; }
+  }
+}
+
+function aplicarLoginPainel() {
+  if (!_painelUsuario) return;
+  // Esconde tela de login
+  const screen = document.getElementById('painel-login-screen');
+  if (screen) screen.style.display = 'none';
+  // Atualiza footer
+  const iniciais = _painelUsuario.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
+  const sfAv = document.getElementById('sf-av-iniciais');
+  const sfNome = document.getElementById('sf-nome-usuario');
+  const sfRole = document.getElementById('sf-role-usuario');
+  if (sfAv) sfAv.textContent = iniciais;
+  if (sfNome) sfNome.textContent = _painelUsuario.nome;
+  if (sfRole) sfRole.textContent = _painelUsuario.master ? '⭐ Master' : 'Gestor';
+  // Aplica permissões no menu
+  aplicarPermissoesMenu();
+}
+
+function temPermissao(modulo) {
+  if (!_painelUsuario) return false;
+  if (_painelUsuario.master) return true;
+  return _painelUsuario.permissoes.includes('all') || _painelUsuario.permissoes.includes(modulo);
+}
+
+function aplicarPermissoesMenu() {
+  const mapa = {
+    'confirmacoes': 'confirmacoes', 'mapa-rastreamento': 'rastreamento', 'checklist-view': 'rotas',
+    'gerenciar-motoboys': 'motoboys', 'dispositivos': 'dispositivos', 'ocorrencias': 'ocorrencias',
+    'quilometragem': 'quilometragem', 'geofence-config': 'geofence', 'importacao': 'importacao',
+    'estoque-view': 'estoque', 'ponto-rh': 'rh', 'patrimonios': 'patrimonios'
+  };
+  // Esconde botões sem permissão
+  document.querySelectorAll('.nav-item[onclick*="setView"]').forEach(btn => {
+    const match = btn.getAttribute('onclick').match(/setView\('([^']+)'/);
+    if (!match) return;
+    const view = match[1];
+    const modulo = mapa[view];
+    if (modulo && !temPermissao(modulo)) btn.style.display = 'none';
+  });
+  // Esconde usuários se não master
+  const navUsuarios = document.getElementById('nav-btn-usuarios');
+  if (navUsuarios && !_painelUsuario?.master) navUsuarios.style.display = 'none';
+}
+
+function sairPainel() {
+  if (!confirm('Deseja sair do painel?')) return;
+  sessionStorage.removeItem('painel_usuario');
+  _painelUsuario = null;
+  // Mostra tela de login
+  const screen = document.getElementById('painel-login-screen');
+  if (screen) { screen.style.display = 'flex'; }
+  const input = document.getElementById('login-tel');
+  if (input) { input.value = ''; }
+  // Restaura menu
+  document.querySelectorAll('.nav-item').forEach(b => b.style.display = '');
+}
+
+// Verifica sessão ao carregar
+(function() {
+  const saved = sessionStorage.getItem('painel_usuario');
+  if (saved) {
+    try {
+      _painelUsuario = JSON.parse(saved);
+      // Aplica após DOM carregar
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', aplicarLoginPainel);
+      } else {
+        setTimeout(aplicarLoginPainel, 100);
+      }
+    } catch(e) { sessionStorage.removeItem('painel_usuario'); }
+  }
+})();
+
+// ── USUÁRIOS DO PAINEL ────────────────────────────────────────
+async function carregarUsuariosPainel() {
+  const lista = document.getElementById('pu-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const r = await fetch(API + '/painel-usuarios');
+    const d = await r.json();
+    const usuarios = d.usuarios || [];
+    if (!usuarios.length) { lista.innerHTML = '<div class="empty">Nenhum usuário cadastrado</div>'; return; }
+
+    const MODULOS = {
+      painel:'🏠',confirmacoes:'✓',rastreamento:'🗺️',rotas:'📋',motoboys:'🏍️',
+      dispositivos:'📱',ocorrencias:'🚨',quilometragem:'📏',geofence:'📍',
+      importacao:'📥',estoque:'📦',rh:'⏱️',chat:'💬',patrimonios:'🔒'
+    };
+
+    lista.innerHTML = usuarios.map(u => {
+      let perms = [];
+      try { perms = JSON.parse(u.permissoes || '[]'); } catch(e) {}
+      const permBadges = u.master
+        ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E;font-weight:700">⭐ Master</span>'
+        : perms.map(p => `<span style="font-size:10px;padding:2px 6px;border-radius:20px;background:#EFF6FF;color:#1D4ED8">${MODULOS[p]||p}</span>`).join('');
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${u.nome} ${u.master ? '⭐' : ''}</div>
+            <div style="font-size:11px;color:#94A8B8;margin-top:1px">${u.telefone}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:3px;margin-top:4px">${permBadges}</div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#5A7A8F;cursor:pointer">
+              <input type="checkbox" ${u.ativo?'checked':''} onchange="toggleUsuarioPainel(${u.id},this.checked)" style="accent-color:#0F4C7A" ${u.master?'disabled':''}/>
+              Ativo
+            </label>
+            ${!u.master ? `<button onclick="editarPermissoes(${u.id},'${u.nome.replace(/'/g,"\\'")}',${JSON.stringify(perms).replace(/"/g,'&quot;')})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;cursor:pointer">✏️ Permissões</button>
+            <button onclick="excluirUsuarioPainel(${u.id})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:none;background:none;color:#EF4444;cursor:pointer">✕</button>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+}
+
+async function salvarUsuarioPainel() {
+  const nome = document.getElementById('pu-nome')?.value.trim();
+  const tel = (document.getElementById('pu-tel')?.value || '').replace(/\D/g,'');
+  const perms = [...document.querySelectorAll('.pu-perm-cb:checked')].map(cb => cb.value);
+  if (!nome || !tel) { toast('Preencha nome e telefone'); return; }
+  try {
+    await fetch(API + '/painel-usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, telefone: tel, permissoes: perms })
+    });
+    document.getElementById('pu-nome').value = '';
+    document.getElementById('pu-tel').value = '';
+    document.querySelectorAll('.pu-perm-cb').forEach(cb => cb.checked = false);
+    toast('✓ Usuário adicionado');
+    carregarUsuariosPainel();
+  } catch(e) { toast('Erro ao salvar'); }
+}
+
+async function toggleUsuarioPainel(id, ativo) {
+  await fetch(API + '/painel-usuarios', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, ativo }) });
+  toast(ativo ? '✓ Ativado' : '✓ Desativado');
+}
+
+async function excluirUsuarioPainel(id) {
+  if (!confirm('Excluir este usuário?')) return;
+  await fetch(API + '/painel-usuarios', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+  toast('✓ Usuário removido');
+  carregarUsuariosPainel();
+}
+
+function editarPermissoes(id, nome, permsAtual) {
+  const MODULOS = [
+    ['painel','🏠 Painel'],['confirmacoes','✓ Confirmações'],['rastreamento','🗺️ Rastreamento'],
+    ['rotas','📋 Rotas'],['motoboys','🏍️ Motoboys'],['dispositivos','📱 Dispositivos'],
+    ['ocorrencias','🚨 Ocorrências'],['quilometragem','📏 Quilometragem'],['geofence','📍 Geofence'],
+    ['importacao','📥 Importação'],['estoque','📦 Estoque'],['rh','⏱️ RH'],
+    ['chat','💬 Chat'],['patrimonios','🔒 Patrimônios']
+  ];
+  const pop = document.createElement('div');
+  pop.id = 'pop-perms';
+  pop.style.cssText = 'position:fixed;inset:0;background:rgba(15,40,64,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem';
+  pop.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:1.25rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+        <div style="font-size:14px;font-weight:800;color:#0F4C7A">Permissões — ${nome}</div>
+        <button onclick="document.getElementById('pop-perms').remove()" style="background:none;border:none;font-size:20px;color:#5A7A8F;cursor:pointer">✕</button>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem">
+        ${MODULOS.map(([id2, label]) => `
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:6px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff">
+            <input type="checkbox" value="${id2}" class="perm-edit-cb" ${permsAtual.includes(id2)?'checked':''} style="accent-color:#0F4C7A"/>
+            ${label}
+          </label>`).join('')}
+      </div>
+      <button onclick="salvarPermissoes(${id})" style="width:100%;padding:10px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar permissões</button>
+    </div>`;
+  document.body.appendChild(pop);
+}
+
+async function salvarPermissoes(id) {
+  const perms = [...document.querySelectorAll('.perm-edit-cb:checked')].map(cb => cb.value);
+  await fetch(API + '/painel-usuarios', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, permissoes: perms }) });
+  document.getElementById('pop-perms')?.remove();
+  toast('✓ Permissões salvas');
+  carregarUsuariosPainel();
+}
 let _adminRecorder = null;
 let _adminChunks = [];
 let _adminTimer = null;
