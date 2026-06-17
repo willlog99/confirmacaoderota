@@ -136,19 +136,32 @@ async function carregarHorariosTrabalho() {
       porNome[key].dias.push(h);
     });
 
-    lista.innerHTML = Object.values(porNome).map(p => `
-      <div style="border-bottom:1px solid #F0F4F8">
-        <div style="padding:8px 14px;font-size:12px;font-weight:700;color:#0F4C7A;background:#F8FBFD;display:flex;align-items:center;justify-content:space-between">
-          <span>👤 ${p.nome || p.telefone}</span>
-          <button onclick="removerHorarioTrabalho('${p.telefone}',null)" style="background:none;border:none;color:#EF4444;font-size:11px;cursor:pointer">Remover todos</button>
+    lista.innerHTML = Object.values(porNome).map(p => {
+      // Agrupa dias com mesmo horário
+      const grupos = {};
+      p.dias.forEach(d => {
+        const key = d.inicio + '-' + d.fim;
+        if (!grupos[key]) grupos[key] = { inicio: d.inicio, fim: d.fim, dias: [] };
+        grupos[key].dias.push(d.dia_semana);
+      });
+      const abr = d => ({ seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' })[d] || d;
+      const linhas = Object.values(grupos).map(g => {
+        const diasStr = g.dias.map(abr).join(' · ');
+        const btns = g.dias.map(d => `<button onclick="removerHorarioTrabalho('${p.telefone}','${d}')" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0">✕</button>`).join('');
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 14px 3px 24px">
+          <span style="font-size:11px;color:#5A7A8F;flex:1">${diasStr}</span>
+          <span style="font-size:11px;font-weight:700;color:#0F4C7A">${g.inicio}–${g.fim}</span>
+          ${btns}
+        </div>`;
+      }).join('');
+      return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
+        <div style="padding:2px 14px;display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:12px;font-weight:700;color:#0F4C7A">👤 ${p.nome || p.telefone}</span>
+          <button onclick="removerHorarioTrabalho('${p.telefone}',null)" style="background:none;border:none;color:#EF4444;font-size:10px;cursor:pointer">✕ todos</button>
         </div>
-        ${p.dias.map(d => `
-          <div style="display:flex;align-items:center;gap:8px;padding:8px 14px 8px 24px">
-            <div style="flex:1;font-size:12px;color:#5A7A8F">${labelDia(d.dia_semana)}</div>
-            <span style="font-size:12px;font-weight:700;color:#0F4C7A">${d.inicio} — ${d.fim}</span>
-            <button onclick="removerHorarioTrabalho('${p.telefone}','${d.dia_semana}')" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer">✕</button>
-          </div>`).join('')}
-      </div>`).join('');
+        ${linhas}
+      </div>`;
+    }).join('');
   } catch(e) {
     if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
   }
@@ -747,19 +760,31 @@ async function carregarGeofenceConfig() {
     const labelDia = d => ({ seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado', dom:'Domingo' })[d] || d;
     const corPass = p => p === 3 ? { bg:'#FEF2F2', cor:'#991B1B' } : p === 2 ? { bg:'#FEF9EC', cor:'#92400E' } : { bg:'#EFF6FF', cor:'#1D4ED8' };
 
-    lista.innerHTML = Object.entries(porRota).map(([rota, dias]) => `
-      <div style="border-bottom:1px solid #F0F4F8">
-        <div style="padding:8px 14px;font-size:12px;font-weight:700;color:#0F4C7A;background:#F8FBFD">${rota}</div>
-        ${dias.map(c => {
-          const cp = corPass(c.passagens);
-          return `<div style="display:flex;align-items:center;gap:8px;padding:8px 14px 8px 24px">
-            <div style="flex:1;font-size:12px;color:#5A7A8F">${labelDia(c.dia_semana)}</div>
-            <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:${cp.bg};color:${cp.cor}">${c.passagens}ª passagem</span>
-            ${c.horario_limite ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">⏰ até ${c.horario_limite}</span>` : ''}
-            <button onclick="removerGeofence('${rota.replace(/'/g,"\\'")}','${c.dia_semana}')" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer;flex-shrink:0">✕</button>
-          </div>`;
-        }).join('')}
-      </div>`).join('');
+    lista.innerHTML = Object.entries(porRota).map(([rota, dias]) => {
+      // Agrupa dias com mesma config
+      const grupos = {};
+      dias.forEach(c => {
+        const key = c.passagens + '|' + (c.horario_limite || '');
+        if (!grupos[key]) grupos[key] = { passagens: c.passagens, horario_limite: c.horario_limite, dias: [] };
+        grupos[key].dias.push(c.dia_semana);
+      });
+      const abr = d => ({ seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' })[d] || d;
+      const corP = p => p === 3 ? '#991B1B' : p === 2 ? '#92400E' : '#1D4ED8';
+      const linhas = Object.values(grupos).map(g => {
+        const diasStr = g.dias.map(abr).join(' · ');
+        const btns = g.dias.map(d => `<button onclick="removerGeofence('${rota.replace(/'/g,"\\'")}','${d}')" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0" title="Remover ${abr(d)}">✕</button>`).join('');
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 14px 3px 24px">
+          <span style="font-size:11px;color:#5A7A8F;flex:1">${diasStr}</span>
+          <span style="font-size:10px;font-weight:700;color:${corP(g.passagens)}">${g.passagens}ª pass.</span>
+          ${g.horario_limite ? `<span style="font-size:10px;color:#92400E">⏰ ${g.horario_limite}</span>` : ''}
+          ${btns}
+        </div>`;
+      }).join('');
+      return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
+        <div style="padding:2px 14px;font-size:12px;font-weight:700;color:#0F4C7A">${rota}</div>
+        ${linhas}
+      </div>`;
+    }).join('');
   } catch(e) {
     if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
   }
