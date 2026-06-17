@@ -69,6 +69,11 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
+  if (id === 'ocorrencias') {
+    const input = document.getElementById('oc-filtro-data');
+    if (input && !input.value) input.value = new Date().toISOString().split('T')[0];
+    carregarOcorrencias();
+  }
   if (id === 'dispositivos') carregarDispositivos();
   if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') { carregarGeofenceConfig(); carregarHorariosTrabalho(); }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
@@ -285,7 +290,286 @@ async function carregarMetricas() {
   }
 }
 
-// ── OCORRÊNCIAS / ATRASOS ────────────────────────────────────
+// ── MOTIVOS DE AUSÊNCIA ──────────────────────────────────────
+async function carregarMotivos() {
+  const lista = document.getElementById('mot-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const r = await fetch(API + '/motivos-ausencia');
+    const d = await r.json();
+    const motivos = d.motivos || [];
+    if (!motivos.length) { lista.innerHTML = '<div class="empty">Nenhum motivo cadastrado</div>'; return; }
+    lista.innerHTML = motivos.map(m => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8;${!m.ativo ? 'opacity:.5' : ''}">
+        <span style="font-size:20px;flex-shrink:0">${m.emoji}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${m.label}</div>
+          <div style="font-size:11px;color:#94A8B8">${m.codigo}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#5A7A8F;cursor:pointer">
+            <input type="checkbox" ${m.ativo ? 'checked' : ''} onchange="toggleMotivo(${m.id},this.checked)" style="accent-color:#0F4C7A"/>
+            Ativo
+          </label>
+          <button onclick="excluirMotivo(${m.id})" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer">✕</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+async function salvarMotivo() {
+  const emoji = document.getElementById('mot-emoji').value.trim() || '📋';
+  const label = document.getElementById('mot-label').value.trim();
+  const codigo = document.getElementById('mot-cod').value.trim();
+  if (!label || !codigo) { toast('Preencha descrição e código'); return; }
+  try {
+    await fetch(API + '/motivos-ausencia', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ codigo, emoji, label })
+    });
+    document.getElementById('mot-emoji').value = '';
+    document.getElementById('mot-label').value = '';
+    document.getElementById('mot-cod').value = '';
+    toast('✓ Motivo adicionado');
+    carregarMotivos();
+  } catch(e) { toast('Erro ao salvar'); }
+}
+
+async function toggleMotivo(id, ativo) {
+  try {
+    await fetch(API + '/motivos-ausencia', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ativo })
+    });
+    toast(ativo ? '✓ Motivo ativado' : '✓ Motivo desativado');
+  } catch(e) { toast('Erro'); }
+}
+
+async function excluirMotivo(id) {
+  if (!confirm('Excluir este motivo?')) return;
+  try {
+    await fetch(API + '/motivos-ausencia', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    });
+    toast('✓ Motivo excluído');
+    carregarMotivos();
+  } catch(e) { toast('Erro'); }
+}
+
+function ocMudarAba(aba, btn) {
+  document.getElementById('oc-conteudo-lista').style.display = aba === 'lista' ? 'block' : 'none';
+  document.getElementById('oc-conteudo-motivos').style.display = aba === 'motivos' ? 'block' : 'none';
+  document.getElementById('oc-aba-lista').style.background = aba === 'lista' ? '#0F4C7A' : 'none';
+  document.getElementById('oc-aba-lista').style.color = aba === 'lista' ? '#fff' : '#5A7A8F';
+  document.getElementById('oc-aba-motivos').style.background = aba === 'motivos' ? '#0F4C7A' : 'none';
+  document.getElementById('oc-aba-motivos').style.color = aba === 'motivos' ? '#fff' : '#5A7A8F';
+  if (aba === 'motivos') carregarMotivos();
+  if (aba === 'lista') carregarOcorrencias();
+}
+let _ocorrenciaAtual = null;
+let _statusOcAtual = 'aberta';
+
+async function carregarOcorrencias() {
+  const lista = document.getElementById('oc-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+  const tipo = document.getElementById('oc-filtro-tipo')?.value || '';
+  const status = document.getElementById('oc-filtro-status')?.value || '';
+
+  try {
+    const r = await fetch(API + '/ocorrencia?data=' + data);
+    const d = await r.json();
+    let ocs = d.ocorrencias || [];
+    if (tipo) ocs = ocs.filter(o => o.tipo === tipo);
+    if (status) ocs = ocs.filter(o => o.status === status);
+
+    if (!ocs.length) { lista.innerHTML = '<div class="empty">Nenhuma ocorrência encontrada</div>'; return; }
+
+    const statusBadge = s => ({
+      aberta:       '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">🟡 Aberta</span>',
+      em_andamento: '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EFF6FF;color:#1D4ED8">🔵 Em andamento</span>',
+      resolvida:    '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0FDF4;color:#166534">✅ Resolvida</span>',
+    })[s] || '';
+
+    const tipoLabel = t => t === 'nao_comparecimento' ? '🔴 Não comparecimento' : t === 'atraso' ? '⏰ Atraso' : t;
+    const hora = ts => new Date(ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+    lista.innerHTML = ocs.map(o => `
+      <div onclick="abrirModalOcorrencia(${o.id})" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8;cursor:pointer;transition:.15s" onmouseover="this.style.background='#F8FBFD'" onmouseout="this.style.background=''">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+            <span style="font-size:11px;font-weight:800;color:#0F4C7A;background:#EFF6FF;padding:1px 7px;border-radius:20px">${o.codigo || '—'}</span>
+            ${statusBadge(o.status)}
+          </div>
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${o.motoboy_nome}</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-top:1px">${tipoLabel(o.tipo)}${o.motivo_label ? ' · ' + o.motivo_label : ''}${o.rota ? ' · ' + o.rota : ''}</div>
+          ${o.motivo ? `<div style="font-size:11px;color:#94A8B8;font-style:italic;margin-top:1px">↳ ${o.motivo}</div>` : ''}
+        </div>
+        <div style="font-size:11px;color:#94A8B8;flex-shrink:0">${hora(o.timestamp)}</div>
+      </div>`).join('');
+  } catch(e) {
+    lista.innerHTML = '<div class="empty">Erro ao carregar ocorrências</div>';
+  }
+}
+
+async function abrirModalOcorrencia(id) {
+  try {
+    const agora = new Date();
+    const diaSP = new Date(agora.getTime() - 3*60*60*1000);
+    const data = diaSP.toISOString().split('T')[0];
+    const r = await fetch(API + '/ocorrencia?data=' + data);
+    const d = await r.json();
+    const oc = (d.ocorrencias || []).find(o => o.id === id);
+    if (!oc) return;
+    _ocorrenciaAtual = oc;
+    _statusOcAtual = oc.status || 'aberta';
+
+    document.getElementById('moc-codigo').textContent = oc.codigo || 'OC-???';
+    const tipoLabel = oc.tipo === 'nao_comparecimento' ? '🔴 Não comparecimento' : '⏰ Atraso';
+    document.getElementById('moc-tipo').textContent = tipoLabel + (oc.motivo_label ? ' · ' + oc.motivo_label : '');
+    document.getElementById('moc-obs').value = oc.obs_gestor || '';
+
+    const hora = new Date(oc.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+    document.getElementById('moc-info').innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#F8FBFD;border-radius:8px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;margin-bottom:3px">Coletor</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.motoboy_nome}</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:8px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;margin-bottom:3px">Rota</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.rota || '—'}</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:8px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;margin-bottom:3px">Horário</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${hora}</div>
+          </div>
+          <div style="background:#F8FBFD;border-radius:8px;padding:10px 12px">
+            <div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;margin-bottom:3px">Código tipo</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.codigo_tipo || '—'}</div>
+          </div>
+        </div>
+        ${oc.motivo ? `<div style="background:#FEF9EC;border-radius:8px;padding:10px 12px;border-left:3px solid #F59E0B">
+          <div style="font-size:10px;font-weight:700;color:#92400E;text-transform:uppercase;margin-bottom:3px">Motivo informado</div>
+          <div style="font-size:13px;color:#0F2940">${oc.motivo}</div>
+        </div>` : ''}
+        ${oc.minutos_atraso ? `<div style="background:#EFF6FF;border-radius:8px;padding:10px 12px">
+          <div style="font-size:10px;font-weight:700;color:#1D4ED8;text-transform:uppercase;margin-bottom:3px">Previsão de atraso</div>
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.minutos_atraso} minutos${oc.cliente_nome ? ' em ' + oc.cliente_nome : ''}</div>
+        </div>` : ''}
+      </div>`;
+
+    // Marca status atual
+    document.querySelectorAll('.oc-status-btn').forEach(b => { b.style.opacity = '0.5'; });
+    const statusMap = { aberta: 0, em_andamento: 1, resolvida: 2 };
+    const btns = document.querySelectorAll('.oc-status-btn');
+    if (btns[statusMap[_statusOcAtual]]) { btns[statusMap[_statusOcAtual]].style.opacity = '1'; }
+
+    document.getElementById('modal-ocorrencia').style.display = 'flex';
+    // Marca como lida
+    await fetch(API + '/ocorrencia', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+  } catch(e) { console.error(e); }
+}
+
+function fecharModalOcorrencia() {
+  document.getElementById('modal-ocorrencia').style.display = 'none';
+  _ocorrenciaAtual = null;
+}
+
+function setStatusOc(status, btn) {
+  _statusOcAtual = status;
+  document.querySelectorAll('.oc-status-btn').forEach(b => { b.style.opacity = '0.5'; });
+  btn.style.opacity = '1';
+}
+
+async function salvarOcorrencia() {
+  if (!_ocorrenciaAtual) return;
+  const obs = document.getElementById('moc-obs').value.trim();
+  try {
+    await fetch(API + '/ocorrencia', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: _ocorrenciaAtual.id, obs_gestor: obs, status: _statusOcAtual })
+    });
+    toast('✓ Ocorrência salva');
+    fecharModalOcorrencia();
+    carregarOcorrencias();
+  } catch(e) { toast('Erro ao salvar'); }
+}
+
+function gerarPdfOcorrencia() {
+  if (!_ocorrenciaAtual) return;
+  const oc = _ocorrenciaAtual;
+  const obs = document.getElementById('moc-obs').value.trim();
+  const hora = new Date(oc.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+  const tipoLabel = oc.tipo === 'nao_comparecimento' ? 'Não comparecimento' : 'Atraso';
+
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+    <title>Ocorrência ${oc.codigo}</title>
+    <style>
+      * { margin:0; padding:0; box-sizing:border-box; }
+      body { font-family: Arial, sans-serif; padding: 40px; color: #0F2940; }
+      .header { border-bottom: 3px solid #00AEEF; padding-bottom: 16px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-end; }
+      .logo { font-size: 22px; font-weight: 800; color: #0F4C7A; }
+      .logo span { color: #00AEEF; }
+      .codigo { font-size: 14px; font-weight: 700; color: #5A7A8F; }
+      h1 { font-size: 18px; font-weight: 800; color: #0F4C7A; margin-bottom: 6px; }
+      .subtitulo { font-size: 13px; color: #5A7A8F; margin-bottom: 24px; }
+      .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+      .campo { background: #F8FBFD; border-radius: 6px; padding: 10px 12px; border-left: 3px solid #00AEEF; }
+      .campo-label { font-size: 10px; font-weight: 700; color: #5A7A8F; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 4px; }
+      .campo-valor { font-size: 14px; font-weight: 700; color: #0F2940; }
+      .secao { margin-bottom: 20px; }
+      .secao-titulo { font-size: 12px; font-weight: 700; color: #5A7A8F; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; border-bottom: 1px solid #EBF1F5; padding-bottom: 4px; }
+      .obs-box { background: #F8FBFD; border-radius: 6px; padding: 12px; min-height: 60px; font-size: 13px; color: #0F2940; border: 1px solid #EBF1F5; }
+      .footer { margin-top: 40px; border-top: 1px solid #EBF1F5; padding-top: 12px; font-size: 11px; color: #94A8B8; }
+      @media print { body { padding: 20px; } }
+    </style>
+  </head><body>
+    <div class="header">
+      <div class="logo">LOG<span>LIFE</span> <span style="font-size:13px;font-weight:400;color:#5A7A8F">Logística</span></div>
+      <div class="codigo">Registro de Ocorrência</div>
+    </div>
+    <h1>${oc.codigo || 'OC-???'}</h1>
+    <div class="subtitulo">${hora} · ${tipoLabel}${oc.motivo_label ? ' — ' + oc.motivo_label : ''}</div>
+    <div class="secao">
+      <div class="secao-titulo">Informações da ocorrência</div>
+      <div class="grid">
+        <div class="campo"><div class="campo-label">Rota</div><div class="campo-valor">${oc.rota || '—'}</div></div>
+        <div class="campo"><div class="campo-label">Código do tipo</div><div class="campo-valor">${oc.codigo_tipo || '—'}</div></div>
+        <div class="campo"><div class="campo-label">Tipo</div><div class="campo-valor">${tipoLabel}</div></div>
+        <div class="campo"><div class="campo-label">Data e hora</div><div class="campo-valor">${hora}</div></div>
+        ${oc.minutos_atraso ? `<div class="campo" style="grid-column:1/-1"><div class="campo-label">Previsão de atraso</div><div class="campo-valor">${oc.minutos_atraso} minutos${oc.cliente_nome ? ' em ' + oc.cliente_nome : ''}</div></div>` : ''}
+      </div>
+    </div>
+    ${oc.motivo ? `<div class="secao">
+      <div class="secao-titulo">Motivo informado</div>
+      <div class="obs-box">${oc.motivo}</div>
+    </div>` : ''}
+    <div class="secao">
+      <div class="secao-titulo">Ação tomada pelo gestor</div>
+      <div class="obs-box">${obs || 'Nenhuma observação registrada.'}</div>
+    </div>
+    <div class="secao">
+      <div class="secao-titulo">Status</div>
+      <div style="font-size:14px;font-weight:700;color:#0F2940">${_statusOcAtual === 'resolvida' ? '✅ Resolvida' : _statusOcAtual === 'em_andamento' ? '🔵 Em andamento' : '🟡 Aberta'}</div>
+    </div>
+    <div class="footer">Loglife Logística · Documento gerado automaticamente · ${new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'})}</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
 let _ocorrenciasVistas = new Set();
 
 async function verificarOcorrencias() {
