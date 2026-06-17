@@ -2870,6 +2870,42 @@ async function abrirConversa(tel, nome) {
   });
 }
 
+function mostrarNotifChatPainel(m) {
+  // Som
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 660; g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    o.start(); o.stop(ctx.currentTime + 0.5);
+  } catch(e) {}
+
+  const popId = 'pop-chat-painel-' + m.id;
+  if (document.getElementById(popId)) return;
+  const isAudio = m.tipo === 'audio' && m.audio_url;
+  const pop = document.createElement('div');
+  pop.id = popId;
+  pop.style.cssText = 'position:fixed;top:1.5rem;right:1.5rem;z-index:99999;width:300px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.2);border-left:4px solid #1E9FD9;overflow:hidden;animation:slideInRight .3s cubic-bezier(.34,1.1,.64,1) both';
+  pop.innerHTML = `
+    <div style="padding:12px 14px 10px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:18px">${isAudio ? '🎤' : '💬'}</span>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:800;color:#0F4C7A">Nova mensagem</div>
+          <div style="font-size:11px;color:#5A7A8F">${m.nome_motoboy || 'Motoboy'} · ${new Date(m.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
+        </div>
+        <button onclick="document.getElementById('${popId}').remove()" style="background:none;border:none;color:#94A8B8;font-size:18px;cursor:pointer">✕</button>
+      </div>
+      ${isAudio
+        ? `<audio src="${m.audio_url}" controls style="width:100%;margin-bottom:8px"></audio>`
+        : `<div style="font-size:13px;color:#0F2940;margin-bottom:8px;line-height:1.4">${m.mensagem}</div>`}
+      <button onclick="document.getElementById('${popId}').remove();abrirConversa('${(m.telefone_motoboy||'').replace(/'/g,"\\'")}')" style="width:100%;padding:8px;border-radius:8px;border:none;background:#EFF6FF;color:#0F4C7A;font-size:12px;font-weight:700;cursor:pointer">💬 Responder</button>
+    </div>`;
+  document.body.appendChild(pop);
+  setTimeout(() => document.getElementById(popId)?.remove(), 30000);
+}
+
 async function carregarMensagens(tel, silent) {
   const msgs = document.getElementById('chat-conv-msgs');
   if (!msgs) return;
@@ -2882,6 +2918,13 @@ async function carregarMensagens(tel, silent) {
 
     // Se silent e não há novas mensagens, não re-renderiza
     if (silent && lista.length > 0 && lista[lista.length-1].timestamp === chatUltimoTs) return;
+
+    // Detecta mensagens novas do motoboy (quando chat não está aberto ou é de outro motoboy)
+    if (chatUltimoTs > 0) {
+      const novas = lista.filter(m => m.remetente === 'motoboy' && m.timestamp > chatUltimoTs);
+      for (const m of novas) mostrarNotifChatPainel(m);
+    }
+
     if (lista.length > 0) chatUltimoTs = lista[lista.length-1].timestamp;
 
     if (!lista.length) {
