@@ -411,6 +411,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar cliente</span></button>
       <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span><span class="nav-item-txt">Motoboys</span></button>
       <button class="nav-item" onclick="setView('dispositivos',this)"><span class="nav-ic">📱</span><span class="nav-item-txt">Dispositivos</span></button>
+      <button class="nav-item" onclick="setView('ocorrencias',this)"><span class="nav-ic">🚨</span><span class="nav-item-txt">Ocorrências</span></button>
       <button class="nav-item" onclick="setView('ativar-cliente',this)"><span class="nav-ic">🔁</span><span class="nav-item-txt">Ativar/Desativar cliente</span></button>
       <button class="nav-item" onclick="setView('geofence-config',this)"><span class="nav-ic">📍</span><span class="nav-item-txt">Geofence</span></button>
 
@@ -718,6 +719,112 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
 
       <!-- GEOFENCE CONFIG -->
+      <!-- VIEW OCORRÊNCIAS -->
+      <div class="view" id="view-ocorrencias">
+        <!-- Abas -->
+        <div style="display:flex;gap:0;margin-bottom:1rem;background:#fff;border-radius:12px;padding:4px;box-shadow:0 2px 8px rgba(15,76,122,.06)">
+          <button id="oc-aba-lista" onclick="ocMudarAba('lista',this)" style="flex:1;padding:9px;border-radius:9px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">📋 Ocorrências</button>
+          <button id="oc-aba-motivos" onclick="ocMudarAba('motivos',this)" style="flex:1;padding:9px;border-radius:9px;border:none;background:none;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">⚙️ Motivos</button>
+        </div>
+
+        <!-- Lista de ocorrências -->
+        <div id="oc-conteudo-lista">
+        <div class="card">
+          <div class="card-title">🚨 Ocorrências</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5">Registro de não comparecimentos, atrasos e outros eventos operacionais.</p>
+
+          <!-- Filtros -->
+          <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap;align-items:center">
+            <input type="date" id="oc-filtro-data" style="height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+            <select id="oc-filtro-tipo" style="height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;background:#fff">
+              <option value="">Todos os tipos</option>
+              <option value="nao_comparecimento">Não comparecimento</option>
+              <option value="atraso">Atraso</option>
+            </select>
+            <select id="oc-filtro-status" style="height:34px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;background:#fff">
+              <option value="">Todos os status</option>
+              <option value="aberta">🟡 Aberta</option>
+              <option value="em_andamento">🔵 Em andamento</option>
+              <option value="resolvida">✅ Resolvida</option>
+            </select>
+            <button onclick="carregarOcorrencias()" style="height:34px;padding:0 14px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">🔍 Buscar</button>
+            <button onclick="carregarOcorrencias()" style="height:34px;padding:0 14px;border-radius:8px;border:none;background:#0F9B78;color:#fff;font-size:12px;font-weight:700;cursor:pointer;margin-left:auto">🔄 Hoje</button>
+          </div>
+
+          <!-- Lista -->
+          <div id="oc-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div class="empty"><span class="spinner"></span> Carregando...</div>
+          </div>
+        </div>
+        </div><!-- fecha oc-conteudo-lista -->
+
+        <!-- Conteúdo motivos -->
+        <div id="oc-conteudo-motivos" style="display:none">
+          <div class="card">
+            <div class="card-title">⚙️ Gerenciar Motivos de Ausência</div>
+            <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5">Configure os motivos que aparecem para o motoboy ao marcar ausência.</p>
+
+            <!-- Formulário novo motivo -->
+            <div style="background:#F8FBFD;border-radius:12px;padding:14px;border:1.5px solid #EBF1F5;margin-bottom:1rem">
+              <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Adicionar motivo</div>
+              <div style="display:grid;grid-template-columns:80px 1fr 120px;gap:8px;margin-bottom:8px">
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Emoji</div>
+                  <input type="text" id="mot-emoji" placeholder="🤒" maxlength="4" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:16px;text-align:center;outline:none"/>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Descrição</div>
+                  <input type="text" id="mot-label" placeholder="Ex: Doença" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Código</div>
+                  <input type="text" id="mot-cod" placeholder="OC-NP-08" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+                </div>
+              </div>
+              <button onclick="salvarMotivo()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Adicionar motivo</button>
+            </div>
+
+            <!-- Lista de motivos -->
+            <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Motivos cadastrados</div>
+            <div id="mot-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+              <div class="empty"><span class="spinner"></span> Carregando...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MODAL OCORRÊNCIA -->
+      <div id="modal-ocorrencia" style="display:none;position:fixed;inset:0;background:rgba(15,40,64,.7);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
+          <div style="padding:1.25rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1">
+            <div>
+              <div id="moc-codigo" style="font-size:15px;font-weight:800;color:#0F4C7A"></div>
+              <div id="moc-tipo" style="font-size:12px;color:#5A7A8F;margin-top:2px"></div>
+            </div>
+            <button onclick="fecharModalOcorrencia()" style="background:none;border:none;font-size:22px;color:#5A7A8F;cursor:pointer">✕</button>
+          </div>
+          <div style="padding:1.25rem">
+            <div id="moc-info" style="margin-bottom:1rem"></div>
+            <div style="margin-bottom:1rem">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Observação do gestor</div>
+              <textarea id="moc-obs" rows="3" placeholder="Descreva a ação tomada..." style="width:100%;border-radius:8px;border:1.5px solid #D6E5EE;padding:9px 12px;font-size:13px;color:#0F4C7A;outline:none;resize:none;font-family:inherit"></textarea>
+            </div>
+            <div style="margin-bottom:1rem">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Status</div>
+              <div style="display:flex;gap:6px">
+                <button onclick="setStatusOc('aberta',this)" class="oc-status-btn" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #FDE68A;background:#FEF9EC;color:#92400E;font-size:12px;font-weight:700;cursor:pointer">🟡 Aberta</button>
+                <button onclick="setStatusOc('em_andamento',this)" class="oc-status-btn" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #BFDBFE;background:#EFF6FF;color:#1D4ED8;font-size:12px;font-weight:700;cursor:pointer">🔵 Em andamento</button>
+                <button onclick="setStatusOc('resolvida',this)" class="oc-status-btn" style="flex:1;padding:8px;border-radius:8px;border:1.5px solid #86EFAC;background:#F0FDF4;color:#166534;font-size:12px;font-weight:700;cursor:pointer">✅ Resolvida</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button onclick="salvarOcorrencia()" style="flex:1;padding:11px;border-radius:10px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button>
+              <button onclick="gerarPdfOcorrencia()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #0F4C7A;background:#fff;color:#0F4C7A;font-size:13px;font-weight:700;cursor:pointer">📄 Gerar PDF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- VIEW DISPOSITIVOS -->
       <div class="view" id="view-dispositivos">
         <div class="card">
