@@ -790,19 +790,49 @@ async function carregarGeofenceConfig() {
   }
 }
 
+function gfToggleDia(dia, btn) {
+  const ativo = btn.style.background === 'rgb(15, 76, 122)' || btn.dataset.ativo === '1';
+  if (ativo) {
+    btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#D6E5EE';
+    btn.dataset.ativo = '0';
+  } else {
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A';
+    btn.dataset.ativo = '1';
+  }
+}
+
+function gfSelecionarTodosDias() {
+  document.querySelectorAll('.gf-dia-btn').forEach(btn => {
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A';
+    btn.dataset.ativo = '1';
+  });
+}
+
 async function salvarGeofence() {
   const rota = document.getElementById('gf-rota-sel')?.value;
-  const dia_semana = document.getElementById('gf-dia-sel')?.value;
   const horario_limite = document.getElementById('gf-horario-limite')?.value || null;
   if (!rota) { toast('Selecione uma rota'); return; }
-  if (!dia_semana) { toast('Selecione o dia'); return; }
+
+  // Pega dias selecionados
+  const diasSelecionados = [...document.querySelectorAll('.gf-dia-btn')].filter(b => b.dataset.ativo === '1').map(b => b.dataset.dia);
+  if (!diasSelecionados.length) { toast('Selecione pelo menos um dia'); return; }
+
   try {
-    await fetch(API + '/geofence-config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rota, dia_semana, passagens: _gfPassagens, horario_limite: horario_limite || null })
+    // Salva um registro por dia selecionado
+    await Promise.all(diasSelecionados.map(dia =>
+      fetch(API + '/geofence-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rota, dia_semana: dia, passagens: _gfPassagens, horario_limite: horario_limite || null })
+      })
+    ));
+    toast('✓ ' + rota + ' · ' + diasSelecionados.length + ' dia(s) salvo(s)');
+    // Limpa seleção
+    document.querySelectorAll('.gf-dia-btn').forEach(b => {
+      b.style.background = '#fff'; b.style.color = '#5A7A8F'; b.style.borderColor = '#D6E5EE';
+      b.dataset.ativo = '0';
     });
-    toast('✓ ' + rota + ' · ' + dia_semana + ' — ' + _gfPassagens + 'ª passagem salva');
+    document.getElementById('gf-horario-limite').value = '';
     carregarGeofenceConfig();
   } catch(e) { toast('Erro ao salvar'); }
 }
