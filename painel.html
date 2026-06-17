@@ -893,24 +893,24 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div style="background:#F8FBFD;border-radius:12px;padding:14px;border:1.5px solid #EBF1F5;margin-bottom:1.25rem">
             <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Adicionar configuração</div>
 
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Rota</div>
-                <select id="gf-rota-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
-                  <option value="">Selecione...</option>
-                </select>
-              </div>
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Dia da semana</div>
-                <select id="gf-dia-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
-                  <option value="seg">Segunda-feira</option>
-                  <option value="ter">Terça-feira</option>
-                  <option value="qua">Quarta-feira</option>
-                  <option value="qui">Quinta-feira</option>
-                  <option value="sex">Sexta-feira</option>
-                  <option value="sab">Sábado</option>
-                  <option value="dom">Domingo</option>
-                </select>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Rota</div>
+              <select id="gf-rota-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:6px">Dias da semana <span style="font-weight:400;color:#94A8B8">(selecione um ou mais)</span></div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <button onclick="gfToggleDia('seg',this)" class="gf-dia-btn" data-dia="seg" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Seg</button>
+                <button onclick="gfToggleDia('ter',this)" class="gf-dia-btn" data-dia="ter" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Ter</button>
+                <button onclick="gfToggleDia('qua',this)" class="gf-dia-btn" data-dia="qua" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Qua</button>
+                <button onclick="gfToggleDia('qui',this)" class="gf-dia-btn" data-dia="qui" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Qui</button>
+                <button onclick="gfToggleDia('sex',this)" class="gf-dia-btn" data-dia="sex" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Sex</button>
+                <button onclick="gfToggleDia('sab',this)" class="gf-dia-btn" data-dia="sab" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Sáb</button>
+                <button onclick="gfToggleDia('dom',this)" class="gf-dia-btn" data-dia="dom" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Dom</button>
+                <button onclick="gfSelecionarTodosDias()" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#1D4ED8;font-size:12px;font-weight:600;cursor:pointer;transition:.15s">Todos</button>
               </div>
             </div>
 
@@ -921,15 +921,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <button onclick="gfSelecionarPassagem(3,this)" id="gf-btn-3" style="flex:1;padding:9px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:700;cursor:pointer">3ª</button>
             </div>
 
-            <div style="display:flex;align-items:center;gap:10px;background:#FEF9EC;border-radius:8px;padding:10px 12px;margin-top:12px;margin-bottom:12px;border:1.5px solid #FDE68A">
+            <div style="display:flex;align-items:center;gap:10px;background:#FEF9EC;border-radius:8px;padding:10px 12px;margin-bottom:12px;border:1.5px solid #FDE68A">
               <div style="flex:1">
                 <div style="font-size:11px;font-weight:700;color:#92400E;margin-bottom:2px">⏰ Horário limite (opcional)</div>
-                <div style="font-size:10px;color:#B45309">GPS e notificações param neste horário mesmo sem chegar ao ponto</div>
+                <div style="font-size:10px;color:#B45309">GPS para neste horário mesmo sem chegar ao ponto</div>
               </div>
               <input id="gf-horario-limite" type="time" style="width:100px;height:34px;border-radius:8px;border:1.5px solid #FDE68A;padding:0 8px;font-size:13px;color:#92400E;outline:none;background:#fff;font-weight:700"/>
             </div>
 
-            <button onclick="salvarGeofence()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar</button>
+            <button onclick="salvarGeofence()" style="width:100%;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Salvar configuração</button>
           </div>
 
           <!-- Lista configuradas -->
