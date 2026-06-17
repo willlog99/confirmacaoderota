@@ -739,17 +739,23 @@ function mostrarPopupOcorrencia(oc) {
   const popup = document.createElement('div');
   popup.id = popId;
   popup.style.cssText = 'position:fixed;top:1.5rem;right:1.5rem;z-index:99999;width:320px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.2);border-left:4px solid #F59E0B;overflow:hidden;animation:slideInRight .3s cubic-bezier(.34,1.1,.64,1) both';
+  const tipoLabel = oc.tipo === 'nao_comparecimento' ? '🔴 Não comparecimento' : oc.tipo === 'atraso' ? '⏰ Atraso' : '📋 Ocorrência';
+  const tipoIcone = oc.tipo === 'nao_comparecimento' ? '🔴' : '⏰';
   popup.innerHTML = `
     <div style="padding:12px 14px 10px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-size:18px">⏰</span>
+        <span style="font-size:18px">${tipoIcone}</span>
         <div style="flex:1">
-          <div style="font-size:13px;font-weight:800;color:#92400E">Aviso de Atraso</div>
+          <div style="font-size:13px;font-weight:800;color:${oc.tipo === 'nao_comparecimento' ? '#991B1B' : '#92400E'}">${tipoLabel}</div>
           <div style="font-size:11px;color:#5A7A8F">${oc.rota || ''} · ${new Date(oc.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
         </div>
         <button onclick="fecharOcorrencia(${oc.id},'${popId}')" style="background:none;border:none;color:#94A8B8;font-size:18px;cursor:pointer">✕</button>
       </div>
-      <div style="font-size:13px;color:#0F2940;margin-bottom:4px"><strong>${oc.motoboy_nome}</strong> vai atrasar <strong style="color:#F59E0B">${oc.minutos_atraso} min</strong> em <strong>${oc.cliente_nome}</strong></div>
+      <div style="font-size:13px;color:#0F2940;margin-bottom:4px">
+        <strong>${oc.motoboy_nome}</strong>
+        ${oc.tipo === 'nao_comparecimento' ? ' não irá comparecer hoje' : ` vai atrasar <strong style="color:#F59E0B">${oc.minutos_atraso} min</strong> em <strong>${oc.cliente_nome}</strong>`}
+        ${oc.motivo_label ? `<br><span style="font-size:11px;color:#5A7A8F">Motivo: ${oc.motivo_label}</span>` : ''}
+      </div>
       ${oc.motivo ? `<div style="font-size:11px;color:#5A7A8F;font-style:italic">↳ ${oc.motivo}</div>` : ''}
       <button onclick="fecharOcorrencia(${oc.id},'${popId}')" style="width:100%;margin-top:10px;padding:8px;border-radius:8px;border:none;background:#FEF9EC;color:#92400E;font-size:12px;font-weight:700;cursor:pointer">✓ Entendido</button>
     </div>`;
