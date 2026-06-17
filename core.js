@@ -303,6 +303,69 @@ async function carregarMetricas() {
   }
 }
 
+// ── GRAVAÇÃO DE ÁUDIO — ADMIN ────────────────────────────────
+let _adminRecorder = null;
+let _adminChunks = [];
+let _adminTimer = null;
+let _adminSeg = 0;
+
+async function iniciarGravacaoAdmin(e) {
+  e.preventDefault();
+  if (_adminRecorder?.state === 'recording') return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    _adminRecorder = new MediaRecorder(stream);
+    _adminChunks = [];
+    _adminRecorder.ondataavailable = ev => { if (ev.data.size > 0) _adminChunks.push(ev.data); };
+    _adminRecorder.start();
+    const btn = document.getElementById('btn-gravar-admin');
+    const ind = document.getElementById('gravacao-admin-indicator');
+    if (btn) { btn.style.background = '#FEF2F2'; btn.style.color = '#EF4444'; btn.textContent = '⏹'; }
+    if (ind) ind.style.display = 'flex';
+    _adminSeg = 0;
+    _adminTimer = setInterval(() => {
+      _adminSeg++;
+      const el = document.getElementById('gravacao-admin-timer');
+      if (el) el.textContent = _adminSeg + 's';
+      if (_adminSeg >= 60) pararGravacaoAdmin(e);
+    }, 1000);
+  } catch(err) { alert('Não foi possível acessar o microfone.'); }
+}
+
+async function pararGravacaoAdmin(e) {
+  e.preventDefault();
+  if (!_adminRecorder || _adminRecorder.state !== 'recording') return;
+  clearInterval(_adminTimer);
+  const btn = document.getElementById('btn-gravar-admin');
+  const ind = document.getElementById('gravacao-admin-indicator');
+  if (btn) { btn.style.background = '#EFF6FF'; btn.style.color = '#0F4C7A'; btn.textContent = '🎤'; }
+  if (ind) ind.style.display = 'none';
+  _adminRecorder.stop();
+  _adminRecorder.stream.getTracks().forEach(t => t.stop());
+  _adminRecorder.onstop = async () => {
+    if (_adminSeg < 1) return;
+    const blob = new Blob(_adminChunks, { type: 'audio/webm' });
+    await enviarAudioAdmin(blob, _adminSeg);
+  };
+}
+
+async function enviarAudioAdmin(blob, duracao) {
+  if (!chatMotoboyAtual) return;
+  try {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = async () => {
+      const base64 = reader.result.split(',')[1];
+      await fetch(API + '/chat-audio-admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ telefone_motoboy: chatMotoboyAtual, audio_base64: base64, duracao })
+      });
+      carregarMensagens(chatMotoboyAtual, false);
+    };
+  } catch(e) { toast('Erro ao enviar áudio'); }
+}
+
 // ── MOTIVOS DE AUSÊNCIA ──────────────────────────────────────
 async function carregarMotivos() {
   const lista = document.getElementById('mot-lista');
