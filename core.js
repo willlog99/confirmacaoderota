@@ -47,6 +47,7 @@ function setView(id, el) {
   if (typeof atualizarBreadcrumb === 'function') atualizarBreadcrumb(id);
   if (id === 'painel') {
     if (typeof carregarPainel === 'function') carregarPainel();
+    carregarResumoDia();
     iniciarAutoRefresh();
     iniciarMiniMapa();
   }
@@ -448,6 +449,8 @@ function aplicarLoginPainel() {
   if (sfRole) sfRole.textContent = _painelUsuario.master ? '⭐ Master' : 'Gestor';
   // Aplica permissões no menu
   aplicarPermissoesMenu();
+  // Carrega resumo do dia imediatamente
+  setTimeout(carregarResumoDia, 500);
 }
 
 function temPermissao(modulo) {
@@ -492,6 +495,19 @@ function aplicarPermissoesMenu() {
   // Esconde usuários se não master
   const navUsuarios = document.getElementById('nav-btn-usuarios');
   if (navUsuarios && !_painelUsuario?.master) navUsuarios.style.display = 'none';
+
+  // Botões que requerem permissão específica (não usam setView)
+  const btnsMaster = ['nav-btn-apk', 'nav-btn-gps-offline'];
+  btnsMaster.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !_painelUsuario?.master) el.style.display = 'none';
+  });
+
+  const btnsRotas = ['nav-btn-criar-rota', 'nav-btn-alterar-rota'];
+  btnsRotas.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && !temPermissao('rotas')) el.style.display = 'none';
+  });
 
   // Esconde group labels se todos os itens do grupo estiverem escondidos
   document.querySelectorAll('.nav-group-lbl').forEach(label => {
