@@ -323,7 +323,7 @@ async function carregarResumoDia() {
   try {
     const [rMb, rConf, rGeo, rKm] = await Promise.all([
       fetch(API + '/motoboys?todos=1&agrupado=1'),
-      fetch(API + '/confirmacoes?data=' + hoje),
+      fetch(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje),
       fetch(API + '/geofence-evento?data=' + hoje),
       fetch(API + '/localizacao?dia=' + hoje)
     ]);
@@ -362,7 +362,7 @@ async function carregarResumoDia() {
     }
 
     function horaConf(nome) {
-      const conf = confirmacoes.find(c => c.nome === nome && c.resposta === 'sim');
+      const conf = confirmacoes.find(c => (c.nome === nome || c.biocondutor === nome) && c.resposta === 'sim');
       if (!conf) return '—';
       const sp = new Date(conf.timestamp - 3*60*60*1000);
       return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
@@ -3089,7 +3089,7 @@ async function enriquecerDadosKm(dados) {
       if (evPolaris) polaris = formatarHoraTs(evPolaris.timestamp);
 
       // Busca confirmação de presença (início)
-      const rC = await fetch(API + '/confirmacoes?data=' + data);
+      const rC = await fetch(API + '/historico-confirmacoes?data_inicio=' + data + '&data_fim=' + data);
       const dC = await rC.json();
       const conf = (dC.confirmacoes || []).find(c => c.nome === r.nome && c.resposta === 'sim');
       if (conf) inicio = formatarHoraTs(conf.timestamp);
