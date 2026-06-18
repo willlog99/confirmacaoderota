@@ -517,6 +517,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
           <!-- COLUNA DIREITA -->
           <div>
+
+            <!-- RESUMO DO DIA -->
+            <div class="panel">
+              <div class="ph">
+                <div class="pt">📊 Resumo do dia <span id="resumo-dia-data" style="font-size:11px;font-weight:400;color:var(--mut)"></span></div>
+                <button onclick="carregarResumoDia()" style="background:none;border:none;color:var(--mut);font-size:13px;cursor:pointer">🔄</button>
+              </div>
+              <div id="resumo-dia-lista" style="max-height:280px;overflow-y:auto">
+                <div class="empty"><span class="spinner"></span> Carregando...</div>
+              </div>
+            </div>
+
             <!-- Confirmações -->
             <div class="panel">
               <div class="ph">
