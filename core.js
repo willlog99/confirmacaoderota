@@ -339,6 +339,10 @@ async function carregarResumoDia() {
     const eventos      = dGeo.eventos || [];
     const historico    = dKm.historico || [];
 
+    // Só mostra quem confirmou presença hoje
+    const confirmaramHoje = new Set(confirmacoes.filter(c => c.resposta === 'sim').map(c => c.biocondutor || c.nome));
+    const motoboysFiltrados = motoboys.filter(m => confirmaramHoje.has(m.nome));
+
     const kmPorNome = {};
     historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
 
@@ -369,9 +373,9 @@ async function carregarResumoDia() {
       return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
     }
 
-    if (!motoboys.length) { lista.innerHTML = '<div class="empty">Nenhum motoboy com GPS ativo</div>'; return; }
+    if (!motoboysFiltrados.length) { lista.innerHTML = '<div class="empty">Nenhuma rota ativa hoje</div>'; return; }
 
-    lista.innerHTML = motoboys.map(m => {
+    lista.innerHTML = motoboysFiltrados.map(m => {
       const inicio  = horaConf(m.nome);
       const base    = horaEvento(m.nome, 'base');
       const polaris = horaEvento(m.nome, 'final');
@@ -2468,15 +2472,33 @@ async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
       </div>
     </div>`;
   });
+
+  // Renderiza offline separado
+  let htmlOffline = '';
   offline.forEach(nome => {
     const iniciais = nome.split(' ').map(p=>p[0]).slice(0,2).join('');
-    html += `<div style="padding:10px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:10px;opacity:.4">
+    htmlOffline += `<div style="padding:10px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:10px;opacity:.5">
       <div style="width:32px;height:32px;border-radius:50%;background:#9CA3AF;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${iniciais}</div>
       <div style="flex:1"><div style="font-size:13px;font-weight:600;color:#0F2940">${nome}</div><div style="font-size:11px;color:#5A7A8F;margin-top:1px">Sem sinal de GPS</div></div>
       <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F3F4F6;color:#6B7280">○ offline</span>
     </div>`;
   });
-  el.innerHTML = html || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
+
+  // Atualiza seções separadas
+  const elOnline = document.getElementById('mapa-lista-online');
+  const elOffline = document.getElementById('mapa-lista-offline');
+  const countOnline = document.getElementById('mapa-count-online');
+  const countOffline = document.getElementById('mapa-count-offline');
+
+  if (elOnline) elOnline.innerHTML = html || '<div class="empty" style="padding:8px;font-size:12px">Nenhum online</div>';
+  if (elOffline) elOffline.innerHTML = htmlOffline || '<div class="empty" style="padding:8px;font-size:12px">Nenhum offline</div>';
+  if (countOnline) countOnline.textContent = locs.length;
+  if (countOffline) countOffline.textContent = offline.length;
+
+  // Fallback — se não tem as seções separadas, usa o container antigo
+  if (!elOnline) {
+    el.innerHTML = (html + htmlOffline) || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
+  }
 }
 // ── PRESENÇAS ─────────────────────────────────────────────────
 let presencasLista = [];
