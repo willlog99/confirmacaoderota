@@ -899,17 +899,20 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
             <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:8px">Permissões</div>
             <div id="pu-perms" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
-              ${[
-                ['painel','🏠 Painel'],['confirmacoes','✓ Confirmações'],['rastreamento','🗺️ Rastreamento'],
-                ['rotas','📋 Rotas'],['motoboys','🏍️ Motoboys'],['dispositivos','📱 Dispositivos'],
-                ['ocorrencias','🚨 Ocorrências'],['quilometragem','📏 Quilometragem'],['geofence','📍 Geofence'],
-                ['importacao','📥 Importação'],['estoque','📦 Estoque'],['rh','⏱️ RH'],
-                ['chat','💬 Chat'],['patrimonios','🔒 Patrimônios']
-              ].map(([id, label]) => `
-                <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff">
-                  <input type="checkbox" value="${id}" class="pu-perm-cb" style="accent-color:#0F4C7A"/>
-                  ${label}
-                </label>`).join('')}
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="painel" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 🏠 Painel</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="confirmacoes" class="pu-perm-cb" style="accent-color:#0F4C7A"/> ✓ Confirmações</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="rastreamento" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 🗺️ Rastreamento</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="rotas" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 📋 Rotas</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="motoboys" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 🏍️ Motoboys</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="dispositivos" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 📱 Dispositivos</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="ocorrencias" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 🚨 Ocorrências</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="quilometragem" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 📏 Quilometragem</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="geofence" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 📍 Geofence</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="importacao" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 📥 Importação</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="estoque" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 📦 Estoque</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="rh" class="pu-perm-cb" style="accent-color:#0F4C7A"/> ⏱️ RH</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="chat" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 💬 Chat</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:5px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff"><input type="checkbox" value="patrimonios" class="pu-perm-cb" style="accent-color:#0F4C7A"/> 🔒 Patrimônios</label>
             </div>
             <button onclick="salvarUsuarioPainel()" style="width:100%;padding:10px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Adicionar usuário</button>
           </div>
