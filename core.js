@@ -2862,22 +2862,46 @@ async function carregarKmRota() {
   }
 }
 
-function kmExportarExcel() {
+async function kmExportarExcel() {
   if (!_kmDadosAtual.length) { alert('Nenhum dado para exportar. Faça uma busca primeiro.'); return; }
   const label = document.getElementById('km-data-label')?.textContent || 'relatorio-km';
 
-  let csv = 'Motoboy;Data/Período;Início;Fim;Pontos GPS;KM Rodado\n';
-  _kmDadosAtual.forEach(r => {
-    const inicio = r.horario ? r.horario.inicio : (r.inicio || '—');
-    const fim = r.horario ? r.horario.fim : (r.fim || '—');
-    csv += (r.nome||'—') + ';' + (r.data ? kmFormatarData(r.data) : r.periodo||'—') + ';' + inicio + ';' + fim + ';' + (r.pontos||0) + ';' + (r.km||0) + '\n';
+  // Busca dados enriquecidos (geofence + confirmação)
+  const dados = await enriquecerDadosKm(_kmDadosAtual);
+
+  // Monta array para SheetJS
+  const linhas = [
+    ['Motoboy','Data','Início','Base Loglife','Polaris','KM Rodado','Vel. Média (km/h)','TMD','Pontos GPS']
+  ];
+  dados.forEach(r => {
+    linhas.push([
+      r.nome || '—',
+      r.data ? kmFormatarData(r.data) : (r.periodo || '—'),
+      r.inicio || '—',
+      r.base || '—',
+      r.polaris || '—',
+      r.km || 0,
+      r.vel_media || '—',
+      r.tmd || '—',
+      r.pontos || 0
+    ]);
   });
 
-  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.csv';
-  a.click();
+  // Gera XLSX via SheetJS
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  script.onload = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(linhas);
+    ws['!cols'] = [20,12,8,10,10,12,16,8,10].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'Quilometragem');
+    XLSX.writeFile(wb, 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.xlsx');
+  };
+  if (typeof XLSX !== 'undefined') {
+    script.onload();
+  } else {
+    document.head.appendChild(script);
+  }
 }
 
 function kmExportarPDF() {
@@ -2887,37 +2911,113 @@ function kmExportarPDF() {
   const media = document.getElementById('km-media-dia')?.textContent || '—';
   const ativos = document.getElementById('km-ativos-dia')?.textContent || '—';
 
-  const linhas = _kmDadosAtual.map(r => {
-    const inicio = r.horario ? r.horario.inicio : '—';
-    const fim = r.horario ? r.horario.fim : '—';
-    const data = r.data ? kmFormatarData(r.data) : (r.periodo || '—');
-    return '<tr><td>' + (r.nome||'—') + '</td><td>' + data + '</td><td>' + inicio + '</td><td>' + fim + '</td><td>' + (r.pontos||0) + '</td><td><strong>' + (r.km||0) + ' km</strong></td></tr>';
-  }).join('');
+  enriquecerDadosKm(_kmDadosAtual).then(dados => {
+    const linhas = dados.map(r => {
+      const data = r.data ? kmFormatarData(r.data) : (r.periodo || '—');
+      return `<tr>
+        <td>${r.nome||'—'}</td>
+        <td>${data}</td>
+        <td>${r.inicio||'—'}</td>
+        <td>${r.base||'—'}</td>
+        <td>${r.polaris||'—'}</td>
+        <td><strong>${r.km||0} km</strong></td>
+        <td>${r.vel_media||'—'}</td>
+        <td>${r.tmd||'—'}</td>
+        <td>${r.pontos||0}</td>
+      </tr>`;
+    }).join('');
 
-  const html = '<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>Relatório KM Loglife</title>' +
-    '<style>body{font-family:Arial,sans-serif;padding:20px;color:#222}h1{color:#0F9B78;font-size:18px}' +
-    '.kpis{display:flex;gap:16px;margin-bottom:20px}.kpi{background:#F0FDF4;border-radius:8px;padding:12px 20px;text-align:center}' +
-    '.kpi-val{font-size:22px;font-weight:800;color:#0F9B78}.kpi-lbl{font-size:11px;color:#5A7A8F;text-transform:uppercase}' +
-    'table{width:100%;border-collapse:collapse;font-size:13px}th{background:#0F9B78;color:#fff;padding:8px 12px;text-align:left}' +
-    'td{padding:7px 12px;border-bottom:1px solid #E5E7EB}tr:nth-child(even){background:#F9FAFB}' +
-    '.footer{margin-top:20px;font-size:11px;color:#9CA3AF}</style></head><body>' +
-    '<h1>📏 Relatório de Quilometragem — Loglife</h1>' +
-    '<p style="color:#5A7A8F;font-size:13px;margin-bottom:16px">' + label + '</p>' +
-    '<div class="kpis">' +
-      '<div class="kpi"><div class="kpi-val">' + total + '</div><div class="kpi-lbl">KM Total</div></div>' +
-      '<div class="kpi"><div class="kpi-val">' + media + '</div><div class="kpi-lbl">Média</div></div>' +
-      '<div class="kpi"><div class="kpi-val">' + ativos + '</div><div class="kpi-lbl">Motoboys</div></div>' +
-    '</div>' +
-    '<table><thead><tr><th>Motoboy</th><th>Data</th><th>Início</th><th>Fim</th><th>Pontos GPS</th><th>KM Rodado</th></tr></thead>' +
-    '<tbody>' + linhas + '</tbody></table>' +
-    '<div class="footer">Gerado em ' + new Date().toLocaleString('pt-BR') + ' · Loglife Sistema de Gestão</div>' +
-    '</body></html>';
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
+      <title>Relatório KM Loglife</title>
+      <style>
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:Arial,sans-serif;padding:32px;color:#0F2940;font-size:12px}
+        .header{border-bottom:3px solid #00AEEF;padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end}
+        .logo{font-size:20px;font-weight:800;color:#0F4C7A}.logo span{color:#00AEEF}
+        h1{font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:4px}
+        .sub{font-size:12px;color:#5A7A8F;margin-bottom:16px}
+        .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+        .kpi{background:#F0FDF4;border-radius:8px;padding:10px;text-align:center;border:1px solid #86EFAC}
+        .kpi-val{font-size:20px;font-weight:800;color:#0F9B78}.kpi-lbl{font-size:10px;color:#5A7A8F;text-transform:uppercase}
+        table{width:100%;border-collapse:collapse}
+        th{background:#0F4C7A;color:#fff;padding:7px 8px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.04em}
+        td{padding:6px 8px;border-bottom:1px solid #EBF1F5;font-size:11px}
+        tr:nth-child(even) td{background:#F8FBFD}
+        .footer{margin-top:20px;border-top:1px solid #EBF1F5;padding-top:10px;font-size:10px;color:#94A8B8}
+        @media print{body{padding:16px}}
+      </style>
+    </head><body>
+      <div class="header">
+        <div class="logo">LOG<span>LIFE</span> <span style="font-size:12px;font-weight:400;color:#5A7A8F">Logística</span></div>
+        <div style="font-size:11px;color:#5A7A8F">${dados.length} motoboy(s)</div>
+      </div>
+      <h1>📏 Relatório de Quilometragem</h1>
+      <div class="sub">${label} · Gerado em ${new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}</div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-val">${total}</div><div class="kpi-lbl">KM Total</div></div>
+        <div class="kpi"><div class="kpi-val">${media}</div><div class="kpi-lbl">Média</div></div>
+        <div class="kpi"><div class="kpi-val">${ativos}</div><div class="kpi-lbl">Motoboys</div></div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Motoboy</th><th>Data</th><th>Início</th><th>Base</th><th>Polaris</th>
+          <th>KM</th><th>Vel. Média</th><th>TMD</th><th>Pontos</th>
+        </tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+      <div class="footer">Loglife Logística · Documento gerado automaticamente</div>
+    </body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
+  });
+}
 
-  const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.html';
-  a.click();
+async function enriquecerDadosKm(dados) {
+  const agora = new Date();
+  const diaSP = new Date(agora.getTime() - 3*60*60*1000);
+  const hoje = diaSP.toISOString().split('T')[0];
+
+  return await Promise.all(dados.map(async r => {
+    const data = r.data || hoje;
+    let inicio = '—', base = '—', polaris = '—', vel_media = '—', tmd = '—';
+    try {
+      // Busca eventos de geofence
+      const rG = await fetch(API + '/geofence-evento?data=' + data + '&nome=' + encodeURIComponent(r.nome));
+      const dG = await rG.json();
+      const eventos = dG.eventos || [];
+      const evBase = eventos.find(e => e.tipo && e.tipo.includes('base'));
+      const evPolaris = eventos.find(e => e.tipo && e.tipo.includes('final'));
+      if (evBase) base = formatarHoraTs(evBase.timestamp);
+      if (evPolaris) polaris = formatarHoraTs(evPolaris.timestamp);
+
+      // Busca confirmação de presença (início)
+      const rC = await fetch(API + '/confirmacoes?data=' + data);
+      const dC = await rC.json();
+      const conf = (dC.confirmacoes || []).find(c => c.nome === r.nome && c.resposta === 'sim');
+      if (conf) inicio = formatarHoraTs(conf.timestamp);
+
+      // Velocidade média e TMD
+      if (evBase && conf && r.km > 0) {
+        const minutos = (evBase.timestamp - conf.timestamp) / 60000;
+        if (minutos > 0) {
+          vel_media = Math.round(r.km / (minutos / 60) * 10) / 10 + ' km/h';
+          const h = Math.floor(minutos / 60);
+          const m = Math.round(minutos % 60);
+          tmd = h + 'h' + String(m).padStart(2,'0') + 'm';
+        }
+      }
+    } catch(e) {}
+
+    return { ...r, inicio, base, polaris, vel_media, tmd };
+  }));
+}
+
+function formatarHoraTs(ts) {
+  if (!ts) return '—';
+  const d = new Date(ts);
+  const sp = new Date(d.getTime() - 3*60*60*1000);
+  return String(sp.getUTCHours()).padStart(2,'0') + ':' + String(sp.getUTCMinutes()).padStart(2,'0');
 }
 
 async function limparGPSOffline() {
