@@ -423,8 +423,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item" style="opacity:.5;cursor:default"><span class="nav-ic">📚</span><span class="nav-item-txt">Treinamentos<span class="nav-tag">em breve</span></span></button>
 
       <div class="nav-group-lbl">Gestão de Rota</div>
-      <button class="nav-item" onclick="window.location.href='criar-rota.html'"><span class="nav-ic">➕</span><span class="nav-item-txt">Criar rota</span></button>
-      <button class="nav-item" onclick="window.location.href='rotas.html'"><span class="nav-ic">✏️</span><span class="nav-item-txt">Alterar rota</span></button>
+      <button id="nav-btn-criar-rota" class="nav-item" onclick="window.location.href='criar-rota.html'"><span class="nav-ic">➕</span><span class="nav-item-txt">Criar rota</span></button>
+      <button id="nav-btn-alterar-rota" class="nav-item" onclick="window.location.href='rotas.html'"><span class="nav-ic">✏️</span><span class="nav-item-txt">Alterar rota</span></button>
       <button class="nav-item" onclick="setView('buscar',this)"><span class="nav-ic">🔎</span><span class="nav-item-txt">Buscar cliente</span></button>
       <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar cliente</span></button>
       <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span><span class="nav-item-txt">Motoboys</span></button>
@@ -438,8 +438,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item" onclick="setView('quilometragem',this)"><span class="nav-ic">📏</span><span class="nav-item-txt">Quilometragem</span></button>
 
       <div class="nav-group-lbl">Sistema</div>
-      <button class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span><span class="nav-item-txt">Atualização APK</span></button>
-      <button class="nav-item" onclick="limparGPSOffline()"><span class="nav-ic">🧹</span><span class="nav-item-txt">Limpar GPS offline</span></button>
+      <button id="nav-btn-apk" class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span><span class="nav-item-txt">Atualização APK</span></button>
+      <button id="nav-btn-gps-offline" class="nav-item" onclick="limparGPSOffline()"><span class="nav-ic">🧹</span><span class="nav-item-txt">Limpar GPS offline</span></button>
       <button class="nav-item" id="nav-btn-usuarios" onclick="setView('painel-usuarios',this)"><span class="nav-ic">👥</span><span class="nav-item-txt">Usuários do painel</span></button>
     </div>
 
