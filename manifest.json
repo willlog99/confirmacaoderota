@@ -1,25 +1,27 @@
 {
-  "name": "Loglife — Operação Pardini",
-  "short_name": "Loglife",
-  "description": "Sistema de operação Loglife/Pardini",
-  "start_url": "/confirmacaoderota/index.html",
+  "name": "Painel de Gestão Loglife",
+  "short_name": "Loglife Painel",
+  "description": "Painel de gestão operacional Loglife · Hermes Pardini",
+  "start_url": "/confirmacaoderota/painel.html",
   "scope": "/confirmacaoderota/",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#E8F4FB",
-  "theme_color": "#1E9FD9",
+  "orientation": "any",
+  "background_color": "#0F2940",
+  "theme_color": "#0F4C7A",
+  "lang": "pt-BR",
   "icons": [
     {
-      "src": "icon-192.png",
+      "src": "20050686-7618-4EE2-86F2-0E0E1EE012BE.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "icon-512.png",
+      "src": "20050686-7618-4EE2-86F2-0E0E1EE012BE.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["business", "productivity"]
 }
