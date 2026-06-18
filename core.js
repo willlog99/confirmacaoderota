@@ -458,22 +458,53 @@ function temPermissao(modulo) {
 
 function aplicarPermissoesMenu() {
   const mapa = {
-    'confirmacoes': 'confirmacoes', 'mapa-rastreamento': 'rastreamento', 'checklist-view': 'rotas',
-    'gerenciar-motoboys': 'motoboys', 'dispositivos': 'dispositivos', 'ocorrencias': 'ocorrencias',
-    'quilometragem': 'quilometragem', 'geofence-config': 'geofence', 'importacao': 'importacao',
-    'estoque-view': 'estoque', 'ponto-rh': 'rh', 'patrimonios': 'patrimonios'
+    'confirmacoes':      'confirmacoes',
+    'mapa-rastreamento': 'rastreamento',
+    'checklist-view':    'rotas',
+    'motoristas':        'rotas',
+    'buscar':            'rotas',
+    'criar-cliente':     'rotas',
+    'ativar-cliente':    'rotas',
+    'gestor':            'rotas',
+    'gerenciar-motoboys':'motoboys',
+    'dispositivos':      'dispositivos',
+    'ocorrencias':       'ocorrencias',
+    'quilometragem':     'quilometragem',
+    'geofence-config':   'geofence',
+    'importacao':        'importacao',
+    'estoque-view':      'estoque',
+    'ponto-rh':          'rh',
+    'patrimonios':       'patrimonios',
+    'painel-usuarios':   null, // só master — tratado separado
   };
+
   // Esconde botões sem permissão
   document.querySelectorAll('.nav-item[onclick*="setView"]').forEach(btn => {
     const match = btn.getAttribute('onclick').match(/setView\('([^']+)'/);
     if (!match) return;
     const view = match[1];
     const modulo = mapa[view];
+    // Se não está no mapa, é o painel principal — sempre visível
+    if (modulo === undefined) return;
     if (modulo && !temPermissao(modulo)) btn.style.display = 'none';
   });
+
   // Esconde usuários se não master
   const navUsuarios = document.getElementById('nav-btn-usuarios');
   if (navUsuarios && !_painelUsuario?.master) navUsuarios.style.display = 'none';
+
+  // Esconde group labels se todos os itens do grupo estiverem escondidos
+  document.querySelectorAll('.nav-group-lbl').forEach(label => {
+    let next = label.nextElementSibling;
+    let temVisivel = false;
+    while (next && !next.classList.contains('nav-group-lbl')) {
+      if (next.classList.contains('nav-item') && next.style.display !== 'none') {
+        temVisivel = true; break;
+      }
+      next = next.nextElementSibling;
+    }
+    label.style.display = temVisivel ? '' : 'none';
+  });
 }
 
 function sairPainel() {
