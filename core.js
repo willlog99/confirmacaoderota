@@ -497,7 +497,7 @@ function aplicarPermissoesMenu() {
   if (navUsuarios && !_painelUsuario?.master) navUsuarios.style.display = 'none';
 
   // Botões que requerem permissão específica (não usam setView)
-  const btnsMaster = ['nav-btn-apk', 'nav-btn-gps-offline'];
+  const btnsMaster = ['nav-btn-apk', 'nav-btn-gps-offline', 'nav-btn-treinamentos'];
   btnsMaster.forEach(id => {
     const el = document.getElementById(id);
     if (el && !_painelUsuario?.master) el.style.display = 'none';
