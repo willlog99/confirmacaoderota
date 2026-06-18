@@ -306,6 +306,15 @@ async function carregarMetricas() {
   }
 }
 
+// ── PWA — SERVICE WORKER ─────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/confirmacaoderota/sw.js')
+      .then(r => console.log('[PWA] SW registrado:', r.scope))
+      .catch(e => console.warn('[PWA] SW falhou:', e));
+  });
+}
+
 // ── RESUMO DO DIA ─────────────────────────────────────────────
 async function carregarResumoDia() {
   const lista = document.getElementById('resumo-dia-lista');
