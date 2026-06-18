@@ -467,12 +467,12 @@ function aplicarPermissoesMenu() {
   const mapa = {
     'confirmacoes':      'confirmacoes',
     'mapa-rastreamento': 'rastreamento',
-    'checklist-view':    'rotas',
-    'motoristas':        'rotas',
-    'buscar':            'rotas',
-    'criar-cliente':     'rotas',
-    'ativar-cliente':    'rotas',
-    'gestor':            'rotas',
+    'checklist-view':    'checklist',
+    'motoristas':        'motoristas',
+    'buscar':            'buscar_cliente',
+    'criar-cliente':     'criar_cliente',
+    'ativar-cliente':    'ativar_cliente',
+    'gestor':            'auditoria',
     'gerenciar-motoboys':'motoboys',
     'dispositivos':      'dispositivos',
     'ocorrencias':       'ocorrencias',
@@ -482,7 +482,7 @@ function aplicarPermissoesMenu() {
     'estoque-view':      'estoque',
     'ponto-rh':          'rh',
     'patrimonios':       'patrimonios',
-    'painel-usuarios':   null, // só master — tratado separado
+    'painel-usuarios':   null,
   };
 
   // Esconde botões sem permissão
@@ -507,11 +507,10 @@ function aplicarPermissoesMenu() {
     if (el && !_painelUsuario?.master) el.style.display = 'none';
   });
 
-  const btnsRotas = ['nav-btn-criar-rota', 'nav-btn-alterar-rota'];
-  btnsRotas.forEach(id => {
-    const el = document.getElementById(id);
-    if (el && !temPermissao('rotas')) el.style.display = 'none';
-  });
+  const btnCriarRota = document.getElementById('nav-btn-criar-rota');
+  if (btnCriarRota && !temPermissao('criar_rota')) btnCriarRota.style.display = 'none';
+  const btnAlterarRota = document.getElementById('nav-btn-alterar-rota');
+  if (btnAlterarRota && !temPermissao('alterar_rota')) btnAlterarRota.style.display = 'none';
 
   // Esconde group labels se todos os itens do grupo estiverem escondidos
   document.querySelectorAll('.nav-group-lbl').forEach(label => {
@@ -568,9 +567,10 @@ async function carregarUsuariosPainel() {
     if (!usuarios.length) { lista.innerHTML = '<div class="empty">Nenhum usuário cadastrado</div>'; return; }
 
     const MODULOS = {
-      painel:'🏠',confirmacoes:'✓',rastreamento:'🗺️',rotas:'📋',motoboys:'🏍️',
-      dispositivos:'📱',ocorrencias:'🚨',quilometragem:'📏',geofence:'📍',
-      importacao:'📥',estoque:'📦',rh:'⏱️',chat:'💬',patrimonios:'🔒'
+      painel:'🏠',confirmacoes:'✓',rastreamento:'🗺️',checklist:'📋',motoristas:'👤',
+      criar_rota:'➕',alterar_rota:'✏️',buscar_cliente:'🔎',criar_cliente:'👤',ativar_cliente:'🔁',
+      motoboys:'🏍️',dispositivos:'📱',ocorrencias:'🚨',quilometragem:'📏',geofence:'📍',
+      auditoria:'🎯',importacao:'📥',estoque:'📦',rh:'⏱️',chat:'💬',patrimonios:'🔒'
     };
 
     lista.innerHTML = usuarios.map(u => {
@@ -633,10 +633,12 @@ async function excluirUsuarioPainel(id) {
 function editarPermissoes(id, nome, permsAtual) {
   const MODULOS = [
     ['painel','🏠 Painel'],['confirmacoes','✓ Confirmações'],['rastreamento','🗺️ Rastreamento'],
-    ['rotas','📋 Rotas'],['motoboys','🏍️ Motoboys'],['dispositivos','📱 Dispositivos'],
+    ['checklist','📋 Checklist'],['motoristas','👤 Motoristas'],['criar_rota','➕ Criar rota'],
+    ['alterar_rota','✏️ Alterar rota'],['buscar_cliente','🔎 Buscar cliente'],['criar_cliente','👤 Criar cliente'],
+    ['ativar_cliente','🔁 Ativar/Desativar'],['motoboys','🏍️ Motoboys'],['dispositivos','📱 Dispositivos'],
     ['ocorrencias','🚨 Ocorrências'],['quilometragem','📏 Quilometragem'],['geofence','📍 Geofence'],
-    ['importacao','📥 Importação'],['estoque','📦 Estoque'],['rh','⏱️ RH'],
-    ['chat','💬 Chat'],['patrimonios','🔒 Patrimônios']
+    ['auditoria','🎯 Auditoria'],['importacao','📥 Importação'],['estoque','📦 PMC Estoque'],
+    ['rh','⏱️ Ponto RH'],['chat','💬 Chat'],['patrimonios','🔒 Patrimônios']
   ];
   const pop = document.createElement('div');
   pop.id = 'pop-perms';
