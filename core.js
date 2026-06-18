@@ -69,6 +69,7 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
+  if (id === 'painel') { carregarResumoDia(); }
   if (id === 'painel-usuarios') carregarUsuariosPainel();
   if (id === 'ocorrencias') {
     const input = document.getElementById('oc-filtro-data');
@@ -303,6 +304,102 @@ async function carregarMetricas() {
     if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar métricas</td></tr>';
   }
 }
+
+// ── RESUMO DO DIA ─────────────────────────────────────────────
+async function carregarResumoDia() {
+  const lista = document.getElementById('resumo-dia-lista');
+  if (!lista) return;
+
+  const agora = new Date();
+  const diaSP = new Date(agora.getTime() - 3*60*60*1000);
+  const hoje = diaSP.toISOString().split('T')[0];
+  const hojeStr = new Date(hoje + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
+
+  const dataEl = document.getElementById('resumo-dia-data');
+  if (dataEl) dataEl.textContent = hojeStr;
+
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+    const [rMb, rConf, rGeo, rKm] = await Promise.all([
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
+      fetch(API + '/confirmacoes?data=' + hoje),
+      fetch(API + '/geofence-evento?data=' + hoje),
+      fetch(API + '/localizacao?dia=' + hoje)
+    ]);
+
+    const dMb   = await rMb.json();
+    const dConf = await rConf.json();
+    const dGeo  = await rGeo.json();
+    const dKm   = await rKm.json();
+
+    const motoboys     = (dMb.motoboys || []).filter(m => m.rastrear !== 0 && m.rastrear !== false);
+    const confirmacoes = dConf.confirmacoes || [];
+    const eventos      = dGeo.eventos || [];
+    const historico    = dKm.historico || [];
+
+    const kmPorNome = {};
+    historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
+
+    function calcKm(pts) {
+      if (!pts || pts.length < 2) return 0;
+      const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
+      let km = 0;
+      for (let i = 1; i < s.length; i++) {
+        const R=6371,dLat=(s[i].lat-s[i-1].lat)*Math.PI/180,dLng=(s[i].lng-s[i-1].lng)*Math.PI/180;
+        const a=Math.sin(dLat/2)**2+Math.cos(s[i-1].lat*Math.PI/180)*Math.cos(s[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
+        const d=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        if(d<5) km+=d;
+      }
+      return Math.round(km*10)/10;
+    }
+
+    function horaEvento(nome, tipo) {
+      const ev = eventos.find(e => e.nome === nome && e.tipo && e.tipo.includes(tipo));
+      if (!ev) return '—';
+      const sp = new Date(ev.timestamp - 3*60*60*1000);
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+    }
+
+    function horaConf(nome) {
+      const conf = confirmacoes.find(c => c.nome === nome && c.resposta === 'sim');
+      if (!conf) return '—';
+      const sp = new Date(conf.timestamp - 3*60*60*1000);
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+    }
+
+    if (!motoboys.length) { lista.innerHTML = '<div class="empty">Nenhum motoboy com GPS ativo</div>'; return; }
+
+    lista.innerHTML = motoboys.map(m => {
+      const inicio  = horaConf(m.nome);
+      const base    = horaEvento(m.nome, 'base');
+      const polaris = horaEvento(m.nome, 'final');
+      const km      = calcKm(kmPorNome[m.nome]);
+      return `<div style="padding:8px 12px;border-bottom:1px solid #F0F4F8">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:12px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%">${m.nome}</div>
+          <div style="font-size:11px;font-weight:800;color:#0F9B78">${km > 0 ? km + ' km' : '—'}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px">
+          <div style="background:#EFF6FF;border-radius:6px;padding:3px 6px;text-align:center">
+            <div style="font-size:10px;font-weight:700;color:#1D4ED8">${inicio}</div>
+            <div style="font-size:9px;color:#5A7A8F">Início</div>
+          </div>
+          <div style="background:#F0FDF4;border-radius:6px;padding:3px 6px;text-align:center">
+            <div style="font-size:10px;font-weight:700;color:#166534">${base}</div>
+            <div style="font-size:9px;color:#5A7A8F">Base</div>
+          </div>
+          <div style="background:#FEF9EC;border-radius:6px;padding:3px 6px;text-align:center">
+            <div style="font-size:10px;font-weight:700;color:#92400E">${polaris}</div>
+            <div style="font-size:9px;color:#5A7A8F">Polaris</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+}
+
+setInterval(carregarResumoDia, 5 * 60 * 1000);
 
 // ── LOGIN PAINEL ─────────────────────────────────────────────
 let _painelUsuario = null;
