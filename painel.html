@@ -440,7 +440,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
       <div class="nav-group-lbl">Importação e Registro</div>
       <button class="nav-item" onclick="setView('importacao',this)"><span class="nav-ic">📥</span><span class="nav-item-txt">Importação</span></button>
-      <button class="nav-item" onclick="setView('quilometragem',this)"><span class="nav-ic">📏</span><span class="nav-item-txt">Quilometragem</span></button>
+      <button class="nav-item" onclick="setView('relatorios',this)"><span class="nav-ic">📊</span><span class="nav-item-txt">Relatórios</span></button>
 
       <div class="nav-group-lbl">Sistema</div>
       <button id="nav-btn-apk" class="nav-item" onclick="atualizarVersaoApp()"><span class="nav-ic">📲</span><span class="nav-item-txt">Atualização APK</span></button>
@@ -1500,9 +1500,19 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         </div>
       </div>
 
-      <div class="view" id="view-quilometragem">
+      <div class="view" id="view-relatorios">
         <div style="padding:0">
 
+          <!-- Nav de relatórios -->
+          <div style="display:flex;gap:6px;padding:14px 16px 0;flex-wrap:wrap">
+            <button id="rel-nav-km" onclick="relMudarTipo('km')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;border:1.5px solid #0F4C7A;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">📏 Quilometragem</button>
+            <button id="rel-nav-inconsistencias" onclick="relMudarTipo('inconsistencias')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;border:1.5px solid #E2EBF3;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">🚨 Inconsistências</button>
+            <button id="rel-nav-horarios" onclick="relMudarTipo('horarios')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;border:1.5px solid #E2EBF3;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">⏰ Horários de coleta</button>
+            <button id="rel-nav-checklist" onclick="relMudarTipo('checklist')" style="display:flex;align-items:center;gap:6px;padding:8px 16px;border-radius:99px;border:1.5px solid #E2EBF3;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">📋 Checklist</button>
+          </div>
+
+          <!-- ═══ SUB-VIEW: QUILOMETRAGEM (existente) ═══ -->
+          <div id="rel-sub-km">
           <!-- Topbar -->
           <div style="background:linear-gradient(135deg,#0F9B78,#0a6f57);padding:10px 16px;display:flex;align-items:center;justify-content:space-between">
             <span style="color:#fff;font-size:14px;font-weight:700">📏 QUILOMETRAGEM</span>
@@ -1642,6 +1652,64 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
                 </div>
               </div>
             </div>
+
+          </div>
+          <!-- fim rel-sub-km -->
+
+          <!-- SUB-VIEW: INCONSISTENCIAS -->
+          <div id="rel-sub-inconsistencias" style="display:none;padding:16px">
+            <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(15,76,122,.06)">
+              <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;background:#F8FBFD;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:700;color:#0F4C7A;flex:1">Improdutivas fora do ponto cadastrado · &gt;300m</span>
+                <input type="date" id="inc-data-inicio" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+                <span style="font-size:11px;color:#5A7A8F">até</span>
+                <input type="date" id="inc-data-fim" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+                <button onclick="carregarInconsistencias()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Buscar</button>
+                <button onclick="exportarInconsistenciasExcel()" style="height:32px;padding:0 12px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">📥 Excel</button>
+                <button onclick="exportarInconsistenciasPDF()" style="height:32px;padding:0 12px;border-radius:8px;border:1.5px solid #0F4C7A;background:#fff;color:#0F4C7A;font-size:12px;font-weight:600;cursor:pointer">📄 PDF</button>
+              </div>
+              <div id="inc-kpis" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#EBF1F5;border-bottom:1px solid #EBF1F5">
+                <div style="background:#fff;padding:14px 16px"><div id="inc-kpi-total" style="font-size:20px;font-weight:800;color:#EF4444">0</div><div style="font-size:10px;font-weight:600;color:#5A7A8F;text-transform:uppercase">Inconsistências</div></div>
+                <div style="background:#fff;padding:14px 16px"><div id="inc-kpi-improd" style="font-size:20px;font-weight:800;color:#0F4C7A">0</div><div style="font-size:10px;font-weight:600;color:#5A7A8F;text-transform:uppercase">Improdutivas total</div></div>
+                <div style="background:#fff;padding:14px 16px"><div id="inc-kpi-taxa" style="font-size:20px;font-weight:800;color:#F59E0B">0%</div><div style="font-size:10px;font-weight:600;color:#5A7A8F;text-transform:uppercase">Taxa de inconsistência</div></div>
+              </div>
+              <div id="inc-lista">
+                <div class="empty">Selecione um período e clique em Buscar</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW: HORARIOS DE COLETA -->
+          <div id="rel-sub-horarios" style="display:none;padding:16px">
+            <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(15,76,122,.06)">
+              <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;background:#F8FBFD;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:700;color:#0F4C7A;flex:1">Horário planejado vs chegada real</span>
+                <input type="date" id="hor-data" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+                <input type="text" id="hor-rota" placeholder="Filtrar por rota..." style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none;width:160px"/>
+                <button onclick="carregarHorariosColeta()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Buscar</button>
+                <button onclick="exportarHorariosExcel()" style="height:32px;padding:0 12px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">📥 Excel</button>
+                <button onclick="exportarHorariosPDF()" style="height:32px;padding:0 12px;border-radius:8px;border:1.5px solid #0F4C7A;background:#fff;color:#0F4C7A;font-size:12px;font-weight:600;cursor:pointer">📄 PDF</button>
+              </div>
+              <div id="hor-lista">
+                <div class="empty">Selecione uma data e clique em Buscar</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW: CHECKLIST -->
+          <div id="rel-sub-checklist" style="display:none;padding:16px">
+            <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 8px rgba(15,76,122,.06)">
+              <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;background:#F8FBFD;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:13px;font-weight:700;color:#0F4C7A;flex:1">Histórico de checklist por motoboy</span>
+                <input type="date" id="chk-rel-data" style="height:32px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+                <button onclick="carregarChecklistRelatorio()" style="height:32px;padding:0 14px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">Buscar</button>
+                <button onclick="exportarChecklistExcel()" style="height:32px;padding:0 12px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">📥 Excel</button>
+              </div>
+              <div id="chk-rel-lista">
+                <div class="empty">Selecione uma data e clique em Buscar</div>
+              </div>
+            </div>
+          </div>
 
           </div>
         </div>
