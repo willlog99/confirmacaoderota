@@ -80,7 +80,9 @@ function setView(id, el) {
   if (id === 'dispositivos') carregarDispositivos();
   if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') { carregarGeofenceConfig(); carregarHorariosTrabalho(); }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
-  if (id === 'quilometragem' && typeof carregarKmCompleto === 'function') carregarKmCompleto();
+  if (id === 'relatorios') {
+    if (typeof carregarKmCompleto === 'function') carregarKmCompleto();
+  }
 }
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
@@ -958,6 +960,206 @@ async function gerarPdfDia() {
     win.document.close();
     setTimeout(() => win.print(), 500);
   } catch(e) { toast('Erro ao gerar PDF'); }
+}
+
+// ── RELATÓRIOS — NAVEGAÇÃO ───────────────────────────────────
+function relMudarTipo(tipo) {
+  ['km','inconsistencias','horarios','checklist'].forEach(t => {
+    const el = document.getElementById('rel-sub-' + t);
+    const btn = document.getElementById('rel-nav-' + t);
+    if (el) el.style.display = t === tipo ? 'block' : 'none';
+    if (btn) {
+      if (t === tipo) { btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A'; btn.style.fontWeight = '700'; }
+      else { btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#E2EBF3'; btn.style.fontWeight = '600'; }
+    }
+  });
+  const hoje = new Date().toISOString().split('T')[0];
+  if (tipo === 'inconsistencias') {
+    const i1 = document.getElementById('inc-data-inicio'), i2 = document.getElementById('inc-data-fim');
+    if (i1 && !i1.value) i1.value = hoje;
+    if (i2 && !i2.value) i2.value = hoje;
+  }
+  if (tipo === 'horarios') {
+    const h = document.getElementById('hor-data');
+    if (h && !h.value) h.value = hoje;
+  }
+  if (tipo === 'checklist') {
+    const c = document.getElementById('chk-rel-data');
+    if (c && !c.value) c.value = hoje;
+  }
+}
+
+let _incDadosAtual = [];
+
+async function carregarInconsistencias() {
+  const lista = document.getElementById('inc-lista');
+  const i1 = document.getElementById('inc-data-inicio')?.value;
+  const i2 = document.getElementById('inc-data-fim')?.value;
+  if (!i1 || !i2) { toast('Selecione o periodo'); return; }
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const r = await fetch(API + '/relatorio-inconsistencias?data_inicio=' + i1 + '&data_fim=' + i2);
+    const d = await r.json();
+    _incDadosAtual = d.inconsistencias || [];
+    const totalImprod = d.total_improdutivas || 0;
+    const taxa = totalImprod > 0 ? Math.round(_incDadosAtual.length / totalImprod * 1000) / 10 : 0;
+
+    document.getElementById('inc-kpi-total').textContent = _incDadosAtual.length;
+    document.getElementById('inc-kpi-improd').textContent = totalImprod;
+    document.getElementById('inc-kpi-taxa').textContent = taxa + '%';
+
+    if (!_incDadosAtual.length) { lista.innerHTML = '<div class="empty">Nenhuma inconsistencia encontrada no periodo</div>'; return; }
+
+    lista.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FBFD">' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Motoboy</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Cliente</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Horario</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Motivo</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Distancia</th>' +
+      '</tr></thead><tbody>' +
+      _incDadosAtual.map(i => '<tr style="border-bottom:1px solid #F0F4F8">' +
+        '<td style="padding:10px 14px;font-weight:600;color:#0F2940">' + i.motoboy_nome + '</td>' +
+        '<td style="padding:10px 14px"><div style="font-weight:600;color:#0F2940">' + i.cliente_nome + '</div><div style="font-size:11px;color:#94A8B8">' + (i.rota||'') + '</div></td>' +
+        '<td style="padding:10px 14px;font-weight:700;color:#0F4C7A">' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td>' +
+        '<td style="padding:10px 14px;color:#5A7A8F">' + (i.motivo||'\u2014') + '</td>' +
+        '<td style="padding:10px 14px;font-weight:800;color:#EF4444">' + (i.distancia_m >= 1000 ? (i.distancia_m/1000).toFixed(1)+'km' : i.distancia_m+'m') + '</td>' +
+        '</tr>').join('') +
+      '</tbody></table>';
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+}
+
+function exportarInconsistenciasExcel() {
+  if (!_incDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = [['Motoboy','Cliente','Rota','Horario','Motivo','Distancia (m)','Endereco cadastrado']];
+  _incDadosAtual.forEach(i => linhas.push([
+    i.motoboy_nome, i.cliente_nome, i.rota||'', new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}),
+    i.motivo||'', i.distancia_m, i.endereco_cadastrado||''
+  ]));
+  exportarXLSX(linhas, 'inconsistencias', 'Inconsistencias');
+}
+
+function exportarInconsistenciasPDF() {
+  if (!_incDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = _incDadosAtual.map(i => '<tr><td>' + i.motoboy_nome + '</td><td>' + i.cliente_nome + '</td><td>' + (i.rota||'\u2014') + '</td>' +
+    '<td>' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td>' +
+    '<td>' + (i.motivo||'\u2014') + '</td><td><strong>' + i.distancia_m + 'm</strong></td></tr>').join('');
+  abrirJanelaPDF('Relatorio de Inconsistencias', '<table><thead><tr><th>Motoboy</th><th>Cliente</th><th>Rota</th><th>Horario</th><th>Motivo</th><th>Distancia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+}
+
+let _horDadosAtual = [];
+
+async function carregarHorariosColeta() {
+  const lista = document.getElementById('hor-lista');
+  const data = document.getElementById('hor-data')?.value;
+  const rota = document.getElementById('hor-rota')?.value.trim();
+  if (!data) { toast('Selecione a data'); return; }
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    let urlReq = API + '/relatorio-horarios?data=' + data;
+    if (rota) urlReq += '&rota=' + encodeURIComponent(rota);
+    const r = await fetch(urlReq);
+    const d = await r.json();
+    _horDadosAtual = d.coletas || [];
+    if (!_horDadosAtual.length) { lista.innerHTML = '<div class="empty">Nenhuma coleta encontrada</div>'; return; }
+
+    lista.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FBFD">' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Cliente</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Rota</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Chegada</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Status</th>' +
+      '</tr></thead><tbody>' +
+      _horDadosAtual.map(c => '<tr style="border-bottom:1px solid #F0F4F8">' +
+        '<td style="padding:10px 14px;font-weight:600;color:#0F2940">' + c.nome_cliente + '</td>' +
+        '<td style="padding:10px 14px;color:#5A7A8F;font-size:11px">' + (c.rota||'\u2014') + '</td>' +
+        '<td style="padding:10px 14px;font-weight:700;color:#0F4C7A">' + (c.horario_chegada || '\u2014') + '</td>' +
+        '<td style="padding:10px 14px">' + (c.produtividade === 'produtiva' ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#166534">\u2713 Produtiva</span>' : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF2F2;color:#991B1B">\u2717 Improdutiva</span>') + '</td>' +
+        '</tr>').join('') +
+      '</tbody></table>';
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+}
+
+function exportarHorariosExcel() {
+  if (!_horDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = [['Cliente','Rota','Chegada','Produtividade','Motivo Improdutiva']];
+  _horDadosAtual.forEach(c => linhas.push([c.nome_cliente, c.rota||'', c.horario_chegada||'', c.produtividade||'', c.motivo_improdutiva||'']));
+  exportarXLSX(linhas, 'horarios-coleta', 'Horarios');
+}
+
+function exportarHorariosPDF() {
+  if (!_horDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = _horDadosAtual.map(c => '<tr><td>' + c.nome_cliente + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.horario_chegada||'\u2014') + '</td>' +
+    '<td>' + (c.produtividade === 'produtiva' ? '\u2713 Produtiva' : '\u2717 Improdutiva') + '</td></tr>').join('');
+  abrirJanelaPDF('Relatorio de Horarios de Coleta', '<table><thead><tr><th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+}
+
+let _chkRelDadosAtual = [];
+
+async function carregarChecklistRelatorio() {
+  const lista = document.getElementById('chk-rel-lista');
+  const data = document.getElementById('chk-rel-data')?.value;
+  if (!data) { toast('Selecione a data'); return; }
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const dataBR = data.split('-').reverse().join('/');
+    const r = await fetch(API + '/checklist?data=' + encodeURIComponent(dataBR));
+    const d = await r.json();
+    _chkRelDadosAtual = d.checklists || d.resultados || [];
+    if (!_chkRelDadosAtual.length) { lista.innerHTML = '<div class="empty">Nenhum checklist encontrado nesta data</div>'; return; }
+
+    lista.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FBFD">' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Motoboy</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Rota</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Placa</th>' +
+      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Preenchido em</th>' +
+      '</tr></thead><tbody>' +
+      _chkRelDadosAtual.map(c => '<tr style="border-bottom:1px solid #F0F4F8">' +
+        '<td style="padding:10px 14px;font-weight:600;color:#0F2940">' + (c.biocondutor||'\u2014') + '</td>' +
+        '<td style="padding:10px 14px;color:#5A7A8F">' + (c.rota||'\u2014') + '</td>' +
+        '<td style="padding:10px 14px;color:#5A7A8F">' + (c.placa||'\u2014') + '</td>' +
+        '<td style="padding:10px 14px;font-weight:700;color:#0F4C7A">' + (c.data_checklist||'\u2014') + '</td>' +
+        '</tr>').join('') +
+      '</tbody></table>';
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+}
+
+function exportarChecklistExcel() {
+  if (!_chkRelDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = [['Motoboy','Rota','Placa','Preenchido em']];
+  _chkRelDadosAtual.forEach(c => linhas.push([c.biocondutor||'', c.rota||'', c.placa||'', c.data_checklist||'']));
+  exportarXLSX(linhas, 'checklist', 'Checklist');
+}
+
+function exportarXLSX(linhas, nomeArquivo, nomeAba) {
+  const gerar = () => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(linhas);
+    XLSX.utils.book_append_sheet(wb, ws, nomeAba || 'Dados');
+    XLSX.writeFile(wb, nomeArquivo + '-' + new Date().toISOString().split('T')[0] + '.xlsx');
+  };
+  if (typeof XLSX !== 'undefined') { gerar(); } else {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload = gerar;
+    document.head.appendChild(script);
+  }
+}
+
+function abrirJanelaPDF(titulo, tabelaHtml) {
+  const win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + titulo + '</title>' +
+    '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:32px;color:#0F2940;font-size:12px}' +
+    '.header{border-bottom:3px solid #00AEEF;padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end}' +
+    '.logo{font-size:20px;font-weight:800;color:#0F4C7A}.logo span{color:#00AEEF}' +
+    'h1{font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:16px}' +
+    'table{width:100%;border-collapse:collapse}th{background:#0F4C7A;color:#fff;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase}' +
+    'td{padding:7px 10px;border-bottom:1px solid #EBF1F5;font-size:11px}tr:nth-child(even) td{background:#F8FBFD}' +
+    '.footer{margin-top:20px;border-top:1px solid #EBF1F5;padding-top:10px;font-size:10px;color:#94A8B8}' +
+    '@media print{body{padding:16px}}</style></head><body>' +
+    '<div class="header"><div class="logo">LOG<span>LIFE</span></div><div style="font-size:11px;color:#5A7A8F">' + new Date().toLocaleDateString('pt-BR') + '</div></div>' +
+    '<h1>' + titulo + '</h1>' + tabelaHtml +
+    '<div class="footer">Loglife Logistica - Documento gerado automaticamente</div></body></html>');
+  win.document.close();
+  setTimeout(() => win.print(), 500);
 }
 
 async function carregarOcorrencias() {
