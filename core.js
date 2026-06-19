@@ -1582,8 +1582,26 @@ function renderizarDispositivos(lista) {
         <div style="font-size:11px;color:#94A8B8;margin-top:1px">${tipo} ${d.fabricante ? '· ' + d.fabricante : ''} ${d.ultimo_gps ? '· ' + formatTempo(d.minutos_offline) : ''}</div>
       </div>
       <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:${s.bg};color:${s.cor};white-space:nowrap">${s.badge}</span>
+      ${d.tem_app ? `<button onclick="event.stopPropagation();encerrarSessaoMotoboy('${d.telefone.replace(/'/g,"\\'")}','${d.nome.replace(/'/g,"\\'")}')" title="Encerrar sess\u00e3o e GPS" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0">🚫 Encerrar</button>` : ''}
     </div>`;
   }).join('');
+}
+
+async function encerrarSessaoMotoboy(telefone, nome) {
+  if (!confirm('Encerrar a sessão de ' + nome + '? O GPS será desligado e ele voltará para a tela de login.')) return;
+  try {
+    const r = await fetch(API + '/logout-remoto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone, nome })
+    });
+    const d = await r.json();
+    if (d.status === 'ok' && d.enviados > 0) {
+      toast('✓ Sessão de ' + nome + ' encerrada');
+    } else {
+      toast('Não foi possível encerrar — token não encontrado');
+    }
+  } catch(e) { toast('Erro ao encerrar sessão'); }
 }
 
 function filtrarDispositivos(filtro, btn) {
@@ -2750,6 +2768,7 @@ async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
     const base = horaEvt(geofenceEvts[l.nome], 'base');
     const polaris = horaEvt(geofenceEvts[l.nome], 'final');
     const gpsOk = l.gps_background !== false && l.gps_background !== 0;
+    const sinalFraco = l.precisao && l.precisao > 50;
 
     html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -2758,7 +2777,7 @@ async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
           <div style="font-size:13px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</div>
           <div style="font-size:10px;color:#94A8B8;margin-top:1px">${tempo}${fabLabel?' · '+fabLabel:''}</div>
         </div>
-        <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap;flex-shrink:0">${stTxt}</span>
+        ${sinalFraco ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FEF2F2;color:#991B1B;white-space:nowrap;flex-shrink:0" title="Precis\u00e3o GPS: '+Math.round(l.precisao)+'m">\ud83d\udcf5 Sinal fraco</span>' : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap;flex-shrink:0">${stTxt}</span>`}
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
         <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
