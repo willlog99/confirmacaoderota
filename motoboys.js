@@ -94,15 +94,34 @@ async function renderizarPainel(data) {
     if (!confirmacoes.length) {
       confEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
     } else {
+      // Se hoje é sexta, busca pré-confirmações de sábado
+      const hoje = new Date();
+      let preConfMap = {};
+      if (hoje.getDay() === 5) {
+        try {
+          const dataIso = hoje.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+          const rPre = await fetch(API + '/pre-confirmacao-sabado?data=' + dataIso);
+          const dPre = await rPre.json();
+          (dPre.resultados || []).forEach(p => { preConfMap[p.biocondutor] = p.resposta; });
+        } catch(e) {}
+      }
+
       confEl.innerHTML = confirmacoes.slice(0, 15).map(c => {
         const hora = c.data ? c.data.split(' ').pop() : '';
         const rotasStr = c.rotas && c.rotas.length ? c.rotas.join(', ') : '';
+        const preConf = preConfMap[c.biocondutor];
+        const sabadoBadge = preConf
+          ? (preConf === 'sim'
+              ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#166534;margin-top:4px;display:inline-block">📅 Sábado: Sim</span>'
+              : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF2F2;color:#991B1B;margin-top:4px;display:inline-block">📅 Sábado: Não</span>')
+          : '';
         return `<div class="conf-row ${c.resposta}">
           <div class="conf-ico">${c.resposta === 'sim' ? '✓' : '✕'}</div>
           <div class="conf-info">
             <div class="conf-uni">${c.biocondutor}</div>
             ${rotasStr ? `<div style="font-size:11px;color:#5A7A8F;margin-top:2px">🛣️ ${rotasStr}</div>` : ''}
             ${c.obs ? `<div class="conf-obs">${c.obs}</div>` : ''}
+            ${sabadoBadge}
           </div>
           <div class="conf-hora">${hora}</div>
         </div>`;
