@@ -81,7 +81,8 @@ function setView(id, el) {
   if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') { carregarGeofenceConfig(); carregarHorariosTrabalho(); }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
   if (id === 'relatorios') {
-    if (typeof carregarKmCompleto === 'function') carregarKmCompleto();
+    relMudarTipo('km');
+    setTimeout(carregarRelKm, 100);
   }
 }
 function showMsg(id, text, type) {
@@ -968,168 +969,263 @@ function relMudarTipo(tipo) {
     const el = document.getElementById('rel-sub-' + t);
     const btn = document.getElementById('rel-nav-' + t);
     if (el) el.style.display = t === tipo ? 'block' : 'none';
-    if (btn) {
-      if (t === tipo) { btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A'; btn.style.fontWeight = '700'; }
-      else { btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#E2EBF3'; btn.style.fontWeight = '600'; }
-    }
+    if (btn) btn.classList.toggle('rel-nav-ativo', t === tipo);
   });
   const hoje = new Date().toISOString().split('T')[0];
+  if (tipo === 'km') {
+    const d = document.getElementById('rel-km-data');
+    if (d && !d.value) d.value = hoje;
+  }
   if (tipo === 'inconsistencias') {
-    const i1 = document.getElementById('inc-data-inicio'), i2 = document.getElementById('inc-data-fim');
+    const i1 = document.getElementById('rel-inc-inicio'), i2 = document.getElementById('rel-inc-fim');
     if (i1 && !i1.value) i1.value = hoje;
     if (i2 && !i2.value) i2.value = hoje;
   }
   if (tipo === 'horarios') {
-    const h = document.getElementById('hor-data');
+    const h = document.getElementById('rel-hor-data');
     if (h && !h.value) h.value = hoje;
   }
   if (tipo === 'checklist') {
-    const c = document.getElementById('chk-rel-data');
+    const c = document.getElementById('rel-chk-data');
     if (c && !c.value) c.value = hoje;
   }
 }
 
-let _incDadosAtual = [];
+// ── RELATÓRIO: QUILOMETRAGEM ─────────────────────────────────
+let _relKmDados = [];
 
-async function carregarInconsistencias() {
-  const lista = document.getElementById('inc-lista');
-  const i1 = document.getElementById('inc-data-inicio')?.value;
-  const i2 = document.getElementById('inc-data-fim')?.value;
-  if (!i1 || !i2) { toast('Selecione o periodo'); return; }
-  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+async function carregarRelKm() {
+  const lista = document.getElementById('rel-km-lista');
+  const data = document.getElementById('rel-km-data')?.value;
+  if (!data) { toast('Selecione a data'); return; }
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const dMb = await rMb.json();
+    const motoboys = (dMb.motoboys || []).filter(m => m.rastrear !== 0 && m.rastrear !== false);
+
+    const rKm = await fetch(API + '/localizacao?dia=' + data);
+    const dKm = await rKm.json();
+    const historico = dKm.historico || [];
+
+    const rGeo = await fetch(API + '/geofence-evento?data=' + data);
+    const dGeo = await rGeo.json();
+    const eventos = dGeo.eventos || [];
+
+    const kmPorNome = {};
+    historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
+
+    function calcKm(pts) {
+      if (!pts || pts.length < 2) return 0;
+      const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
+      let km = 0;
+      for (let i = 1; i < s.length; i++) {
+        const R=6371,dLat=(s[i].lat-s[i-1].lat)*Math.PI/180,dLng=(s[i].lng-s[i-1].lng)*Math.PI/180;
+        const a=Math.sin(dLat/2)**2+Math.cos(s[i-1].lat*Math.PI/180)*Math.cos(s[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
+        const d=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        if(d<5) km+=d;
+      }
+      return Math.round(km*10)/10;
+    }
+    // TMD — tempo total de movimentação (do primeiro ao último ponto GPS do dia)
+    function calcTmdMin(pts) {
+      if (!pts || pts.length < 2) return 0;
+      const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
+      return Math.round((s[s.length-1].timestamp - s[0].timestamp) / 60000);
+    }
+    function formatMin(min) {
+      if (!min || min <= 0) return '\u2014';
+      const h = Math.floor(min / 60);
+      const m = min % 60;
+      return h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'm' : m + 'min';
+    }
+    function horaEvt(nome, tipo) {
+      const ev = eventos.find(e => e.nome === nome && e.tipo && e.tipo.includes(tipo));
+      if (!ev) return '\u2014';
+      const sp = new Date(ev.timestamp - 3*60*60*1000);
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+    }
+
+    _relKmDados = motoboys.map(m => {
+      const pts = kmPorNome[m.nome];
+      const km = calcKm(pts);
+      const tmdMin = calcTmdMin(pts);
+      const velMedia = tmdMin > 0 ? Math.round((km / (tmdMin / 60)) * 10) / 10 : 0;
+      const inicio = pts && pts.length ? (() => { const sp = new Date(Math.min(...pts.map(p=>p.timestamp)) - 3*60*60*1000); return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0'); })() : '\u2014';
+      const base = horaEvt(m.nome, 'base');
+      const polaris = horaEvt(m.nome, 'final');
+      return { nome: m.nome, inicio, base, polaris, km, tmdMin, velMedia, temPolaris: polaris !== '\u2014' };
+    }).filter(r => r.km > 0 || r.inicio !== '\u2014');
+
+    const total = _relKmDados.reduce((s,r) => s + r.km, 0);
+    const media = _relKmDados.length ? total / _relKmDados.length : 0;
+    const velMediaGeral = _relKmDados.length ? _relKmDados.reduce((s,r) => s + r.velMedia, 0) / _relKmDados.filter(r=>r.velMedia>0).length : 0;
+    document.getElementById('rel-km-kpi-total').textContent = (Math.round(total*10)/10) + ' km';
+    document.getElementById('rel-km-kpi-media').textContent = (Math.round(media*10)/10) + ' km';
+    document.getElementById('rel-km-kpi-ativos').textContent = _relKmDados.length;
+    document.getElementById('rel-km-kpi-vel').textContent = (velMediaGeral > 0 ? Math.round(velMediaGeral*10)/10 : 0) + ' km/h';
+
+    if (!_relKmDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhum dado encontrado nesta data</div>'; return; }
+
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
+      '<th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th><th>Status</th>' +
+      '</tr></thead><tbody>' +
+      _relKmDados.map(r => '<tr>' +
+        '<td class="rel-nome">' + r.nome + '</td>' +
+        '<td class="rel-hora">' + r.inicio + '</td>' +
+        '<td class="rel-hora">' + r.base + '</td>' +
+        '<td class="rel-hora">' + r.polaris + '</td>' +
+        '<td class="rel-km">' + r.km + ' km</td>' +
+        '<td class="rel-hora">' + formatMin(r.tmdMin) + '</td>' +
+        '<td class="rel-hora">' + (r.velMedia > 0 ? r.velMedia + ' km/h' : '\u2014') + '</td>' +
+        '<td>' + (r.temPolaris ? '<span class="rel-badge rel-b-ok">\u2713 Completo</span>' : '<span class="rel-badge rel-b-warn">\u26a0 Sem Polaris</span>') + '</td>' +
+        '</tr>').join('') +
+      '</tbody></table>';
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
+}
+
+function exportarRelKmExcel() {
+  if (!_relKmDados.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = [['Motoboy','In\u00edcio','Base','Polaris','KM','TMD (min)','Vel. M\u00e9dia (km/h)']];
+  _relKmDados.forEach(r => linhas.push([r.nome, r.inicio, r.base, r.polaris, r.km, r.tmdMin, r.velMedia]));
+  relExportarXLSX(linhas, 'quilometragem', 'Quilometragem');
+}
+
+function exportarRelKmPDF() {
+  if (!_relKmDados.length) { toast('Nenhum dado para exportar'); return; }
+  const fmtMin = m => { if (!m) return '\u2014'; const h=Math.floor(m/60), r=m%60; return h>0 ? h+'h'+String(r).padStart(2,'0')+'m' : r+'min'; };
+  const linhas = _relKmDados.map(r => '<tr><td>' + r.nome + '</td><td>' + r.inicio + '</td><td>' + r.base + '</td><td>' + r.polaris + '</td><td><strong>' + r.km + ' km</strong></td><td>' + fmtMin(r.tmdMin) + '</td><td>' + (r.velMedia>0?r.velMedia+' km/h':'\u2014') + '</td></tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Quilometragem', '<table><thead><tr><th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+}
+
+// ── RELATÓRIO: INCONSISTÊNCIAS ───────────────────────────────
+let _relIncDados = [];
+
+async function carregarRelInconsistencias() {
+  const lista = document.getElementById('rel-inc-lista');
+  const i1 = document.getElementById('rel-inc-inicio')?.value;
+  const i2 = document.getElementById('rel-inc-fim')?.value;
+  if (!i1 || !i2) { toast('Selecione o per\u00edodo'); return; }
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
   try {
     const r = await fetch(API + '/relatorio-inconsistencias?data_inicio=' + i1 + '&data_fim=' + i2);
     const d = await r.json();
-    _incDadosAtual = d.inconsistencias || [];
+    _relIncDados = d.inconsistencias || [];
     const totalImprod = d.total_improdutivas || 0;
-    const taxa = totalImprod > 0 ? Math.round(_incDadosAtual.length / totalImprod * 1000) / 10 : 0;
+    const taxa = totalImprod > 0 ? Math.round(_relIncDados.length / totalImprod * 1000) / 10 : 0;
 
-    document.getElementById('inc-kpi-total').textContent = _incDadosAtual.length;
-    document.getElementById('inc-kpi-improd').textContent = totalImprod;
-    document.getElementById('inc-kpi-taxa').textContent = taxa + '%';
+    document.getElementById('rel-inc-kpi-total').textContent = _relIncDados.length;
+    document.getElementById('rel-inc-kpi-improd').textContent = totalImprod;
+    document.getElementById('rel-inc-kpi-taxa').textContent = taxa + '%';
 
-    if (!_incDadosAtual.length) { lista.innerHTML = '<div class="empty">Nenhuma inconsistencia encontrada no periodo</div>'; return; }
+    if (!_relIncDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhuma inconsist\u00eancia encontrada</div>'; return; }
 
-    lista.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FBFD">' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Motoboy</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Cliente</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Horario</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Motivo</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Distancia</th>' +
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
+      '<th>Motoboy</th><th>Cliente</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th>' +
       '</tr></thead><tbody>' +
-      _incDadosAtual.map(i => '<tr style="border-bottom:1px solid #F0F4F8">' +
-        '<td style="padding:10px 14px;font-weight:600;color:#0F2940">' + i.motoboy_nome + '</td>' +
-        '<td style="padding:10px 14px"><div style="font-weight:600;color:#0F2940">' + i.cliente_nome + '</div><div style="font-size:11px;color:#94A8B8">' + (i.rota||'') + '</div></td>' +
-        '<td style="padding:10px 14px;font-weight:700;color:#0F4C7A">' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td>' +
-        '<td style="padding:10px 14px;color:#5A7A8F">' + (i.motivo||'\u2014') + '</td>' +
-        '<td style="padding:10px 14px;font-weight:800;color:#EF4444">' + (i.distancia_m >= 1000 ? (i.distancia_m/1000).toFixed(1)+'km' : i.distancia_m+'m') + '</td>' +
+      _relIncDados.map(i => '<tr>' +
+        '<td class="rel-nome">' + i.motoboy_nome + '</td>' +
+        '<td><div class="rel-nome">' + i.cliente_nome + '</div><div class="rel-sub">' + (i.rota||'') + '</div></td>' +
+        '<td class="rel-hora">' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td>' +
+        '<td>' + (i.motivo||'\u2014') + '</td>' +
+        '<td><span class="rel-badge rel-b-err">' + (i.distancia_m >= 1000 ? (i.distancia_m/1000).toFixed(1)+'km' : i.distancia_m+'m') + '</span></td>' +
         '</tr>').join('') +
       '</tbody></table>';
-  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
 }
 
-function exportarInconsistenciasExcel() {
-  if (!_incDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = [['Motoboy','Cliente','Rota','Horario','Motivo','Distancia (m)','Endereco cadastrado']];
-  _incDadosAtual.forEach(i => linhas.push([
-    i.motoboy_nome, i.cliente_nome, i.rota||'', new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}),
-    i.motivo||'', i.distancia_m, i.endereco_cadastrado||''
-  ]));
-  exportarXLSX(linhas, 'inconsistencias', 'Inconsistencias');
+function exportarRelIncExcel() {
+  if (!_relIncDados.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = [['Motoboy','Cliente','Rota','Hor\u00e1rio','Motivo','Dist\u00e2ncia (m)','Endere\u00e7o cadastrado']];
+  _relIncDados.forEach(i => linhas.push([i.motoboy_nome, i.cliente_nome, i.rota||'', new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}), i.motivo||'', i.distancia_m, i.endereco_cadastrado||'']));
+  relExportarXLSX(linhas, 'inconsistencias', 'Inconsistencias');
 }
 
-function exportarInconsistenciasPDF() {
-  if (!_incDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = _incDadosAtual.map(i => '<tr><td>' + i.motoboy_nome + '</td><td>' + i.cliente_nome + '</td><td>' + (i.rota||'\u2014') + '</td>' +
-    '<td>' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td>' +
-    '<td>' + (i.motivo||'\u2014') + '</td><td><strong>' + i.distancia_m + 'm</strong></td></tr>').join('');
-  abrirJanelaPDF('Relatorio de Inconsistencias', '<table><thead><tr><th>Motoboy</th><th>Cliente</th><th>Rota</th><th>Horario</th><th>Motivo</th><th>Distancia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+function exportarRelIncPDF() {
+  if (!_relIncDados.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = _relIncDados.map(i => '<tr><td>' + i.motoboy_nome + '</td><td>' + i.cliente_nome + '</td><td>' + (i.rota||'\u2014') + '</td><td>' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td><td>' + (i.motivo||'\u2014') + '</td><td><strong>' + i.distancia_m + 'm</strong></td></tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Inconsist\u00eancias', '<table><thead><tr><th>Motoboy</th><th>Cliente</th><th>Rota</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
 }
 
-let _horDadosAtual = [];
+// ── RELATÓRIO: HORÁRIOS DE COLETA ────────────────────────────
+let _relHorDados = [];
 
-async function carregarHorariosColeta() {
-  const lista = document.getElementById('hor-lista');
-  const data = document.getElementById('hor-data')?.value;
-  const rota = document.getElementById('hor-rota')?.value.trim();
+async function carregarRelHorarios() {
+  const lista = document.getElementById('rel-hor-lista');
+  const data = document.getElementById('rel-hor-data')?.value;
+  const rota = document.getElementById('rel-hor-rota')?.value.trim();
   if (!data) { toast('Selecione a data'); return; }
-  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
   try {
     let urlReq = API + '/relatorio-horarios?data=' + data;
     if (rota) urlReq += '&rota=' + encodeURIComponent(rota);
     const r = await fetch(urlReq);
     const d = await r.json();
-    _horDadosAtual = d.coletas || [];
-    if (!_horDadosAtual.length) { lista.innerHTML = '<div class="empty">Nenhuma coleta encontrada</div>'; return; }
+    _relHorDados = d.coletas || [];
+    if (!_relHorDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhuma coleta encontrada</div>'; return; }
 
-    lista.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FBFD">' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Cliente</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Rota</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Chegada</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Status</th>' +
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
+      '<th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th>' +
       '</tr></thead><tbody>' +
-      _horDadosAtual.map(c => '<tr style="border-bottom:1px solid #F0F4F8">' +
-        '<td style="padding:10px 14px;font-weight:600;color:#0F2940">' + c.nome_cliente + '</td>' +
-        '<td style="padding:10px 14px;color:#5A7A8F;font-size:11px">' + (c.rota||'\u2014') + '</td>' +
-        '<td style="padding:10px 14px;font-weight:700;color:#0F4C7A">' + (c.horario_chegada || '\u2014') + '</td>' +
-        '<td style="padding:10px 14px">' + (c.produtividade === 'produtiva' ? '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#DCFCE7;color:#166534">\u2713 Produtiva</span>' : '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF2F2;color:#991B1B">\u2717 Improdutiva</span>') + '</td>' +
+      _relHorDados.map(c => '<tr>' +
+        '<td class="rel-nome">' + c.nome_cliente + '</td>' +
+        '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
+        '<td class="rel-hora">' + (c.horario_chegada || '\u2014') + '</td>' +
+        '<td>' + (c.produtividade === 'produtiva' ? '<span class="rel-badge rel-b-ok">\u2713 Produtiva</span>' : '<span class="rel-badge rel-b-err">\u2717 Improdutiva</span>') + '</td>' +
         '</tr>').join('') +
       '</tbody></table>';
-  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
 }
 
-function exportarHorariosExcel() {
-  if (!_horDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
+function exportarRelHorExcel() {
+  if (!_relHorDados.length) { toast('Nenhum dado para exportar'); return; }
   const linhas = [['Cliente','Rota','Chegada','Produtividade','Motivo Improdutiva']];
-  _horDadosAtual.forEach(c => linhas.push([c.nome_cliente, c.rota||'', c.horario_chegada||'', c.produtividade||'', c.motivo_improdutiva||'']));
-  exportarXLSX(linhas, 'horarios-coleta', 'Horarios');
+  _relHorDados.forEach(c => linhas.push([c.nome_cliente, c.rota||'', c.horario_chegada||'', c.produtividade||'', c.motivo_improdutiva||'']));
+  relExportarXLSX(linhas, 'horarios-coleta', 'Horarios');
 }
 
-function exportarHorariosPDF() {
-  if (!_horDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = _horDadosAtual.map(c => '<tr><td>' + c.nome_cliente + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.horario_chegada||'\u2014') + '</td>' +
-    '<td>' + (c.produtividade === 'produtiva' ? '\u2713 Produtiva' : '\u2717 Improdutiva') + '</td></tr>').join('');
-  abrirJanelaPDF('Relatorio de Horarios de Coleta', '<table><thead><tr><th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+function exportarRelHorPDF() {
+  if (!_relHorDados.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = _relHorDados.map(c => '<tr><td>' + c.nome_cliente + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.horario_chegada||'\u2014') + '</td><td>' + (c.produtividade === 'produtiva' ? '\u2713 Produtiva' : '\u2717 Improdutiva') + '</td></tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Hor\u00e1rios de Coleta', '<table><thead><tr><th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th></tr></thead><tbody>' + linhas + '</tbody></table>');
 }
 
-let _chkRelDadosAtual = [];
+// ── RELATÓRIO: CHECKLIST ─────────────────────────────────────
+let _relChkDados = [];
 
-async function carregarChecklistRelatorio() {
-  const lista = document.getElementById('chk-rel-lista');
-  const data = document.getElementById('chk-rel-data')?.value;
+async function carregarRelChecklist() {
+  const lista = document.getElementById('rel-chk-lista');
+  const data = document.getElementById('rel-chk-data')?.value;
   if (!data) { toast('Selecione a data'); return; }
-  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
   try {
     const dataBR = data.split('-').reverse().join('/');
     const r = await fetch(API + '/checklist?data=' + encodeURIComponent(dataBR));
     const d = await r.json();
-    _chkRelDadosAtual = d.checklists || d.resultados || [];
-    if (!_chkRelDadosAtual.length) { lista.innerHTML = '<div class="empty">Nenhum checklist encontrado nesta data</div>'; return; }
+    _relChkDados = d.checklists || d.resultados || [];
+    if (!_relChkDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhum checklist encontrado nesta data</div>'; return; }
 
-    lista.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="background:#F8FBFD">' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Motoboy</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Rota</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Placa</th>' +
-      '<th style="padding:9px 14px;text-align:left;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;border-bottom:1px solid #EBF1F5">Preenchido em</th>' +
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
+      '<th>Motoboy</th><th>Rota</th><th>Placa</th><th>Preenchido em</th>' +
       '</tr></thead><tbody>' +
-      _chkRelDadosAtual.map(c => '<tr style="border-bottom:1px solid #F0F4F8">' +
-        '<td style="padding:10px 14px;font-weight:600;color:#0F2940">' + (c.biocondutor||'\u2014') + '</td>' +
-        '<td style="padding:10px 14px;color:#5A7A8F">' + (c.rota||'\u2014') + '</td>' +
-        '<td style="padding:10px 14px;color:#5A7A8F">' + (c.placa||'\u2014') + '</td>' +
-        '<td style="padding:10px 14px;font-weight:700;color:#0F4C7A">' + (c.data_checklist||'\u2014') + '</td>' +
+      _relChkDados.map(c => '<tr>' +
+        '<td class="rel-nome">' + (c.biocondutor||'\u2014') + '</td>' +
+        '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
+        '<td class="rel-sub">' + (c.placa||'\u2014') + '</td>' +
+        '<td class="rel-hora">' + (c.data_checklist||'\u2014') + '</td>' +
         '</tr>').join('') +
       '</tbody></table>';
-  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
 }
 
-function exportarChecklistExcel() {
-  if (!_chkRelDadosAtual.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = [['Motoboy','Rota','Placa','Preenchido em']];
-  _chkRelDadosAtual.forEach(c => linhas.push([c.biocondutor||'', c.rota||'', c.placa||'', c.data_checklist||'']));
-  exportarXLSX(linhas, 'checklist', 'Checklist');
+function exportarRelChecklistPDF() {
+  if (!_relChkDados.length) { toast('Nenhum dado para exportar'); return; }
+  const linhas = _relChkDados.map(c => '<tr><td>' + (c.biocondutor||'\u2014') + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.placa||'\u2014') + '</td><td>' + (c.data_checklist||'\u2014') + '</td></tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Checklist', '<table><thead><tr><th>Motoboy</th><th>Rota</th><th>Placa</th><th>Preenchido em</th></tr></thead><tbody>' + linhas + '</tbody></table>');
 }
 
-function exportarXLSX(linhas, nomeArquivo, nomeAba) {
+// ── UTILITÁRIOS DE EXPORTAÇÃO ─────────────────────────────────
+function relExportarXLSX(linhas, nomeArquivo, nomeAba) {
   const gerar = () => {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(linhas);
@@ -1144,7 +1240,7 @@ function exportarXLSX(linhas, nomeArquivo, nomeAba) {
   }
 }
 
-function abrirJanelaPDF(titulo, tabelaHtml) {
+function relAbrirPDF(titulo, tabelaHtml) {
   const win = window.open('', '_blank');
   win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + titulo + '</title>' +
     '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:32px;color:#0F2940;font-size:12px}' +
@@ -1157,7 +1253,7 @@ function abrirJanelaPDF(titulo, tabelaHtml) {
     '@media print{body{padding:16px}}</style></head><body>' +
     '<div class="header"><div class="logo">LOG<span>LIFE</span></div><div style="font-size:11px;color:#5A7A8F">' + new Date().toLocaleDateString('pt-BR') + '</div></div>' +
     '<h1>' + titulo + '</h1>' + tabelaHtml +
-    '<div class="footer">Loglife Logistica - Documento gerado automaticamente</div></body></html>');
+    '<div class="footer">Loglife Log\u00edstica \u00b7 Documento gerado automaticamente</div></body></html>');
   win.document.close();
   setTimeout(() => win.print(), 500);
 }
