@@ -889,6 +889,7 @@ async function criarCliente() {
   const horario = contraPedido ? '' : document.getElementById('cc-horario').value;
   const lat = document.getElementById('cc-lat').value.trim();
   const lng = document.getElementById('cc-lng').value.trim();
+  const endereco = document.getElementById('cc-endereco').value.trim();
   const diasSelecionados = [...document.querySelectorAll('.cc-dia-btn')].filter(b => b.dataset.ativo === '1').map(b => b.dataset.dia);
 
   if (!codigo || !nome) { showMsg('msg-cc','Preencha código e nome','error'); return; }
@@ -907,7 +908,8 @@ async function criarCliente() {
         dias_ativos: diasSelecionados.join(','),
         contra_pedido: contraPedido ? 1 : 0,
         lat: lat ? parseFloat(lat) : null,
-        lng: lng ? parseFloat(lng) : null
+        lng: lng ? parseFloat(lng) : null,
+        endereco: endereco || ''
       })
     });
     document.getElementById('cc-codigo').value = '';
@@ -916,6 +918,7 @@ async function criarCliente() {
     document.getElementById('cc-horario').value = '';
     document.getElementById('cc-lat').value = '';
     document.getElementById('cc-lng').value = '';
+    document.getElementById('cc-endereco').value = '';
     document.getElementById('cc-contra-pedido').checked = false;
     document.getElementById('cc-campo-horario').style.display = 'block';
     document.querySelectorAll('.cc-dia-btn').forEach(b => {
