@@ -2234,14 +2234,16 @@ async function toggleManutencao() {
   if (novoStatus) {
     const msg = prompt('Mensagem para os motoboys (deixe em branco para padrão):', 'Sistema em manutenção. Voltamos em breve!');
     if (msg === null) return; // cancelou
+    const testersStr = prompt('Telefone(s) que continuam com acesso (testers) — separados por vírgula:', '');
+    const testers = testersStr ? testersStr.split(',').map(t => t.replace(/\D/g,'').trim()).filter(t => t) : [];
     try {
       await fetch(API + '/manutencao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ativo: true, mensagem: msg || 'Sistema em manutenção. Voltamos em breve!' })
+        body: JSON.stringify({ ativo: true, mensagem: msg || 'Sistema em manutenção. Voltamos em breve!', testers })
       });
       _manutencaoAtiva = true;
-      toast('🔧 Sistema em manutenção — app bloqueado para motoboys');
+      toast('🔧 Manutenção ativada' + (testers.length ? ` · ${testers.length} tester(s) liberado(s)` : ''));
     } catch(e) { toast('Erro ao ativar manutenção'); }
   } else {
     if (!confirm('Desligar modo manutenção? Os motoboys poderão acessar o app novamente.')) return;
