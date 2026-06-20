@@ -95,16 +95,16 @@ async function renderizarPainel(data) {
       confEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
     } else {
       // Se hoje é sexta, busca pré-confirmações de sábado
-      const hoje = new Date();
       let preConfMap = {};
-      if (hoje.getDay() === 5) {
-        try {
-          const dataIso = hoje.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
-          const rPre = await fetch(API + '/pre-confirmacao-sabado?data=' + dataIso);
+      try {
+        const rDia = await fetch(API + '/servidor-data');
+        const dDia = await rDia.json();
+        if (dDia.dia_semana === 5) {
+          const rPre = await fetch(API + '/pre-confirmacao-sabado?data=' + dDia.data);
           const dPre = await rPre.json();
           (dPre.resultados || []).forEach(p => { preConfMap[p.biocondutor] = p.resposta; });
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
 
       confEl.innerHTML = confirmacoes.slice(0, 15).map(c => {
         const hora = c.data ? c.data.split(' ').pop() : '';
