@@ -428,11 +428,16 @@
       const sel = clientesSelecionados.has(c.id);
       const dias = clientesDias[c.id] || [];
       const diasHTML = sel ? gerarDiasTicks(c.id, dias) : '';
+      const temCoord = c.lat && c.lng;
+      const coordHTML = temCoord
+        ? `<div style="font-size:10px;color:#0F9B78;flex-shrink:0;white-space:nowrap" title="Coordenada cadastrada">📍 ${parseFloat(c.lat).toFixed(4)}, ${parseFloat(c.lng).toFixed(4)}</div>`
+        : `<div style="font-size:10px;color:#D6A14B;flex-shrink:0;white-space:nowrap" title="Sem coordenada cadastrada">📍 Sem coordenada</div>`;
       return `<div class="cli-row${sel ? ' sel' : ''}" id="row-${c.id}" onclick="toggleCliente(${c.id})">
         <div class="cli-checkbox">${sel ? '✓' : ''}</div>
         <div class="cli-nome">${c.nome}</div>
         <div class="cli-num">Nº ${c.numero_cliente}</div>
         <div class="cli-hora-badge">${c.horario}</div>
+        ${coordHTML}
         <button onclick="event.stopPropagation();abrirDuplicar(${JSON.stringify(c).replace(/"/g,'&quot;')})" 
           style="background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">+ Dup</button>
       </div>${sel ? `<div class="cli-dias" id="dias-${c.id}">${diasHTML}</div>` : ''}`;
