@@ -320,6 +320,7 @@
   let clientesEncontrados = [];
   let clientesSelecionados = new Set();
   let clientesDias = {}; // id => array de dias ativos
+  let clientesMostrarEndereco = {}; // id => true/false
   let todosMotoboys = [];
 
   // ETAPA 1 - BUSCA MOTORISTA
@@ -439,21 +440,34 @@
       const dias = clientesDias[c.id] || [];
       const diasHTML = sel ? gerarDiasTicks(c.id, dias) : '';
       const temCoord = c.lat && c.lng;
+      const temEndereco = c.endereco && c.endereco.trim();
       const coordHTML = temCoord
         ? `<div style="font-size:10px;color:#0F9B78;flex-shrink:0;white-space:nowrap" title="Coordenada cadastrada">📍 ${parseFloat(c.lat).toFixed(4)}, ${parseFloat(c.lng).toFixed(4)}</div>`
         : `<div style="font-size:10px;color:#D6A14B;flex-shrink:0;white-space:nowrap" title="Sem coordenada cadastrada">📍 Sem coordenada</div>`;
+      const mostrarEnd = clientesMostrarEndereco[c.id] || false;
+      const enderecoToggleHTML = (sel && temEndereco)
+        ? `<label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7A8F;cursor:pointer;flex-shrink:0;white-space:nowrap">
+            <input type="checkbox" ${mostrarEnd ? 'checked' : ''} onchange="toggleMostrarEndereco(${c.id},this.checked)" style="width:13px;height:13px;accent-color:#0F4C7A;margin:0"/>
+            Mostrar endereço
+          </label>`
+        : '';
       return `<div class="cli-row${sel ? ' sel' : ''}" id="row-${c.id}" onclick="toggleCliente(${c.id})">
         <div class="cli-checkbox">${sel ? '✓' : ''}</div>
         <div class="cli-nome">${c.nome}</div>
         <div class="cli-num">Nº ${c.numero_cliente}</div>
         <div class="cli-hora-badge">${c.horario}</div>
         ${coordHTML}
+        ${enderecoToggleHTML}
         <button onclick="event.stopPropagation();abrirDuplicar(${JSON.stringify(c).replace(/"/g,'&quot;')})" 
           style="background:#E1F5EE;color:#085041;border:1.5px solid #5DCAA5;padding:3px 8px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;white-space:nowrap">+ Dup</button>
       </div>${sel ? `<div class="cli-dias" id="dias-${c.id}">${diasHTML}</div>` : ''}`;
     }).join('');
     lista.innerHTML = rows;
     atualizarContador();
+  }
+
+  function toggleMostrarEndereco(id, valor) {
+    clientesMostrarEndereco[id] = valor;
   }
 
   function gerarDiasTicks(id, diasAtivos) {
@@ -579,7 +593,11 @@
       horario: c.horario,
       dias_ativos: (clientesDias[c.id] || []).join(',') || diasAtivos,
       obs: '',
-      tipo: 'normal'
+      tipo: 'normal',
+      lat: c.lat || null,
+      lng: c.lng || null,
+      endereco: c.endereco || '',
+      mostrar_endereco: clientesMostrarEndereco[c.id] ? 1 : 0
     }));
 
     const btn = document.getElementById('btn-criar');
