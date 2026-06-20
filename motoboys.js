@@ -857,17 +857,71 @@ async function excluirMotoboy(telefone) {
 }
 
 
+function ccToggleDia(dia, btn) {
+  const ativo = btn.dataset.ativo === '1';
+  if (ativo) {
+    btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#D6E5EE';
+    btn.dataset.ativo = '0';
+  } else {
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A';
+    btn.dataset.ativo = '1';
+  }
+}
+
+function ccSelecionarTodosDias() {
+  document.querySelectorAll('.cc-dia-btn').forEach(btn => {
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A';
+    btn.dataset.ativo = '1';
+  });
+}
+
+function ccToggleContraPedido() {
+  const marcado = document.getElementById('cc-contra-pedido').checked;
+  const campoHorario = document.getElementById('cc-campo-horario');
+  campoHorario.style.display = marcado ? 'none' : 'block';
+}
+
 async function criarCliente() {
   const codigo = document.getElementById('cc-codigo').value.trim();
   const nome = document.getElementById('cc-nome').value.trim();
-  const horario = document.getElementById('cc-horario').value;
+  const rota = document.getElementById('cc-rota').value.trim();
+  const contraPedido = document.getElementById('cc-contra-pedido').checked;
+  const horario = contraPedido ? '' : document.getElementById('cc-horario').value;
+  const lat = document.getElementById('cc-lat').value.trim();
+  const lng = document.getElementById('cc-lng').value.trim();
+  const diasSelecionados = [...document.querySelectorAll('.cc-dia-btn')].filter(b => b.dataset.ativo === '1').map(b => b.dataset.dia);
+
   if (!codigo || !nome) { showMsg('msg-cc','Preencha código e nome','error'); return; }
+  if (!rota) { showMsg('msg-cc','Informe a rota','error'); return; }
+  if (!diasSelecionados.length) { showMsg('msg-cc','Selecione ao menos um dia da semana','error'); return; }
+  if (!contraPedido && !horario) { showMsg('msg-cc','Informe o horário ou marque contra pedido','error'); return; }
+
   showMsg('msg-cc','Salvando...','loading');
   try {
-    await fetch(API + '/clientes-base', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({numero_cliente:codigo, nome, horario:horario||'00:00'}) });
+    await fetch(API + '/clientes-base', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        numero_cliente: codigo, nome,
+        horario: horario || '00:00',
+        rota,
+        dias_ativos: diasSelecionados.join(','),
+        contra_pedido: contraPedido ? 1 : 0,
+        lat: lat ? parseFloat(lat) : null,
+        lng: lng ? parseFloat(lng) : null
+      })
+    });
     document.getElementById('cc-codigo').value = '';
     document.getElementById('cc-nome').value = '';
+    document.getElementById('cc-rota').value = '';
     document.getElementById('cc-horario').value = '';
+    document.getElementById('cc-lat').value = '';
+    document.getElementById('cc-lng').value = '';
+    document.getElementById('cc-contra-pedido').checked = false;
+    document.getElementById('cc-campo-horario').style.display = 'block';
+    document.querySelectorAll('.cc-dia-btn').forEach(b => {
+      b.style.background = '#fff'; b.style.color = '#5A7A8F'; b.style.borderColor = '#D6E5EE';
+      b.dataset.ativo = '0';
+    });
     showMsg('msg-cc','✅ Cliente criado na base!','success');
   } catch(e) { showMsg('msg-cc','Erro: '+e.message,'error'); }
 }
