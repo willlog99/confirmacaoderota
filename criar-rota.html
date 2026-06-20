@@ -446,7 +446,7 @@
         : `<div style="font-size:10px;color:#D6A14B;flex-shrink:0;white-space:nowrap" title="Sem coordenada cadastrada">📍 Sem coordenada</div>`;
       const mostrarEnd = clientesMostrarEndereco[c.id] || false;
       const enderecoToggleHTML = (sel && temEndereco)
-        ? `<label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7A8F;cursor:pointer;flex-shrink:0;white-space:nowrap">
+        ? `<label class="cli-endereco-toggle" onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7A8F;cursor:pointer;flex-shrink:0;white-space:nowrap">
             <input type="checkbox" ${mostrarEnd ? 'checked' : ''} onchange="toggleMostrarEndereco(${c.id},this.checked)" style="width:13px;height:13px;accent-color:#0F4C7A;margin:0"/>
             Mostrar endereço
           </label>`
@@ -501,15 +501,32 @@
     if (clientesSelecionados.has(id)) {
       clientesSelecionados.delete(id);
       delete clientesDias[id];
+      delete clientesMostrarEndereco[id];
       row.classList.remove('sel');
       row.querySelector('.cli-checkbox').textContent = '';
       const diasEl = document.getElementById('dias-' + id);
       if (diasEl) diasEl.remove();
+      const endToggle = row.querySelector('.cli-endereco-toggle');
+      if (endToggle) endToggle.remove();
     } else {
       clientesSelecionados.add(id);
       clientesDias[id] = expandirDias(diasSelecionados); // herda dias da etapa 2
       row.classList.add('sel');
       row.querySelector('.cli-checkbox').textContent = '✓';
+
+      // Insere o toggle de "Mostrar endereço" se o cliente tiver endereço cadastrado
+      const c = clientesEncontrados.find(cl => cl.id === id);
+      if (c && c.endereco && c.endereco.trim()) {
+        const dupBtn = row.querySelector('button');
+        const label = document.createElement('label');
+        label.className = 'cli-endereco-toggle';
+        label.setAttribute('onclick', 'event.stopPropagation()');
+        label.style.cssText = 'display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7A8F;cursor:pointer;flex-shrink:0;white-space:nowrap';
+        label.innerHTML = `<input type="checkbox" onchange="toggleMostrarEndereco(${id},this.checked)" style="width:13px;height:13px;accent-color:#0F4C7A;margin:0"/> Mostrar endereço`;
+        if (dupBtn) row.insertBefore(label, dupBtn);
+        else row.appendChild(label);
+      }
+
       // Inserir dias logo após o row
       const diasDiv = document.createElement('div');
       diasDiv.className = 'cli-dias';
