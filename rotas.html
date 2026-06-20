@@ -738,7 +738,7 @@
         return;
       }
       el.innerHTML = encontrados.map(c => `
-        <div onclick="adicionarClienteNaRota(${rotaIdx},${c.id},'${c.numero_cliente}','${c.nome.replace(/'/g,"\\'")}','${c.horario}')"
+        <div onclick='abrirConfirmarAdicionar(${rotaIdx},${JSON.stringify(c).replace(/'/g,"&apos;")})'
           style="padding:10px 12px;border-bottom:1px solid #EBF1F5;cursor:pointer;display:flex;align-items:center;gap:10px;background:#fff;transition:background .1s"
           onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
           <div style="flex:1;min-width:0">
@@ -753,33 +753,75 @@
     }
   }
 
-  async function adicionarClienteNaRota(rotaIdx, idBase, numero, nome, horario) {
+  let _clienteParaAdicionar = null;
+  let _rotaIdxParaAdicionar = null;
+
+  function abrirConfirmarAdicionar(rotaIdx, cliente) {
+    _clienteParaAdicionar = cliente;
+    _rotaIdxParaAdicionar = rotaIdx;
     const rota = todasRotas[rotaIdx];
-    if (!confirm(`Adicionar "${nome}" (${horario}) à rota "${rota.rota}"?`)) return;
+    const temEndereco = cliente.endereco && cliente.endereco.trim();
+
+    const popup = document.createElement('div');
+    popup.id = 'popup-add-cliente';
+    popup.style.cssText = 'position:fixed;inset:0;background:rgba(15,40,64,.75);z-index:9999;display:flex;align-items:flex-end;justify-content:center';
+    popup.innerHTML = `
+      <div style="background:#fff;border-radius:18px 18px 0 0;padding:1.25rem;width:100%;max-width:420px">
+        <div style="font-size:11px;color:#94A8B8;margin-bottom:4px;font-weight:700;text-transform:uppercase">Adicionar cliente</div>
+        <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:4px">${cliente.nome}</div>
+        <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Nº ${cliente.numero_cliente} · ${cliente.horario} · Rota ${rota.rota}</div>
+        ${temEndereco ? `
+          <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#F8FBFD;border:1.5px solid #EBF1F5;margin-bottom:1rem;cursor:pointer">
+            <input type="checkbox" id="add-mostrar-endereco" style="width:18px;height:18px;accent-color:#0F4C7A"/>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:#0F2940">Mostrar endereço para o motoboy</div>
+              <div style="font-size:11px;color:#5A7A8F;margin-top:1px">📍 ${cliente.endereco}</div>
+            </div>
+          </label>
+        ` : `<div style="font-size:11px;color:#D6A14B;margin-bottom:1rem">📍 Sem coordenada/endereço cadastrado</div>`}
+        <div style="display:flex;gap:8px">
+          <button onclick="document.getElementById('popup-add-cliente').remove()" style="flex:1;padding:12px;border-radius:10px;background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE;font-size:14px;font-weight:600;cursor:pointer">Cancelar</button>
+          <button onclick="confirmarAdicionarCliente()" style="flex:1;padding:12px;border-radius:10px;background:#0F4C7A;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer">+ Adicionar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(popup);
+  }
+
+  async function confirmarAdicionarCliente() {
+    const c = _clienteParaAdicionar;
+    const rotaIdx = _rotaIdxParaAdicionar;
+    const rota = todasRotas[rotaIdx];
+    const mostrarEndCb = document.getElementById('add-mostrar-endereco');
+    const mostrarEndereco = mostrarEndCb ? mostrarEndCb.checked : false;
+    document.getElementById('popup-add-cliente')?.remove();
     try {
       await fetch(API + '/clientes', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          numero_cliente: numero,
-          nome,
-          horario,
+          numero_cliente: c.numero_cliente,
+          nome: c.nome,
+          horario: c.horario,
           rota: rota.rota,
           tipo: 'normal',
           dia_semana: rota.dia_semana || 'seg-sex',
           obs: '',
-          dias_ativos: rota.dia_semana === 'sabado' ? 'sab' : rota.dia_semana === 'domingo' ? 'dom' : 'seg,ter,qua,qui,sex'
+          dias_ativos: rota.dia_semana === 'sabado' ? 'sab' : rota.dia_semana === 'domingo' ? 'dom' : 'seg,ter,qua,qui,sex',
+          lat: c.lat || null,
+          lng: c.lng || null,
+          endereco: c.endereco || '',
+          mostrar_endereco: mostrarEndereco ? 1 : 0
         })
       });
       await fetch(API + '/clientes-base', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: idBase })
+        body: JSON.stringify({ id: c.id })
       });
       limparBuscaBase(rotaIdx);
       delete clientesPorRota[rota.rota];
       await carregarClientes(rotaIdx);
-      toast('✓ ' + nome + ' adicionado à rota!');
+      toast('✓ ' + c.nome + ' adicionado à rota!');
     } catch(e) {
       toast('Erro ao adicionar cliente');
     }
