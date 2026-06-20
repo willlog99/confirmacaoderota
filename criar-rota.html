@@ -468,6 +468,24 @@
 
   function toggleMostrarEndereco(id, valor) {
     clientesMostrarEndereco[id] = valor;
+    const row = document.getElementById('row-' + id);
+    if (!row) return;
+    let endTexto = document.getElementById('endereco-texto-' + id);
+    if (valor) {
+      if (!endTexto) {
+        const c = clientesEncontrados.find(cl => cl.id === id);
+        endTexto = document.createElement('div');
+        endTexto.id = 'endereco-texto-' + id;
+        endTexto.style.cssText = 'padding:6px 11px 8px 37px;background:var(--az3);font-size:10px;color:#0F4C7A;border-bottom:1px solid var(--border)';
+        endTexto.innerHTML = `📍 ${c ? c.endereco : ''}`;
+        // Insere após o bloco de dias, se existir, senão após o row
+        const diasEl = document.getElementById('dias-' + id);
+        if (diasEl) diasEl.insertAdjacentElement('afterend', endTexto);
+        else row.insertAdjacentElement('afterend', endTexto);
+      }
+    } else {
+      if (endTexto) endTexto.remove();
+    }
   }
 
   function gerarDiasTicks(id, diasAtivos) {
@@ -508,6 +526,8 @@
       if (diasEl) diasEl.remove();
       const endToggle = row.querySelector('.cli-endereco-toggle');
       if (endToggle) endToggle.remove();
+      const endTexto = document.getElementById('endereco-texto-' + id);
+      if (endTexto) endTexto.remove();
     } else {
       clientesSelecionados.add(id);
       clientesDias[id] = expandirDias(diasSelecionados); // herda dias da etapa 2
