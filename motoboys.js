@@ -1558,3 +1558,86 @@ function voltarChecklist(biocondutor) {
   toast('↩ Checklist voltado para pendente!');
   carregarChecklistsIncompletos();
 }
+
+// ── IMPORTAÇÃO DE CLIENTES COM COORDENADAS ───────────────────
+let _impCoordDados = [];
+
+function processarPlanilhaCoordenadas(file) {
+  if (!file) return;
+  showMsg('msg-imp-coord', '<span class="spinner"></span> Lendo planilha...', 'loading');
+
+  const lerArquivo = () => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target.result);
+        const wb = XLSX.read(data, { type: 'array' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+        // Detecta se a primeira linha é cabeçalho (texto) ou já é dado
+        let startRow = 0;
+        const primeira = rows[0] || [];
+        const pareceCabecalho = primeira.some(c => typeof c === 'string' && /c[oó]digo|nome|endere[cç]o|latitude|longitude/i.test(c));
+        if (pareceCabecalho) startRow = 1;
+
+        _impCoordDados = [];
+        for (let i = startRow; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || !r.length) continue;
+          const codigo = String(r[0] || '').trim();
+          const nome = String(r[1] || '').trim();
+          const endereco = String(r[2] || '').trim();
+          const lat = parseFloat(String(r[3] || '').replace(',', '.'));
+          const lng = parseFloat(String(r[4] || '').replace(',', '.'));
+          if (!codigo || !nome) continue;
+          _impCoordDados.push({ codigo, nome, endereco, lat: isNaN(lat) ? null : lat, lng: isNaN(lng) ? null : lng });
+        }
+
+        if (!_impCoordDados.length) { showMsg('msg-imp-coord', 'Nenhum dado válido encontrado na planilha', 'error'); return; }
+
+        document.getElementById('imp-coord-resumo').textContent = _impCoordDados.length + ' clientes encontrados — todos serão importados com horário 00:00';
+        document.getElementById('imp-coord-tabela').innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#F8FBFD"><th style="padding:6px 8px;text-align:left;border-bottom:1px solid #EBF1F5">Código</th><th style="padding:6px 8px;text-align:left;border-bottom:1px solid #EBF1F5">Nome</th><th style="padding:6px 8px;text-align:left;border-bottom:1px solid #EBF1F5">Coordenada</th></tr></thead>
+          <tbody>${_impCoordDados.slice(0,50).map(c => `<tr><td style="padding:5px 8px;border-bottom:1px solid #F5F9FC">${c.codigo}</td><td style="padding:5px 8px;border-bottom:1px solid #F5F9FC">${c.nome}</td><td style="padding:5px 8px;border-bottom:1px solid #F5F9FC;color:${c.lat&&c.lng?'#0F9B78':'#D6A14B'}">${c.lat&&c.lng?c.lat.toFixed(4)+', '+c.lng.toFixed(4):'sem coordenada'}</td></tr>`).join('')}</tbody>
+        </table>${_impCoordDados.length > 50 ? `<div style="padding:6px;text-align:center;font-size:11px;color:#94A8B8">+ ${_impCoordDados.length - 50} outros...</div>` : ''}`;
+        document.getElementById('imp-coord-preview').style.display = 'block';
+        document.getElementById('imp-coord-btn-confirmar').style.display = 'block';
+        showMsg('msg-imp-coord', '', '');
+      } catch(err) {
+        showMsg('msg-imp-coord', 'Erro ao ler planilha: ' + err.message, 'error');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  if (typeof XLSX !== 'undefined') { lerArquivo(); } else {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    script.onload = lerArquivo;
+    document.head.appendChild(script);
+  }
+}
+
+async function confirmarImportacaoCoordenadas() {
+  if (!_impCoordDados.length) return;
+  const btn = document.getElementById('imp-coord-btn-confirmar');
+  btn.disabled = true;
+  showMsg('msg-imp-coord', '<span class="spinner"></span> Importando ' + _impCoordDados.length + ' clientes...', 'loading');
+  try {
+    const r = await fetch(API + '/importar-clientes-coordenadas', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ clientes: _impCoordDados })
+    });
+    const d = await r.json();
+    showMsg('msg-imp-coord', `✅ ${d.inseridos} importados, ${d.duplicados || 0} já existiam`, 'success');
+    document.getElementById('imp-coord-preview').style.display = 'none';
+    btn.style.display = 'none';
+    document.getElementById('imp-coord-file').value = '';
+    _impCoordDados = [];
+  } catch(e) {
+    showMsg('msg-imp-coord', 'Erro ao importar: ' + e.message, 'error');
+  }
+  btn.disabled = false;
+}
