@@ -134,24 +134,20 @@
       <div class="etapa-num">1</div>
       <div class="etapa-label">Motorista</div>
     </div>
-    <div class="etapa" id="et2" onclick="irPara(2)">
-      <div class="etapa-num">2</div>
-      <div class="etapa-label">Rota</div>
-    </div>
     <div class="etapa" id="et3" onclick="irPara(3)">
-      <div class="etapa-num">3</div>
+      <div class="etapa-num">2</div>
       <div class="etapa-label">Clientes</div>
     </div>
     <div class="etapa" id="et4" onclick="irPara(4)">
-      <div class="etapa-num">4</div>
+      <div class="etapa-num">3</div>
       <div class="etapa-label">Confirmar</div>
     </div>
   </div>
 
-  <!-- ETAPA 1: MOTORISTA -->
+  <!-- ETAPA 1: MOTORISTA + ROTA -->
   <div class="card ativa" id="card1">
-    <div class="card-title">1️⃣ Selecione o motorista</div>
-    <div class="card-sub">Busque por nome ou telefone</div>
+    <div class="card-title">1️⃣ Motorista e rota</div>
+    <div class="card-sub">Busque o motorista e dê um nome para a rota</div>
 
     <div id="bloco-busca">
       <div class="field">
@@ -174,39 +170,21 @@
         </div>
         <button class="motoboy-sel-remove" onclick="trocarMotoboy()">✕ Trocar</button>
       </div>
-      <button class="btn btn-primary" onclick="irPara(2)">Próximo: Nome da rota →</button>
+
+      <div class="field">
+        <label>Nome da rota</label>
+        <input type="text" id="nome-rota" placeholder="Ex: SAO PAULO 01" style="text-transform:uppercase"/>
+      </div>
+
+      <button class="btn btn-primary" onclick="irPara(3)">Próximo: Clientes →</button>
     </div>
 
     <div class="msg" id="msg1"></div>
   </div>
 
-  <!-- ETAPA 2: ROTA E DIAS -->
-  <div class="card" id="card2">
-    <div class="card-title">2️⃣ Nome da rota e dias</div>
-    <div class="card-sub">Defina o nome e quais dias esta rota opera</div>
-
-    <div class="field">
-      <label>Nome da rota</label>
-      <input type="text" id="nome-rota" placeholder="Ex: SAO PAULO 01" style="text-transform:uppercase"/>
-    </div>
-
-    <div class="field">
-      <label>Dias de operação</label>
-      <div class="dias-opts">
-        <div class="dia-opt" onclick="toggleDia('seg-sex',this)">Seg-Sex</div>
-        <div class="dia-opt" onclick="toggleDia('sab',this)">Sábado</div>
-        <div class="dia-opt" onclick="toggleDia('dom',this)">Domingo</div>
-      </div>
-    </div>
-
-    <div class="msg" id="msg2"></div>
-    <button class="btn btn-secondary" onclick="irPara(1)">← Voltar</button>
-    <button class="btn btn-primary" onclick="irPara(3)">Próximo: Clientes →</button>
-  </div>
-
   <!-- ETAPA 3: CLIENTES -->
   <div class="card" id="card3">
-    <div class="card-title">3️⃣ Clientes</div>
+    <div class="card-title">2️⃣ Clientes</div>
     <div class="card-sub">Cole os códigos (um por linha) e busque na base</div>
 
     <div class="field">
@@ -226,7 +204,7 @@
     </div>
 
     <div class="msg" id="msg3b"></div>
-    <button class="btn btn-secondary" onclick="irPara(2)" style="margin-top:.5rem">← Voltar</button>
+    <button class="btn btn-secondary" onclick="irPara(1)" style="margin-top:.5rem">← Voltar</button>
     <button class="btn btn-primary" id="btn-et3" disabled onclick="irPara(4)">Próximo: Confirmar →</button>
   </div>
 
@@ -523,20 +501,11 @@
       { key: 'sab', label: 'Sáb' },
       { key: 'dom', label: 'Dom' },
     ];
-    // Mostrar apenas os dias relevantes baseado na seleção da etapa 2
-    const diasBase = expandirDias(diasSelecionados);
-    return opcoes.filter(o => diasBase.includes(o.key)).map(o => {
+    // Mostra todos os 7 dias — você escolhe livremente quais ativar para este cliente
+    return opcoes.map(o => {
       const ativo = diasAtivos.includes(o.key);
       return `<span class="cli-dia-tick${ativo ? ' ativo' : ''}" onclick="event.stopPropagation();toggleDiaCliente(${id},'${o.key}',this)">${o.label}</span>`;
     }).join('');
-  }
-
-  function expandirDias(dias) {
-    const result = [];
-    if (dias.includes('seg-sex')) result.push('seg','ter','qua','qui','sex');
-    if (dias.includes('sab')) result.push('sab');
-    if (dias.includes('dom')) result.push('dom');
-    return result;
   }
 
   function toggleCliente(id) {
@@ -555,7 +524,7 @@
       if (endTexto) endTexto.remove();
     } else {
       clientesSelecionados.add(id);
-      clientesDias[id] = expandirDias(diasSelecionados); // herda dias da etapa 2
+      clientesDias[id] = []; // não herda dias automaticamente — fica vinculado mas sem dia ativo até você escolher
       row.classList.add('sel');
       row.querySelector('.cli-checkbox').textContent = '✓';
 
@@ -597,12 +566,10 @@
   }
 
   function selecionarTodos() {
-    const lista = document.getElementById('cli-lista');
-    const diasBase = expandirDias(diasSelecionados);
     clientesEncontrados.forEach(c => {
       if (!clientesSelecionados.has(c.id)) {
         clientesSelecionados.add(c.id);
-        clientesDias[c.id] = [...diasBase];
+        clientesDias[c.id] = []; // sem dia marcado — escolha individual depois
       }
     });
     renderizarListaClientes();
@@ -610,50 +577,49 @@
 
   // NAVEGAÇÃO
   function irPara(n) {
-    if (n === 2 && !motoboySelected) { showMsg('msg1', 'Selecione um motorista', 'error'); return; }
-    if (n === 3 && !document.getElementById('nome-rota').value.trim()) { showMsg('msg2', 'Digite o nome da rota', 'error'); return; }
-    if (n === 3 && diasSelecionados.length === 0) { showMsg('msg2', 'Selecione pelo menos um dia', 'error'); return; }
+    if (n === 3 && !motoboySelected) { showMsg('msg1', 'Selecione um motorista', 'error'); return; }
+    if (n === 3 && !document.getElementById('nome-rota').value.trim()) { showMsg('msg1', 'Digite o nome da rota', 'error'); return; }
     if (n === 4 && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
     if (n === 4) renderizarResumo();
 
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
     document.getElementById('card' + n).classList.add('ativa');
 
-    // Atualizar etapas visuais
-    for (let i = 1; i <= 4; i++) {
-      const et = document.getElementById('et' + i);
+    // Atualizar etapas visuais (mapeamento: card1=etapa1, card3=etapa2, card4=etapa3)
+    const mapaEtapas = { 1: 'et1', 3: 'et3', 4: 'et4' };
+    const ordem = [1, 3, 4];
+    const idxAtual = ordem.indexOf(n);
+    ordem.forEach((cardNum, idx) => {
+      const et = document.getElementById(mapaEtapas[cardNum]);
       et.classList.remove('ativa', 'completa');
-      if (i < n) et.classList.add('completa');
-      else if (i === n) et.classList.add('ativa');
-    }
+      if (idx < idxAtual) et.classList.add('completa');
+      else if (idx === idxAtual) et.classList.add('ativa');
+    });
     window.scrollTo(0, 0);
   }
 
   function renderizarResumo() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
     const n = clientesSelecionados.size;
-    const diasLabel = diasSelecionados.map(d => d === 'seg-sex' ? 'Seg-Sex' : d === 'sab' ? 'Sábado' : 'Domingo').join(', ');
+    const semDia = [...clientesSelecionados].filter(id => !(clientesDias[id] || []).length).length;
     document.getElementById('resumo').innerHTML = `
       <div class="resumo-row"><span class="resumo-label">Rota</span><span class="resumo-val">${nomeRota}</span></div>
       <div class="resumo-row"><span class="resumo-label">Motorista</span><span class="resumo-val">${motoboySelected.nome}</span></div>
       <div class="resumo-row"><span class="resumo-label">Telefone</span><span class="resumo-val">${motoboySelected.telefone}</span></div>
-      <div class="resumo-row"><span class="resumo-label">Dias</span><span class="resumo-val">${diasLabel}</span></div>
       <div class="resumo-row"><span class="resumo-label">Clientes</span><span class="resumo-val">${n}</span></div>
+      ${semDia > 0 ? `<div class="resumo-row"><span class="resumo-label" style="color:#D97706">⚠ Sem dia ativo</span><span class="resumo-val" style="color:#D97706">${semDia} cliente${semDia>1?'s':''}</span></div>` : ''}
     `;
   }
 
   async function criarRota() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
-    const diasAtivos = expandirDias(diasSelecionados).join(',');
-    const diaSemana = diasSelecionados.includes('sab') && !diasSelecionados.includes('seg-sex') ? 'sabado'
-      : diasSelecionados.includes('dom') && !diasSelecionados.includes('seg-sex') ? 'domingo' : 'seg-sex';
 
     const clientesData = clientesEncontrados.filter(c => clientesSelecionados.has(c.id)).map(c => ({
       id_base: c.id,
       numero_cliente: c.numero_cliente,
       nome: c.nome,
       horario: clientesContraPedido[c.id] ? '00:00' : c.horario,
-      dias_ativos: (clientesDias[c.id] || []).join(',') || diasAtivos,
+      dias_ativos: (clientesDias[c.id] || []).join(','), // pode ficar vazio — vinculado mas sem dia ativo
       obs: '',
       tipo: 'normal',
       lat: c.lat || null,
@@ -673,7 +639,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rota: nomeRota,
-          dia_semana: diaSemana,
+          dia_semana: 'seg-sex',
           telefone_motoboy: motoboySelected.telefone,
           nome_motoboy: motoboySelected.nome,
           clientes: clientesData
