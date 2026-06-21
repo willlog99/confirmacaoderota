@@ -1162,11 +1162,90 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="view" id="view-buscar">
         <div class="card">
           <div class="card-title">🔎 Buscar cliente</div>
+          <p style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">Busca em todos os cadastros — alocados em rotas e na base sem rota.</p>
           <div class="search-row">
             <input type="text" id="busca-input" placeholder="Nome ou código" onkeydown="if(event.key==='Enter')buscarCliente()"/>
             <button class="btn btn-primary" onclick="buscarCliente()">Buscar</button>
           </div>
           <div id="busca-resultado"></div>
+        </div>
+      </div>
+
+      <!-- MODAL EDITAR/ALOCAR CLIENTE -->
+      <div id="modal-editar-cliente" style="display:none;position:fixed;inset:0;background:rgba(15,40,64,.7);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto">
+          <div style="padding:1.25rem;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:1">
+            <div>
+              <div id="mec-titulo" style="font-size:15px;font-weight:800;color:#0F4C7A">—</div>
+              <div id="mec-sub" style="font-size:12px;color:#5A7A8F;margin-top:2px">—</div>
+            </div>
+            <button onclick="fecharModalEditarCliente()" style="background:none;border:none;font-size:22px;color:#5A7A8F;cursor:pointer">✕</button>
+          </div>
+          <div style="padding:1.25rem">
+            <div id="mec-status-badge" style="margin-bottom:1rem"></div>
+
+            <!-- Campos comuns: horário / contra pedido -->
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <input type="checkbox" id="mec-contra-pedido" onchange="mecToggleContraPedido()" style="width:18px;height:18px;accent-color:#0F4C7A"/>
+              <label for="mec-contra-pedido" style="margin:0;cursor:pointer;font-size:13px">📋 Contra pedido (sem horário fixo)</label>
+            </div>
+            <div id="mec-campo-horario" style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Horário</div>
+              <input type="time" id="mec-horario" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+            </div>
+
+            <!-- Dias da semana (só aparece se alocado, ou se for alocar agora) -->
+            <div id="mec-bloco-dias" style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:6px;text-transform:uppercase">Dias da semana</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <button onclick="mecToggleDia('seg',this)" class="mec-dia-btn" data-dia="seg" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Seg</button>
+                <button onclick="mecToggleDia('ter',this)" class="mec-dia-btn" data-dia="ter" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Ter</button>
+                <button onclick="mecToggleDia('qua',this)" class="mec-dia-btn" data-dia="qua" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Qua</button>
+                <button onclick="mecToggleDia('qui',this)" class="mec-dia-btn" data-dia="qui" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Qui</button>
+                <button onclick="mecToggleDia('sex',this)" class="mec-dia-btn" data-dia="sex" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Sex</button>
+                <button onclick="mecToggleDia('sab',this)" class="mec-dia-btn" data-dia="sab" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Sáb</button>
+                <button onclick="mecToggleDia('dom',this)" class="mec-dia-btn" data-dia="dom" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Dom</button>
+                <button onclick="mecSelecionarTodosDias()" style="padding:7px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#1D4ED8;font-size:12px;font-weight:600;cursor:pointer">Todos</button>
+              </div>
+            </div>
+
+            <!-- Lat/Lng/Endereço -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Latitude</div>
+                <input type="text" id="mec-lat" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Longitude</div>
+                <input type="text" id="mec-lng" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+              </div>
+            </div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Endereço</div>
+              <input type="text" id="mec-endereco" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+            </div>
+            <div id="mec-bloco-mostrar-endereco" style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+              <input type="checkbox" id="mec-mostrar-endereco" style="width:18px;height:18px;accent-color:#0F4C7A"/>
+              <label for="mec-mostrar-endereco" style="margin:0;cursor:pointer;font-size:13px">📍 Mostrar endereço para o motoboy</label>
+            </div>
+
+            <!-- Bloco de alocação (só aparece se NÃO está alocado) -->
+            <div id="mec-bloco-alocar" style="display:none;background:#F8FBFD;border-radius:10px;padding:12px;border:1.5px solid #EBF1F5;margin-bottom:14px">
+              <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:10px;text-transform:uppercase">📍 Alocar em uma rota</div>
+              <div style="margin-bottom:8px">
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Rota</div>
+                <input type="text" id="mec-rota" placeholder="Ex: SAO PAULO 14" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Motoboy</div>
+                <input type="text" id="mec-busca-motoboy" placeholder="Nome ou telefone..." oninput="mecBuscarMotoboy()" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+                <div id="mec-motoboy-results" style="display:none;margin-top:4px;border:1px solid #D6E5EE;border-radius:8px;max-height:160px;overflow-y:auto"></div>
+                <div id="mec-motoboy-sel" style="display:none;margin-top:6px;padding:8px 10px;background:#E8F4FB;border-radius:8px;font-size:12px;font-weight:700;color:#0F4C7A"></div>
+              </div>
+            </div>
+
+            <button id="mec-btn-salvar" onclick="mecSalvar()" style="width:100%;padding:11px;border-radius:10px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">💾 Salvar</button>
+          </div>
         </div>
       </div>
 
