@@ -901,29 +901,251 @@ async function criarCliente() {
 }
 
 
+let _mecEstadoAtual = null; // { tipo: 'alocado'|'base', dados: {...} }
+let _mecMotoboySelecionado = null;
+let _mecTodosMotoboys = [];
+
 async function buscarCliente() {
   const q = document.getElementById('busca-input').value.trim();
   if (!q) return;
   const el = document.getElementById('busca-resultado');
   el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
   try {
-    const r = await fetch(API + '/clientes?todos=1&todos_dias=1');
+    const r = await fetch(API + '/buscar-cliente-completo?q=' + encodeURIComponent(q));
     const d = await r.json();
-    const ql = q.toLowerCase();
-    const encontrados = (d.clientes||[]).filter(c => c.nome.toLowerCase().includes(ql) || String(c.numero_cliente).includes(q));
-    if (!encontrados.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
-    el.innerHTML = encontrados.slice(0,20).map(c => `
-      <div class="list-item">
-        <div class="list-item-row">
-          <div class="list-item-name">${c.nome}</div>
-          <div class="list-item-meta">Nº ${c.numero_cliente}</div>
-        </div>
-        <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario}</div>
-        <div class="list-item-actions">
-          <button class="btn btn-secondary" style="height:34px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover</button>
-        </div>
-      </div>`).join('');
+    const alocados = d.alocados || [];
+    const base = d.base || [];
+
+    if (!alocados.length && !base.length) { el.innerHTML = '<div class="empty">Nenhum cliente encontrado</div>'; return; }
+
+    let html = '';
+    if (alocados.length) {
+      html += `<div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px">✅ Alocados em rotas (${alocados.length})</div>`;
+      html += alocados.map(c => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${c.nome}</div>
+            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
+          </div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">📍 ${c.rota||'Sem rota'} · ⏰ ${c.horario} ${c.nome_motoboy ? '· 🏍️ ' + c.nome_motoboy : ''}</div>
+          <div class="list-item-actions">
+            <button class="btn btn-secondary" style="height:34px;font-size:12px" onclick='abrirEditarAlocado(${JSON.stringify(c).replace(/'/g,"&apos;")})'>✏️ Editar</button>
+            <button class="btn btn-secondary" style="height:34px;font-size:12px" onclick="abrirMover(${c.id})">↔ Mover rota</button>
+          </div>
+        </div>`).join('');
+    }
+    if (base.length) {
+      html += `<div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.05em;margin:14px 0 8px">📦 Na base, sem rota (${base.length})</div>`;
+      html += base.map(c => `
+        <div class="list-item">
+          <div class="list-item-row">
+            <div class="list-item-name">${c.nome}</div>
+            <div class="list-item-meta">Nº ${c.numero_cliente}</div>
+          </div>
+          <div style="font-size:12px;color:#94A8B8;margin-top:4px">⏰ ${c.horario || '—'} ${c.contra_pedido ? '· 📋 Contra pedido' : ''} ${c.endereco ? '· 📍 ' + c.endereco.substring(0,30) : ''}</div>
+          <div class="list-item-actions">
+            <button class="btn btn-primary" style="height:34px;font-size:12px" onclick='abrirEditarBase(${JSON.stringify(c).replace(/'/g,"&apos;")})'>✏️ Editar / Alocar</button>
+          </div>
+        </div>`).join('');
+    }
+    el.innerHTML = html;
   } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+}
+
+// ── MODAL EDITAR CLIENTE — comum ─────────────────────────────
+function mecToggleContraPedido() {
+  const marcado = document.getElementById('mec-contra-pedido').checked;
+  document.getElementById('mec-campo-horario').style.display = marcado ? 'none' : 'block';
+}
+
+function mecToggleDia(dia, btn) {
+  const ativo = btn.dataset.ativo === '1';
+  if (ativo) { btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#D6E5EE'; btn.dataset.ativo = '0'; }
+  else { btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A'; btn.dataset.ativo = '1'; }
+}
+
+function mecSelecionarTodosDias() {
+  document.querySelectorAll('.mec-dia-btn').forEach(btn => {
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A'; btn.dataset.ativo = '1';
+  });
+}
+
+function mecMarcarDias(diasStr) {
+  const dias = (diasStr || '').split(',').map(d => d.trim());
+  document.querySelectorAll('.mec-dia-btn').forEach(btn => {
+    const ativo = dias.includes(btn.dataset.dia);
+    if (ativo) { btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A'; btn.dataset.ativo = '1'; }
+    else { btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#D6E5EE'; btn.dataset.ativo = '0'; }
+  });
+}
+
+function fecharModalEditarCliente() {
+  document.getElementById('modal-editar-cliente').style.display = 'none';
+  _mecEstadoAtual = null;
+  _mecMotoboySelecionado = null;
+}
+
+function abrirEditarAlocado(c) {
+  _mecEstadoAtual = { tipo: 'alocado', dados: c };
+  document.getElementById('mec-titulo').textContent = c.nome;
+  document.getElementById('mec-sub').textContent = 'Nº ' + c.numero_cliente;
+  document.getElementById('mec-status-badge').innerHTML = `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#DCFCE7;color:#166534">✅ Alocado em ${c.rota}${c.nome_motoboy ? ' · ' + c.nome_motoboy : ''}</span>`;
+
+  const contraPedido = c.horario === '00:00' && !c.dias_ativos; // heurística simples, ajustável
+  document.getElementById('mec-contra-pedido').checked = false;
+  document.getElementById('mec-campo-horario').style.display = 'block';
+  document.getElementById('mec-horario').value = c.horario || '';
+  document.getElementById('mec-bloco-dias').style.display = 'block';
+  mecMarcarDias(c.dias_ativos);
+  document.getElementById('mec-lat').value = c.lat || '';
+  document.getElementById('mec-lng').value = c.lng || '';
+  document.getElementById('mec-endereco').value = c.endereco || '';
+  document.getElementById('mec-bloco-mostrar-endereco').style.display = 'flex';
+  document.getElementById('mec-mostrar-endereco').checked = !!c.mostrar_endereco;
+  document.getElementById('mec-bloco-alocar').style.display = 'none';
+
+  document.getElementById('modal-editar-cliente').style.display = 'flex';
+}
+
+function abrirEditarBase(c) {
+  _mecEstadoAtual = { tipo: 'base', dados: c };
+  document.getElementById('mec-titulo').textContent = c.nome;
+  document.getElementById('mec-sub').textContent = 'Nº ' + c.numero_cliente;
+  document.getElementById('mec-status-badge').innerHTML = `<span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;background:#F1F5F9;color:#475569">📦 Na base, sem rota</span>`;
+
+  document.getElementById('mec-contra-pedido').checked = !!c.contra_pedido;
+  document.getElementById('mec-campo-horario').style.display = c.contra_pedido ? 'none' : 'block';
+  document.getElementById('mec-horario').value = c.horario || '';
+  document.getElementById('mec-bloco-dias').style.display = 'none'; // dias só fazem sentido se alocar
+  document.getElementById('mec-lat').value = c.lat || '';
+  document.getElementById('mec-lng').value = c.lng || '';
+  document.getElementById('mec-endereco').value = c.endereco || '';
+  document.getElementById('mec-bloco-mostrar-endereco').style.display = 'none';
+  document.getElementById('mec-bloco-alocar').style.display = 'block';
+  document.getElementById('mec-rota').value = '';
+  document.getElementById('mec-busca-motoboy').value = '';
+  document.getElementById('mec-motoboy-results').style.display = 'none';
+  document.getElementById('mec-motoboy-sel').style.display = 'none';
+  _mecMotoboySelecionado = null;
+
+  document.getElementById('modal-editar-cliente').style.display = 'flex';
+}
+
+async function mecBuscarMotoboy() {
+  const q = document.getElementById('mec-busca-motoboy').value.trim();
+  const el = document.getElementById('mec-motoboy-results');
+  if (q.length < 2) { el.style.display = 'none'; return; }
+  if (!_mecTodosMotoboys.length) {
+    try {
+      const r = await fetch(API + '/motoboys?todos=1');
+      const d = await r.json();
+      _mecTodosMotoboys = d.motoboys || [];
+    } catch(e) { return; }
+  }
+  const ql = q.toLowerCase();
+  const vistos = new Set();
+  const encontrados = _mecTodosMotoboys.filter(m => {
+    const match = m.nome.toLowerCase().includes(ql) || m.telefone.includes(q.replace(/\D/g,''));
+    if (!match || vistos.has(m.telefone)) return false;
+    vistos.add(m.telefone);
+    return true;
+  }).slice(0, 8);
+  if (!encontrados.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.innerHTML = encontrados.map(m => `
+    <div onclick='mecSelecionarMotoboy(${JSON.stringify(m).replace(/'/g,"&apos;")})' style="padding:8px 10px;border-bottom:1px solid #F0F4F8;cursor:pointer;font-size:12px" onmouseover="this.style.background='#F8FBFD'" onmouseout="this.style.background=''">
+      <strong>${m.nome}</strong><br/><span style="color:#94A8B8;font-size:11px">${m.telefone}</span>
+    </div>`).join('');
+}
+
+function mecSelecionarMotoboy(m) {
+  _mecMotoboySelecionado = m;
+  document.getElementById('mec-busca-motoboy').value = '';
+  document.getElementById('mec-motoboy-results').style.display = 'none';
+  const sel = document.getElementById('mec-motoboy-sel');
+  sel.style.display = 'block';
+  sel.innerHTML = `🏍️ ${m.nome} · ${m.telefone} <button onclick="_mecMotoboySelecionado=null;document.getElementById('mec-motoboy-sel').style.display='none'" style="background:none;border:none;color:#EF4444;font-size:11px;cursor:pointer;margin-left:8px">✕</button>`;
+}
+
+async function mecSalvar() {
+  if (!_mecEstadoAtual) return;
+  const contraPedido = document.getElementById('mec-contra-pedido').checked;
+  const horario = contraPedido ? '' : document.getElementById('mec-horario').value;
+  const lat = document.getElementById('mec-lat').value.trim();
+  const lng = document.getElementById('mec-lng').value.trim();
+  const endereco = document.getElementById('mec-endereco').value.trim();
+
+  if (_mecEstadoAtual.tipo === 'alocado') {
+    const diasSelecionados = [...document.querySelectorAll('.mec-dia-btn')].filter(b => b.dataset.ativo === '1').map(b => b.dataset.dia);
+    const mostrarEndereco = document.getElementById('mec-mostrar-endereco').checked;
+    try {
+      await fetch(API + '/editar-cliente-alocado', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id: _mecEstadoAtual.dados.id,
+          horario: horario || '00:00',
+          dias_ativos: diasSelecionados.join(','),
+          contra_pedido: contraPedido ? 1 : 0,
+          lat: lat ? parseFloat(lat) : null,
+          lng: lng ? parseFloat(lng) : null,
+          endereco: endereco || '',
+          mostrar_endereco: mostrarEndereco ? 1 : 0
+        })
+      });
+      toast('✓ Cliente atualizado');
+      fecharModalEditarCliente();
+      buscarCliente();
+    } catch(e) { toast('Erro ao salvar'); }
+    return;
+  }
+
+  // tipo === 'base'
+  const rota = document.getElementById('mec-rota').value.trim();
+  if (rota && _mecMotoboySelecionado) {
+    // Vai alocar em uma rota
+    const diasPadrao = 'seg,ter,qua,qui,sex';
+    try {
+      await fetch(API + '/alocar-cliente', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id_base: _mecEstadoAtual.dados.id,
+          rota,
+          telefone_motoboy: _mecMotoboySelecionado.telefone,
+          nome_motoboy: _mecMotoboySelecionado.nome,
+          dia_semana: 'seg-sex',
+          dias_ativos: diasPadrao,
+          horario: horario || '00:00',
+          contra_pedido: contraPedido ? 1 : 0,
+          lat: lat ? parseFloat(lat) : null,
+          lng: lng ? parseFloat(lng) : null,
+          endereco: endereco || ''
+        })
+      });
+      toast('✓ Cliente alocado em ' + rota);
+      fecharModalEditarCliente();
+      buscarCliente();
+    } catch(e) { toast('Erro ao alocar'); }
+  } else if (rota && !_mecMotoboySelecionado) {
+    toast('Selecione o motoboy para alocar');
+  } else {
+    // Só editar dados na base, sem alocar
+    try {
+      await fetch(API + '/editar-cliente-base', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          id: _mecEstadoAtual.dados.id,
+          horario: horario || '00:00',
+          contra_pedido: contraPedido ? 1 : 0,
+          lat: lat ? parseFloat(lat) : null,
+          lng: lng ? parseFloat(lng) : null,
+          endereco: endereco || ''
+        })
+      });
+      toast('✓ Cliente atualizado na base');
+      fecharModalEditarCliente();
+      buscarCliente();
+    } catch(e) { toast('Erro ao salvar'); }
+  }
 }
 
 
