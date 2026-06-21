@@ -321,6 +321,7 @@
   let clientesSelecionados = new Set();
   let clientesDias = {}; // id => array de dias ativos
   let clientesMostrarEndereco = {}; // id => true/false
+  let clientesContraPedido = {}; // id => true/false
   let todosMotoboys = [];
 
   // ETAPA 1 - BUSCA MOTORISTA
@@ -451,11 +452,16 @@
             Mostrar endereço
           </label>`
         : '';
+      const ehContraPedido = clientesContraPedido[c.id] || false;
       return `<div class="cli-row${sel ? ' sel' : ''}" id="row-${c.id}" onclick="toggleCliente(${c.id})">
         <div class="cli-checkbox">${sel ? '✓' : ''}</div>
         <div class="cli-nome">${c.nome}</div>
         <div class="cli-num">Nº ${c.numero_cliente}</div>
-        <div class="cli-hora-badge">${c.horario}</div>
+        <input type="time" value="${c.horario}" ${ehContraPedido ? 'disabled' : ''} onclick="event.stopPropagation()" onchange="event.stopPropagation();editarHorarioCliente(${c.id},this.value)" class="cli-hora-input" id="hora-input-${c.id}" style="font-size:11px;font-weight:700;color:#0F4C7A;flex-shrink:0;border:1.5px solid #D6E5EE;border-radius:6px;padding:3px 5px;background:${ehContraPedido?'#F1F5F9':'#fff'};outline:none;width:78px"/>
+        <label onclick="event.stopPropagation()" style="display:flex;align-items:center;gap:3px;font-size:9px;color:#5A7A8F;cursor:pointer;flex-shrink:0;white-space:nowrap">
+          <input type="checkbox" ${ehContraPedido ? 'checked' : ''} onchange="toggleContraPedidoCliente(${c.id},this.checked)" style="width:13px;height:13px;accent-color:#F59E0B;margin:0"/>
+          Contra pedido
+        </label>
         ${coordHTML}
         ${enderecoToggleHTML}
         <button onclick="event.stopPropagation();abrirDuplicar(${JSON.stringify(c).replace(/"/g,'&quot;')})" 
@@ -464,6 +470,25 @@
     }).join('');
     lista.innerHTML = rows;
     atualizarContador();
+  }
+
+  function editarHorarioCliente(id, novoHorario) {
+    const c = clientesEncontrados.find(cl => cl.id === id);
+    if (c) c.horario = novoHorario;
+  }
+
+  function toggleContraPedidoCliente(id, valor) {
+    clientesContraPedido[id] = valor;
+    const input = document.getElementById('hora-input-' + id);
+    if (input) {
+      input.disabled = valor;
+      input.style.background = valor ? '#F1F5F9' : '#fff';
+      if (valor) {
+        const c = clientesEncontrados.find(cl => cl.id === id);
+        if (c) c.horario = '00:00';
+        input.value = '00:00';
+      }
+    }
   }
 
   function toggleMostrarEndereco(id, valor) {
@@ -627,14 +652,15 @@
       id_base: c.id,
       numero_cliente: c.numero_cliente,
       nome: c.nome,
-      horario: c.horario,
+      horario: clientesContraPedido[c.id] ? '00:00' : c.horario,
       dias_ativos: (clientesDias[c.id] || []).join(',') || diasAtivos,
       obs: '',
       tipo: 'normal',
       lat: c.lat || null,
       lng: c.lng || null,
       endereco: c.endereco || '',
-      mostrar_endereco: clientesMostrarEndereco[c.id] ? 1 : 0
+      mostrar_endereco: clientesMostrarEndereco[c.id] ? 1 : 0,
+      contra_pedido: clientesContraPedido[c.id] ? 1 : 0
     }));
 
     const btn = document.getElementById('btn-criar');
