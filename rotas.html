@@ -697,14 +697,22 @@
   async function excluirCliente(id, rotaIdx) {
     if (!confirm('Excluir este cliente da rota? Ele voltará para a base.')) return;
     try {
-      // Volta cliente para base antes de desativar
+      // Volta cliente para base antes de desativar, preservando todos os dados
       const rota = todasRotas[rotaIdx].rota;
       const cli = (clientesPorRota[rota] || []).find(c => c.id === id);
       if (cli) {
         await fetch(API + '/clientes-base', { 
           method:'POST', 
           headers:{'Content-Type':'application/json'}, 
-          body: JSON.stringify({ numero_cliente: cli.numero_cliente, nome: cli.nome, horario: cli.horario }) 
+          body: JSON.stringify({
+            numero_cliente: cli.numero_cliente,
+            nome: cli.nome,
+            horario: cli.horario,
+            contra_pedido: cli.contra_pedido ? 1 : 0,
+            lat: cli.lat || null,
+            lng: cli.lng || null,
+            endereco: cli.endereco || ''
+          })
         });
       }
       await fetch(API + '/clientes', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
