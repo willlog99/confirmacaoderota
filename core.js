@@ -1164,23 +1164,49 @@ async function carregarRelHorarios() {
     _relHorDados = d.coletas || [];
     if (!_relHorDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhuma coleta encontrada</div>'; return; }
 
+    function fmtHora(ts) {
+      if (!ts) return '\u2014';
+      return new Date(ts).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+    }
+    function fmtDiffMin(tsChegada, tsFinal) {
+      if (!tsChegada || !tsFinal) return '';
+      const diff = Math.round((tsFinal - tsChegada) / 60000);
+      if (diff <= 0) return '';
+      return ' <span style="font-size:10px;color:#94A8B8">(+' + diff + 'min)</span>';
+    }
+
     lista.innerHTML = '<table class="rel-table"><thead><tr>' +
-      '<th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th>' +
+      '<th>Cliente</th><th>Rota</th><th>Chegada GPS</th><th>Finalização</th><th>Coordenada</th><th>Status</th>' +
       '</tr></thead><tbody>' +
-      _relHorDados.map(c => '<tr>' +
-        '<td class="rel-nome">' + c.nome_cliente + '</td>' +
-        '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
-        '<td class="rel-hora">' + (c.horario_chegada || '\u2014') + '</td>' +
-        '<td>' + (c.produtividade === 'produtiva' ? '<span class="rel-badge rel-b-ok">\u2713 Produtiva</span>' : '<span class="rel-badge rel-b-err">\u2717 Improdutiva</span>') + '</td>' +
-        '</tr>').join('') +
+      _relHorDados.map(c => {
+        const temChegadaGps = !!c.horario_chegada_gps;
+        const coordBadge = (c.coordenada_ok === null || c.coordenada_ok === undefined)
+          ? '<span class="rel-sub">\u2014</span>'
+          : (c.coordenada_ok ? '<span class="rel-badge rel-b-ok">\u2713 OK</span>' : '<span class="rel-badge rel-b-err" title="Dist\u00e2ncia: ' + (c.distancia_finalizacao_m||'?') + 'm">\u26a0 N\u00e3o bate</span>');
+        return '<tr>' +
+          '<td class="rel-nome">' + c.nome_cliente + '</td>' +
+          '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
+          '<td class="rel-hora">' + (temChegadaGps ? fmtHora(c.horario_chegada_gps) : '<span class="rel-sub">sem GPS</span>') + '</td>' +
+          '<td class="rel-hora">' + fmtHora(c.timestamp) + fmtDiffMin(c.horario_chegada_gps, c.timestamp) + '</td>' +
+          '<td>' + coordBadge + '</td>' +
+          '<td>' + (c.produtividade === 'produtiva' ? '<span class="rel-badge rel-b-ok">\u2713 Produtiva</span>' : '<span class="rel-badge rel-b-err">\u2717 Improdutiva</span>') + '</td>' +
+          '</tr>';
+      }).join('') +
       '</tbody></table>';
   } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
 }
 
 function exportarRelHorExcel() {
   if (!_relHorDados.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = [['Cliente','Rota','Chegada','Produtividade','Motivo Improdutiva']];
-  _relHorDados.forEach(c => linhas.push([c.nome_cliente, c.rota||'', c.horario_chegada||'', c.produtividade||'', c.motivo_improdutiva||'']));
+  const linhas = [['Cliente','Rota','Chegada GPS','Finalização','Distância chegada (m)','Distância finalização (m)','Coordenada OK','Produtividade','Motivo Improdutiva']];
+  _relHorDados.forEach(c => linhas.push([
+    c.nome_cliente, c.rota||'',
+    c.horario_chegada_gps ? new Date(c.horario_chegada_gps).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}) : '',
+    c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}) : '',
+    c.distancia_chegada_m ?? '', c.distancia_finalizacao_m ?? '',
+    (c.coordenada_ok === null || c.coordenada_ok === undefined) ? '' : (c.coordenada_ok ? 'Sim' : 'Não'),
+    c.produtividade||'', c.motivo_improdutiva||''
+  ]));
   relExportarXLSX(linhas, 'horarios-coleta', 'Horarios');
 }
 
