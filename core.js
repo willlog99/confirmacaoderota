@@ -36,7 +36,37 @@ const BREADCRUMBS = {
   'gerenciar-motoboys': 'Gestão de Rota › <b>Motoboys</b>',
   'ativar-cliente': 'Gestão de Rota › <b>Ativar/Desativar cliente</b>',
 };
+function toggleMobileMenu() {
+  document.querySelector('.app-sidebar')?.classList.toggle('mobile-open');
+  document.getElementById('mobile-overlay')?.classList.toggle('show');
+}
+
+const VIEWS_SO_DESKTOP = ['mapa-rastreamento', 'replay-rota', 'ponto-rh'];
+
+function mostrarBloqueioMobile(id) {
+  const nomes = { 'mapa-rastreamento': 'Mapa de Rastreamento', 'replay-rota': 'Replay da Rota', 'ponto-rh': 'Ponto RH' };
+  const nome = nomes[id] || 'Esta função';
+  const popup = document.createElement('div');
+  popup.style.cssText = 'position:fixed;inset:0;background:rgba(11,33,56,.75);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.25rem';
+  popup.innerHTML = `
+    <div style="background:#fff;border-radius:18px;padding:1.75rem 1.5rem;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="font-size:40px;margin-bottom:12px">🖥️</div>
+      <div style="font-family:'Sora',sans-serif;font-weight:800;font-size:15px;color:#0F4C7A;margin-bottom:8px">${nome}</div>
+      <div style="font-size:13px;color:#647689;line-height:1.5;margin-bottom:18px">Esta função está disponível apenas no computador. Acesse pelo navegador desktop para usá-la.</div>
+      <button onclick="this.closest('div[style*=fixed]').remove()" style="width:100%;padding:11px;border-radius:11px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">Entendi</button>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
 function setView(id, el) {
+  if (VIEWS_SO_DESKTOP.includes(id) && window.innerWidth < 900) {
+    mostrarBloqueioMobile(id);
+    return;
+  }
+  if (window.innerWidth < 900) {
+    document.querySelector('.app-sidebar')?.classList.remove('mobile-open');
+    document.getElementById('mobile-overlay')?.classList.remove('show');
+  }
   pararAutoRefresh();
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(m => m.classList.remove('active'));
