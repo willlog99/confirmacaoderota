@@ -312,6 +312,76 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .view{display:none}
 .view.active{display:block}
 
+/* ══════════════════════════════════════════════════════ */
+/* ══ RESPONSIVO MOBILE (telas até 899px) ══ */
+/* ══════════════════════════════════════════════════════ */
+.mobile-menu-trigger{display:none}
+.mobile-overlay{display:none}
+
+@media (max-width: 899px){
+  .app-layout{position:relative}
+  body{overflow-x:hidden}
+  .app-content{overflow-x:hidden}
+
+  /* Sidebar vira drawer — fora da tela por padrão */
+  .app-sidebar{
+    position:fixed;top:0;left:0;height:100vh;width:264px!important;
+    transform:translateX(-100%);transition:transform .25s cubic-bezier(.4,0,.2,1);
+    z-index:200;
+  }
+  .app-sidebar.mobile-open{transform:translateX(0)}
+  .app-sidebar:hover{width:264px}
+  .app-sidebar .sidebar-mascote-txt,
+  .app-sidebar .nav-group-lbl,
+  .app-sidebar .nav-item-txt,
+  .app-sidebar .sf-name,
+  .app-sidebar .sf-role{opacity:1!important;height:auto!important;padding-top:initial}
+
+  /* Overlay escuro atrás do drawer */
+  .mobile-overlay{
+    display:none;position:fixed;inset:0;background:rgba(11,33,56,.55);
+    z-index:150;
+  }
+  .mobile-overlay.show{display:block}
+
+  /* Botão hamburger no topbar */
+  .mobile-menu-trigger{
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);
+    background:var(--card);font-size:16px;cursor:pointer;flex-shrink:0;color:var(--az);
+  }
+
+  /* Headers de painel (.ph) quebram linha em vez de vazar */
+  .ph{flex-wrap:wrap;gap:8px}
+  .ph > div{flex-shrink:0}
+
+  /* Esconde funções que só fazem sentido no desktop (mapa, replay, ponto) */
+  .desktop-only{display:none!important}
+
+  .app-topbar{padding:0 14px;gap:8px}
+  .tb-breadcrumb{display:none}
+  #topbar-data{display:none}
+  .tb-right{gap:6px}
+  .tb-btn span{display:none}
+
+  .app-content{padding:12px}
+
+  /* Grids de 2-3 colunas empilham em 1 coluna */
+  .dash-grid{grid-template-columns:1fr!important}
+  .rel-kpis{grid-template-columns:repeat(2,1fr)!important}
+
+  /* Tabelas com scroll horizontal em vez de quebrar layout */
+  .rel-table{display:block;overflow-x:auto;white-space:nowrap}
+  table{min-width:560px}
+
+  /* Cards de toolbar empilham */
+  .rel-card-head{flex-direction:column;align-items:stretch!important}
+  .rel-card-head > *{width:100%}
+
+  /* Modais ocupam quase a tela toda, sem ultrapassar */
+  div[id^="modal-"]{padding:0.75rem!important}
+}
+
 /* ══ PAINEL PRINCIPAL (view-painel) ══ */
 .dash-grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;align-items:start}
 
@@ -452,14 +522,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="nav-group-lbl">OPS</div>
       <button class="nav-item active" onclick="setView('painel',this)"><span class="nav-ic">🏠</span><span class="nav-item-txt">Painel<span class="nav-badge-red" id="nav-badge-painel" style="display:none">0</span></span></button>
       <button class="nav-item" onclick="setView('confirmacoes',this)"><span class="nav-ic">✓</span><span class="nav-item-txt">Confirmações</span></button>
-      <button class="nav-item" onclick="setView('mapa-rastreamento',this)"><span class="nav-ic">🗺️</span><span class="nav-item-txt">Rastreamento<div class="nav-live" style="display:inline-flex;margin-left:6px"><div class="nav-live-dot"></div>LIVE</div></span></button>
-      <button class="nav-item" onclick="setView('replay-rota',this)"><span class="nav-ic">📍</span><span class="nav-item-txt">Replay da Rota</span></button>
+      <button class="nav-item desktop-only" onclick="setView('mapa-rastreamento',this)"><span class="nav-ic">🗺️</span><span class="nav-item-txt">Rastreamento<div class="nav-live" style="display:inline-flex;margin-left:6px"><div class="nav-live-dot"></div>LIVE</div></span></button>
+      <button class="nav-item desktop-only" onclick="setView('replay-rota',this)"><span class="nav-ic">📍</span><span class="nav-item-txt">Replay da Rota</span></button>
       <button class="nav-item" onclick="setView('checklist-view',this)"><span class="nav-ic">📋</span><span class="nav-item-txt">Checklist</span></button>
       <button class="nav-item" onclick="setView('motoristas',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Motoristas</span></button>
 
       <div class="nav-group-lbl">Gente e Gestão</div>
       <button class="nav-item" onclick="setView('estoque-view',this)"><span class="nav-ic">📦</span><span class="nav-item-txt">PMC Estoque</span></button>
-      <button class="nav-item" onclick="setView('ponto-rh',this)"><span class="nav-ic">⏱️</span><span class="nav-item-txt">Ponto RH</span></button>
+      <button class="nav-item desktop-only" onclick="setView('ponto-rh',this)"><span class="nav-ic">⏱️</span><span class="nav-item-txt">Ponto RH</span></button>
       <button class="nav-item" onclick="setView('patrimonios',this)"><span class="nav-ic">🔒</span><span class="nav-item-txt">Patrimônios</span></button>
 
       <div class="nav-group-lbl">Qualidade</div>
@@ -499,12 +569,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="app-main">
 
     <div class="app-topbar">
+      <button class="mobile-menu-trigger" onclick="toggleMobileMenu()">☰</button>
       <div class="tb-breadcrumb" id="tb-breadcrumb">OPS › <b>Painel</b></div>
       <div id="topbar-data" style="font-size:11px;color:var(--mut)">—</div>
       <div class="tb-right">
-        <button class="tb-btn" onclick="location.reload()">↻ Atualizar</button>
+        <button class="tb-btn" onclick="location.reload()">↻ <span>Atualizar</span></button>
       </div>
     </div>
+    <div class="mobile-overlay" id="mobile-overlay" onclick="toggleMobileMenu()"></div>
 
     <div class="app-content">
 
