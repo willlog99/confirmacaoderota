@@ -4,6 +4,8 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Painel de Gestão Loglife</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
 <!-- PWA -->
 <link rel="manifest" href="manifest.json"/>
 <meta name="theme-color" content="#0F4C7A"/>
@@ -203,16 +205,20 @@
 /* ══ NOVO LAYOUT ══ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --az:#0F4C7A;--az2:#1E9FD9;--az3:#E8F4FB;
-  --vd:#0F9B78;--vd2:#E8F8F0;
-  --am:#F59E0B;--am2:#FEF9EC;
-  --rd:#DC2626;--rd2:#FCEBEB;
-  --bg:#F0F5FA;--card:#fff;
-  --border:#D6E5EE;--border2:#EBF1F5;
-  --txt:#0F2940;--mut:#5A7A8F;--mut2:#94A8B8;
-  --sidebar-w:220px;
+  --navy:#0B2138;--navy2:#102D49;
+  --az:#0F4C7A;--az2:#1E9FD9;--az3:#EAF4FB;
+  --teal:#0E9B8E;--teal-l:#E4F7F5;
+  --vd:#0E9B78;--vd2:#E7F7F1;
+  --am:#D97706;--am2:#FEF3DD;
+  --rd:#DC4545;--rd2:#FCEAEA;
+  --bg:#F7F9FC;--card:#fff;
+  --border:#E7ECF2;--border2:#EFF3F7;
+  --txt:#0F1E2E;--mut:#647689;--mut2:#9AABBB;
+  --disp:'Sora',sans-serif;
+  --sidebar-w:236px;
   --sidebar-collapsed:60px;
 }
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700;800&display=swap');
 html,body{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);display:flex;flex-direction:column}
 
@@ -221,7 +227,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* ══ SIDEBAR ══ */
 .app-sidebar{
-  width:var(--sidebar-collapsed);background:var(--az);
+  width:var(--sidebar-collapsed);background:var(--navy);
   display:flex;flex-direction:column;flex-shrink:0;
   overflow:hidden;transition:width .25s cubic-bezier(.4,0,.2,1);
   position:relative;z-index:100;
@@ -230,75 +236,77 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 /* Mascote no topo quando colapsado */
 .sidebar-mascote{
-  padding:12px;display:flex;align-items:center;justify-content:center;
-  border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0;min-height:60px;
+  padding:14px 12px;display:flex;align-items:center;justify-content:center;
+  border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0;min-height:60px;
 }
-.sidebar-mascote img{width:36px;height:36px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.3))}
+.sidebar-mascote img{width:34px;height:34px;object-fit:contain;flex-shrink:0;border-radius:9px}
 .sidebar-mascote-txt{
   margin-left:10px;white-space:nowrap;overflow:hidden;
   opacity:0;transition:opacity .15s;pointer-events:none;
 }
 .app-sidebar:hover .sidebar-mascote-txt{opacity:1}
-.sidebar-logo-txt{font-size:13px;font-weight:700;color:#fff}
-.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px}
+.sidebar-logo-txt{font-family:var(--disp);font-size:14px;font-weight:700;color:#fff;letter-spacing:-.01em}
+.sidebar-logo-sub{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;text-transform:uppercase;letter-spacing:.04em;font-weight:600}
 
-.sidebar-nav{flex:1;overflow-y:auto;padding:8px 0;scrollbar-width:none;overflow-x:hidden}
+.sidebar-nav{flex:1;overflow-y:auto;padding:10px 0;scrollbar-width:none;overflow-x:hidden}
 .sidebar-nav::-webkit-scrollbar{display:none}
 
 .nav-group-lbl{
-  font-size:9px;font-weight:700;color:rgba(255,255,255,.3);
-  text-transform:uppercase;letter-spacing:.12em;
-  padding:10px 16px 4px;white-space:nowrap;overflow:hidden;
+  font-size:10px;font-weight:700;color:rgba(255,255,255,.32);
+  text-transform:uppercase;letter-spacing:.08em;
+  padding:10px 16px 6px;white-space:nowrap;overflow:hidden;
   opacity:0;transition:opacity .15s;height:0;padding:0;
 }
-.app-sidebar:hover .nav-group-lbl{opacity:1;height:auto;padding:10px 16px 4px}
+.app-sidebar:hover .nav-group-lbl{opacity:1;height:auto;padding:14px 16px 6px}
 
 .nav-item{
-  display:flex;align-items:center;gap:8px;
-  padding:8px 16px;font-size:13px;font-weight:500;
-  color:rgba(255,255,255,.55);cursor:pointer;
+  display:flex;align-items:center;gap:11px;
+  padding:9px 16px;font-size:13px;font-weight:600;
+  color:rgba(255,255,255,.62);cursor:pointer;
   border-left:2px solid transparent;transition:.15s;
   background:none;border-top:none;border-right:none;border-bottom:none;
   width:100%;text-align:left;font-family:inherit;white-space:nowrap;
+  border-radius:0 10px 10px 0;margin-bottom:1px;
 }
-.nav-item:hover{color:rgba(255,255,255,.9);background:rgba(255,255,255,.05)}
-.nav-item.active{color:#fff;background:rgba(30,159,217,.18);border-left-color:var(--az2);font-weight:600}
-.nav-ic{font-size:15px;width:20px;text-align:center;flex-shrink:0}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06)}
+.nav-item.active{color:#fff;background:rgba(30,159,217,.18);border-left-color:var(--az2);font-weight:700}
+.nav-ic{font-size:15px;width:18px;text-align:center;flex-shrink:0}
 
 /* Texto dos itens some quando colapsado */
 .nav-item-txt{overflow:hidden;opacity:0;transition:opacity .15s;white-space:nowrap}
 .app-sidebar:hover .nav-item-txt{opacity:1}
 
-.nav-badge-red{margin-left:auto;font-size:10px;font-weight:700;background:var(--rd);color:#fff;padding:1px 6px;border-radius:20px;flex-shrink:0}
+.nav-badge-red{margin-left:auto;font-size:9.5px;font-weight:800;background:var(--rd);color:#fff;padding:1px 6px;border-radius:99px;flex-shrink:0}
 .nav-tag{margin-left:auto;font-size:9px;color:rgba(255,255,255,.25);background:rgba(255,255,255,.07);padding:1px 5px;border-radius:3px;flex-shrink:0}
-.nav-live{margin-left:auto;display:flex;align-items:center;gap:3px;font-size:9px;font-weight:700;color:#4ade80;background:rgba(74,222,128,.15);padding:2px 6px;border-radius:20px;flex-shrink:0}
-.nav-live-dot{width:5px;height:5px;border-radius:50%;background:#4ade80;animation:pulse2 1.4s infinite}
+.nav-live{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:9px;font-weight:800;color:var(--teal);background:rgba(14,155,142,.18);padding:2px 7px;border-radius:99px;flex-shrink:0}
+.nav-live-dot{width:5px;height:5px;border-radius:50%;background:var(--teal);animation:pulse2 1.4s infinite}
 
 .sidebar-footer{
-  padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);
-  display:flex;align-items:center;gap:8px;flex-shrink:0;overflow:hidden;
+  padding:13px 14px;border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:center;gap:9px;flex-shrink:0;overflow:hidden;
+  background:rgba(255,255,255,.03);
 }
-.sf-av{width:28px;height:28px;border-radius:50%;background:var(--az2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
-.sf-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.8);white-space:nowrap;opacity:0;transition:opacity .15s}
-.sf-role{font-size:10px;color:rgba(255,255,255,.35);white-space:nowrap;opacity:0;transition:opacity .15s}
+.sf-av{width:30px;height:30px;border-radius:9px;background:var(--az2);display:flex;align-items:center;justify-content:center;font-size:11px;font-family:var(--disp);font-weight:700;color:#fff;flex-shrink:0}
+.sf-name{font-size:12.5px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;opacity:0;transition:opacity .15s}
+.sf-role{font-size:10.5px;color:rgba(255,255,255,.4);white-space:nowrap;opacity:0;transition:opacity .15s;font-weight:600}
 .app-sidebar:hover .sf-name,.app-sidebar:hover .sf-role{opacity:1}
 
 /* ══ MAIN ══ */
 .app-main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
 /* Topbar */
 .app-topbar{
-  background:var(--card);border-bottom:1px solid var(--border2);
-  padding:0 20px;height:48px;
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:0 22px;height:56px;
   display:flex;align-items:center;gap:12px;flex-shrink:0;
 }
-.tb-breadcrumb{font-size:11px;color:var(--mut)}
-.tb-breadcrumb b{color:var(--txt);font-weight:600}
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:8px}
-.tb-btn{height:30px;padding:0 12px;border-radius:7px;border:1.5px solid var(--border);background:var(--card);font-size:11px;font-weight:600;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:5px;font-family:inherit;transition:.15s}
-.tb-btn:hover{border-color:var(--az2);color:var(--az)}
+.tb-breadcrumb{font-size:11px;color:var(--mut2);font-weight:600}
+.tb-breadcrumb b{font-family:var(--disp);color:var(--txt);font-weight:700;font-size:13px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.tb-btn{height:34px;padding:0 14px;border-radius:9px;border:1.5px solid var(--border);background:var(--card);font-size:11.5px;font-weight:700;color:var(--mut);cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;transition:.15s}
+.tb-btn:hover{border-color:var(--az2);color:var(--az);background:var(--az3)}
 
 /* Content */
-.app-content{flex:1;overflow-y:auto;padding:16px 20px}
+.app-content{flex:1;overflow-y:auto;padding:18px 22px;background:var(--bg)}
 
 /* Views dentro do novo layout */
 .view{display:none}
@@ -445,6 +453,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button class="nav-item active" onclick="setView('painel',this)"><span class="nav-ic">🏠</span><span class="nav-item-txt">Painel<span class="nav-badge-red" id="nav-badge-painel" style="display:none">0</span></span></button>
       <button class="nav-item" onclick="setView('confirmacoes',this)"><span class="nav-ic">✓</span><span class="nav-item-txt">Confirmações</span></button>
       <button class="nav-item" onclick="setView('mapa-rastreamento',this)"><span class="nav-ic">🗺️</span><span class="nav-item-txt">Rastreamento<div class="nav-live" style="display:inline-flex;margin-left:6px"><div class="nav-live-dot"></div>LIVE</div></span></button>
+      <button class="nav-item" onclick="setView('replay-rota',this)"><span class="nav-ic">📍</span><span class="nav-item-txt">Replay da Rota</span></button>
       <button class="nav-item" onclick="setView('checklist-view',this)"><span class="nav-ic">📋</span><span class="nav-item-txt">Checklist</span></button>
       <button class="nav-item" onclick="setView('motoristas',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Motoristas</span></button>
 
@@ -744,6 +753,39 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div id="leaflet-map" style="height:100%;width:100%"></div>
         </div>
       </div>
+      <div class="view" id="view-replay-rota">
+        <div style="padding:16px">
+          <div class="rel-card" style="margin-bottom:12px">
+            <div class="rel-card-head">
+              <span class="rel-card-title">📍 Replay da Rota</span>
+              <input type="date" id="replay-data" class="rel-inp"/>
+              <select id="replay-motoboy-select" class="rel-inp" style="min-width:200px">
+                <option value="">Selecione o motoboy...</option>
+              </select>
+              <button class="rel-btn-primary" onclick="carregarReplayRota()">🔍 Carregar</button>
+            </div>
+            <div style="padding:10px 16px;display:flex;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--border2);background:#fff">
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#5A7A8F;font-weight:600"><div style="width:9px;height:9px;border-radius:50%;background:#1E9FD9"></div> Trajeto GPS</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#5A7A8F;font-weight:600"><div style="width:9px;height:9px;border-radius:50%;background:#0F9B78"></div> Chegada confirmada</div>
+              <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#5A7A8F;font-weight:600"><div style="width:9px;height:9px;border-radius:50%;background:#F59E0B"></div> Sem GPS de chegada</div>
+            </div>
+            <div id="replay-mapa" style="height:380px;width:100%"></div>
+            <div id="replay-resumo" style="display:flex;gap:1px;background:var(--border2);border-top:1px solid var(--border2)">
+              <div style="flex:1;background:#fff;padding:12px 16px;text-align:center"><div id="replay-kpi-km" style="font-size:18px;font-weight:800;color:#0F4C7A">—</div><div style="font-size:9.5px;font-weight:600;color:#5A7A8F;text-transform:uppercase">Trajeto percorrido</div></div>
+              <div style="flex:1;background:#fff;padding:12px 16px;text-align:center"><div id="replay-kpi-chegadas" style="font-size:18px;font-weight:800;color:#0F9B78">—</div><div style="font-size:9.5px;font-weight:600;color:#5A7A8F;text-transform:uppercase">Com chegada GPS</div></div>
+              <div style="flex:1;background:#fff;padding:12px 16px;text-align:center"><div id="replay-kpi-periodo" style="font-size:18px;font-weight:800;color:#0F4C7A">—</div><div style="font-size:9.5px;font-weight:600;color:#5A7A8F;text-transform:uppercase">Início — Fim</div></div>
+            </div>
+          </div>
+
+          <div class="rel-card">
+            <div class="rel-card-head"><span class="rel-card-title">Clientes da rota — horários de chegada</span></div>
+            <div id="replay-lista">
+              <div class="rel-empty">Selecione a data e o motoboy, depois clique em Carregar</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       <div class="view" id="view-confirmacoes">
         <div class="card">
