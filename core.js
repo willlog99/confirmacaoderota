@@ -84,6 +84,11 @@ function setView(id, el) {
     relMudarTipo('km');
     setTimeout(carregarRelKm, 100);
   }
+  if (id === 'replay-rota') {
+    popularSelectMotoboysReplay();
+    const dataInp = document.getElementById('replay-data');
+    if (dataInp && !dataInp.value) dataInp.value = new Date().toISOString().split('T')[0];
+  }
 }
 function showMsg(id, text, type) {
   const el = document.getElementById(id);
@@ -3840,3 +3845,160 @@ async function atualizarBadgeChat() {
 setInterval(atualizarBadgeChat, 15000);
 setTimeout(atualizarBadgeChat, 2000);
 // ── FIM CHAT DO PAINEL ────────────────────────────────────────
+
+// ── REPLAY DA ROTA ────────────────────────────────────────────
+let replayMapaInst = null;
+let replayPolyline = null;
+let replayMarkers = [];
+
+async function popularSelectMotoboysReplay() {
+  const sel = document.getElementById('replay-motoboy-select');
+  if (!sel || sel.options.length > 1) return; // já populado
+  try {
+    const r = await fetch(API + '/motoboys?todos=1');
+    const d = await r.json();
+    const nomes = [...new Set((d.motoboys || []).map(m => m.nome))].sort();
+    sel.innerHTML = '<option value="">Selecione o motoboy...</option>' + nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+  } catch(e) {}
+}
+
+function iniciarReplayMapa() {
+  if (replayMapaInst) return;
+  const el = document.getElementById('replay-mapa');
+  if (!el || typeof L === 'undefined') { setTimeout(iniciarReplayMapa, 300); return; }
+  replayMapaInst = L.map('replay-mapa', { zoomControl: true }).setView([-23.5505, -46.6333], 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', maxZoom: 19, subdomains: 'abcd'
+  }).addTo(replayMapaInst);
+}
+
+async function carregarReplayRota() {
+  const data = document.getElementById('replay-data')?.value;
+  const nome = document.getElementById('replay-motoboy-select')?.value;
+  const lista = document.getElementById('replay-lista');
+  if (!data || !nome) { toast('Selecione a data e o motoboy'); return; }
+
+  iniciarReplayMapa();
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+    const dataIso = data; // já vem como YYYY-MM-DD do input date
+    const r = await fetch(API + '/replay-rota?data=' + dataIso + '&nome=' + encodeURIComponent(nome));
+    const d = await r.json();
+    const trajeto = d.trajeto || [];
+    const clientes = d.clientes || [];
+
+    // Se o Leaflet ainda não carregou, espera um pouco e tenta de novo (CDN pode estar lento)
+    if (!replayMapaInst) {
+      await new Promise(res => setTimeout(res, 600));
+      iniciarReplayMapa();
+    }
+
+    // Limpa camadas anteriores
+    if (replayMapaInst) {
+      if (replayPolyline) { replayMapaInst.removeLayer(replayPolyline); replayPolyline = null; }
+      replayMarkers.forEach(m => replayMapaInst.removeLayer(m));
+      replayMarkers = [];
+    }
+
+    if (!trajeto.length && !clientes.length) {
+      lista.innerHTML = '<div class="rel-empty">Nenhum dado encontrado para essa data/motoboy</div>';
+      document.getElementById('replay-kpi-km').textContent = '—';
+      document.getElementById('replay-kpi-chegadas').textContent = '—';
+      document.getElementById('replay-kpi-periodo').textContent = '—';
+      return;
+    }
+
+    // Desenha o trajeto (linha real, com curvas)
+    let km = 0;
+    if (trajeto.length > 1) {
+      if (replayMapaInst && typeof L !== 'undefined') {
+        const latlngs = trajeto.map(p => [p.lat, p.lng]);
+        replayPolyline = L.polyline(latlngs, { color: '#1E9FD9', weight: 4, opacity: .85 }).addTo(replayMapaInst);
+      }
+      for (let i = 1; i < trajeto.length; i++) {
+        const R = 6371, dLat = (trajeto[i].lat - trajeto[i-1].lat) * Math.PI/180, dLng = (trajeto[i].lng - trajeto[i-1].lng) * Math.PI/180;
+        const a = Math.sin(dLat/2)**2 + Math.cos(trajeto[i-1].lat*Math.PI/180)*Math.cos(trajeto[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
+        const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        if (dist < 5) km += dist;
+      }
+    }
+
+    // Desenha os pins dos clientes
+    const bounds = [];
+    clientes.forEach((c, i) => {
+      if (!c.lat && !c.lng) return; // sem coordenada salva no histórico — pula
+      const temChegada = !!c.horario_chegada_gps;
+      bounds.push([c.lat, c.lng]);
+      if (!replayMapaInst || typeof L === 'undefined') return;
+      const cor = temChegada ? '#0F9B78' : '#F59E0B';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:30px;height:30px;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">
+          <span style="transform:rotate(45deg);font-size:11px;font-weight:800">${i+1}</span>
+        </div>`,
+        iconSize: [30,30], iconAnchor: [15,30], popupAnchor: [0,-30]
+      });
+      const horaChegada = temChegada ? new Date(c.horario_chegada_gps).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}) : null;
+      const marker = L.marker([c.lat, c.lng], { icon }).addTo(replayMapaInst).bindPopup(
+        `<div style="font-family:-apple-system,sans-serif;min-width:160px">
+          <div style="font-weight:700;color:#0F4C7A;margin-bottom:4px">${c.nome_cliente}</div>
+          <div style="font-size:12px;color:#5A7A8F">${temChegada ? '🕐 Chegada: ' + horaChegada : '⚠️ Sem chegada GPS'}</div>
+        </div>`
+      );
+      replayMarkers.push(marker);
+    });
+
+    if (trajeto.length) trajeto.forEach(p => bounds.push([p.lat, p.lng]));
+    if (bounds.length && replayMapaInst && typeof L !== 'undefined') replayMapaInst.fitBounds(L.latLngBounds(bounds), { padding: [30,30] });
+
+    // KPIs
+    document.getElementById('replay-kpi-km').textContent = (Math.round(km*10)/10) + ' km';
+    const comChegada = clientes.filter(c => c.horario_chegada_gps).length;
+    document.getElementById('replay-kpi-chegadas').textContent = comChegada + '/' + clientes.length;
+    if (trajeto.length) {
+      const ini = new Date(trajeto[0].timestamp).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'});
+      const fim = new Date(trajeto[trajeto.length-1].timestamp).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'});
+      document.getElementById('replay-kpi-periodo').textContent = ini + ' – ' + fim;
+    } else {
+      document.getElementById('replay-kpi-periodo').textContent = '—';
+    }
+
+    // Lista de clientes
+    if (!clientes.length) {
+      lista.innerHTML = '<div class="rel-empty">Nenhuma coleta registrada nessa data</div>';
+      return;
+    }
+    function fmtHora(ts) {
+      if (!ts) return null;
+      return new Date(ts).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+    }
+    lista.innerHTML = clientes.map((c, i) => {
+      const horaChegada = fmtHora(c.horario_chegada_gps);
+      const horaFinal = fmtHora(c.timestamp);
+      const diff = (c.horario_chegada_gps && c.timestamp) ? Math.round((c.timestamp - c.horario_chegada_gps) / 60000) : null;
+      const ok = !!c.horario_chegada_gps;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F5F9FC">
+        <div style="width:26px;height:26px;border-radius:50%;background:#E8F4FB;color:#0F4C7A;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${c.nome_cliente}</div>
+          <div style="font-size:11px;color:#94A8B8;margin-top:1px">Nº ${c.numero_cliente}</div>
+        </div>
+        <div style="display:flex;gap:14px;flex-shrink:0">
+          <div style="text-align:center">
+            <div style="font-size:8.5px;font-weight:700;color:#94A8B8;text-transform:uppercase">Chegada GPS</div>
+            <div style="font-size:13px;font-weight:800;color:${ok?'#0F4C7A':'#94A8B8'};margin-top:1px">${horaChegada || 'sem GPS'}</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:8.5px;font-weight:700;color:#94A8B8;text-transform:uppercase">Finalização</div>
+            <div style="font-size:13px;font-weight:800;color:#0F4C7A;margin-top:1px">${horaFinal || '\u2014'}</div>
+            ${diff !== null && diff > 0 ? `<div style="font-size:9.5px;font-weight:700;color:#94A8B8;margin-top:1px">+${diff}min</div>` : ''}
+          </div>
+        </div>
+        <span style="font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;background:${ok?'#E1F5EE':'#FCEBEB'};color:${ok?'#085041':'#991B1B'}">${ok?'✓ OK':'⚠ Sem chegada'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>';
+  }
+}
