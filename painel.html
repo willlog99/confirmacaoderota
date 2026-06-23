@@ -355,6 +355,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .ph{flex-wrap:wrap;gap:8px}
   .ph > div{flex-shrink:0}
 
+  /* Área de toque maior e isolada por item — evita captura cruzada entre botões vizinhos */
+  .nav-item{min-height:46px;position:relative;z-index:1;touch-action:manipulation}
+
   /* Esconde funções que só fazem sentido no desktop (mapa, replay, ponto) */
   .desktop-only{display:none!important}
 
@@ -540,7 +543,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <button id="nav-btn-criar-rota" class="nav-item" onclick="window.location.href='criar-rota.html'"><span class="nav-ic">➕</span><span class="nav-item-txt">Criar rota</span></button>
       <button id="nav-btn-alterar-rota" class="nav-item" onclick="window.location.href='rotas.html'"><span class="nav-ic">✏️</span><span class="nav-item-txt">Alterar rota</span></button>
       <button class="nav-item" onclick="setView('buscar',this)"><span class="nav-ic">🔎</span><span class="nav-item-txt">Buscar cliente</span></button>
-      <button class="nav-item" onclick="setView('criar-cliente',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar cliente</span></button>
+      <button id="nav-btn-criar-cliente" class="nav-item" onclick="event.stopPropagation();setView('criar-cliente',this)"><span class="nav-ic">👤</span><span class="nav-item-txt">Criar cliente</span></button>
       <button class="nav-item" onclick="setView('gerenciar-motoboys',this)"><span class="nav-ic">➕➖</span><span class="nav-item-txt">Motoboys</span></button>
       <button class="nav-item" onclick="setView('dispositivos',this)"><span class="nav-ic">📱</span><span class="nav-item-txt">Dispositivos</span></button>
       <button class="nav-item" onclick="setView('ocorrencias',this)"><span class="nav-ic">🚨</span><span class="nav-item-txt">Ocorrências</span></button>
