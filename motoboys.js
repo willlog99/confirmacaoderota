@@ -868,12 +868,18 @@ async function criarCliente() {
   const nome = document.getElementById('cc-nome').value.trim();
   const contraPedido = document.getElementById('cc-contra-pedido').checked;
   const horario = contraPedido ? '' : document.getElementById('cc-horario').value;
-  const lat = document.getElementById('cc-lat').value.trim();
-  const lng = document.getElementById('cc-lng').value.trim();
+  const coordTexto = document.getElementById('cc-coord').value.trim();
   const endereco = document.getElementById('cc-endereco').value.trim();
 
   if (!codigo || !nome) { showMsg('msg-cc','Preencha código e nome','error'); return; }
   if (!contraPedido && !horario) { showMsg('msg-cc','Informe o horário ou marque contra pedido','error'); return; }
+
+  let lat = null, lng = null;
+  if (coordTexto) {
+    const coord = parseLatLng(coordTexto);
+    if (!coord) { showMsg('msg-cc','Coordenadas inválidas. Use o formato: -23.5505,-46.6333','error'); return; }
+    lat = coord.lat; lng = coord.lng;
+  }
 
   showMsg('msg-cc','Salvando...','loading');
   try {
@@ -883,16 +889,14 @@ async function criarCliente() {
         numero_cliente: codigo, nome,
         horario: horario || '00:00',
         contra_pedido: contraPedido ? 1 : 0,
-        lat: lat ? parseFloat(lat) : null,
-        lng: lng ? parseFloat(lng) : null,
+        lat, lng,
         endereco: endereco || ''
       })
     });
     document.getElementById('cc-codigo').value = '';
     document.getElementById('cc-nome').value = '';
     document.getElementById('cc-horario').value = '';
-    document.getElementById('cc-lat').value = '';
-    document.getElementById('cc-lng').value = '';
+    document.getElementById('cc-coord').value = '';
     document.getElementById('cc-endereco').value = '';
     document.getElementById('cc-contra-pedido').checked = false;
     document.getElementById('cc-campo-horario').style.display = 'block';
@@ -997,8 +1001,7 @@ function abrirEditarAlocado(c) {
   document.getElementById('mec-horario').value = c.horario || '';
   document.getElementById('mec-bloco-dias').style.display = 'block';
   mecMarcarDias(c.dias_ativos);
-  document.getElementById('mec-lat').value = c.lat || '';
-  document.getElementById('mec-lng').value = c.lng || '';
+  document.getElementById('mec-coord').value = (c.lat && c.lng) ? (c.lat + ',' + c.lng) : '';
   document.getElementById('mec-endereco').value = c.endereco || '';
   document.getElementById('mec-bloco-mostrar-endereco').style.display = 'flex';
   document.getElementById('mec-mostrar-endereco').checked = !!c.mostrar_endereco;
@@ -1017,8 +1020,7 @@ function abrirEditarBase(c) {
   document.getElementById('mec-campo-horario').style.display = c.contra_pedido ? 'none' : 'block';
   document.getElementById('mec-horario').value = c.horario || '';
   document.getElementById('mec-bloco-dias').style.display = 'none'; // dias só fazem sentido se alocar
-  document.getElementById('mec-lat').value = c.lat || '';
-  document.getElementById('mec-lng').value = c.lng || '';
+  document.getElementById('mec-coord').value = (c.lat && c.lng) ? (c.lat + ',' + c.lng) : '';
   document.getElementById('mec-endereco').value = c.endereco || '';
   document.getElementById('mec-bloco-mostrar-endereco').style.display = 'none';
   document.getElementById('mec-bloco-alocar').style.display = 'block';
@@ -1071,9 +1073,15 @@ async function mecSalvar() {
   if (!_mecEstadoAtual) return;
   const contraPedido = document.getElementById('mec-contra-pedido').checked;
   const horario = contraPedido ? '' : document.getElementById('mec-horario').value;
-  const lat = document.getElementById('mec-lat').value.trim();
-  const lng = document.getElementById('mec-lng').value.trim();
+  const coordTexto = document.getElementById('mec-coord').value.trim();
   const endereco = document.getElementById('mec-endereco').value.trim();
+
+  let lat = null, lng = null;
+  if (coordTexto) {
+    const coord = parseLatLng(coordTexto);
+    if (!coord) { toast('Coordenadas inválidas. Use o formato: -23.5505,-46.6333'); return; }
+    lat = coord.lat; lng = coord.lng;
+  }
 
   if (_mecEstadoAtual.tipo === 'alocado') {
     const diasSelecionados = [...document.querySelectorAll('.mec-dia-btn')].filter(b => b.dataset.ativo === '1').map(b => b.dataset.dia);
@@ -1086,8 +1094,7 @@ async function mecSalvar() {
           horario: horario || '00:00',
           dias_ativos: diasSelecionados.join(','),
           contra_pedido: contraPedido ? 1 : 0,
-          lat: lat ? parseFloat(lat) : null,
-          lng: lng ? parseFloat(lng) : null,
+          lat, lng,
           endereco: endereco || '',
           mostrar_endereco: mostrarEndereco ? 1 : 0
         })
@@ -1116,8 +1123,7 @@ async function mecSalvar() {
           dias_ativos: diasPadrao,
           horario: horario || '00:00',
           contra_pedido: contraPedido ? 1 : 0,
-          lat: lat ? parseFloat(lat) : null,
-          lng: lng ? parseFloat(lng) : null,
+          lat, lng,
           endereco: endereco || ''
         })
       });
@@ -1136,8 +1142,7 @@ async function mecSalvar() {
           id: _mecEstadoAtual.dados.id,
           horario: horario || '00:00',
           contra_pedido: contraPedido ? 1 : 0,
-          lat: lat ? parseFloat(lat) : null,
-          lng: lng ? parseFloat(lng) : null,
+          lat, lng,
           endereco: endereco || ''
         })
       });
@@ -1153,7 +1158,7 @@ function abrirMover(id) {
   clienteParaMover = id;
   const sel = document.getElementById('nova-rota-select');
   sel.innerHTML = '<option value="">Selecione a rota...</option>' + rotasDisponiveis.map(r => `<option value="${r}">${r}</option>`).join('');
-  document.getElementById('modal-mover').classList.remove('hidden');
+  document.getElementById('modal-mover').style.display = 'flex';
 }
 
 
@@ -1161,7 +1166,7 @@ async function confirmarMover() {
   const rota = document.getElementById('nova-rota-select').value;
   if (!rota || !clienteParaMover) return;
   await fetch(API + '/mover-cliente', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id:clienteParaMover, rota}) });
-  document.getElementById('modal-mover').classList.add('hidden');
+  document.getElementById('modal-mover').style.display = 'none';
   toast('✓ Movido para ' + rota);
   buscarCliente();
 }
@@ -1578,7 +1583,7 @@ function processarPlanilhaCoordenadas(file) {
         // Detecta se a primeira linha é cabeçalho (texto) ou já é dado
         let startRow = 0;
         const primeira = rows[0] || [];
-        const pareceCabecalho = primeira.some(c => typeof c === 'string' && /c[oó]digo|nome|endere[cç]o|latitude|longitude/i.test(c));
+        const pareceCabecalho = primeira.some(c => typeof c === 'string' && /c[oó]digo|nome|endere[cç]o|latitude|longitude|coordenada/i.test(c));
         if (pareceCabecalho) startRow = 1;
 
         _impCoordDados = [];
@@ -1588,10 +1593,10 @@ function processarPlanilhaCoordenadas(file) {
           const codigo = String(r[0] || '').trim();
           const nome = String(r[1] || '').trim();
           const endereco = String(r[2] || '').trim();
-          const lat = parseFloat(String(r[3] || '').replace(',', '.'));
-          const lng = parseFloat(String(r[4] || '').replace(',', '.'));
+          const coordTexto = String(r[3] || '').trim();
+          const coord = parseLatLng(coordTexto);
           if (!codigo || !nome) continue;
-          _impCoordDados.push({ codigo, nome, endereco, lat: isNaN(lat) ? null : lat, lng: isNaN(lng) ? null : lng });
+          _impCoordDados.push({ codigo, nome, endereco, lat: coord ? coord.lat : null, lng: coord ? coord.lng : null });
         }
 
         if (!_impCoordDados.length) { showMsg('msg-imp-coord', 'Nenhum dado válido encontrado na planilha', 'error'); return; }
@@ -1641,3 +1646,16 @@ async function confirmarImportacaoCoordenadas() {
   }
   btn.disabled = false;
 }
+
+// ── PARSE DE COORDENADAS (formato único "lat,lng") ───────────
+function parseLatLng(texto) {
+  if (!texto || typeof texto !== 'string') return null;
+  const partes = texto.trim().split(',');
+  if (partes.length !== 2) return null;
+  const lat = parseFloat(partes[0].trim());
+  const lng = parseFloat(partes[1].trim());
+  if (isNaN(lat) || isNaN(lng)) return null;
+  if (lat < -90 || lat > 90 || lng < -180 || lng > 180) return null;
+  return { lat, lng };
+}
+
