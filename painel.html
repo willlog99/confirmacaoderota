@@ -1338,16 +1338,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               </div>
             </div>
 
-            <!-- Lat/Lng/Endereço -->
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Latitude</div>
-                <input type="text" id="mec-lat" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
-              </div>
-              <div>
-                <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Longitude</div>
-                <input type="text" id="mec-lng" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
-              </div>
+            <!-- Coordenadas/Endereço -->
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Coordenadas (lat,lng)</div>
+              <input type="text" id="mec-coord" placeholder="Ex: -23.5505,-46.6333" style="width:100%;height:36px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
             </div>
             <div style="margin-bottom:10px">
               <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Endereço</div>
@@ -1391,10 +1385,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
           <div class="field" id="cc-campo-horario"><label>Horário</label><input type="time" id="cc-horario"/></div>
 
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <div class="field"><label>Latitude</label><input type="text" id="cc-lat" placeholder="Ex: -23.5505"/></div>
-            <div class="field"><label>Longitude</label><input type="text" id="cc-lng" placeholder="Ex: -46.6333"/></div>
-          </div>
+          <div class="field"><label>Coordenadas (lat,lng)</label><input type="text" id="cc-coord" placeholder="Ex: -23.5505,-46.6333"/></div>
 
           <div class="field"><label>Endereço</label><input type="text" id="cc-endereco" placeholder="Ex: Av. Paulista, 1000 - Bela Vista"/></div>
 
@@ -1746,7 +1737,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;box-shadow:0 2px 8px rgba(30,159,217,.06);overflow:hidden;margin-bottom:10px">
             <div style="padding:13px 14px;border-bottom:1px solid #EBF1F5">
               <div style="font-size:13px;font-weight:700;color:#0F4C7A">📍 Importar clientes com coordenadas</div>
-              <div style="font-size:11px;color:#5A7A8F;margin-top:2px">Planilha: Código, Nome, Endereço, Latitude, Longitude</div>
+              <div style="font-size:11px;color:#5A7A8F;margin-top:2px">Planilha: Código, Nome, Endereço, Coordenadas (lat,lng)</div>
             </div>
             <div style="padding:14px">
               <input type="file" id="imp-coord-file" accept=".xlsx,.xls,.csv" style="display:none" onchange="processarPlanilhaCoordenadas(this.files[0])"/>
