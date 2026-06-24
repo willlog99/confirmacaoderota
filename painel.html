@@ -1777,6 +1777,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <button id="rel-nav-inconsistencias" class="rel-nav-btn" onclick="relMudarTipo('inconsistencias')">🚨 Inconsistências</button>
             <button id="rel-nav-horarios" class="rel-nav-btn" onclick="relMudarTipo('horarios')">⏰ Horários de coleta</button>
             <button id="rel-nav-checklist" class="rel-nav-btn" onclick="relMudarTipo('checklist')">📋 Checklist</button>
+            <button id="rel-nav-coordenadas" class="rel-nav-btn" onclick="relMudarTipo('coordenadas')">📍 Coordenadas</button>
           </div>
 
           <!-- SUB-VIEW: QUILOMETRAGEM -->
@@ -1852,6 +1853,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               </div>
               <div id="rel-chk-lista">
                 <div class="rel-empty">Selecione uma data e clique em Buscar</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SUB-VIEW: AUDITORIA DE COORDENADAS -->
+          <div id="rel-sub-coordenadas" style="display:none">
+            <div class="rel-card">
+              <div class="rel-card-head">
+                <span class="rel-card-title">Clientes com coordenada suspeita (distante do centro da rota)</span>
+                <button class="rel-btn-primary" onclick="carregarRelCoordenadas()">🔍 Analisar</button>
+              </div>
+              <div class="rel-kpis" style="grid-template-columns:repeat(2,1fr)">
+                <div class="rel-kpi"><div class="rel-kpi-val rel-r" id="rel-coord-kpi-total">0</div><div class="rel-kpi-lbl">Suspeitos</div></div>
+                <div class="rel-kpi"><div class="rel-kpi-val" id="rel-coord-kpi-analisados">0</div><div class="rel-kpi-lbl">Clientes analisados</div></div>
+              </div>
+              <div id="rel-coord-lista">
+                <div class="rel-empty">Clique em Analisar para verificar as coordenadas cadastradas</div>
               </div>
             </div>
           </div>
