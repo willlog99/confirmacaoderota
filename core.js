@@ -3959,12 +3959,17 @@ async function carregarReplayRota() {
       }
     }
 
-    // Desenha os pins dos clientes
+    // Desenha os pins dos clientes — usa a coordenada CADASTRADA do cliente
+    // (cliente_lat/cliente_lng, vinda do JOIN com a tabela clientes no Worker),
+    // não a coordenada de movimento do dia — assim o pin sempre aparece,
+    // mesmo em dias em que o GPS não registrou a chegada daquele cliente.
     const bounds = [];
     clientes.forEach((c, i) => {
-      if (!c.lat && !c.lng) return; // sem coordenada salva no histórico — pula
+      const lat = c.cliente_lat ?? c.lat;
+      const lng = c.cliente_lng ?? c.lng;
+      if (!lat && !lng) return; // cliente sem coordenada cadastrada — pula
       const temChegada = !!c.horario_chegada_gps;
-      bounds.push([c.lat, c.lng]);
+      bounds.push([lat, lng]);
       if (!replayMapaInst || typeof L === 'undefined') return;
       const cor = temChegada ? '#0F9B78' : '#F59E0B';
       const icon = L.divIcon({
@@ -3975,10 +3980,12 @@ async function carregarReplayRota() {
         iconSize: [30,30], iconAnchor: [15,30], popupAnchor: [0,-30]
       });
       const horaChegada = temChegada ? new Date(c.horario_chegada_gps).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}) : null;
-      const marker = L.marker([c.lat, c.lng], { icon }).addTo(replayMapaInst).bindPopup(
-        `<div style="font-family:-apple-system,sans-serif;min-width:160px">
+      const marker = L.marker([lat, lng], { icon }).addTo(replayMapaInst).bindPopup(
+        `<div style="font-family:-apple-system,sans-serif;min-width:180px">
           <div style="font-weight:700;color:#0F4C7A;margin-bottom:4px">${c.nome_cliente}</div>
-          <div style="font-size:12px;color:#5A7A8F">${temChegada ? '🕐 Chegada: ' + horaChegada : '⚠️ Sem chegada GPS'}</div>
+          <div style="font-size:12px;color:#5A7A8F;margin-bottom:4px">${temChegada ? '🕐 Chegada: ' + horaChegada : '⚠️ Sem chegada GPS'}</div>
+          <div style="font-size:11px;color:#94A8B8;font-family:monospace">${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}</div>
+          ${c.cliente_endereco ? `<div style="font-size:11px;color:#94A8B8;margin-top:2px">${c.cliente_endereco}</div>` : ''}
         </div>`
       );
       replayMarkers.push(marker);
