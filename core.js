@@ -1000,7 +1000,7 @@ async function gerarPdfDia() {
 
 // ── RELATÓRIOS — NAVEGAÇÃO ───────────────────────────────────
 function relMudarTipo(tipo) {
-  ['km','inconsistencias','horarios','checklist'].forEach(t => {
+  ['km','inconsistencias','horarios','checklist','coordenadas'].forEach(t => {
     const el = document.getElementById('rel-sub-' + t);
     const btn = document.getElementById('rel-nav-' + t);
     if (el) el.style.display = t === tipo ? 'block' : 'none';
@@ -4042,5 +4042,59 @@ async function carregarReplayRota() {
     }).join('');
   } catch(e) {
     lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>';
+  }
+}
+
+// ── AUDITORIA DE COORDENADAS — outliers por rota ─────────────
+async function carregarRelCoordenadas() {
+  const lista = document.getElementById('rel-coord-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Analisando coordenadas...</div>';
+  try {
+    const r = await fetch(API + '/auditoria-coordenadas?limite_km=1.5');
+    const d = await r.json();
+    const suspeitos = d.suspeitos || [];
+    document.getElementById('rel-coord-kpi-total').textContent = suspeitos.length;
+    document.getElementById('rel-coord-kpi-analisados').textContent = d.total_analisados || 0;
+
+    if (!suspeitos.length) {
+      lista.innerHTML = '<div class="rel-empty">✓ Nenhuma coordenada suspeita encontrada</div>';
+      return;
+    }
+
+    lista.innerHTML = `<table class="rel-table"><thead><tr>
+      <th>Cliente</th><th>Rota</th><th>Distância do centro</th><th>Coordenada atual</th><th>Endereço</th><th></th>
+    </tr></thead><tbody>` + suspeitos.map(s => `
+      <tr>
+        <td><div class="rel-nome">${s.nome}</div><div class="rel-sub">Nº ${s.numero_cliente}</div></td>
+        <td>${s.rota}</td>
+        <td><span class="rel-badge ${s.distancia_centro_km > 3 ? 'rel-b-err' : 'rel-b-warn'}">${s.distancia_centro_km} km</span></td>
+        <td style="font-family:monospace;font-size:11px">${s.lat.toFixed(6)}, ${s.lng.toFixed(6)}</td>
+        <td style="font-size:11px;color:#94A8B8">${s.endereco || '—'}</td>
+        <td><button class="rel-btn-outline" onclick='abrirCorrigirCoordenada(${s.id}, "${(s.numero_cliente||'').replace(/"/g,'')}", "${(s.nome||'').replace(/"/g,'')}", "${(s.rota||'').replace(/"/g,'')}", ${s.lat}, ${s.lng}, "${(s.endereco||'').replace(/"/g,'')}")'>✏️ Corrigir</button></td>
+      </tr>
+    `).join('') + '</tbody></table>';
+  } catch(e) {
+    lista.innerHTML = '<div class="rel-empty">Erro ao carregar auditoria</div>';
+  }
+}
+
+// Abre o modal de editar cliente já preenchido, focando no campo de coordenada
+function abrirCorrigirCoordenada(id, numero_cliente, nome, rota, lat, lng, endereco, mostrar_endereco, horario, dias_ativos, nome_motoboy) {
+  const c = {
+    id, numero_cliente, nome, rota, lat, lng, endereco,
+    mostrar_endereco: mostrar_endereco || 0,
+    horario: horario || '',
+    dias_ativos: dias_ativos || '',
+    nome_motoboy: nome_motoboy || ''
+  };
+  if (typeof abrirEditarAlocado === 'function') {
+    abrirEditarAlocado(c);
+    setTimeout(() => {
+      const campoCoord = document.getElementById('mec-coord');
+      if (campoCoord) { campoCoord.style.borderColor = '#DC2626'; campoCoord.focus(); }
+    }, 200);
+  } else {
+    toast('Abra "Buscar cliente" e edite o cliente: ' + nome);
   }
 }
