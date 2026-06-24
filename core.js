@@ -1075,10 +1075,13 @@ async function carregarRelKm() {
       return h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'm' : m + 'min';
     }
     function horaEvt(nome, tipo) {
-      const ev = eventos.find(e => e.nome === nome && e.tipo && e.tipo.includes(tipo));
-      if (!ev) return '\u2014';
-      const sp = new Date(ev.timestamp - 3*60*60*1000);
-      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+      const evs = eventos.filter(e => e.nome === nome && e.tipo && e.tipo.includes(tipo))
+        .sort((a,b) => a.timestamp - b.timestamp);
+      if (!evs.length) return '\u2014';
+      return evs.map(ev => {
+        const sp = new Date(ev.timestamp - 3*60*60*1000);
+        return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+      }).join(', ');
     }
 
     _relKmDados = motoboys.map(m => {
@@ -2807,10 +2810,12 @@ async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
 
   function horaEvt(evts, tipo) {
     if (!evts) return null;
-    const ev = evts.find(e => e.tipo && e.tipo.includes(tipo));
-    if (!ev) return null;
-    const sp = new Date(ev.timestamp - 3*60*60*1000);
-    return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+    const evs = evts.filter(e => e.tipo && e.tipo.includes(tipo)).sort((a,b) => a.timestamp - b.timestamp);
+    if (!evs.length) return null;
+    return evs.map(ev => {
+      const sp = new Date(ev.timestamp - 3*60*60*1000);
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+    }).join(', ');
   }
 
   let html = '';
@@ -3543,9 +3548,9 @@ async function enriquecerDadosKm(dados) {
       const dG = await rG.json();
       const eventos = dG.eventos || [];
       const evBase = eventos.find(e => e.tipo && e.tipo.includes('base'));
-      const evPolaris = eventos.find(e => e.tipo && e.tipo.includes('final'));
+      const evsPolaris = eventos.filter(e => e.tipo && e.tipo.includes('final')).sort((a,b) => a.timestamp - b.timestamp);
       if (evBase) base = formatarHoraTs(evBase.timestamp);
-      if (evPolaris) polaris = formatarHoraTs(evPolaris.timestamp);
+      if (evsPolaris.length) polaris = evsPolaris.map(e => formatarHoraTs(e.timestamp)).join(', ');
 
       // Busca confirmação de presença (início)
       const rC = await fetch(API + '/historico-confirmacoes?data_inicio=' + data + '&data_fim=' + data);
