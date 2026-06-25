@@ -4098,3 +4098,74 @@ function abrirCorrigirCoordenada(id, numero_cliente, nome, rota, lat, lng, ender
     toast('Abra "Buscar cliente" e edite o cliente: ' + nome);
   }
 }
+
+// ── GEOCODIFICAÇÃO: busca lat/lng a partir do endereço, com confirmação ──
+async function buscarCoordenadaPorEndereco() {
+  const endereco = document.getElementById('cc-endereco')?.value?.trim();
+  const status = document.getElementById('cc-geocode-status');
+  if (!endereco) { toast('Digite o endereço primeiro'); return; }
+
+  if (status) {
+    status.style.display = 'block';
+    status.style.color = '#5A7A8F';
+    status.innerHTML = '<span class="spinner"></span> Buscando coordenada...';
+  }
+
+  try {
+    const r = await fetch(API + '/geocodificar-endereco?endereco=' + encodeURIComponent(endereco));
+    const d = await r.json();
+    if (d.status !== 'ok') {
+      if (status) {
+        status.style.color = '#DC2626';
+        status.textContent = '✗ ' + (d.msg || 'Endereço não encontrado — confira ou digite a coordenada manualmente');
+      }
+      return;
+    }
+
+    const precisaoLabel = {
+      ROOFTOP: '✓ Exato (endereço específico)',
+      RANGE_INTERPOLATED: '✓ Bem preciso (interpolado entre números)',
+      GEOMETRIC_CENTER: '⚠️ Aproximado (centro de uma área/rua)',
+      APPROXIMATE: '⚠️ Aproximado'
+    }[d.precisao] || (d.confiavel ? '✓ Confiável' : '⚠️ Confira no mapa antes de usar');
+
+    if (status) {
+      status.style.display = 'none';
+    }
+
+    // Card de confirmação — exige clique explícito antes de preencher a coordenada
+    const containerId = 'cc-geocode-confirm';
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      document.getElementById('cc-endereco').closest('.field').after(container);
+    }
+    const corBorda = d.confiavel ? '#0F9B78' : '#F59E0B';
+    const corFundo = d.confiavel ? '#F0FAF7' : '#FEF9EC';
+    container.innerHTML = `
+      <div style="background:${corFundo};border:1.5px solid ${corBorda};border-radius:10px;padding:12px;margin:8px 0">
+        <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:4px">📍 ${d.endereco_formatado}</div>
+        <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">Precisão: ${precisaoLabel}${d.match_parcial ? ' · ⚠️ correspondência parcial — confirme o número' : ''}</div>
+        <div style="font-size:11px;color:#94A8B8;font-family:monospace;margin-bottom:10px">${d.lat.toFixed(7)}, ${d.lng.toFixed(7)} (fonte: ${d.fonte})</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="confirmarCoordenadaGeocodificada(${d.lat}, ${d.lng})" style="flex:1;height:36px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">✓ Usar esta coordenada</button>
+          <button onclick="document.getElementById('cc-geocode-confirm').remove()" style="height:36px;padding:0 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Descartar</button>
+        </div>
+      </div>
+    `;
+  } catch (e) {
+    if (status) {
+      status.style.color = '#DC2626';
+      status.textContent = '✗ Erro ao buscar coordenada';
+    }
+  }
+}
+
+function confirmarCoordenadaGeocodificada(lat, lng) {
+  const campoCoord = document.getElementById('cc-coord');
+  if (campoCoord) campoCoord.value = lat.toFixed(7) + ',' + lng.toFixed(7);
+  const container = document.getElementById('cc-geocode-confirm');
+  if (container) container.remove();
+  toast('Coordenada aplicada ✓');
+}
