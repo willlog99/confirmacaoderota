@@ -1275,7 +1275,75 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
         </div>
       </div>
+<!-- PONTOS DA ROTA -->
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title">🎯 Pontos da rota</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
+            Checkpoints opcionais vinculados à <strong>rota</strong>. Registram apenas o horário em que o motoboy passou por ali (raio de 200m, igual ao geofence de cliente). Cadastro permanente — você cria, edita e remove quando quiser.
+          </p>
 
+          <div style="background:#F8FBFD;border-radius:12px;padding:14px;border:1.5px solid #EBF1F5;margin-bottom:1.25rem">
+            <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Adicionar ponto</div>
+
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Rota</div>
+              <select id="pr-rota-sel" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none">
+                <option value="">Selecione...</option>
+              </select>
+            </div>
+
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Nome do ponto</div>
+              <input type="text" id="pr-nome" placeholder="Ex: Posto Shell Pacaembu" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+            </div>
+
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Endereço</div>
+              <div style="display:flex;gap:6px">
+                <input type="text" id="pr-endereco" placeholder="Ex: Av. Pacaembu, 500" style="flex:1;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+                <button type="button" onclick="buscarCoordenadaPontoRota()" style="height:38px;padding:0 14px;border-radius:8px;border:1.5px solid #1E9FD9;background:#E8F4FB;color:#0F4C7A;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap">🔍 Buscar</button>
+              </div>
+              <div id="pr-geocode-status" style="font-size:11px;margin-top:4px;display:none"></div>
+            </div>
+
+            <div style="margin-bottom:12px">
+              <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px">Coordenadas (lat,lng)</div>
+              <input type="text" id="pr-coord" placeholder="Ex: -23.5505,-46.6333" style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:13px;color:#0F4C7A;outline:none"/>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button id="pr-btn-salvar" onclick="salvarPontoRota()" style="flex:1;padding:11px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:13px;font-weight:700;cursor:pointer">✓ Adicionar ponto</button>
+              <button onclick="cancelarEdicaoPontoRota()" style="padding:11px 16px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+            </div>
+          </div>
+
+          <div style="font-size:12px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Pontos cadastrados</div>
+          <div id="pr-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div class="empty"><span class="spinner"></span> Carregando...</div>
+          </div>
+        </div>
+
+        <!-- PASSAGENS NOS PONTOS -->
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title">📊 Passagens nos pontos</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1.25rem;line-height:1.5">
+            Lista cronológica de quando cada motoboy passou pelos pontos cadastrados. Detecção via cron do servidor (1-2 min de atraso) — funciona com o app atual, sem precisar atualizar o APK.
+          </p>
+
+          <div style="display:flex;gap:8px;margin-bottom:1rem;flex-wrap:wrap">
+            <input type="date" id="pp-data" style="height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 10px;font-size:12px;color:#0F4C7A;outline:none"/>
+            <select id="pp-rota-sel" style="height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 8px;font-size:12px;color:#0F4C7A;outline:none;min-width:160px">
+              <option value="">Todas as rotas</option>
+            </select>
+            <button onclick="carregarPassagensPontos()" style="height:38px;padding:0 16px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">🔍 Buscar</button>
+            <button onclick="reprocessarPassagensPontos()" style="height:38px;padding:0 16px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">↻ Reprocessar histórico</button>
+          </div>
+
+          <div id="pp-lista" style="background:#F8FBFD;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div class="empty">Selecione a data e clique em Buscar</div>
+          </div>
+        </div>
+       
       <div class="view" id="view-buscar">
         <div class="card">
           <div class="card-title">🔎 Buscar cliente</div>
