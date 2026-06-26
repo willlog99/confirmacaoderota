@@ -1074,14 +1074,18 @@ async function carregarRelKm() {
       const m = min % 60;
       return h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'm' : m + 'min';
     }
-    function horaEvt(nome, tipo) {
+     function horaEvt(nome, tipo) {
       const evs = eventos.filter(e => e.nome === nome && e.tipo && e.tipo.includes(tipo))
         .sort((a,b) => a.timestamp - b.timestamp);
       if (!evs.length) return '\u2014';
-      return evs.map(ev => {
+      // Base: mostra só a 1ª e a última passagem do dia (ida e volta), não todas
+      // as idas/vindas. Polaris continua mostrando todas as passagens configuradas.
+      const paraExibir = (tipo === 'base' && evs.length > 1) ? [evs[0], evs[evs.length - 1]] : evs;
+      return paraExibir.map(ev => {
         const sp = new Date(ev.timestamp - 3*60*60*1000);
         return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
       }).join(', ');
+  
     }
 
     _relKmDados = motoboys.map(m => {
@@ -2808,11 +2812,13 @@ async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
     return Math.round(km*10)/10;
   }
 
-  function horaEvt(evts, tipo) {
+   function horaEvt(evts, tipo) {
     if (!evts) return null;
     const evs = evts.filter(e => e.tipo && e.tipo.includes(tipo)).sort((a,b) => a.timestamp - b.timestamp);
     if (!evs.length) return null;
-    return evs.map(ev => {
+    // Mesma regra: Base só 1ª e última, Polaris mostra todas as passagens.
+    const paraExibir = (tipo === 'base' && evs.length > 1) ? [evs[0], evs[evs.length - 1]] : evs;
+    return paraExibir.map(ev => {
       const sp = new Date(ev.timestamp - 3*60*60*1000);
       return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
     }).join(', ');
@@ -4168,4 +4174,248 @@ function confirmarCoordenadaGeocodificada(lat, lng) {
   const container = document.getElementById('cc-geocode-confirm');
   if (container) container.remove();
   toast('Coordenada aplicada ✓');
+}
+// ── PONTOS DA ROTA — checkpoints opcionais, vinculados à rota ───────────
+// Registram apenas o horário em que o motoboy passou por ali (raio 200m,
+// detectado pelo cron do worker — não depende do app/APK).
+
+let _prEditId = null;
+
+async function carregarPontosRota() {
+  const lista = document.getElementById('pr-lista');
+  const sel = document.getElementById('pr-rota-sel');
+  const selPp = document.getElementById('pp-rota-sel');
+  if (!lista) return;
+
+  try {
+    const [rRotas, rPontos] = await Promise.all([
+      fetch(API + '/rotas-disponiveis?todos_dias=1'),
+      fetch(API + '/pontos-rota')
+    ]);
+    const dRotas = await rRotas.json();
+    const dPontos = await rPontos.json();
+    const rotas = (dRotas.rotas || []).map(r => r.rota).sort();
+    const pontos = dPontos.pontos || [];
+
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecione...</option>';
+      rotas.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
+    }
+    if (selPp) {
+      selPp.innerHTML = '<option value="">Todas as rotas</option>';
+      rotas.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; selPp.appendChild(o); });
+    }
+
+    if (!pontos.length) {
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhum ponto cadastrado</div>';
+      return;
+    }
+
+    const porRota = {};
+    pontos.forEach(p => { if (!porRota[p.rota]) porRota[p.rota] = []; porRota[p.rota].push(p); });
+
+    lista.innerHTML = Object.entries(porRota).map(([rota, pts]) => {
+      const linhas = pts.map(p => `
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 14px 5px 24px">
+          <span style="font-size:11px;color:#5A7A8F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📌 ${p.nome}${p.endereco ? ' · ' + p.endereco : ''}</span>
+          <button onclick="editarPontoRota(${p.id},'${(p.rota||'').replace(/'/g,"\\'")}','${(p.nome||'').replace(/'/g,"\\'")}',${p.lat},${p.lng},'${(p.endereco||'').replace(/'/g,"\\'")}')" style="background:none;border:none;color:#1D4ED8;font-size:11px;cursor:pointer;padding:0">✏️</button>
+          <button onclick="removerPontoRota(${p.id})" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0">✕</button>
+        </div>`).join('');
+      return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
+        <div style="padding:2px 14px;font-size:12px;font-weight:700;color:#0F4C7A">${rota}</div>
+        ${linhas}
+      </div>`;
+    }).join('');
+  } catch(e) {
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+async function buscarCoordenadaPontoRota() {
+  const endereco = document.getElementById('pr-endereco')?.value?.trim();
+  const status = document.getElementById('pr-geocode-status');
+  if (!endereco) { toast('Digite o endereço primeiro'); return; }
+
+  if (status) { status.style.display = 'block'; status.style.color = '#5A7A8F'; status.innerHTML = '<span class="spinner"></span> Buscando coordenada...'; }
+
+  try {
+    const r = await fetch(API + '/geocodificar-endereco?endereco=' + encodeURIComponent(endereco));
+    const d = await r.json();
+    if (d.status !== 'ok') {
+      if (status) { status.style.color = '#DC2626'; status.textContent = '✗ ' + (d.msg || 'Endereço não encontrado — digite a coordenada manualmente'); }
+      return;
+    }
+
+    const precisaoLabel = {
+      ROOFTOP: '✓ Exato (endereço específico)',
+      RANGE_INTERPOLATED: '✓ Bem preciso (interpolado entre números)',
+      GEOMETRIC_CENTER: '⚠️ Aproximado (centro de uma área/rua)',
+      APPROXIMATE: '⚠️ Aproximado'
+    }[d.precisao] || (d.confiavel ? '✓ Confiável' : '⚠️ Confira antes de usar');
+
+    if (status) status.style.display = 'none';
+
+    const containerId = 'pr-geocode-confirm';
+    let container = document.getElementById(containerId);
+    if (!container) {
+      container = document.createElement('div');
+      container.id = containerId;
+      document.getElementById('pr-endereco').closest('div').after(container);
+    }
+    const corBorda = d.confiavel ? '#0F9B78' : '#F59E0B';
+    const corFundo = d.confiavel ? '#F0FAF7' : '#FEF9EC';
+    container.innerHTML = `
+      <div style="background:${corFundo};border:1.5px solid ${corBorda};border-radius:10px;padding:12px;margin:8px 0">
+        <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:4px">📍 ${d.endereco_formatado}</div>
+        <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">Precisão: ${precisaoLabel}</div>
+        <div style="font-size:11px;color:#94A8B8;font-family:monospace;margin-bottom:10px">${d.lat.toFixed(7)}, ${d.lng.toFixed(7)} (fonte: ${d.fonte})</div>
+        <div style="display:flex;gap:8px">
+          <button onclick="confirmarCoordenadaPontoRota(${d.lat}, ${d.lng})" style="flex:1;height:36px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:700;cursor:pointer">✓ Usar esta coordenada</button>
+          <button onclick="document.getElementById('pr-geocode-confirm').remove()" style="height:36px;padding:0 14px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer">Descartar</button>
+        </div>
+      </div>`;
+  } catch(e) {
+    if (status) { status.style.color = '#DC2626'; status.textContent = '✗ Erro ao buscar coordenada'; }
+  }
+}
+
+function confirmarCoordenadaPontoRota(lat, lng) {
+  const campo = document.getElementById('pr-coord');
+  if (campo) campo.value = lat.toFixed(7) + ',' + lng.toFixed(7);
+  document.getElementById('pr-geocode-confirm')?.remove();
+  toast('Coordenada aplicada ✓');
+}
+
+function editarPontoRota(id, rota, nome, lat, lng, endereco) {
+  _prEditId = id;
+  document.getElementById('pr-rota-sel').value = rota;
+  document.getElementById('pr-nome').value = nome;
+  document.getElementById('pr-endereco').value = endereco || '';
+  document.getElementById('pr-coord').value = lat.toFixed(7) + ',' + lng.toFixed(7);
+  const btn = document.getElementById('pr-btn-salvar');
+  if (btn) btn.textContent = '✓ Salvar alterações';
+  document.getElementById('pr-nome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function cancelarEdicaoPontoRota() {
+  _prEditId = null;
+  document.getElementById('pr-nome').value = '';
+  document.getElementById('pr-endereco').value = '';
+  document.getElementById('pr-coord').value = '';
+  const btn = document.getElementById('pr-btn-salvar');
+  if (btn) btn.textContent = '✓ Adicionar ponto';
+}
+
+async function salvarPontoRota() {
+  const rota = document.getElementById('pr-rota-sel')?.value;
+  const nome = document.getElementById('pr-nome')?.value?.trim();
+  const coord = document.getElementById('pr-coord')?.value?.trim();
+  const endereco = document.getElementById('pr-endereco')?.value?.trim();
+
+  if (!rota) { toast('Selecione a rota'); return; }
+  if (!nome) { toast('Informe o nome do ponto'); return; }
+  if (!coord || !coord.includes(',')) { toast('Informe as coordenadas (busque pelo endereço ou digite manualmente)'); return; }
+
+  const [latStr, lngStr] = coord.split(',').map(s => s.trim());
+  const lat = parseFloat(latStr), lng = parseFloat(lngStr);
+  if (isNaN(lat) || isNaN(lng)) { toast('Coordenadas inválidas'); return; }
+
+  try {
+    if (_prEditId) {
+      await fetch(API + '/pontos-rota', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: _prEditId, nome, lat, lng, endereco })
+      });
+      toast('✓ Ponto atualizado');
+    } else {
+      await fetch(API + '/pontos-rota', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ rota, nome, lat, lng, endereco })
+      });
+      toast('✓ Ponto adicionado');
+    }
+    cancelarEdicaoPontoRota();
+    document.getElementById('pr-geocode-confirm')?.remove();
+    carregarPontosRota();
+  } catch(e) { toast('Erro ao salvar'); }
+}
+
+async function removerPontoRota(id) {
+  if (!confirm('Remover este ponto?')) return;
+  try {
+    await fetch(API + '/pontos-rota', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+    toast('✓ Ponto removido');
+    carregarPontosRota();
+  } catch(e) { toast('Erro ao remover'); }
+}
+
+// ── PASSAGENS NOS PONTOS — lista cronológica ────────────────────────────
+async function carregarPassagensPontos() {
+  const lista = document.getElementById('pp-lista');
+  const data = document.getElementById('pp-data')?.value;
+  const rota = document.getElementById('pp-rota-sel')?.value;
+  if (!lista) return;
+  if (!data) { toast('Selecione a data'); return; }
+
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    let urlReq = API + '/passagens-pontos?data=' + data;
+    if (rota) urlReq += '&rota=' + encodeURIComponent(rota);
+    const r = await fetch(urlReq);
+    const d = await r.json();
+    const passagens = d.passagens || [];
+
+    if (!passagens.length) {
+      lista.innerHTML = '<div class="empty">Nenhuma passagem registrada nesta data</div>';
+      return;
+    }
+
+    const porMotoboy = {};
+    passagens.forEach(p => {
+      const key = p.nome_motoboy + '|' + p.rota;
+      if (!porMotoboy[key]) porMotoboy[key] = { nome: p.nome_motoboy, rota: p.rota, passagens: [] };
+      porMotoboy[key].passagens.push(p);
+    });
+
+    function fmtHora(ts) {
+      const sp = new Date(ts - 3*60*60*1000);
+      return String(sp.getUTCHours()).padStart(2,'0') + ':' + String(sp.getUTCMinutes()).padStart(2,'0');
+    }
+
+    lista.innerHTML = Object.values(porMotoboy).map(g => `
+      <div style="border-bottom:1px solid #F0F4F8;padding:8px 0">
+        <div style="padding:2px 14px;font-size:12px;font-weight:700;color:#0F4C7A">${g.nome} <span style="font-weight:400;color:#94A8B8">· ${g.rota}</span></div>
+        ${g.passagens.sort((a,b)=>a.timestamp-b.timestamp).map(p => `
+          <div style="display:flex;align-items:center;gap:8px;padding:4px 14px 4px 24px">
+            <span style="font-size:12px;font-weight:700;color:#1D4ED8;min-width:42px">${fmtHora(p.timestamp)}</span>
+            <span style="font-size:11px;color:#5A7A8F">📌 ${p.ponto_nome}</span>
+            <span style="font-size:10px;color:#94A8B8;margin-left:auto">${p.distancia_m}m</span>
+          </div>`).join('')}
+      </div>`).join('');
+  } catch(e) {
+    lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+async function reprocessarPassagensPontos() {
+  const data = document.getElementById('pp-data')?.value;
+  const rota = document.getElementById('pp-rota-sel')?.value;
+  if (!data) { toast('Selecione a data'); return; }
+  if (!confirm('Reprocessar passagens de ' + data + (rota ? ' para a rota ' + rota : ' para todas as rotas') + '? Isso busca no histórico de GPS se algum motoboy já passou pelos pontos cadastrados.')) return;
+
+  toast('Reprocessando...');
+  try {
+    const body = { data };
+    if (rota) body.rota = rota;
+    const r = await fetch(API + '/passagens-reprocessar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    toast('✓ ' + (d.inseridos || 0) + ' passagem(ns) encontrada(s)');
+    carregarPassagensPontos();
+  } catch(e) { toast('Erro ao reprocessar'); }
 }
