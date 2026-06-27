@@ -108,7 +108,17 @@ function setView(id, el) {
     carregarOcorrencias();
   }
   if (id === 'dispositivos') carregarDispositivos();
-  if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') { carregarGeofenceConfig(); carregarHorariosTrabalho(); }
+   if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') {
+    carregarGeofenceConfig();
+    carregarHorariosTrabalho();
+    if (typeof carregarPontosRota === 'function') carregarPontosRota();
+    const ppData = document.getElementById('pp-data');
+    if (ppData && !ppData.value) {
+      const agora = new Date();
+      const diaSP = new Date(agora.getTime() - 3*60*60*1000);
+      ppData.value = diaSP.toISOString().split('T')[0];
+    }
+  }
   if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
   if (id === 'relatorios') {
     relMudarTipo('km');
