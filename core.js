@@ -1666,7 +1666,8 @@ function renderizarDispositivos(lista) {
 }
 
 async function encerrarSessaoMotoboy(telefone, nome) {
-  if (!confirm('Encerrar a sessão de ' + nome + '? O GPS será desligado e ele voltará para a tela de login.')) return;
+  if (!confirm('Encerrar a sessão de ' + nome + '? O sistema removerá o acesso do painel.')) return;
+
   try {
     const r = await fetch(API + '/logout-remoto', {
       method: 'POST',
@@ -1674,12 +1675,25 @@ async function encerrarSessaoMotoboy(telefone, nome) {
       body: JSON.stringify({ telefone, nome })
     });
     const d = await r.json();
-    if (d.status === 'ok' && d.enviados > 0) {
-      toast('✓ Sessão de ' + nome + ' encerrada');
+
+    // Feedback visual para você
+    if (d.status === 'ok') {
+        toast('✓ Sessão de ' + nome + ' encerrada com sucesso.');
     } else {
-      toast('Não foi possível encerrar — token não encontrado');
+        // Mesmo sem o token (erro), forçamos a limpeza do painel,
+        // pois o objetivo administrativo é remover o usuário da tela.
+        toast('Sessão limpa do painel (sem token no app).');
     }
-  } catch(e) { toast('Erro ao encerrar sessão'); }
+
+    // A chave da correção: forçar a atualização da tela após o comando,
+    // independentemente do sucesso do envio do push FCM.
+    if (typeof carregarDispositivos === 'function') {
+        carregarDispositivos();
+    }
+
+  } catch(e) {
+    toast('Erro de conexão ao encerrar: ' + e.message);
+  }
 }
 
 function filtrarDispositivos(filtro, btn) {
