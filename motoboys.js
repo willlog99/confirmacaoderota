@@ -565,7 +565,9 @@ async function carregarConfirmacoes() {
   const el = document.getElementById('lista-conf');
   el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
   try {
-    const r = await fetch(API + '/');
+    // Filtra por hoje (SP) para não mostrar confirmações de dias anteriores.
+    const hoje = (typeof getDataLocalSP === 'function') ? getDataLocalSP() : new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+    const r = await fetch(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje);
     const d = await r.json();
     const conf = d.confirmacoes || [];
     if (!conf.length) { el.innerHTML = '<div class="empty">Nenhuma confirmação hoje</div>'; return; }
