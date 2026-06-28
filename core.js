@@ -1,87 +1,114 @@
 // ============================================================
 
-// ── CORE — Funções base, navegação e utilitários
-──────────────────────────
+// ── CORE — Funções base, navegação e utilitários ──────────────────────────
 
 // ============================================================
 
 // ── VARIÁVEIS ──
 
-const API = “https://confirmacaoderota.willlog99.workers.dev”;
+const API = 'https://confirmacaoderota.willlog99.workers.dev';
 
 const _diaSemana = new Date().getDay();
 
 let autoRefreshInterval = null;
 
-function getDataLocalSP() { return new
-Date().toLocaleDateString(“en-CA”, { timeZone: “America/Sao_Paulo”, });
+
+
+function getDataLocalSP() {
+
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+
 }
+
+
 
 // ── FUNÇÕES ──
 
 function abrirMenu() {
-document.getElementById(“menu-overlay”).classList.add(“open”); }
 
-function fecharMenu() { const el =
-document.getElementById(“menu-overlay”);
+  document.getElementById('menu-overlay').classList.add('open');
 
-if (el) el.classList.remove(“open”); }
+}
 
-function fecharMenuOverlay(e) { if (e.target ===
-document.getElementById(“menu-overlay”)) fecharMenu(); }
+function fecharMenu() {
 
-function fecharModal(id) { const el = document.getElementById(id);
+  const el = document.getElementById('menu-overlay');
 
-if (el) el.style.display = “none”; }
+  if (el) el.classList.remove('open');
+
+}
+
+function fecharMenuOverlay(e) {
+
+  if (e.target === document.getElementById('menu-overlay')) fecharMenu();
+
+}
+
+function fecharModal(id) {
+
+  const el = document.getElementById(id);
+
+  if (el) el.style.display = 'none';
+
+}
 
 // ── BREADCRUMB ──────────────────────────────────────────
 
-const BREADCRUMBS = { painel: “OPS › Painel”,
+const BREADCRUMBS = {
 
-confirmacoes: “OPS › Confirmações”,
+  'painel': 'OPS › <b>Painel</b>',
 
-“mapa-rastreamento”: “OPS › Rastreamento”,
+  'confirmacoes': 'OPS › <b>Confirmações</b>',
 
-“checklist-view”: “OPS › Checklist”,
+  'mapa-rastreamento': 'OPS › <b>Rastreamento</b>',
 
-motoristas: “OPS › Motoristas”,
+  'checklist-view': 'OPS › <b>Checklist</b>',
 
-“estoque-view”: “Gente e Gestão › PMC Estoque”,
+  'motoristas': 'OPS › <b>Motoristas</b>',
 
-“ponto-rh”: “Gente e Gestão › Ponto RH”,
+  'estoque-view': 'Gente e Gestão › <b>PMC Estoque</b>',
 
-gestor: “Qualidade › Auditoria”,
+  'ponto-rh': 'Gente e Gestão › <b>Ponto RH</b>',
 
-presencas: “Gente e Gestão › Presenças”,
+  'gestor': 'Qualidade › <b>Auditoria</b>',
 
-buscar: “Gestão de Rota › Buscar cliente”,
+  'presencas': 'Gente e Gestão › <b>Presenças</b>',
 
-“criar-cliente”: “Gestão de Rota › Criar cliente”,
+  'buscar': 'Gestão de Rota › <b>Buscar cliente</b>',
 
-“gerenciar-motoboys”: “Gestão de Rota › Motoboys”,
+  'criar-cliente': 'Gestão de Rota › <b>Criar cliente</b>',
 
-“ativar-cliente”: “Gestão de Rota › Ativar/Desativar cliente”, };
+  'gerenciar-motoboys': 'Gestão de Rota › <b>Motoboys</b>',
+
+  'ativar-cliente': 'Gestão de Rota › <b>Ativar/Desativar cliente</b>',
+
+};
 
 function toggleMobileMenu() {
-document.querySelector(“.app-sidebar”)?.classList.toggle(“mobile-open”);
 
-document.getElementById(“mobile-overlay”)?.classList.toggle(“show”); }
+  document.querySelector('.app-sidebar')?.classList.toggle('mobile-open');
 
-const VIEWS_SO_DESKTOP = [“mapa-rastreamento”, “replay-rota”,
-“ponto-rh”];
+  document.getElementById('mobile-overlay')?.classList.toggle('show');
 
-function mostrarBloqueioMobile(id) { const nomes = {
-“mapa-rastreamento”: “Mapa de Rastreamento”, “replay-rota”: “Replay da
-Rota”, “ponto-rh”: “Ponto RH”, };
+}
 
-const nome = nomes[id] || “Esta função”;
 
-const popup = document.createElement(“div”);
 
-popup.style.cssText =
-“position:fixed;inset:0;background:rgba(11,33,56,.75);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.25rem”;
+const VIEWS_SO_DESKTOP = ['mapa-rastreamento', 'replay-rota', 'ponto-rh'];
 
-popup.innerHTML = `
+
+
+function mostrarBloqueioMobile(id) {
+
+  const nomes = { 'mapa-rastreamento': 'Mapa de Rastreamento', 'replay-rota': 'Replay da Rota', 'ponto-rh': 'Ponto RH' };
+
+  const nome = nomes[id] || 'Esta função';
+
+  const popup = document.createElement('div');
+
+  popup.style.cssText = 'position:fixed;inset:0;background:rgba(11,33,56,.75);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1.25rem';
+
+  popup.innerHTML = `
 
     <div style="background:#fff;border-radius:18px;padding:1.75rem 1.5rem;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
 
@@ -95,42 +122,49 @@ popup.innerHTML = `
 
     </div>`;
 
-document.body.appendChild(popup); }
+  document.body.appendChild(popup);
 
-function setView(id, el) { if (VIEWS_SO_DESKTOP.includes(id) &&
-window.innerWidth < 900) { mostrarBloqueioMobile(id);
+}
+
+
+
+function setView(id, el) {
+
+  if (VIEWS_SO_DESKTOP.includes(id) && window.innerWidth < 900) {
+
+    mostrarBloqueioMobile(id);
 
     return;
 
-}
+  }
 
-if (window.innerWidth < 900) {
-document.querySelector(“.app-sidebar”)?.classList.remove(“mobile-open”);
+  if (window.innerWidth < 900) {
 
-    document.getElementById("mobile-overlay")?.classList.remove("show");
+    document.querySelector('.app-sidebar')?.classList.remove('mobile-open');
 
-}
+    document.getElementById('mobile-overlay')?.classList.remove('show');
 
-pararAutoRefresh();
+  }
 
-document .querySelectorAll(“.view”) .forEach((v) =>
-v.classList.remove(“active”));
+  pararAutoRefresh();
 
-document .querySelectorAll(“.nav-item”) .forEach((m) =>
-m.classList.remove(“active”));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 
-const viewEl = document.getElementById(“view-” + id);
+  document.querySelectorAll('.nav-item').forEach(m => m.classList.remove('active'));
 
-if (viewEl) viewEl.classList.add(“active”);
+  const viewEl = document.getElementById('view-' + id);
 
-if (el) el.classList.add(“active”);
+  if (viewEl) viewEl.classList.add('active');
 
-window.scrollTo(0, 0);
+  if (el) el.classList.add('active');
 
-if (typeof atualizarBreadcrumb === “function”) atualizarBreadcrumb(id);
+  window.scrollTo(0,0);
 
-if (id === “painel”) { if (typeof carregarPainel === “function”)
-carregarPainel();
+  if (typeof atualizarBreadcrumb === 'function') atualizarBreadcrumb(id);
+
+  if (id === 'painel') {
+
+    if (typeof carregarPainel === 'function') carregarPainel();
 
     carregarResumoDia();
 
@@ -138,242 +172,245 @@ carregarPainel();
 
     iniciarMiniMapa();
 
-}
+  }
 
-if (id === “confirmacoes” && typeof carregarConfirmacoes === “function”)
-carregarConfirmacoes();
+  if (id === 'confirmacoes' && typeof carregarConfirmacoes === 'function') carregarConfirmacoes();
 
-if (id === “motoristas” && typeof carregarMotoristasList === “function”)
-carregarMotoristasList();
+  if (id === 'motoristas' && typeof carregarMotoristasList === 'function') carregarMotoristasList();
 
-if (id === “rotas-view” && typeof carregarRotasView === “function”)
-carregarRotasView();
+  if (id === 'rotas-view' && typeof carregarRotasView === 'function') carregarRotasView();
 
-if (id === “checklist-view” && typeof carregarChecklists === “function”)
-carregarChecklists();
+  if (id === 'checklist-view' && typeof carregarChecklists === 'function') carregarChecklists();
 
-if ( id === “checklists-incompletos” && typeof
-carregarChecklistsIncompletos === “function” )
-carregarChecklistsIncompletos();
+  if (id === 'checklists-incompletos' && typeof carregarChecklistsIncompletos === 'function') carregarChecklistsIncompletos();
 
-if ( id === “gerenciar-motoboys” && typeof carregarMotoboysGerenciar ===
-“function” ) carregarMotoboysGerenciar();
+  if (id === 'gerenciar-motoboys' && typeof carregarMotoboysGerenciar === 'function') carregarMotoboysGerenciar();
 
-if (id === “ponto-rh” && typeof iniciarPontoRH === “function”)
-iniciarPontoRH();
+  if (id === 'ponto-rh' && typeof iniciarPontoRH === 'function') iniciarPontoRH();
 
-if (id === “estoque-view” && typeof iniciarEstoqueView === “function”)
-iniciarEstoqueView();
+  if (id === 'estoque-view' && typeof iniciarEstoqueView === 'function') iniciarEstoqueView();
 
-if (id === “patrimonios” && typeof iniciarPatrimonios === “function”)
-iniciarPatrimonios();
+  if (id === 'patrimonios' && typeof iniciarPatrimonios === 'function') iniciarPatrimonios();
 
-if (id === “importacao” && typeof iniciarImportacao === “function”)
-iniciarImportacao();
+  if (id === 'importacao' && typeof iniciarImportacao === 'function') iniciarImportacao();
 
-if (id === “presencas” && typeof carregarPresencas === “function”)
-carregarPresencas();
+  if (id === 'presencas' && typeof carregarPresencas === 'function') carregarPresencas();
 
-if (id === “mapa-rastreamento”) { setTimeout(() => { if (typeof
-iniciarLeafletMap === “function”) iniciarLeafletMap();
+  if (id === 'mapa-rastreamento') {
 
-      if (typeof carregarMapa === "function") carregarMapa();
+    setTimeout(() => {
 
-      if (typeof iniciarAutoRefreshMapa === "function")
-        iniciarAutoRefreshMapa();
+      if (typeof iniciarLeafletMap === 'function') iniciarLeafletMap();
+
+      if (typeof carregarMapa === 'function') carregarMapa();
+
+      if (typeof iniciarAutoRefreshMapa === 'function') iniciarAutoRefreshMapa();
 
       carregarKMDia();
+
     }, 100);
 
-}
+  }
 
-if (id === “painel”) { carregarResumoDia(); }
+  if (id === 'painel') { carregarResumoDia(); }
 
-if (id === “painel-usuarios”) carregarUsuariosPainel();
+  if (id === 'painel-usuarios') carregarUsuariosPainel();
 
-if (id === “ocorrencias”) { const input =
-document.getElementById(“oc-filtro-data”);
+  if (id === 'ocorrencias') {
 
-    if (input && !input.value)
-      input.value = new Date().toISOString().split("T")[0];
+    const input = document.getElementById('oc-filtro-data');
+
+    if (input && !input.value) input.value = new Date().toISOString().split('T')[0];
 
     carregarOcorrencias();
 
-}
+  }
 
-if (id === “dispositivos”) carregarDispositivos();
+  if (id === 'dispositivos') carregarDispositivos();
 
-if ( id === “geofence-config” && typeof carregarGeofenceConfig ===
-“function” ) { carregarGeofenceConfig();
+   if (id === 'geofence-config' && typeof carregarGeofenceConfig === 'function') {
+
+    carregarGeofenceConfig();
 
     carregarHorariosTrabalho();
 
-    if (typeof carregarPontosRota === "function") carregarPontosRota();
+    if (typeof carregarPontosRota === 'function') carregarPontosRota();
 
-    const ppData = document.getElementById("pp-data");
+    const ppData = document.getElementById('pp-data');
 
     if (ppData && !ppData.value) {
+
       const agora = new Date();
 
-      const diaSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
+      const diaSP = new Date(agora.getTime() - 3*60*60*1000);
 
-      ppData.value = diaSP.toISOString().split("T")[0];
+      ppData.value = diaSP.toISOString().split('T')[0];
+
     }
 
-}
+  }
 
-if (id === “gestor” && typeof renderItensAuditoria === “function”)
-renderItensAuditoria();
+  if (id === 'gestor' && typeof renderItensAuditoria === 'function') renderItensAuditoria();
 
-if (id === “relatorios”) { relMudarTipo(“km”);
+  if (id === 'relatorios') {
+
+    relMudarTipo('km');
 
     setTimeout(carregarRelKm, 100);
 
+  }
+
+  if (id === 'replay-rota') {
+
+    popularSelectMotoboysReplay();
+
+    const dataInp = document.getElementById('replay-data');
+
+    if (dataInp && !dataInp.value) dataInp.value = new Date().toISOString().split('T')[0];
+
+  }
+
 }
 
-if (id === “replay-rota”) { popularSelectMotoboysReplay();
+function showMsg(id, text, type) {
 
-    const dataInp = document.getElementById("replay-data");
+  const el = document.getElementById(id);
 
-    if (dataInp && !dataInp.value)
-      dataInp.value = new Date().toISOString().split("T")[0];
+  if (!el) return;
 
-} }
+  el.innerHTML = (type==='loading'?'<span class="spinner"></span>':'')+text;
 
-function showMsg(id, text, type) { const el =
-document.getElementById(id);
+  el.className = 'msg'+(type?' '+type:'');
 
-if (!el) return;
+}
 
-el.innerHTML = (type === “loading” ? ‘’ : ““) + text;
+function toast(msg) {
 
-el.className = “msg” + (type ? ” ” + type : ““); }
+  const el = document.getElementById('toast');
 
-function toast(msg) { const el = document.getElementById(“toast”);
+  if(!el) { console.log(msg); return; }
 
-if (!el) { console.log(msg); return; }
+  el.textContent = msg;
 
-el.textContent = msg;
+  el.classList.add('show');
 
-el.classList.add(“show”);
+  setTimeout(() => el.classList.remove('show'), 2500);
 
-setTimeout(() => el.classList.remove(“show”), 2500); }
+}
 
-function formatarTelefone(t) { const s = String(t ||
-““).replace(//g,”“);
+function formatarTelefone(t) {
 
-return s.length === 11 ? “(” + s.slice(0, 2) + “)” + s.slice(2, 7) +
-“-” + s.slice(7) : t; }
+  const s = String(t||'').replace(/\D/g,'');
+
+  return s.length === 11 ? '(' + s.slice(0,2) + ') ' + s.slice(2,7) + '-' + s.slice(7) : t;
+
+}
 
 // ── HORÁRIOS DE TRABALHO ─────────────────────────────────────
 
-async function carregarHorariosTrabalho() { const lista =
-document.getElementById(“ht-lista”);
+async function carregarHorariosTrabalho() {
 
-const sel = document.getElementById(“ht-motoboy-sel”);
+  const lista = document.getElementById('ht-lista');
 
-if (!lista) return;
+  const sel   = document.getElementById('ht-motoboy-sel');
 
-try { const [rMb, rHt] = await Promise.all([ fetch(API +
-“/motoboys?todos=1&agrupado=1”),
+  if (!lista) return;
 
-      fetch(API + "/horario-trabalho"),
+  try {
+
+    const [rMb, rHt] = await Promise.all([
+
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
+
+      fetch(API + '/horario-trabalho')
+
     ]);
 
     const dMb = await rMb.json();
 
     const dHt = await rHt.json();
 
-    const motoboys = (dMb.motoboys || []).sort((a, b) =>
-      a.nome.localeCompare(b.nome),
-    );
+    const motoboys = (dMb.motoboys || []).sort((a,b) => a.nome.localeCompare(b.nome));
 
     const horarios = dHt.horarios || [];
+
+
 
     // Popula select de motoboys
 
     if (sel) {
+
       sel.innerHTML = '<option value="">Selecione...</option>';
 
-      motoboys.forEach((m) => {
-        const o = document.createElement("option");
+      motoboys.forEach(m => {
 
-        o.value = m.telefone;
-        o.textContent = m.nome;
+        const o = document.createElement('option');
+
+        o.value = m.telefone; o.textContent = m.nome;
 
         sel.appendChild(o);
+
       });
+
     }
+
+
 
     if (!horarios.length) {
-      lista.innerHTML =
-        '<div class="empty" style="font-size:12px">Nenhum horário cadastrado</div>';
+
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhum horário cadastrado</div>';
 
       return;
+
     }
 
-    const labelDia = (d) =>
-      ({
-        seg: "Segunda",
-        ter: "Terça",
-        qua: "Quarta",
-        qui: "Quinta",
-        sex: "Sexta",
-        sab: "Sábado",
-        dom: "Domingo",
-      })[d] || d;
+
+
+    const labelDia = d => ({ seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado', dom:'Domingo' })[d] || d;
+
+
 
     // Agrupa por nome
 
     const porNome = {};
 
-    horarios.forEach((h) => {
+    horarios.forEach(h => {
+
       const key = h.nome || h.telefone;
 
-      if (!porNome[key])
-        porNome[key] = { telefone: h.telefone, nome: h.nome, dias: [] };
+      if (!porNome[key]) porNome[key] = { telefone: h.telefone, nome: h.nome, dias: [] };
 
       porNome[key].dias.push(h);
+
     });
 
-    lista.innerHTML = Object.values(porNome)
-      .map((p) => {
-        // Agrupa dias com mesmo horário
 
-        const grupos = {};
 
-        p.dias.forEach((d) => {
-          const key = d.inicio + "-" + d.fim;
+    lista.innerHTML = Object.values(porNome).map(p => {
 
-          if (!grupos[key])
-            grupos[key] = { inicio: d.inicio, fim: d.fim, dias: [] };
+      // Agrupa dias com mesmo horário
 
-          grupos[key].dias.push(d.dia_semana);
-        });
+      const grupos = {};
 
-        const abr = (d) =>
-          ({
-            seg: "Seg",
-            ter: "Ter",
-            qua: "Qua",
-            qui: "Qui",
-            sex: "Sex",
-            sab: "Sáb",
-            dom: "Dom",
-          })[d] || d;
+      p.dias.forEach(d => {
 
-        const linhas = Object.values(grupos)
-          .map((g) => {
-            const diasStr = g.dias.map(abr).join(" · ");
+        const key = d.inicio + '-' + d.fim;
 
-            const btns = g.dias
-              .map(
-                (d) =>
-                  `<button onclick="removerHorarioTrabalho('${p.telefone}','${d}')" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0">✕</button>`,
-              )
-              .join("");
+        if (!grupos[key]) grupos[key] = { inicio: d.inicio, fim: d.fim, dias: [] };
 
-            return `<div style="display:flex;align-items:center;gap:6px;padding:3px 14px 3px 24px">
+        grupos[key].dias.push(d.dia_semana);
+
+      });
+
+      const abr = d => ({ seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' })[d] || d;
+
+      const linhas = Object.values(grupos).map(g => {
+
+        const diasStr = g.dias.map(abr).join(' · ');
+
+        const btns = g.dias.map(d => `<button onclick="removerHorarioTrabalho('${p.telefone}','${d}')" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0">✕</button>`).join('');
+
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 14px 3px 24px">
 
           <span style="font-size:11px;color:#5A7A8F;flex:1">${diasStr}</span>
 
@@ -382,10 +419,10 @@ try { const [rMb, rHt] = await Promise.all([ fetch(API +
           ${btns}
 
         </div>`;
-          })
-          .join("");
 
-        return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
+      }).join('');
+
+      return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
 
         <div style="padding:2px 14px;display:flex;align-items:center;justify-content:space-between">
 
@@ -398,136 +435,188 @@ try { const [rMb, rHt] = await Promise.all([ fetch(API +
         ${linhas}
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { if (lista) lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) {
 
-’; } }
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
 
-async function salvarHorarioTrabalho() { const telefone =
-document.getElementById(“ht-motoboy-sel”)?.value;
-
-const nome = document.getElementById(“ht-motoboy-sel”)?.options[
-document.getElementById(“ht-motoboy-sel”)?.selectedIndex ]?.text;
-
-const dia_semana = document.getElementById(“ht-dia-sel”)?.value;
-
-const inicio = document.getElementById(“ht-inicio”)?.value;
-
-const fim = document.getElementById(“ht-fim”)?.value;
-
-if (!telefone) { toast(“Selecione um motoboy”); return; }
-
-if (!inicio || !fim) { toast(“Informe início e fim”); return; }
-
-if (inicio >= fim) { toast(“Fim deve ser depois do início”); return; }
-
-try { await fetch(API + “/horario-trabalho”, { method: “POST”,
-
-      headers: { "Content-Type": "application/json" },
-
-      body: JSON.stringify({ telefone, nome, dia_semana, inicio, fim }),
-    });
-
-    toast("✓ Horário salvo");
-
-    carregarHorariosTrabalho();
-
-} catch (e) { toast(“Erro ao salvar”); } }
-
-async function removerHorarioTrabalho(telefone, dia_semana) { const msg
-= dia_semana ? “Remover este horário?” : “Remover todos os horários
-deste motoboy?”;
-
-if (!confirm(msg)) return;
-
-try { await fetch(API + “/horario-trabalho”, { method: “DELETE”,
-
-      headers: { "Content-Type": "application/json" },
-
-      body: JSON.stringify({ telefone, dia_semana }),
-    });
-
-    toast("✓ Removido");
-
-    carregarHorariosTrabalho();
-
-} catch (e) { toast(“Erro ao remover”); } }
-
-let _gfPassagens = 1;
-
-function gfSelecionarPassagem(n, btn) { _gfPassagens = n;
-
-[1, 2, 3].forEach((i) => { const b = document.getElementById(“gf-btn-” +
-i);
-
-    if (b) {
-      b.style.background = i === n ? "#0F4C7A" : "#fff";
-
-      b.style.color = i === n ? "#fff" : "#5A7A8F";
-
-      b.style.borderColor = i === n ? "#0F4C7A" : "#D6E5EE";
-    }
-
-}); }
-
-// ── MÉTRICAS KM ──────────────────────────────────────────────
-
-async function carregarMetricas() { const periodoSel =
-document.getElementById(“km-metricas-periodo”)?.value || “mes”;
-
-const inicioInp = document.getElementById(“km-metricas-inicio”)?.value;
-
-const fimInp = document.getElementById(“km-metricas-fim”)?.value;
-
-const hoje = new Date();
-
-let dataInicio, dataFim = hoje.toISOString().split(“T”)[0];
-
-if (inicioInp && fimInp) { dataInicio = inicioInp; dataFim = fimInp; }
-else if (periodoSel === “hoje”) { dataInicio = dataFim; } else if
-(periodoSel === “semana”) { const d = new Date(hoje);
-d.setDate(d.getDate() - 7);
-
-    dataInicio = d.toISOString().split("T")[0];
-
-} else { const d = new Date(hoje); d.setDate(d.getDate() - 30);
-
-    dataInicio = d.toISOString().split("T")[0];
+  }
 
 }
 
-const label = dataInicio === dataFim ? dataInicio : dataInicio + ” → ” +
-dataFim;
 
-const el = document.getElementById(“km-metricas-label”);
 
-if (el) el.textContent = label;
+async function salvarHorarioTrabalho() {
 
-const tbody = document.getElementById(“km-metricas-tbody”);
+  const telefone = document.getElementById('ht-motoboy-sel')?.value;
 
-if (tbody) tbody.innerHTML = ’
-Carregando…
-’;
+  const nome     = document.getElementById('ht-motoboy-sel')?.options[document.getElementById('ht-motoboy-sel')?.selectedIndex]?.text;
 
-try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
+  const dia_semana = document.getElementById('ht-dia-sel')?.value;
+
+  const inicio   = document.getElementById('ht-inicio')?.value;
+
+  const fim      = document.getElementById('ht-fim')?.value;
+
+  if (!telefone) { toast('Selecione um motoboy'); return; }
+
+  if (!inicio || !fim) { toast('Informe início e fim'); return; }
+
+  if (inicio >= fim) { toast('Fim deve ser depois do início'); return; }
+
+  try {
+
+    await fetch(API + '/horario-trabalho', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ telefone, nome, dia_semana, inicio, fim })
+
+    });
+
+    toast('✓ Horário salvo');
+
+    carregarHorariosTrabalho();
+
+  } catch(e) { toast('Erro ao salvar'); }
+
+}
+
+
+
+async function removerHorarioTrabalho(telefone, dia_semana) {
+
+  const msg = dia_semana ? 'Remover este horário?' : 'Remover todos os horários deste motoboy?';
+
+  if (!confirm(msg)) return;
+
+  try {
+
+    await fetch(API + '/horario-trabalho', {
+
+      method: 'DELETE',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ telefone, dia_semana })
+
+    });
+
+    toast('✓ Removido');
+
+    carregarHorariosTrabalho();
+
+  } catch(e) { toast('Erro ao remover'); }
+
+}
+
+let _gfPassagens = 1;
+
+
+
+function gfSelecionarPassagem(n, btn) {
+
+  _gfPassagens = n;
+
+  [1,2,3].forEach(i => {
+
+    const b = document.getElementById('gf-btn-' + i);
+
+    if (b) {
+
+      b.style.background = i === n ? '#0F4C7A' : '#fff';
+
+      b.style.color = i === n ? '#fff' : '#5A7A8F';
+
+      b.style.borderColor = i === n ? '#0F4C7A' : '#D6E5EE';
+
+    }
+
+  });
+
+}
+
+
+
+// ── MÉTRICAS KM ──────────────────────────────────────────────
+
+async function carregarMetricas() {
+
+  const periodoSel = document.getElementById('km-metricas-periodo')?.value || 'mes';
+
+  const inicioInp  = document.getElementById('km-metricas-inicio')?.value;
+
+  const fimInp     = document.getElementById('km-metricas-fim')?.value;
+
+
+
+  const hoje = new Date();
+
+  let dataInicio, dataFim = hoje.toISOString().split('T')[0];
+
+
+
+  if (inicioInp && fimInp) {
+
+    dataInicio = inicioInp; dataFim = fimInp;
+
+  } else if (periodoSel === 'hoje') {
+
+    dataInicio = dataFim;
+
+  } else if (periodoSel === 'semana') {
+
+    const d = new Date(hoje); d.setDate(d.getDate() - 7);
+
+    dataInicio = d.toISOString().split('T')[0];
+
+  } else {
+
+    const d = new Date(hoje); d.setDate(d.getDate() - 30);
+
+    dataInicio = d.toISOString().split('T')[0];
+
+  }
+
+
+
+  const label = dataInicio === dataFim ? dataInicio : dataInicio + ' → ' + dataFim;
+
+  const el = document.getElementById('km-metricas-label');
+
+  if (el) el.textContent = label;
+
+
+
+  const tbody = document.getElementById('km-metricas-tbody');
+
+  if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8"><span class="spinner"></span> Carregando...</td></tr>';
+
+
+
+  try {
+
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
     const dMb = await rMb.json();
 
-    const rastreadores = (dMb.motoboys || []).filter(
-      (m) => m.rastrear !== false && m.rastrear !== 0,
-    );
+    const rastreadores = (dMb.motoboys || []).filter(m => m.rastrear !== false && m.rastrear !== 0);
+
+
 
     if (!rastreadores.length) {
-      if (tbody)
-        tbody.innerHTML =
-          '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8">Nenhum rastreador cadastrado</td></tr>';
+
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8">Nenhum rastreador cadastrado</td></tr>';
 
       return;
+
     }
+
+
 
     // Gera lista de datas no período
 
@@ -537,74 +626,73 @@ try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
 
     const fim = new Date(dataFim);
 
-    while (cur <= fim) {
-      datas.push(cur.toISOString().split("T")[0]);
-      cur.setDate(cur.getDate() + 1);
-    }
+    while (cur <= fim) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
 
-    const metricas = await Promise.all(
-      rastreadores.map(async (m) => {
-        let kmTotal = 0,
-          diasComDados = 0,
-          tempoTotalMin = 0;
 
-        for (const data of datas) {
-          try {
-            const r = await fetch(
-              API +
-                "/km-rodado?nome=" +
-                encodeURIComponent(m.nome) +
-                "&data=" +
-                data,
-            );
 
-            const d = await r.json();
+    const metricas = await Promise.all(rastreadores.map(async m => {
 
-            if (d.km > 0) {
-              kmTotal += d.km;
-              diasComDados++;
-            }
+      let kmTotal = 0, diasComDados = 0, tempoTotalMin = 0;
 
-            if (d.pontos > 1) {
-              // Estimativa de tempo baseada nos pontos (intervalo médio de 30s entre pontos)
+      for (const data of datas) {
 
-              tempoTotalMin += (d.pontos * 30) / 60;
-            }
-          } catch (e) {}
-        }
+        try {
 
-        const dias = diasComDados || 1;
+          const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(m.nome) + '&data=' + data);
 
-        return {
-          nome: m.nome,
+          const d = await r.json();
 
-          kmTotal: Math.round(kmTotal * 10) / 10,
+          if (d.km > 0) { kmTotal += d.km; diasComDados++; }
 
-          kmd: Math.round((kmTotal / dias) * 10) / 10,
+          if (d.pontos > 1) {
 
-          kmm: Math.round((kmTotal / dias) * 22 * 10) / 10,
+            // Estimativa de tempo baseada nos pontos (intervalo médio de 30s entre pontos)
 
-          tmd: tempoTotalMin / dias,
+            tempoTotalMin += (d.pontos * 30) / 60;
 
-          dias: diasComDados,
-        };
-      }),
-    );
+          }
 
-    const formatMin = (min) => {
-      if (!min) return "—";
+        } catch(e) {}
+
+      }
+
+      const dias = diasComDados || 1;
+
+      return {
+
+        nome: m.nome,
+
+        kmTotal: Math.round(kmTotal * 10) / 10,
+
+        kmd: Math.round((kmTotal / dias) * 10) / 10,
+
+        kmm: Math.round((kmTotal / dias) * 22 * 10) / 10,
+
+        tmd: tempoTotalMin / dias,
+
+        dias: diasComDados
+
+      };
+
+    }));
+
+
+
+    const formatMin = min => {
+
+      if (!min) return '—';
 
       const h = Math.floor(min / 60);
 
       const m2 = Math.round(min % 60);
 
-      return h + "h" + String(m2).padStart(2, "0") + "m";
+      return h + 'h' + String(m2).padStart(2,'0') + 'm';
+
     };
 
-    if (tbody)
-      tbody.innerHTML = metricas
-        .map(
-          (m) => `
+
+
+    if (tbody) tbody.innerHTML = metricas.map(m => `
 
       <tr style="border-bottom:1px solid #F0F4F8">
 
@@ -620,190 +708,197 @@ try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
 
         <td style="padding:10px 8px;text-align:center;color:#5A7A8F">${m.dias}</td>
 
-      </tr>`,
-        )
-        .join("");
+      </tr>`).join('');
 
-} catch (e) { if (tbody) tbody.innerHTML = ’
-Erro ao carregar métricas
-’; } }
+  } catch(e) {
+
+    if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar métricas</td></tr>';
+
+  }
+
+}
+
+
 
 // ── PWA — SERVICE WORKER ─────────────────────────────────────
 
-if (“serviceWorker” in navigator) { window.addEventListener(“load”, ()
-=> { navigator.serviceWorker .register(“/confirmacaoderota/sw.js”)
+if ('serviceWorker' in navigator) {
 
-      .then((r) => console.log("[PWA] SW registrado:", r.scope))
+  window.addEventListener('load', () => {
 
-      .catch((e) => console.warn("[PWA] SW falhou:", e));
+    navigator.serviceWorker.register('/confirmacaoderota/sw.js')
 
-}); }
+      .then(r => console.log('[PWA] SW registrado:', r.scope))
+
+      .catch(e => console.warn('[PWA] SW falhou:', e));
+
+  });
+
+}
+
+
 
 // ── RESUMO DO DIA ─────────────────────────────────────────────
 
-async function carregarResumoDia() { const lista =
-document.getElementById(“resumo-dia-lista”);
+async function carregarResumoDia() {
 
-if (!lista) return;
+  const lista = document.getElementById('resumo-dia-lista');
 
-// Usa a função centralizada que garante a data correta de SP
+  if (!lista) return;
 
-const hoje = getDataLocalSP();
 
-// Para exibir no layout, formatamos apenas a visualização
 
-const hojeStr = new Date(hoje + “T12:00:00”).toLocaleDateString(“pt-BR”,
-{ day: “2-digit”, month: “2-digit”, });
+  // Usa a função centralizada que garante a data correta de SP
 
-const dataEl = document.getElementById(“resumo-dia-data”);
+  const hoje = getDataLocalSP(); 
 
-if (dataEl) dataEl.textContent = hojeStr;
+  
 
-lista.innerHTML = ’
+  // Para exibir no layout, formatamos apenas a visualização
 
-Carregando…
+  const hojeStr = new Date(hoje + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
 
-’;
 
-try { // Agora ‘hoje’ contém a string ‘2026-06-27’ (exemplo) sempre
-correta
+
+  const dataEl = document.getElementById('resumo-dia-data');
+
+  if (dataEl) dataEl.textContent = hojeStr;
+
+
+
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+
+
+  try {
+
+    // Agora 'hoje' contém a string '2026-06-27' (exemplo) sempre correta
 
     const [rMb, rConf, rGeo, rKm] = await Promise.all([
-      fetch(API + "/motoboys?todos=1&agrupado=1"),
 
-      fetch(
-        API +
-          "/historico-confirmacoes?data_inicio=" +
-          hoje +
-          "&data_fim=" +
-          hoje,
-      ),
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
 
-      fetch(API + "/geofence-evento?data=" + hoje),
+      fetch(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje),
 
-      fetch(API + "/localizacao?dia=" + hoje),
+      fetch(API + '/geofence-evento?data=' + hoje),
+
+      fetch(API + '/localizacao?dia=' + hoje)
+
     ]);
 
     // ... restante do seu código segue igual
 
-    const dMb = await rMb.json();
+
+
+    const dMb   = await rMb.json();
 
     const dConf = await rConf.json();
 
-    const dGeo = await rGeo.json();
+    const dGeo  = await rGeo.json();
 
-    const dKm = await rKm.json();
+    const dKm   = await rKm.json();
 
-    const motoboys = (dMb.motoboys || []).filter(
-      (m) => m.rastrear !== 0 && m.rastrear !== false,
-    );
+
+
+    const motoboys     = (dMb.motoboys || []).filter(m => m.rastrear !== 0 && m.rastrear !== false);
 
     const confirmacoes = dConf.confirmacoes || [];
 
-    const eventos = dGeo.eventos || [];
+    const eventos      = dGeo.eventos || [];
 
-    const historico = dKm.historico || [];
+    const historico    = dKm.historico || [];
+
+
 
     // Só mostra quem confirmou presença hoje
 
-    const confirmaramHoje = new Set(
-      confirmacoes
-        .filter((c) => c.resposta === "sim")
-        .map((c) => c.biocondutor || c.nome),
-    );
+    const confirmaramHoje = new Set(confirmacoes.filter(c => c.resposta === 'sim').map(c => c.biocondutor || c.nome));
 
-    const motoboysFiltrados = motoboys.filter((m) =>
-      confirmaramHoje.has(m.nome),
-    );
+    const motoboysFiltrados = motoboys.filter(m => confirmaramHoje.has(m.nome));
+
+
 
     const kmPorNome = {};
 
-    historico.forEach((p) => {
-      if (!kmPorNome[p.nome]) kmPorNome[p.nome] = [];
-      kmPorNome[p.nome].push(p);
-    });
+    historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
+
+
 
     function calcKm(pts) {
+
       if (!pts || pts.length < 2) return 0;
 
-      const s = [...pts].sort((a, b) => a.timestamp - b.timestamp);
+      const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
 
       let km = 0;
 
       for (let i = 1; i < s.length; i++) {
-        const R = 6371,
-          dLat = ((s[i].lat - s[i - 1].lat) * Math.PI) / 180,
-          dLng = ((s[i].lng - s[i - 1].lng) * Math.PI) / 180;
 
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos((s[i - 1].lat * Math.PI) / 180) *
-            Math.cos((s[i].lat * Math.PI) / 180) *
-            Math.sin(dLng / 2) ** 2;
+        const R=6371,dLat=(s[i].lat-s[i-1].lat)*Math.PI/180,dLng=(s[i].lng-s[i-1].lng)*Math.PI/180;
 
-        const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const a=Math.sin(dLat/2)**2+Math.cos(s[i-1].lat*Math.PI/180)*Math.cos(s[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
 
-        if (d < 5) km += d;
+        const d=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+
+        if(d<5) km+=d;
+
       }
 
-      return Math.round(km * 10) / 10;
+      return Math.round(km*10)/10;
+
     }
+
+
 
     function horaEvento(nome, tipo) {
-      const ev = eventos.find(
-        (e) => e.nome === nome && e.tipo && e.tipo.includes(tipo),
-      );
 
-      if (!ev) return "—";
+      const ev = eventos.find(e => e.nome === nome && e.tipo && e.tipo.includes(tipo));
 
-      const sp = new Date(ev.timestamp - 3 * 60 * 60 * 1000);
+      if (!ev) return '—';
 
-      return (
-        String(sp.getUTCHours()).padStart(2, "0") +
-        ":" +
-        String(sp.getUTCMinutes()).padStart(2, "0")
-      );
+      const sp = new Date(ev.timestamp - 3*60*60*1000);
+
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+
     }
+
+
 
     function horaConf(nome) {
-      const conf = confirmacoes.find(
-        (c) =>
-          (c.nome === nome || c.biocondutor === nome) && c.resposta === "sim",
-      );
 
-      if (!conf) return "—";
+      const conf = confirmacoes.find(c => (c.nome === nome || c.biocondutor === nome) && c.resposta === 'sim');
 
-      const sp = new Date(conf.timestamp - 3 * 60 * 60 * 1000);
+      if (!conf) return '—';
 
-      return (
-        String(sp.getUTCHours()).padStart(2, "0") +
-        ":" +
-        String(sp.getUTCMinutes()).padStart(2, "0")
-      );
+      const sp = new Date(conf.timestamp - 3*60*60*1000);
+
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+
     }
 
-    if (!motoboysFiltrados.length) {
-      lista.innerHTML = '<div class="empty">Nenhuma rota ativa hoje</div>';
-      return;
-    }
 
-    lista.innerHTML = motoboysFiltrados
-      .map((m) => {
-        const inicio = horaConf(m.nome);
 
-        const base = horaEvento(m.nome, "base");
+    if (!motoboysFiltrados.length) { lista.innerHTML = '<div class="empty">Nenhuma rota ativa hoje</div>'; return; }
 
-        const polaris = horaEvento(m.nome, "final");
 
-        const km = calcKm(kmPorNome[m.nome]);
 
-        return `<div style="padding:8px 12px;border-bottom:1px solid #F0F4F8">
+    lista.innerHTML = motoboysFiltrados.map(m => {
+
+      const inicio  = horaConf(m.nome);
+
+      const base    = horaEvento(m.nome, 'base');
+
+      const polaris = horaEvento(m.nome, 'final');
+
+      const km      = calcKm(kmPorNome[m.nome]);
+
+      return `<div style="padding:8px 12px;border-bottom:1px solid #F0F4F8">
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
 
           <div style="font-size:12px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:60%">${m.nome}</div>
 
-          <div style="font-size:11px;font-weight:800;color:#0F9B78">${km > 0 ? km + " km" : "—"}</div>
+          <div style="font-size:11px;font-weight:800;color:#0F9B78">${km > 0 ? km + ' km' : '—'}</div>
 
         </div>
 
@@ -836,165 +931,182 @@ correta
         </div>
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
 
-’; } }
+}
+
+
 
 setInterval(carregarResumoDia, 5 * 60 * 1000);
+
+
 
 // ── LOGIN PAINEL ─────────────────────────────────────────────
 
 let _painelUsuario = null;
 
-async function fazerLoginPainel() { const input =
-document.getElementById(“login-tel”);
 
-const erroEl = document.getElementById(“login-erro”);
 
-const btn = document.getElementById(“btn-login-painel”);
+async function fazerLoginPainel() {
 
-const tel = (input?.value || ““).replace(//g,”“);
+  const input = document.getElementById('login-tel');
 
-if (!tel || tel.length < 10) { if (erroEl) { erroEl.textContent =
-“Digite um número válido”; erroEl.style.display = “block”; } return; }
+  const erroEl = document.getElementById('login-erro');
 
-if (erroEl) erroEl.style.display = “none”;
+  const btn = document.getElementById('btn-login-painel');
 
-if (btn) { btn.disabled = true; btn.textContent = “Verificando…”; }
+  const tel = (input?.value || '').replace(/\D/g,'');
 
-try { const r = await fetch(API + “/painel-login”, { method: “POST”,
+  if (!tel || tel.length < 10) { if (erroEl) { erroEl.textContent = 'Digite um número válido'; erroEl.style.display='block'; } return; }
 
-      headers: { "Content-Type": "application/json" },
+  if (erroEl) erroEl.style.display = 'none';
 
-      body: JSON.stringify({ telefone: tel }),
+  if (btn) { btn.disabled = true; btn.textContent = 'Verificando...'; }
+
+  try {
+
+    const r = await fetch(API + '/painel-login', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ telefone: tel })
+
     });
 
     const d = await r.json();
 
-    if (d.status !== "ok") {
-      if (erroEl) {
-        erroEl.textContent = d.msg || "Acesso não autorizado";
-        erroEl.style.display = "block";
-      }
+    if (d.status !== 'ok') {
 
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = "Entrar →";
-      }
+      if (erroEl) { erroEl.textContent = d.msg || 'Acesso não autorizado'; erroEl.style.display = 'block'; }
+
+      if (btn) { btn.disabled = false; btn.textContent = 'Entrar →'; }
 
       return;
+
     }
 
-    _painelUsuario = {
-      nome: d.nome,
-      master: d.master,
-      permissoes: d.permissoes || [],
-    };
+    _painelUsuario = { nome: d.nome, master: d.master, permissoes: d.permissoes || [] };
 
-    sessionStorage.setItem("painel_usuario", JSON.stringify(_painelUsuario));
+    sessionStorage.setItem('painel_usuario', JSON.stringify(_painelUsuario));
 
     aplicarLoginPainel();
 
-} catch (e) { if (erroEl) { erroEl.textContent = “Erro de conexão”;
-erroEl.style.display = “block”; }
+  } catch(e) {
 
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = "Entrar →";
-    }
+    if (erroEl) { erroEl.textContent = 'Erro de conexão'; erroEl.style.display = 'block'; }
 
-} }
+    if (btn) { btn.disabled = false; btn.textContent = 'Entrar →'; }
 
-function aplicarLoginPainel() { if (!_painelUsuario) return;
+  }
 
-// Esconde tela de login
+}
 
-const screen = document.getElementById(“painel-login-screen”);
 
-if (screen) screen.style.display = “none”;
 
-// Atualiza footer
+function aplicarLoginPainel() {
 
-const iniciais = _painelUsuario.nome .split(” “) .map((p) => p[0])
-.slice(0, 2) .join(”“) .toUpperCase();
+  if (!_painelUsuario) return;
 
-const sfAv = document.getElementById(“sf-av-iniciais”);
+  // Esconde tela de login
 
-const sfNome = document.getElementById(“sf-nome-usuario”);
+  const screen = document.getElementById('painel-login-screen');
 
-const sfRole = document.getElementById(“sf-role-usuario”);
+  if (screen) screen.style.display = 'none';
 
-if (sfAv) sfAv.textContent = iniciais;
+  // Atualiza footer
 
-if (sfNome) sfNome.textContent = _painelUsuario.nome;
+  const iniciais = _painelUsuario.nome.split(' ').map(p=>p[0]).slice(0,2).join('').toUpperCase();
 
-if (sfRole) sfRole.textContent = _painelUsuario.master ? “⭐ Master” :
-“Gestor”;
+  const sfAv = document.getElementById('sf-av-iniciais');
 
-// Aplica permissões no menu
+  const sfNome = document.getElementById('sf-nome-usuario');
 
-aplicarPermissoesMenu();
+  const sfRole = document.getElementById('sf-role-usuario');
 
-// Carrega resumo do dia imediatamente
+  if (sfAv) sfAv.textContent = iniciais;
 
-setTimeout(carregarResumoDia, 500); }
+  if (sfNome) sfNome.textContent = _painelUsuario.nome;
 
-function temPermissao(modulo) { if (!_painelUsuario) return false;
+  if (sfRole) sfRole.textContent = _painelUsuario.master ? '⭐ Master' : 'Gestor';
 
-if (_painelUsuario.master) return true;
+  // Aplica permissões no menu
 
-return ( _painelUsuario.permissoes.includes(“all”) ||
-_painelUsuario.permissoes.includes(modulo) ); }
+  aplicarPermissoesMenu();
 
-function aplicarPermissoesMenu() { const mapa = { confirmacoes:
-“confirmacoes”,
+  // Carrega resumo do dia imediatamente
 
-    "mapa-rastreamento": "rastreamento",
+  setTimeout(carregarResumoDia, 500);
 
-    "checklist-view": "checklist",
+}
 
-    motoristas: "motoristas",
 
-    buscar: "buscar_cliente",
 
-    "criar-cliente": "criar_cliente",
+function temPermissao(modulo) {
 
-    "ativar-cliente": "ativar_cliente",
+  if (!_painelUsuario) return false;
 
-    gestor: "auditoria",
+  if (_painelUsuario.master) return true;
 
-    "gerenciar-motoboys": "motoboys",
+  return _painelUsuario.permissoes.includes('all') || _painelUsuario.permissoes.includes(modulo);
 
-    dispositivos: "dispositivos",
+}
 
-    ocorrencias: "ocorrencias",
 
-    quilometragem: "quilometragem",
 
-    "geofence-config": "geofence",
+function aplicarPermissoesMenu() {
 
-    importacao: "importacao",
+  const mapa = {
 
-    "estoque-view": "estoque",
+    'confirmacoes':      'confirmacoes',
 
-    "ponto-rh": "rh",
+    'mapa-rastreamento': 'rastreamento',
 
-    patrimonios: "patrimonios",
+    'checklist-view':    'checklist',
 
-    "painel-usuarios": null,
+    'motoristas':        'motoristas',
 
-};
+    'buscar':            'buscar_cliente',
 
-// Esconde botões sem permissão
+    'criar-cliente':     'criar_cliente',
 
-document.querySelectorAll(‘.nav-item[onclick*=“setView”]’).forEach((btn)
-=> { const match =
-btn.getAttribute(“onclick”).match(/setView(‘([^']+)’/);
+    'ativar-cliente':    'ativar_cliente',
+
+    'gestor':            'auditoria',
+
+    'gerenciar-motoboys':'motoboys',
+
+    'dispositivos':      'dispositivos',
+
+    'ocorrencias':       'ocorrencias',
+
+    'quilometragem':     'quilometragem',
+
+    'geofence-config':   'geofence',
+
+    'importacao':        'importacao',
+
+    'estoque-view':      'estoque',
+
+    'ponto-rh':          'rh',
+
+    'patrimonios':       'patrimonios',
+
+    'painel-usuarios':   null,
+
+  };
+
+
+
+  // Esconde botões sem permissão
+
+  document.querySelectorAll('.nav-item[onclick*="setView"]').forEach(btn => {
+
+    const match = btn.getAttribute('onclick').match(/setView\('([^']+)'/);
 
     if (!match) return;
 
@@ -1006,176 +1118,185 @@ btn.getAttribute(“onclick”).match(/setView(‘([^']+)’/);
 
     if (modulo === undefined) return;
 
-    if (modulo && !temPermissao(modulo)) btn.style.display = "none";
+    if (modulo && !temPermissao(modulo)) btn.style.display = 'none';
 
-});
+  });
 
-// Esconde usuários se não master
 
-const navUsuarios = document.getElementById(“nav-btn-usuarios”);
 
-if (navUsuarios && !_painelUsuario?.master) navUsuarios.style.display =
-“none”;
+  // Esconde usuários se não master
 
-// Botões que requerem permissão específica (não usam setView)
+  const navUsuarios = document.getElementById('nav-btn-usuarios');
 
-const btnsMaster = [ “nav-btn-apk”, “nav-btn-gps-offline”,
-“nav-btn-treinamentos”, ];
+  if (navUsuarios && !_painelUsuario?.master) navUsuarios.style.display = 'none';
 
-btnsMaster.forEach((id) => { const el = document.getElementById(id);
 
-    if (el && !_painelUsuario?.master) el.style.display = "none";
 
-});
+  // Botões que requerem permissão específica (não usam setView)
 
-const btnCriarRota = document.getElementById(“nav-btn-criar-rota”);
+  const btnsMaster = ['nav-btn-apk', 'nav-btn-gps-offline', 'nav-btn-treinamentos'];
 
-if (btnCriarRota && !temPermissao(“criar_rota”))
-btnCriarRota.style.display = “none”;
+  btnsMaster.forEach(id => {
 
-const btnAlterarRota = document.getElementById(“nav-btn-alterar-rota”);
+    const el = document.getElementById(id);
 
-if (btnAlterarRota && !temPermissao(“alterar_rota”))
-btnAlterarRota.style.display = “none”;
+    if (el && !_painelUsuario?.master) el.style.display = 'none';
 
-// Esconde group labels se todos os itens do grupo estiverem escondidos
+  });
 
-document.querySelectorAll(“.nav-group-lbl”).forEach((label) => { let
-next = label.nextElementSibling;
+
+
+  const btnCriarRota = document.getElementById('nav-btn-criar-rota');
+
+  if (btnCriarRota && !temPermissao('criar_rota')) btnCriarRota.style.display = 'none';
+
+  const btnAlterarRota = document.getElementById('nav-btn-alterar-rota');
+
+  if (btnAlterarRota && !temPermissao('alterar_rota')) btnAlterarRota.style.display = 'none';
+
+
+
+  // Esconde group labels se todos os itens do grupo estiverem escondidos
+
+  document.querySelectorAll('.nav-group-lbl').forEach(label => {
+
+    let next = label.nextElementSibling;
 
     let temVisivel = false;
 
-    while (next && !next.classList.contains("nav-group-lbl")) {
-      if (
-        next.classList.contains("nav-item") &&
-        next.style.display !== "none"
-      ) {
-        temVisivel = true;
-        break;
+    while (next && !next.classList.contains('nav-group-lbl')) {
+
+      if (next.classList.contains('nav-item') && next.style.display !== 'none') {
+
+        temVisivel = true; break;
+
       }
 
       next = next.nextElementSibling;
+
     }
 
-    label.style.display = temVisivel ? "" : "none";
+    label.style.display = temVisivel ? '' : 'none';
 
-}); }
+  });
 
-function sairPainel() { if (!confirm(“Deseja sair do painel?”)) return;
+}
 
-sessionStorage.removeItem(“painel_usuario”);
 
-_painelUsuario = null;
 
-// Mostra tela de login
+function sairPainel() {
 
-const screen = document.getElementById(“painel-login-screen”);
+  if (!confirm('Deseja sair do painel?')) return;
 
-if (screen) { screen.style.display = “flex”; }
+  sessionStorage.removeItem('painel_usuario');
 
-const input = document.getElementById(“login-tel”);
+  _painelUsuario = null;
 
-if (input) { input.value = ““; }
+  // Mostra tela de login
 
-// Restaura menu
+  const screen = document.getElementById('painel-login-screen');
 
-document.querySelectorAll(“.nav-item”).forEach((b) => (b.style.display =
-““)); }
+  if (screen) { screen.style.display = 'flex'; }
+
+  const input = document.getElementById('login-tel');
+
+  if (input) { input.value = ''; }
+
+  // Restaura menu
+
+  document.querySelectorAll('.nav-item').forEach(b => b.style.display = '');
+
+}
+
+
 
 // Verifica sessão ao carregar
 
-(function () { const saved = sessionStorage.getItem(“painel_usuario”);
+(function() {
 
-if (saved) { try { _painelUsuario = JSON.parse(saved);
+  const saved = sessionStorage.getItem('painel_usuario');
+
+  if (saved) {
+
+    try {
+
+      _painelUsuario = JSON.parse(saved);
 
       // Aplica após DOM carregar
 
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", aplicarLoginPainel);
-      } else {
-        setTimeout(aplicarLoginPainel, 100);
-      }
-    } catch (e) {
-      sessionStorage.removeItem("painel_usuario");
-    }
+      if (document.readyState === 'loading') {
 
-} })();
+        document.addEventListener('DOMContentLoaded', aplicarLoginPainel);
+
+      } else {
+
+        setTimeout(aplicarLoginPainel, 100);
+
+      }
+
+    } catch(e) { sessionStorage.removeItem('painel_usuario'); }
+
+  }
+
+})();
+
+
 
 // ── USUÁRIOS DO PAINEL ────────────────────────────────────────
 
-async function carregarUsuariosPainel() { const lista =
-document.getElementById(“pu-lista”);
+async function carregarUsuariosPainel() {
 
-if (!lista) return;
+  const lista = document.getElementById('pu-lista');
 
-lista.innerHTML = ’
+  if (!lista) return;
 
-Carregando…
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
 
-’;
+  try {
 
-try { const r = await fetch(API + “/painel-usuarios”);
+    const r = await fetch(API + '/painel-usuarios');
 
     const d = await r.json();
 
     const usuarios = d.usuarios || [];
 
-    if (!usuarios.length) {
-      lista.innerHTML = '<div class="empty">Nenhum usuário cadastrado</div>';
-      return;
-    }
+    if (!usuarios.length) { lista.innerHTML = '<div class="empty">Nenhum usuário cadastrado</div>'; return; }
+
+
 
     const MODULOS = {
-      painel: "🏠",
-      confirmacoes: "✓",
-      rastreamento: "🗺️",
-      checklist: "📋",
-      motoristas: "👤",
 
-      criar_rota: "➕",
-      alterar_rota: "✏️",
-      buscar_cliente: "🔎",
-      criar_cliente: "👤",
-      ativar_cliente: "🔁",
+      painel:'🏠',confirmacoes:'✓',rastreamento:'🗺️',checklist:'📋',motoristas:'👤',
 
-      motoboys: "🏍️",
-      dispositivos: "📱",
-      ocorrencias: "🚨",
-      quilometragem: "📏",
-      geofence: "📍",
+      criar_rota:'➕',alterar_rota:'✏️',buscar_cliente:'🔎',criar_cliente:'👤',ativar_cliente:'🔁',
 
-      auditoria: "🎯",
-      importacao: "📥",
-      estoque: "📦",
-      rh: "⏱️",
-      chat: "💬",
-      patrimonios: "🔒",
+      motoboys:'🏍️',dispositivos:'📱',ocorrencias:'🚨',quilometragem:'📏',geofence:'📍',
+
+      auditoria:'🎯',importacao:'📥',estoque:'📦',rh:'⏱️',chat:'💬',patrimonios:'🔒'
+
     };
 
-    lista.innerHTML = usuarios
-      .map((u) => {
-        let perms = [];
 
-        try {
-          perms = JSON.parse(u.permissoes || "[]");
-        } catch (e) {}
 
-        const permBadges = u.master
-          ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E;font-weight:700">⭐ Master</span>'
-          : perms
-              .map(
-                (p) =>
-                  `<span style="font-size:10px;padding:2px 6px;border-radius:20px;background:#EFF6FF;color:#1D4ED8">${MODULOS[p] || p}</span>`,
-              )
-              .join("");
+    lista.innerHTML = usuarios.map(u => {
 
-        return `
+      let perms = [];
+
+      try { perms = JSON.parse(u.permissoes || '[]'); } catch(e) {}
+
+      const permBadges = u.master
+
+        ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E;font-weight:700">⭐ Master</span>'
+
+        : perms.map(p => `<span style="font-size:10px;padding:2px 6px;border-radius:20px;background:#EFF6FF;color:#1D4ED8">${MODULOS[p]||p}</span>`).join('');
+
+      return `
 
         <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
 
           <div style="flex:1;min-width:0">
 
-            <div style="font-size:13px;font-weight:700;color:#0F2940">${u.nome} ${u.master ? "⭐" : ""}</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${u.nome} ${u.master ? '⭐' : ''}</div>
 
             <div style="font-size:11px;color:#94A8B8;margin-top:1px">${u.telefone}</div>
 
@@ -1187,118 +1308,117 @@ try { const r = await fetch(API + “/painel-usuarios”);
 
             <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#5A7A8F;cursor:pointer">
 
-              <input type="checkbox" ${u.ativo ? "checked" : ""} onchange="toggleUsuarioPainel(${u.id},this.checked)" style="accent-color:#0F4C7A" ${u.master ? "disabled" : ""}/>
+              <input type="checkbox" ${u.ativo?'checked':''} onchange="toggleUsuarioPainel(${u.id},this.checked)" style="accent-color:#0F4C7A" ${u.master?'disabled':''}/>
 
               Ativo
 
             </label>
 
-            ${
-              !u.master
-                ? `<button onclick="editarPermissoes(${u.id},'${u.nome.replace(/'/g, "\\'")}',${JSON.stringify(perms).replace(/"/g, "&quot;")})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;cursor:pointer">✏️ Permissões</button>
+            ${!u.master ? `<button onclick="editarPermissoes(${u.id},'${u.nome.replace(/'/g,"\\'")}',${JSON.stringify(perms).replace(/"/g,'&quot;')})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;color:#0F4C7A;cursor:pointer">✏️ Permissões</button>
 
-            <button onclick="excluirUsuarioPainel(${u.id})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:none;background:none;color:#EF4444;cursor:pointer">✕</button>`
-                : ""
-            }
+            <button onclick="excluirUsuarioPainel(${u.id})" style="font-size:10px;padding:3px 8px;border-radius:6px;border:none;background:none;color:#EF4444;cursor:pointer">✕</button>` : ''}
 
           </div>
 
         </div>`;
-      })
-      .join("");
 
-} catch (e) { lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
 
-’; } }
+}
 
-async function salvarUsuarioPainel() { const nome =
-document.getElementById(“pu-nome”)?.value.trim();
 
-const tel = (document.getElementById(“pu-tel”)?.value || ““).replace(
-//g,”“, );
 
-const perms = […document.querySelectorAll(“.pu-perm-cb:checked”)].map(
-(cb) => cb.value, );
+async function salvarUsuarioPainel() {
 
-if (!nome || !tel) { toast(“Preencha nome e telefone”); return; }
+  const nome = document.getElementById('pu-nome')?.value.trim();
 
-try { await fetch(API + “/painel-usuarios”, { method: “POST”,
+  const tel = (document.getElementById('pu-tel')?.value || '').replace(/\D/g,'');
 
-      headers: { "Content-Type": "application/json" },
+  const perms = [...document.querySelectorAll('.pu-perm-cb:checked')].map(cb => cb.value);
 
-      body: JSON.stringify({ nome, telefone: tel, permissoes: perms }),
+  if (!nome || !tel) { toast('Preencha nome e telefone'); return; }
+
+  try {
+
+    await fetch(API + '/painel-usuarios', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ nome, telefone: tel, permissoes: perms })
+
     });
 
-    document.getElementById("pu-nome").value = "";
+    document.getElementById('pu-nome').value = '';
 
-    document.getElementById("pu-tel").value = "";
+    document.getElementById('pu-tel').value = '';
 
-    document
-      .querySelectorAll(".pu-perm-cb")
-      .forEach((cb) => (cb.checked = false));
+    document.querySelectorAll('.pu-perm-cb').forEach(cb => cb.checked = false);
 
-    toast("✓ Usuário adicionado");
+    toast('✓ Usuário adicionado');
 
     carregarUsuariosPainel();
 
-} catch (e) { toast(“Erro ao salvar”); } }
+  } catch(e) { toast('Erro ao salvar'); }
 
-async function toggleUsuarioPainel(id, ativo) { await fetch(API +
-“/painel-usuarios”, { method: “PUT”, headers: { “Content-Type”:
-“application/json” }, body: JSON.stringify({ id, ativo }), });
+}
 
-toast(ativo ? “✓ Ativado” : “✓ Desativado”); }
 
-async function excluirUsuarioPainel(id) { if (!confirm(“Excluir este
-usuário?”)) return;
 
-await fetch(API + “/painel-usuarios”, { method: “DELETE”, headers: {
-“Content-Type”: “application/json” }, body: JSON.stringify({ id }), });
+async function toggleUsuarioPainel(id, ativo) {
 
-toast(“✓ Usuário removido”);
+  await fetch(API + '/painel-usuarios', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, ativo }) });
 
-carregarUsuariosPainel(); }
+  toast(ativo ? '✓ Ativado' : '✓ Desativado');
 
-function editarPermissoes(id, nome, permsAtual) { const MODULOS = [
-[“painel”, “🏠 Painel”], [“confirmacoes”, “✓ Confirmações”],
-[“rastreamento”, “🗺️ Rastreamento”],
+}
 
-    ["checklist", "📋 Checklist"],
-    ["motoristas", "👤 Motoristas"],
-    ["criar_rota", "➕ Criar rota"],
 
-    ["alterar_rota", "✏️ Alterar rota"],
-    ["buscar_cliente", "🔎 Buscar cliente"],
-    ["criar_cliente", "👤 Criar cliente"],
 
-    ["ativar_cliente", "🔁 Ativar/Desativar"],
-    ["motoboys", "🏍️ Motoboys"],
-    ["dispositivos", "📱 Dispositivos"],
+async function excluirUsuarioPainel(id) {
 
-    ["ocorrencias", "🚨 Ocorrências"],
-    ["quilometragem", "📏 Quilometragem"],
-    ["geofence", "📍 Geofence"],
+  if (!confirm('Excluir este usuário?')) return;
 
-    ["auditoria", "🎯 Auditoria"],
-    ["importacao", "📥 Importação"],
-    ["estoque", "📦 PMC Estoque"],
+  await fetch(API + '/painel-usuarios', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
 
-    ["rh", "⏱️ Ponto RH"],
-    ["chat", "💬 Chat"],
-    ["patrimonios", "🔒 Patrimônios"],
+  toast('✓ Usuário removido');
 
-];
+  carregarUsuariosPainel();
 
-const pop = document.createElement(“div”);
+}
 
-pop.id = “pop-perms”;
 
-pop.style.cssText =
-“position:fixed;inset:0;background:rgba(15,40,64,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem”;
 
-pop.innerHTML = `
+function editarPermissoes(id, nome, permsAtual) {
+
+  const MODULOS = [
+
+    ['painel','🏠 Painel'],['confirmacoes','✓ Confirmações'],['rastreamento','🗺️ Rastreamento'],
+
+    ['checklist','📋 Checklist'],['motoristas','👤 Motoristas'],['criar_rota','➕ Criar rota'],
+
+    ['alterar_rota','✏️ Alterar rota'],['buscar_cliente','🔎 Buscar cliente'],['criar_cliente','👤 Criar cliente'],
+
+    ['ativar_cliente','🔁 Ativar/Desativar'],['motoboys','🏍️ Motoboys'],['dispositivos','📱 Dispositivos'],
+
+    ['ocorrencias','🚨 Ocorrências'],['quilometragem','📏 Quilometragem'],['geofence','📍 Geofence'],
+
+    ['auditoria','🎯 Auditoria'],['importacao','📥 Importação'],['estoque','📦 PMC Estoque'],
+
+    ['rh','⏱️ Ponto RH'],['chat','💬 Chat'],['patrimonios','🔒 Patrimônios']
+
+  ];
+
+  const pop = document.createElement('div');
+
+  pop.id = 'pop-perms';
+
+  pop.style.cssText = 'position:fixed;inset:0;background:rgba(15,40,64,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:1rem';
+
+  pop.innerHTML = `
 
     <div style="background:#fff;border-radius:16px;padding:1.25rem;width:100%;max-width:420px;max-height:90vh;overflow-y:auto">
 
@@ -1312,17 +1432,15 @@ pop.innerHTML = `
 
       <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1rem">
 
-        ${MODULOS.map(
-          ([id2, label]) => `
+        ${MODULOS.map(([id2, label]) => `
 
           <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:#0F2940;cursor:pointer;padding:6px 10px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff">
 
-            <input type="checkbox" value="${id2}" class="perm-edit-cb" ${permsAtual.includes(id2) ? "checked" : ""} style="accent-color:#0F4C7A"/>
+            <input type="checkbox" value="${id2}" class="perm-edit-cb" ${permsAtual.includes(id2)?'checked':''} style="accent-color:#0F4C7A"/>
 
             ${label}
 
-          </label>`,
-        ).join("")}
+          </label>`).join('')}
 
       </div>
 
@@ -1330,21 +1448,25 @@ pop.innerHTML = `
 
     </div>`;
 
-document.body.appendChild(pop); }
+  document.body.appendChild(pop);
 
-async function salvarPermissoes(id) { const perms =
-[…document.querySelectorAll(“.perm-edit-cb:checked”)].map( (cb) =>
-cb.value, );
+}
 
-await fetch(API + “/painel-usuarios”, { method: “PUT”, headers: {
-“Content-Type”: “application/json” }, body: JSON.stringify({ id,
-permissoes: perms }), });
 
-document.getElementById(“pop-perms”)?.remove();
 
-toast(“✓ Permissões salvas”);
+async function salvarPermissoes(id) {
 
-carregarUsuariosPainel(); }
+  const perms = [...document.querySelectorAll('.perm-edit-cb:checked')].map(cb => cb.value);
+
+  await fetch(API + '/painel-usuarios', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, permissoes: perms }) });
+
+  document.getElementById('pop-perms')?.remove();
+
+  toast('✓ Permissões salvas');
+
+  carregarUsuariosPainel();
+
+}
 
 let _adminRecorder = null;
 
@@ -1354,132 +1476,145 @@ let _adminTimer = null;
 
 let _adminSeg = 0;
 
-async function iniciarGravacaoAdmin(e) { e.preventDefault();
 
-if (_adminRecorder?.state === “recording”) return;
 
-try { const stream = await navigator.mediaDevices.getUserMedia({ audio:
-true });
+async function iniciarGravacaoAdmin(e) {
+
+  e.preventDefault();
+
+  if (_adminRecorder?.state === 'recording') return;
+
+  try {
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
     _adminRecorder = new MediaRecorder(stream);
 
     _adminChunks = [];
 
-    _adminRecorder.ondataavailable = (ev) => {
-      if (ev.data.size > 0) _adminChunks.push(ev.data);
-    };
+    _adminRecorder.ondataavailable = ev => { if (ev.data.size > 0) _adminChunks.push(ev.data); };
 
     _adminRecorder.start();
 
-    const btn = document.getElementById("btn-gravar-admin");
+    const btn = document.getElementById('btn-gravar-admin');
 
-    const ind = document.getElementById("gravacao-admin-indicator");
+    const ind = document.getElementById('gravacao-admin-indicator');
 
-    if (btn) {
-      btn.style.background = "#FEF2F2";
-      btn.style.color = "#EF4444";
-      btn.textContent = "⏹";
-    }
+    if (btn) { btn.style.background = '#FEF2F2'; btn.style.color = '#EF4444'; btn.textContent = '⏹'; }
 
-    if (ind) ind.style.display = "flex";
+    if (ind) ind.style.display = 'flex';
 
     _adminSeg = 0;
 
     _adminTimer = setInterval(() => {
+
       _adminSeg++;
 
-      const el = document.getElementById("gravacao-admin-timer");
+      const el = document.getElementById('gravacao-admin-timer');
 
-      if (el) el.textContent = _adminSeg + "s";
+      if (el) el.textContent = _adminSeg + 's';
 
       if (_adminSeg >= 60) pararGravacaoAdmin(e);
+
     }, 1000);
 
-} catch (err) { alert(“Não foi possível acessar o microfone.”); } }
+  } catch(err) { alert('Não foi possível acessar o microfone.'); }
 
-async function pararGravacaoAdmin(e) { e.preventDefault();
+}
 
-if (!_adminRecorder || _adminRecorder.state !== “recording”) return;
 
-clearInterval(_adminTimer);
 
-const btn = document.getElementById(“btn-gravar-admin”);
+async function pararGravacaoAdmin(e) {
 
-const ind = document.getElementById(“gravacao-admin-indicator”);
+  e.preventDefault();
 
-if (btn) { btn.style.background = “#EFF6FF”; btn.style.color =
-“#0F4C7A”; btn.textContent = “🎤”; }
+  if (!_adminRecorder || _adminRecorder.state !== 'recording') return;
 
-if (ind) ind.style.display = “none”;
+  clearInterval(_adminTimer);
 
-_adminRecorder.stop();
+  const btn = document.getElementById('btn-gravar-admin');
 
-_adminRecorder.stream.getTracks().forEach((t) => t.stop());
+  const ind = document.getElementById('gravacao-admin-indicator');
 
-_adminRecorder.onstop = async () => { if (_adminSeg < 1) return;
+  if (btn) { btn.style.background = '#EFF6FF'; btn.style.color = '#0F4C7A'; btn.textContent = '🎤'; }
 
-    const blob = new Blob(_adminChunks, { type: "audio/webm" });
+  if (ind) ind.style.display = 'none';
+
+  _adminRecorder.stop();
+
+  _adminRecorder.stream.getTracks().forEach(t => t.stop());
+
+  _adminRecorder.onstop = async () => {
+
+    if (_adminSeg < 1) return;
+
+    const blob = new Blob(_adminChunks, { type: 'audio/webm' });
 
     await enviarAudioAdmin(blob, _adminSeg);
 
-}; }
+  };
 
-async function enviarAudioAdmin(blob, duracao) { if (!chatMotoboyAtual)
-return;
+}
 
-try { const reader = new FileReader();
+
+
+async function enviarAudioAdmin(blob, duracao) {
+
+  if (!chatMotoboyAtual) return;
+
+  try {
+
+    const reader = new FileReader();
 
     reader.readAsDataURL(blob);
 
     reader.onloadend = async () => {
-      const base64 = reader.result.split(",")[1];
 
-      await fetch(API + "/chat-audio-admin", {
-        method: "POST",
+      const base64 = reader.result.split(',')[1];
 
-        headers: { "Content-Type": "application/json" },
+      await fetch(API + '/chat-audio-admin', {
 
-        body: JSON.stringify({
-          telefone_motoboy: chatMotoboyAtual,
-          audio_base64: base64,
-          duracao,
-        }),
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ telefone_motoboy: chatMotoboyAtual, audio_base64: base64, duracao })
+
       });
 
       carregarMensagens(chatMotoboyAtual, false);
+
     };
 
-} catch (e) { toast(“Erro ao enviar áudio”); } }
+  } catch(e) { toast('Erro ao enviar áudio'); }
+
+}
+
+
 
 // ── MOTIVOS DE AUSÊNCIA ──────────────────────────────────────
 
-async function carregarMotivos() { const lista =
-document.getElementById(“mot-lista”);
+async function carregarMotivos() {
 
-if (!lista) return;
+  const lista = document.getElementById('mot-lista');
 
-lista.innerHTML = ’
+  if (!lista) return;
 
-Carregando…
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
 
-’;
+  try {
 
-try { const r = await fetch(API + “/motivos-ausencia”);
+    const r = await fetch(API + '/motivos-ausencia');
 
     const d = await r.json();
 
     const motivos = d.motivos || [];
 
-    if (!motivos.length) {
-      lista.innerHTML = '<div class="empty">Nenhum motivo cadastrado</div>';
-      return;
-    }
+    if (!motivos.length) { lista.innerHTML = '<div class="empty">Nenhum motivo cadastrado</div>'; return; }
 
-    lista.innerHTML = motivos
-      .map(
-        (m) => `
+    lista.innerHTML = motivos.map(m => `
 
-      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8;${!m.ativo ? "opacity:.5" : ""}">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8;${!m.ativo ? 'opacity:.5' : ''}">
 
         <span style="font-size:20px;flex-shrink:0">${m.emoji}</span>
 
@@ -1495,7 +1630,7 @@ try { const r = await fetch(API + “/motivos-ausencia”);
 
           <label style="display:flex;align-items:center;gap:4px;font-size:11px;color:#5A7A8F;cursor:pointer">
 
-            <input type="checkbox" ${m.ativo ? "checked" : ""} onchange="toggleMotivo(${m.id},this.checked)" style="accent-color:#0F4C7A"/>
+            <input type="checkbox" ${m.ativo ? 'checked' : ''} onchange="toggleMotivo(${m.id},this.checked)" style="accent-color:#0F4C7A"/>
 
             Ativo
 
@@ -1505,239 +1640,291 @@ try { const r = await fetch(API + “/motivos-ausencia”);
 
         </div>
 
-      </div>`,
-      )
-      .join("");
+      </div>`).join('');
 
-} catch (e) { lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
 
-’; } }
-
-async function salvarMotivo() { const emoji =
-document.getElementById(“mot-emoji”).value.trim() || “📋”;
-
-const label = document.getElementById(“mot-label”).value.trim();
-
-if (!label) { toast(“Informe a descrição do motivo”); return; }
-
-// Gera código automaticamente baseado na label
-
-const codigo = “OC-NP-” + Date.now();
-
-try { await fetch(API + “/motivos-ausencia”, { method: “POST”,
-
-      headers: { "Content-Type": "application/json" },
-
-      body: JSON.stringify({ codigo, emoji, label }),
-    });
-
-    document.getElementById("mot-emoji").value = "";
-
-    document.getElementById("mot-label").value = "";
-
-    toast("✓ Motivo adicionado");
-
-    carregarMotivos();
-
-} catch (e) { toast(“Erro ao salvar”); } }
-
-async function toggleMotivo(id, ativo) { try { await fetch(API +
-“/motivos-ausencia”, { method: “PUT”,
-
-      headers: { "Content-Type": "application/json" },
-
-      body: JSON.stringify({ id, ativo }),
-    });
-
-    toast(ativo ? "✓ Motivo ativado" : "✓ Motivo desativado");
-
-} catch (e) { toast(“Erro”); } }
-
-async function excluirMotivo(id) { if (!confirm(“Excluir este motivo?”))
-return;
-
-try { await fetch(API + “/motivos-ausencia”, { method: “DELETE”,
-
-      headers: { "Content-Type": "application/json" },
-
-      body: JSON.stringify({ id }),
-    });
-
-    toast("✓ Motivo excluído");
-
-    carregarMotivos();
-
-} catch (e) { toast(“Erro”); } }
-
-function ocMudarAba(aba, btn) {
-document.getElementById(“oc-conteudo-lista”).style.display = aba ===
-“lista” ? “block” : “none”;
-
-document.getElementById(“oc-conteudo-motivos”).style.display = aba ===
-“motivos” ? “block” : “none”;
-
-document.getElementById(“oc-aba-lista”).style.background = aba ===
-“lista” ? “#0F4C7A” : “none”;
-
-document.getElementById(“oc-aba-lista”).style.color = aba === “lista” ?
-“#fff” : “#5A7A8F”;
-
-document.getElementById(“oc-aba-motivos”).style.background = aba ===
-“motivos” ? “#0F4C7A” : “none”;
-
-document.getElementById(“oc-aba-motivos”).style.color = aba ===
-“motivos” ? “#fff” : “#5A7A8F”;
-
-if (aba === “motivos”) carregarMotivos();
-
-if (aba === “lista”) carregarOcorrencias(); }
-
-let _ocorrenciaAtual = null;
-
-let _statusOcAtual = “aberta”;
-
-async function abrirCriarOcorrencia() { const form =
-document.getElementById(“form-criar-oc”);
-
-if (!form) return;
-
-form.style.display = form.style.display === “none” ? “block” : “none”;
-
-if (form.style.display === “none”) return;
-
-// Popula select de motoboys
-
-const selMoto = document.getElementById(“oc-criar-motoboy”);
-
-if (selMoto && selMoto.options.length <= 1) { try { const r = await
-fetch(API + “/motoboys?todos=1&agrupado=1”);
-
-      const d = await r.json();
-
-      (d.motoboys || []).forEach((m) => {
-        const opt = document.createElement("option");
-
-        opt.value = m.nome;
-        opt.textContent = m.nome;
-
-        selMoto.appendChild(opt);
-      });
-    } catch (e) {}
+  }
 
 }
 
-// Popula select de motivos
 
-const selMot = document.getElementById(“oc-criar-motivo-sel”);
 
-if (selMot && selMot.options.length <= 1) { try { const r = await
-fetch(API + “/motivos-ausencia”);
+async function salvarMotivo() {
+
+  const emoji = document.getElementById('mot-emoji').value.trim() || '📋';
+
+  const label = document.getElementById('mot-label').value.trim();
+
+  if (!label) { toast('Informe a descrição do motivo'); return; }
+
+  // Gera código automaticamente baseado na label
+
+  const codigo = 'OC-NP-' + Date.now();
+
+  try {
+
+    await fetch(API + '/motivos-ausencia', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ codigo, emoji, label })
+
+    });
+
+    document.getElementById('mot-emoji').value = '';
+
+    document.getElementById('mot-label').value = '';
+
+    toast('✓ Motivo adicionado');
+
+    carregarMotivos();
+
+  } catch(e) { toast('Erro ao salvar'); }
+
+}
+
+
+
+async function toggleMotivo(id, ativo) {
+
+  try {
+
+    await fetch(API + '/motivos-ausencia', {
+
+      method: 'PUT',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ id, ativo })
+
+    });
+
+    toast(ativo ? '✓ Motivo ativado' : '✓ Motivo desativado');
+
+  } catch(e) { toast('Erro'); }
+
+}
+
+
+
+async function excluirMotivo(id) {
+
+  if (!confirm('Excluir este motivo?')) return;
+
+  try {
+
+    await fetch(API + '/motivos-ausencia', {
+
+      method: 'DELETE',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ id })
+
+    });
+
+    toast('✓ Motivo excluído');
+
+    carregarMotivos();
+
+  } catch(e) { toast('Erro'); }
+
+}
+
+
+
+function ocMudarAba(aba, btn) {
+
+  document.getElementById('oc-conteudo-lista').style.display = aba === 'lista' ? 'block' : 'none';
+
+  document.getElementById('oc-conteudo-motivos').style.display = aba === 'motivos' ? 'block' : 'none';
+
+  document.getElementById('oc-aba-lista').style.background = aba === 'lista' ? '#0F4C7A' : 'none';
+
+  document.getElementById('oc-aba-lista').style.color = aba === 'lista' ? '#fff' : '#5A7A8F';
+
+  document.getElementById('oc-aba-motivos').style.background = aba === 'motivos' ? '#0F4C7A' : 'none';
+
+  document.getElementById('oc-aba-motivos').style.color = aba === 'motivos' ? '#fff' : '#5A7A8F';
+
+  if (aba === 'motivos') carregarMotivos();
+
+  if (aba === 'lista') carregarOcorrencias();
+
+}
+
+let _ocorrenciaAtual = null;
+
+let _statusOcAtual = 'aberta';
+
+
+
+async function abrirCriarOcorrencia() {
+
+  const form = document.getElementById('form-criar-oc');
+
+  if (!form) return;
+
+  form.style.display = form.style.display === 'none' ? 'block' : 'none';
+
+  if (form.style.display === 'none') return;
+
+
+
+  // Popula select de motoboys
+
+  const selMoto = document.getElementById('oc-criar-motoboy');
+
+  if (selMoto && selMoto.options.length <= 1) {
+
+    try {
+
+      const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
       const d = await r.json();
 
-      (d.motivos || [])
-        .filter((m) => m.ativo !== 0)
-        .forEach((m) => {
-          const opt = document.createElement("option");
+      (d.motoboys || []).forEach(m => {
 
-          opt.value = m.label;
-          opt.textContent = m.emoji + " " + m.label;
+        const opt = document.createElement('option');
 
-          selMot.appendChild(opt);
-        });
-    } catch (e) {}
+        opt.value = m.nome; opt.textContent = m.nome;
 
-} }
+        selMoto.appendChild(opt);
 
-async function criarOcorrenciaGestor() { const motoboy =
-document.getElementById(“oc-criar-motoboy”)?.value;
+      });
 
-const tipo = document.getElementById(“oc-criar-tipo”)?.value ||
-“gestor”;
+    } catch(e) {}
 
-const rota = document.getElementById(“oc-criar-rota”)?.value.trim();
+  }
 
-const motivoSel = document.getElementById(“oc-criar-motivo-sel”)?.value;
 
-const desc = document.getElementById(“oc-criar-desc”)?.value.trim();
 
-if (!motoboy) { toast(“Selecione o motoboy”); return; }
+  // Popula select de motivos
 
-if (!desc && !motivoSel) { toast(“Informe o motivo ou descrição”);
-return; }
+  const selMot = document.getElementById('oc-criar-motivo-sel');
 
-try { await fetch(API + “/ocorrencia”, { method: “POST”,
+  if (selMot && selMot.options.length <= 1) {
 
-      headers: { "Content-Type": "application/json" },
+    try {
+
+      const r = await fetch(API + '/motivos-ausencia');
+
+      const d = await r.json();
+
+      (d.motivos || []).filter(m => m.ativo !== 0).forEach(m => {
+
+        const opt = document.createElement('option');
+
+        opt.value = m.label; opt.textContent = m.emoji + ' ' + m.label;
+
+        selMot.appendChild(opt);
+
+      });
+
+    } catch(e) {}
+
+  }
+
+}
+
+
+
+async function criarOcorrenciaGestor() {
+
+  const motoboy = document.getElementById('oc-criar-motoboy')?.value;
+
+  const tipo = document.getElementById('oc-criar-tipo')?.value || 'gestor';
+
+  const rota = document.getElementById('oc-criar-rota')?.value.trim();
+
+  const motivoSel = document.getElementById('oc-criar-motivo-sel')?.value;
+
+  const desc = document.getElementById('oc-criar-desc')?.value.trim();
+
+
+
+  if (!motoboy) { toast('Selecione o motoboy'); return; }
+
+  if (!desc && !motivoSel) { toast('Informe o motivo ou descrição'); return; }
+
+
+
+  try {
+
+    await fetch(API + '/ocorrencia', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
 
       body: JSON.stringify({
+
         tipo,
 
-        motivo_label: motivoSel || "",
+        motivo_label: motivoSel || '',
 
         motoboy_nome: motoboy,
 
-        rota: rota || "",
+        rota: rota || '',
 
-        motivo: desc || motivoSel || "",
-      }),
+        motivo: desc || motivoSel || ''
+
+      })
+
     });
 
-    document.getElementById("form-criar-oc").style.display = "none";
+    document.getElementById('form-criar-oc').style.display = 'none';
 
-    document.getElementById("oc-criar-motoboy").value = "";
+    document.getElementById('oc-criar-motoboy').value = '';
 
-    document.getElementById("oc-criar-rota").value = "";
+    document.getElementById('oc-criar-rota').value = '';
 
-    document.getElementById("oc-criar-desc").value = "";
+    document.getElementById('oc-criar-desc').value = '';
 
-    document.getElementById("oc-criar-motivo-sel").value = "";
+    document.getElementById('oc-criar-motivo-sel').value = '';
 
-    toast("✓ Ocorrência registrada");
+    toast('✓ Ocorrência registrada');
 
     carregarOcorrencias();
 
-} catch (e) { toast(“Erro ao registrar”); } }
+  } catch(e) { toast('Erro ao registrar'); }
 
-async function gerarPdfDia() { const data =
-document.getElementById(“oc-filtro-data”)?.value || new
-Date().toISOString().split(“T”)[0];
+}
 
-try { const r = await fetch(API + “/ocorrencia?data=” + data);
+
+
+async function gerarPdfDia() {
+
+  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+
+  try {
+
+    const r = await fetch(API + '/ocorrencia?data=' + data);
 
     const d = await r.json();
 
     const ocs = d.ocorrencias || [];
 
-    if (!ocs.length) {
-      toast("Nenhuma ocorrência nesta data");
-      return;
-    }
+    if (!ocs.length) { toast('Nenhuma ocorrência nesta data'); return; }
 
-    const dataFmt = new Date(data + "T12:00:00").toLocaleDateString("pt-BR");
 
-    const tipoLabel = (t) =>
-      t === "nao_comparecimento"
-        ? "Não comparecimento"
-        : t === "atraso"
-          ? "Atraso"
-          : t === "gestor"
-            ? "Registrada pelo gestor"
-            : t;
 
-    const statusLabel = (s) =>
-      s === "resolvida"
-        ? "✅ Resolvida"
-        : s === "em_andamento"
-          ? "🔵 Em andamento"
-          : "🟡 Aberta";
+    const dataFmt = new Date(data + 'T12:00:00').toLocaleDateString('pt-BR');
 
-    const win = window.open("", "_blank");
+    const tipoLabel = t => t === 'nao_comparecimento' ? 'Não comparecimento' : t === 'atraso' ? 'Atraso' : t === 'gestor' ? 'Registrada pelo gestor' : t;
 
-    win.document
-      .write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+    const statusLabel = s => s === 'resolvida' ? '✅ Resolvida' : s === 'em_andamento' ? '🔵 Em andamento' : '🟡 Aberta';
+
+
+
+    const win = window.open('', '_blank');
+
+    win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
 
       <title>Ocorrências ${dataFmt}</title>
 
@@ -1783,7 +1970,7 @@ try { const r = await fetch(API + “/ocorrencia?data=” + data);
 
       <h1>Relatório de Ocorrências</h1>
 
-      <div class="sub">Data: ${dataFmt} · Gerado em: ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>
+      <div class="sub">Data: ${dataFmt} · Gerado em: ${new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'})}</div>
 
       <table>
 
@@ -1811,27 +1998,23 @@ try { const r = await fetch(API + “/ocorrencia?data=” + data);
 
         <tbody>
 
-          ${ocs
-            .map(
-              (o) => `<tr>
+          ${ocs.map(o => `<tr>
 
-            <td><strong>${o.codigo || "—"}</strong></td>
+            <td><strong>${o.codigo || '—'}</strong></td>
 
-            <td>${tipoLabel(o.tipo)}${o.motivo_label ? '<br><span style="font-size:10px;color:#5A7A8F">' + o.motivo_label + "</span>" : ""}</td>
+            <td>${tipoLabel(o.tipo)}${o.motivo_label ? '<br><span style="font-size:10px;color:#5A7A8F">' + o.motivo_label + '</span>' : ''}</td>
 
-            <td>${o.rota || "—"}</td>
+            <td>${o.rota || '—'}</td>
 
-            <td style="font-size:11px">${o.motivo || "—"}</td>
+            <td style="font-size:11px">${o.motivo || '—'}</td>
 
-            <td style="font-size:11px">${o.obs_gestor || "—"}</td>
+            <td style="font-size:11px">${o.obs_gestor || '—'}</td>
 
             <td>${statusLabel(o.status)}</td>
 
-            <td>${new Date(o.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</td>
+            <td>${new Date(o.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</td>
 
-          </tr>`,
-            )
-            .join("")}
+          </tr>`).join('')}
 
         </tbody>
 
@@ -1845,347 +2028,317 @@ try { const r = await fetch(API + “/ocorrencia?data=” + data);
 
     setTimeout(() => win.print(), 500);
 
-} catch (e) { toast(“Erro ao gerar PDF”); } }
-
-// ── RELATÓRIOS — NAVEGAÇÃO ───────────────────────────────────
-
-function relMudarTipo(tipo) { [“km”, “inconsistencias”, “horarios”,
-“checklist”, “coordenadas”].forEach( (t) => { const el =
-document.getElementById(“rel-sub-” + t);
-
-      const btn = document.getElementById("rel-nav-" + t);
-
-      if (el) el.style.display = t === tipo ? "block" : "none";
-
-      if (btn) btn.classList.toggle("rel-nav-ativo", t === tipo);
-    },
-
-);
-
-const hoje = new Date().toISOString().split(“T”)[0];
-
-if (tipo === “km”) { const d = document.getElementById(“rel-km-data”);
-
-    if (d && !d.value) d.value = hoje;
+  } catch(e) { toast('Erro ao gerar PDF'); }
 
 }
 
-if (tipo === “inconsistencias”) { const i1 =
-document.getElementById(“rel-inc-inicio”), i2 =
-document.getElementById(“rel-inc-fim”);
+
+
+// ── RELATÓRIOS — NAVEGAÇÃO ───────────────────────────────────
+
+function relMudarTipo(tipo) {
+
+  ['km','inconsistencias','horarios','checklist','coordenadas'].forEach(t => {
+
+    const el = document.getElementById('rel-sub-' + t);
+
+    const btn = document.getElementById('rel-nav-' + t);
+
+    if (el) el.style.display = t === tipo ? 'block' : 'none';
+
+    if (btn) btn.classList.toggle('rel-nav-ativo', t === tipo);
+
+  });
+
+  const hoje = new Date().toISOString().split('T')[0];
+
+  if (tipo === 'km') {
+
+    const d = document.getElementById('rel-km-data');
+
+    if (d && !d.value) d.value = hoje;
+
+  }
+
+  if (tipo === 'inconsistencias') {
+
+    const i1 = document.getElementById('rel-inc-inicio'), i2 = document.getElementById('rel-inc-fim');
 
     if (i1 && !i1.value) i1.value = hoje;
 
     if (i2 && !i2.value) i2.value = hoje;
 
-}
+  }
 
-if (tipo === “horarios”) { const h =
-document.getElementById(“rel-hor-data”);
+  if (tipo === 'horarios') {
+
+    const h = document.getElementById('rel-hor-data');
 
     if (h && !h.value) h.value = hoje;
 
-}
+  }
 
-if (tipo === “checklist”) { const c =
-document.getElementById(“rel-chk-data”);
+  if (tipo === 'checklist') {
+
+    const c = document.getElementById('rel-chk-data');
 
     if (c && !c.value) c.value = hoje;
 
-} }
+  }
+
+}
+
+
 
 // ── RELATÓRIO: QUILOMETRAGEM ─────────────────────────────────
 
 let _relKmDados = [];
 
-async function carregarRelKm() { const lista =
-document.getElementById(“rel-km-lista”);
 
-const data = document.getElementById(“rel-km-data”)?.value;
 
-if (!data) { toast(“Selecione a data”); return; }
+async function carregarRelKm() {
 
-lista.innerHTML = ’
+  const lista = document.getElementById('rel-km-lista');
 
-Carregando…
+  const data = document.getElementById('rel-km-data')?.value;
 
-’;
+  if (!data) { toast('Selecione a data'); return; }
 
-try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
     const dMb = await rMb.json();
 
-    const motoboys = (dMb.motoboys || []).filter(
-      (m) => m.rastrear !== 0 && m.rastrear !== false,
-    );
+    const motoboys = (dMb.motoboys || []).filter(m => m.rastrear !== 0 && m.rastrear !== false);
 
-    const rKm = await fetch(API + "/localizacao?dia=" + data);
+
+
+    const rKm = await fetch(API + '/localizacao?dia=' + data);
 
     const dKm = await rKm.json();
 
     const historico = dKm.historico || [];
 
-    const rGeo = await fetch(API + "/geofence-evento?data=" + data);
+
+
+    const rGeo = await fetch(API + '/geofence-evento?data=' + data);
 
     const dGeo = await rGeo.json();
 
     const eventos = dGeo.eventos || [];
 
+
+
     const kmPorNome = {};
 
-    historico.forEach((p) => {
-      if (!kmPorNome[p.nome]) kmPorNome[p.nome] = [];
-      kmPorNome[p.nome].push(p);
-    });
+    historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
+
+
 
     function calcKm(pts) {
+
       if (!pts || pts.length < 2) return 0;
 
-      const s = [...pts].sort((a, b) => a.timestamp - b.timestamp);
+      const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
 
       let km = 0;
 
       for (let i = 1; i < s.length; i++) {
-        const R = 6371,
-          dLat = ((s[i].lat - s[i - 1].lat) * Math.PI) / 180,
-          dLng = ((s[i].lng - s[i - 1].lng) * Math.PI) / 180;
 
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos((s[i - 1].lat * Math.PI) / 180) *
-            Math.cos((s[i].lat * Math.PI) / 180) *
-            Math.sin(dLng / 2) ** 2;
+        const R=6371,dLat=(s[i].lat-s[i-1].lat)*Math.PI/180,dLng=(s[i].lng-s[i-1].lng)*Math.PI/180;
 
-        const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const a=Math.sin(dLat/2)**2+Math.cos(s[i-1].lat*Math.PI/180)*Math.cos(s[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
 
-        if (d < 5) km += d;
+        const d=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+
+        if(d<5) km+=d;
+
       }
 
-      return Math.round(km * 10) / 10;
+      return Math.round(km*10)/10;
+
     }
 
     // TMD — tempo total de movimentação (do primeiro ao último ponto GPS do dia)
 
     function calcTmdMin(pts) {
+
       if (!pts || pts.length < 2) return 0;
 
-      const s = [...pts].sort((a, b) => a.timestamp - b.timestamp);
+      const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
 
-      return Math.round((s[s.length - 1].timestamp - s[0].timestamp) / 60000);
+      return Math.round((s[s.length-1].timestamp - s[0].timestamp) / 60000);
+
     }
 
     function formatMin(min) {
-      if (!min || min <= 0) return "\u2014";
+
+      if (!min || min <= 0) return '\u2014';
 
       const h = Math.floor(min / 60);
 
       const m = min % 60;
 
-      return h > 0 ? h + "h" + String(m).padStart(2, "0") + "m" : m + "min";
+      return h > 0 ? h + 'h' + String(m).padStart(2,'0') + 'm' : m + 'min';
+
     }
 
-    function horaEvt(nome, tipo) {
-      const evs = eventos
-        .filter((e) => e.nome === nome && e.tipo && e.tipo.includes(tipo))
+     function horaEvt(nome, tipo) {
 
-        .sort((a, b) => a.timestamp - b.timestamp);
+      const evs = eventos.filter(e => e.nome === nome && e.tipo && e.tipo.includes(tipo))
 
-      if (!evs.length) return "\u2014";
+        .sort((a,b) => a.timestamp - b.timestamp);
+
+      if (!evs.length) return '\u2014';
 
       // Base: mostra só a 1ª e a última passagem do dia (ida e volta), não todas
 
       // as idas/vindas. Polaris continua mostrando todas as passagens configuradas.
 
-      const paraExibir =
-        tipo === "base" && evs.length > 1 ? [evs[0], evs[evs.length - 1]] : evs;
+      const paraExibir = (tipo === 'base' && evs.length > 1) ? [evs[0], evs[evs.length - 1]] : evs;
 
-      return paraExibir
-        .map((ev) => {
-          const sp = new Date(ev.timestamp - 3 * 60 * 60 * 1000);
+      return paraExibir.map(ev => {
 
-          return (
-            String(sp.getUTCHours()).padStart(2, "0") +
-            ":" +
-            String(sp.getUTCMinutes()).padStart(2, "0")
-          );
-        })
-        .join(", ");
+        const sp = new Date(ev.timestamp - 3*60*60*1000);
+
+        return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
+
+      }).join(', ');
+
+  
+
     }
 
-    _relKmDados = motoboys
-      .map((m) => {
-        const pts = kmPorNome[m.nome];
 
-        const km = calcKm(pts);
 
-        const tmdMin = calcTmdMin(pts);
+    _relKmDados = motoboys.map(m => {
 
-        const velMedia =
-          tmdMin > 0 ? Math.round((km / (tmdMin / 60)) * 10) / 10 : 0;
+      const pts = kmPorNome[m.nome];
 
-        const inicio =
-          pts && pts.length
-            ? (() => {
-                const sp = new Date(
-                  Math.min(...pts.map((p) => p.timestamp)) - 3 * 60 * 60 * 1000,
-                );
-                return (
-                  String(sp.getUTCHours()).padStart(2, "0") +
-                  ":" +
-                  String(sp.getUTCMinutes()).padStart(2, "0")
-                );
-              })()
-            : "\u2014";
+      const km = calcKm(pts);
 
-        const base = horaEvt(m.nome, "base");
+      const tmdMin = calcTmdMin(pts);
 
-        const polaris = horaEvt(m.nome, "final");
+      const velMedia = tmdMin > 0 ? Math.round((km / (tmdMin / 60)) * 10) / 10 : 0;
 
-        return {
-          nome: m.nome,
-          inicio,
-          base,
-          polaris,
-          km,
-          tmdMin,
-          velMedia,
-          temPolaris: polaris !== "\u2014",
-        };
-      })
-      .filter((r) => r.km > 0 || r.inicio !== "\u2014");
+      const inicio = pts && pts.length ? (() => { const sp = new Date(Math.min(...pts.map(p=>p.timestamp)) - 3*60*60*1000); return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0'); })() : '\u2014';
 
-    const total = _relKmDados.reduce((s, r) => s + r.km, 0);
+      const base = horaEvt(m.nome, 'base');
+
+      const polaris = horaEvt(m.nome, 'final');
+
+      return { nome: m.nome, inicio, base, polaris, km, tmdMin, velMedia, temPolaris: polaris !== '\u2014' };
+
+    }).filter(r => r.km > 0 || r.inicio !== '\u2014');
+
+
+
+    const total = _relKmDados.reduce((s,r) => s + r.km, 0);
 
     const media = _relKmDados.length ? total / _relKmDados.length : 0;
 
-    const velMediaGeral = _relKmDados.length
-      ? _relKmDados.reduce((s, r) => s + r.velMedia, 0) /
-        _relKmDados.filter((r) => r.velMedia > 0).length
-      : 0;
+    const velMediaGeral = _relKmDados.length ? _relKmDados.reduce((s,r) => s + r.velMedia, 0) / _relKmDados.filter(r=>r.velMedia>0).length : 0;
 
-    document.getElementById("rel-km-kpi-total").textContent =
-      Math.round(total * 10) / 10 + " km";
+    document.getElementById('rel-km-kpi-total').textContent = (Math.round(total*10)/10) + ' km';
 
-    document.getElementById("rel-km-kpi-media").textContent =
-      Math.round(media * 10) / 10 + " km";
+    document.getElementById('rel-km-kpi-media').textContent = (Math.round(media*10)/10) + ' km';
 
-    document.getElementById("rel-km-kpi-ativos").textContent =
-      _relKmDados.length;
+    document.getElementById('rel-km-kpi-ativos').textContent = _relKmDados.length;
 
-    document.getElementById("rel-km-kpi-vel").textContent =
-      (velMediaGeral > 0 ? Math.round(velMediaGeral * 10) / 10 : 0) + " km/h";
+    document.getElementById('rel-km-kpi-vel').textContent = (velMediaGeral > 0 ? Math.round(velMediaGeral*10)/10 : 0) + ' km/h';
 
-    if (!_relKmDados.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">Nenhum dado encontrado nesta data</div>';
-      return;
-    }
 
-    lista.innerHTML =
-      '<table class="rel-table"><thead><tr>' +
-      "<th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th><th>Status</th>" +
-      "</tr></thead><tbody>" +
-      _relKmDados
-        .map(
-          (r) =>
-            "<tr>" +
-            '<td class="rel-nome">' +
-            r.nome +
-            "</td>" +
-            '<td class="rel-hora">' +
-            r.inicio +
-            "</td>" +
-            '<td class="rel-hora">' +
-            r.base +
-            "</td>" +
-            '<td class="rel-hora">' +
-            r.polaris +
-            "</td>" +
-            '<td class="rel-km">' +
-            r.km +
-            " km</td>" +
-            '<td class="rel-hora">' +
-            formatMin(r.tmdMin) +
-            "</td>" +
-            '<td class="rel-hora">' +
-            (r.velMedia > 0 ? r.velMedia + " km/h" : "\u2014") +
-            "</td>" +
-            "<td>" +
-            (r.temPolaris
-              ? '<span class="rel-badge rel-b-ok">\u2713 Completo</span>'
-              : '<span class="rel-badge rel-b-warn">\u26a0 Sem Polaris</span>') +
-            "</td>" +
-            "</tr>",
-        )
-        .join("") +
-      "</tbody></table>";
 
-} catch (e) { lista.innerHTML = ’
+    if (!_relKmDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhum dado encontrado nesta data</div>'; return; }
 
-Erro ao carregar dados
 
-’; } }
 
-function exportarRelKmExcel() { if (!_relKmDados.length) { toast(“Nenhum
-dado para exportar”); return; }
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
 
-const linhas = [ [ “Motoboy”, “In0edcio”, “Base”, “Polaris”, “KM”, “TMD
-(min)”, “Vel. M0e9dia (km/h)”, ], ];
+      '<th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th><th>Status</th>' +
 
-_relKmDados.forEach((r) => linhas.push([ r.nome, r.inicio, r.base,
-r.polaris, r.km, r.tmdMin, r.velMedia, ]), );
+      '</tr></thead><tbody>' +
 
-relExportarXLSX(linhas, “quilometragem”, “Quilometragem”); }
+      _relKmDados.map(r => '<tr>' +
 
-function exportarRelKmPDF() { if (!_relKmDados.length) { toast(“Nenhum
-dado para exportar”); return; }
+        '<td class="rel-nome">' + r.nome + '</td>' +
 
-const fmtMin = (m) => { if (!m) return “014”; const h = Math.floor(m /
-60), r = m % 60; return h > 0 ? h + “h” + String(r).padStart(2, “0”) +
-“m” : r + “min”; };
+        '<td class="rel-hora">' + r.inicio + '</td>' +
 
-const linhas = _relKmDados .map( (r) => “
-” + r.nome + “
-” + r.inicio + “
-” + r.base + “
-” + r.polaris + “
-” + r.km + ” km
-” + fmtMin(r.tmdMin) + “
-” + (r.velMedia > 0 ? r.velMedia + ” km/h” : “014”) + “
-“, ) .join(”“);
+        '<td class="rel-hora">' + r.base + '</td>' +
 
-relAbrirPDF( “Relat0f3rio de Quilometragem”, “
-Motoboy
-In0edcio
-Base
-Polaris
-KM
-TMD
-Vel. M0e9dia
-” + linhas + “
-“, ); }
+        '<td class="rel-hora">' + r.polaris + '</td>' +
+
+        '<td class="rel-km">' + r.km + ' km</td>' +
+
+        '<td class="rel-hora">' + formatMin(r.tmdMin) + '</td>' +
+
+        '<td class="rel-hora">' + (r.velMedia > 0 ? r.velMedia + ' km/h' : '\u2014') + '</td>' +
+
+        '<td>' + (r.temPolaris ? '<span class="rel-badge rel-b-ok">\u2713 Completo</span>' : '<span class="rel-badge rel-b-warn">\u26a0 Sem Polaris</span>') + '</td>' +
+
+        '</tr>').join('') +
+
+      '</tbody></table>';
+
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
+
+}
+
+
+
+function exportarRelKmExcel() {
+
+  if (!_relKmDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const linhas = [['Motoboy','In\u00edcio','Base','Polaris','KM','TMD (min)','Vel. M\u00e9dia (km/h)']];
+
+  _relKmDados.forEach(r => linhas.push([r.nome, r.inicio, r.base, r.polaris, r.km, r.tmdMin, r.velMedia]));
+
+  relExportarXLSX(linhas, 'quilometragem', 'Quilometragem');
+
+}
+
+
+
+function exportarRelKmPDF() {
+
+  if (!_relKmDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const fmtMin = m => { if (!m) return '\u2014'; const h=Math.floor(m/60), r=m%60; return h>0 ? h+'h'+String(r).padStart(2,'0')+'m' : r+'min'; };
+
+  const linhas = _relKmDados.map(r => '<tr><td>' + r.nome + '</td><td>' + r.inicio + '</td><td>' + r.base + '</td><td>' + r.polaris + '</td><td><strong>' + r.km + ' km</strong></td><td>' + fmtMin(r.tmdMin) + '</td><td>' + (r.velMedia>0?r.velMedia+' km/h':'\u2014') + '</td></tr>').join('');
+
+  relAbrirPDF('Relat\u00f3rio de Quilometragem', '<table><thead><tr><th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+
+}
+
+
 
 // ── RELATÓRIO: INCONSISTÊNCIAS ───────────────────────────────
 
 let _relIncDados = [];
 
-async function carregarRelInconsistencias() { const lista =
-document.getElementById(“rel-inc-lista”);
 
-const i1 = document.getElementById(“rel-inc-inicio”)?.value;
 
-const i2 = document.getElementById(“rel-inc-fim”)?.value;
+async function carregarRelInconsistencias() {
 
-if (!i1 || !i2) { toast(“Selecione o per0edodo”); return; }
+  const lista = document.getElementById('rel-inc-lista');
 
-lista.innerHTML = ’
+  const i1 = document.getElementById('rel-inc-inicio')?.value;
 
-Carregando…
+  const i2 = document.getElementById('rel-inc-fim')?.value;
 
-’;
+  if (!i1 || !i2) { toast('Selecione o per\u00edodo'); return; }
 
-try { const r = await fetch( API +
-“/relatorio-inconsistencias?data_inicio=” + i1 + “&data_fim=” + i2, );
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+
+    const r = await fetch(API + '/relatorio-inconsistencias?data_inicio=' + i1 + '&data_fim=' + i2);
 
     const d = await r.json();
 
@@ -2193,128 +2346,99 @@ try { const r = await fetch( API +
 
     const totalImprod = d.total_improdutivas || 0;
 
-    const taxa =
-      totalImprod > 0
-        ? Math.round((_relIncDados.length / totalImprod) * 1000) / 10
-        : 0;
+    const taxa = totalImprod > 0 ? Math.round(_relIncDados.length / totalImprod * 1000) / 10 : 0;
 
-    document.getElementById("rel-inc-kpi-total").textContent =
-      _relIncDados.length;
 
-    document.getElementById("rel-inc-kpi-improd").textContent = totalImprod;
 
-    document.getElementById("rel-inc-kpi-taxa").textContent = taxa + "%";
+    document.getElementById('rel-inc-kpi-total').textContent = _relIncDados.length;
 
-    if (!_relIncDados.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">Nenhuma inconsist\u00eancia encontrada</div>';
-      return;
-    }
+    document.getElementById('rel-inc-kpi-improd').textContent = totalImprod;
 
-    lista.innerHTML =
-      '<table class="rel-table"><thead><tr>' +
-      "<th>Motoboy</th><th>Cliente</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th>" +
-      "</tr></thead><tbody>" +
-      _relIncDados
-        .map(
-          (i) =>
-            "<tr>" +
-            '<td class="rel-nome">' +
-            i.motoboy_nome +
-            "</td>" +
-            '<td><div class="rel-nome">' +
-            i.cliente_nome +
-            '</div><div class="rel-sub">' +
-            (i.rota || "") +
-            "</div></td>" +
-            '<td class="rel-hora">' +
-            new Date(i.timestamp).toLocaleString("pt-BR", {
-              timeZone: "America/Sao_Paulo",
-              day: "2-digit",
-              month: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
-            }) +
-            "</td>" +
-            "<td>" +
-            (i.motivo || "\u2014") +
-            "</td>" +
-            '<td><span class="rel-badge rel-b-err">' +
-            (i.distancia_m >= 1000
-              ? (i.distancia_m / 1000).toFixed(1) + "km"
-              : i.distancia_m + "m") +
-            "</span></td>" +
-            "</tr>",
-        )
-        .join("") +
-      "</tbody></table>";
+    document.getElementById('rel-inc-kpi-taxa').textContent = taxa + '%';
 
-} catch (e) { lista.innerHTML = ’
 
-Erro ao carregar dados
 
-’; } }
+    if (!_relIncDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhuma inconsist\u00eancia encontrada</div>'; return; }
 
-function exportarRelIncExcel() { if (!_relIncDados.length) {
-toast(“Nenhum dado para exportar”); return; }
 
-const linhas = [ [ “Motoboy”, “Cliente”, “Rota”, “Hor0e1rio”, “Motivo”,
-“Dist0e2ncia (m)”, “Endere0e7o cadastrado”, ], ];
 
-_relIncDados.forEach((i) => linhas.push([ i.motoboy_nome,
-i.cliente_nome, i.rota || ““, new
-Date(i.timestamp).toLocaleString(”pt-BR”, { timeZone:
-“America/Sao_Paulo”, }), i.motivo || ““, i.distancia_m,
-i.endereco_cadastrado ||”“, ]), );
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
 
-relExportarXLSX(linhas, “inconsistencias”, “Inconsistencias”); }
+      '<th>Motoboy</th><th>Cliente</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th>' +
 
-function exportarRelIncPDF() { if (!_relIncDados.length) { toast(“Nenhum
-dado para exportar”); return; }
+      '</tr></thead><tbody>' +
 
-const linhas = _relIncDados .map( (i) => “
-” + i.motoboy_nome + “
-” + i.cliente_nome + “
-” + (i.rota || “014”) + “
-” + new Date(i.timestamp).toLocaleString(“pt-BR”, { timeZone:
-“America/Sao_Paulo”, day: “2-digit”, month: “2-digit”, hour: “2-digit”,
-minute: “2-digit”, }) + “
-” + (i.motivo || “014”) + “
-” + i.distancia_m + “m
-“, ) .join(”“);
+      _relIncDados.map(i => '<tr>' +
 
-relAbrirPDF( “Relat0f3rio de Inconsist0eancias”, “
-Motoboy
-Cliente
-Rota
-Hor0e1rio
-Motivo
-Dist0e2ncia
-” + linhas + “
-“, ); }
+        '<td class="rel-nome">' + i.motoboy_nome + '</td>' +
+
+        '<td><div class="rel-nome">' + i.cliente_nome + '</div><div class="rel-sub">' + (i.rota||'') + '</div></td>' +
+
+        '<td class="rel-hora">' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td>' +
+
+        '<td>' + (i.motivo||'\u2014') + '</td>' +
+
+        '<td><span class="rel-badge rel-b-err">' + (i.distancia_m >= 1000 ? (i.distancia_m/1000).toFixed(1)+'km' : i.distancia_m+'m') + '</span></td>' +
+
+        '</tr>').join('') +
+
+      '</tbody></table>';
+
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
+
+}
+
+
+
+function exportarRelIncExcel() {
+
+  if (!_relIncDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const linhas = [['Motoboy','Cliente','Rota','Hor\u00e1rio','Motivo','Dist\u00e2ncia (m)','Endere\u00e7o cadastrado']];
+
+  _relIncDados.forEach(i => linhas.push([i.motoboy_nome, i.cliente_nome, i.rota||'', new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}), i.motivo||'', i.distancia_m, i.endereco_cadastrado||'']));
+
+  relExportarXLSX(linhas, 'inconsistencias', 'Inconsistencias');
+
+}
+
+
+
+function exportarRelIncPDF() {
+
+  if (!_relIncDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const linhas = _relIncDados.map(i => '<tr><td>' + i.motoboy_nome + '</td><td>' + i.cliente_nome + '</td><td>' + (i.rota||'\u2014') + '</td><td>' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td><td>' + (i.motivo||'\u2014') + '</td><td><strong>' + i.distancia_m + 'm</strong></td></tr>').join('');
+
+  relAbrirPDF('Relat\u00f3rio de Inconsist\u00eancias', '<table><thead><tr><th>Motoboy</th><th>Cliente</th><th>Rota</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+
+}
+
+
 
 // ── RELATÓRIO: HORÁRIOS DE COLETA ────────────────────────────
 
 let _relHorDados = [];
 
-async function carregarRelHorarios() { const lista =
-document.getElementById(“rel-hor-lista”);
 
-const data = document.getElementById(“rel-hor-data”)?.value;
 
-const rota = document.getElementById(“rel-hor-rota”)?.value.trim();
+async function carregarRelHorarios() {
 
-if (!data) { toast(“Selecione a data”); return; }
+  const lista = document.getElementById('rel-hor-lista');
 
-lista.innerHTML = ’
+  const data = document.getElementById('rel-hor-data')?.value;
 
-Carregando…
+  const rota = document.getElementById('rel-hor-rota')?.value.trim();
 
-’;
+  if (!data) { toast('Selecione a data'); return; }
 
-try { let urlReq = API + “/relatorio-horarios?data=” + data;
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
 
-    if (rota) urlReq += "&rota=" + encodeURIComponent(rota);
+  try {
+
+    let urlReq = API + '/relatorio-horarios?data=' + data;
+
+    if (rota) urlReq += '&rota=' + encodeURIComponent(rota);
 
     const r = await fetch(urlReq);
 
@@ -2322,341 +2446,305 @@ try { let urlReq = API + “/relatorio-horarios?data=” + data;
 
     _relHorDados = d.coletas || [];
 
-    if (!_relHorDados.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">Nenhuma coleta encontrada</div>';
-      return;
-    }
+    if (!_relHorDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhuma coleta encontrada</div>'; return; }
+
+
 
     function fmtHora(ts) {
-      if (!ts) return "\u2014";
 
-      return new Date(ts).toLocaleTimeString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      if (!ts) return '\u2014';
+
+      return new Date(ts).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+
     }
 
     function fmtDiffMin(tsChegada, tsFinal) {
-      if (!tsChegada || !tsFinal) return "";
+
+      if (!tsChegada || !tsFinal) return '';
 
       const diff = Math.round((tsFinal - tsChegada) / 60000);
 
-      if (diff <= 0) return "";
+      if (diff <= 0) return '';
 
-      return (
-        ' <span style="font-size:10px;color:#94A8B8">(+' + diff + "min)</span>"
-      );
+      return ' <span style="font-size:10px;color:#94A8B8">(+' + diff + 'min)</span>';
+
     }
 
-    lista.innerHTML =
-      '<table class="rel-table"><thead><tr>' +
-      "<th>Cliente</th><th>Rota</th><th>Chegada GPS</th><th>Finalização</th><th>Coordenada</th><th>Status</th>" +
-      "</tr></thead><tbody>" +
-      _relHorDados
-        .map((c) => {
-          const temChegadaGps = !!c.horario_chegada_gps;
 
-          const coordBadge =
-            c.coordenada_ok === null || c.coordenada_ok === undefined
-              ? '<span class="rel-sub">\u2014</span>'
-              : c.coordenada_ok
-                ? '<span class="rel-badge rel-b-ok">\u2713 OK</span>'
-                : '<span class="rel-badge rel-b-err" title="Dist\u00e2ncia: ' +
-                  (c.distancia_finalizacao_m || "?") +
-                  'm">\u26a0 N\u00e3o bate</span>';
 
-          return (
-            "<tr>" +
-            '<td class="rel-nome">' +
-            c.nome_cliente +
-            "</td>" +
-            '<td class="rel-sub">' +
-            (c.rota || "\u2014") +
-            "</td>" +
-            '<td class="rel-hora">' +
-            (temChegadaGps
-              ? fmtHora(c.horario_chegada_gps)
-              : '<span class="rel-sub">sem GPS</span>') +
-            "</td>" +
-            '<td class="rel-hora">' +
-            fmtHora(c.timestamp) +
-            fmtDiffMin(c.horario_chegada_gps, c.timestamp) +
-            "</td>" +
-            "<td>" +
-            coordBadge +
-            "</td>" +
-            "<td>" +
-            (c.produtividade === "produtiva"
-              ? '<span class="rel-badge rel-b-ok">\u2713 Produtiva</span>'
-              : '<span class="rel-badge rel-b-err">\u2717 Improdutiva</span>') +
-            "</td>" +
-            "</tr>"
-          );
-        })
-        .join("") +
-      "</tbody></table>";
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
 
-} catch (e) { lista.innerHTML = ’
+      '<th>Cliente</th><th>Rota</th><th>Chegada GPS</th><th>Finalização</th><th>Coordenada</th><th>Status</th>' +
 
-Erro ao carregar dados
+      '</tr></thead><tbody>' +
 
-’; } }
+      _relHorDados.map(c => {
 
-function exportarRelHorExcel() { if (!_relHorDados.length) {
-toast(“Nenhum dado para exportar”); return; }
+        const temChegadaGps = !!c.horario_chegada_gps;
 
-const linhas = [ [ “Cliente”, “Rota”, “Chegada GPS”, “Finalização”,
-“Distância chegada (m)”, “Distância finalização (m)”, “Coordenada OK”,
-“Produtividade”, “Motivo Improdutiva”, ], ];
+        const coordBadge = (c.coordenada_ok === null || c.coordenada_ok === undefined)
 
-_relHorDados.forEach((c) => linhas.push([ c.nome_cliente, c.rota || ““,
+          ? '<span class="rel-sub">\u2014</span>'
 
-      c.horario_chegada_gps
-        ? new Date(c.horario_chegada_gps).toLocaleString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-          })
-        : "",
+          : (c.coordenada_ok ? '<span class="rel-badge rel-b-ok">\u2713 OK</span>' : '<span class="rel-badge rel-b-err" title="Dist\u00e2ncia: ' + (c.distancia_finalizacao_m||'?') + 'm">\u26a0 N\u00e3o bate</span>');
 
-      c.timestamp
-        ? new Date(c.timestamp).toLocaleString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-          })
-        : "",
+        return '<tr>' +
 
-      c.distancia_chegada_m ?? "",
-      c.distancia_finalizacao_m ?? "",
+          '<td class="rel-nome">' + c.nome_cliente + '</td>' +
 
-      c.coordenada_ok === null || c.coordenada_ok === undefined
-        ? ""
-        : c.coordenada_ok
-          ? "Sim"
-          : "Não",
+          '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
 
-      c.produtividade || "",
-      c.motivo_improdutiva || "",
-    ]),
+          '<td class="rel-hora">' + (temChegadaGps ? fmtHora(c.horario_chegada_gps) : '<span class="rel-sub">sem GPS</span>') + '</td>' +
 
-);
+          '<td class="rel-hora">' + fmtHora(c.timestamp) + fmtDiffMin(c.horario_chegada_gps, c.timestamp) + '</td>' +
 
-relExportarXLSX(linhas, “horarios-coleta”, “Horarios”); }
+          '<td>' + coordBadge + '</td>' +
 
-function exportarRelHorPDF() { if (!_relHorDados.length) { toast(“Nenhum
-dado para exportar”); return; }
+          '<td>' + (c.produtividade === 'produtiva' ? '<span class="rel-badge rel-b-ok">\u2713 Produtiva</span>' : '<span class="rel-badge rel-b-err">\u2717 Improdutiva</span>') + '</td>' +
 
-const linhas = _relHorDados .map( (c) => “
-” + c.nome_cliente + “
-” + (c.rota || “014”) + “
-” + (c.horario_chegada || “014”) + “
-” + (c.produtividade === “produtiva” ? “713 Produtiva” : “717
-Improdutiva”) + “
-“, ) .join(”“);
+          '</tr>';
 
-relAbrirPDF( “Relat0f3rio de Hor0e1rios de Coleta”, “
-Cliente
-Rota
-Chegada
-Status
-” + linhas + “
-“, ); }
+      }).join('') +
+
+      '</tbody></table>';
+
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
+
+}
+
+
+
+function exportarRelHorExcel() {
+
+  if (!_relHorDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const linhas = [['Cliente','Rota','Chegada GPS','Finalização','Distância chegada (m)','Distância finalização (m)','Coordenada OK','Produtividade','Motivo Improdutiva']];
+
+  _relHorDados.forEach(c => linhas.push([
+
+    c.nome_cliente, c.rota||'',
+
+    c.horario_chegada_gps ? new Date(c.horario_chegada_gps).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}) : '',
+
+    c.timestamp ? new Date(c.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'}) : '',
+
+    c.distancia_chegada_m ?? '', c.distancia_finalizacao_m ?? '',
+
+    (c.coordenada_ok === null || c.coordenada_ok === undefined) ? '' : (c.coordenada_ok ? 'Sim' : 'Não'),
+
+    c.produtividade||'', c.motivo_improdutiva||''
+
+  ]));
+
+  relExportarXLSX(linhas, 'horarios-coleta', 'Horarios');
+
+}
+
+
+
+function exportarRelHorPDF() {
+
+  if (!_relHorDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const linhas = _relHorDados.map(c => '<tr><td>' + c.nome_cliente + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.horario_chegada||'\u2014') + '</td><td>' + (c.produtividade === 'produtiva' ? '\u2713 Produtiva' : '\u2717 Improdutiva') + '</td></tr>').join('');
+
+  relAbrirPDF('Relat\u00f3rio de Hor\u00e1rios de Coleta', '<table><thead><tr><th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+
+}
+
+
 
 // ── RELATÓRIO: CHECKLIST ─────────────────────────────────────
 
 let _relChkDados = [];
 
-async function carregarRelChecklist() { const lista =
-document.getElementById(“rel-chk-lista”);
 
-const data = document.getElementById(“rel-chk-data”)?.value;
 
-if (!data) { toast(“Selecione a data”); return; }
+async function carregarRelChecklist() {
 
-lista.innerHTML = ’
+  const lista = document.getElementById('rel-chk-lista');
 
-Carregando…
+  const data = document.getElementById('rel-chk-data')?.value;
 
-’;
+  if (!data) { toast('Selecione a data'); return; }
 
-try { const dataBR = data.split(“-”).reverse().join(“/”);
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
 
-    const r = await fetch(
-      API + "/checklist?data=" + encodeURIComponent(dataBR),
-    );
+  try {
+
+    const dataBR = data.split('-').reverse().join('/');
+
+    const r = await fetch(API + '/checklist?data=' + encodeURIComponent(dataBR));
 
     const d = await r.json();
 
     _relChkDados = d.checklists || d.resultados || [];
 
-    if (!_relChkDados.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">Nenhum checklist encontrado nesta data</div>';
-      return;
-    }
+    if (!_relChkDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhum checklist encontrado nesta data</div>'; return; }
 
-    lista.innerHTML =
-      '<table class="rel-table"><thead><tr>' +
-      "<th>Motoboy</th><th>Rota</th><th>Placa</th><th>Preenchido em</th>" +
-      "</tr></thead><tbody>" +
-      _relChkDados
-        .map(
-          (c) =>
-            "<tr>" +
-            '<td class="rel-nome">' +
-            (c.biocondutor || "\u2014") +
-            "</td>" +
-            '<td class="rel-sub">' +
-            (c.rota || "\u2014") +
-            "</td>" +
-            '<td class="rel-sub">' +
-            (c.placa || "\u2014") +
-            "</td>" +
-            '<td class="rel-hora">' +
-            (c.data_checklist || "\u2014") +
-            "</td>" +
-            "</tr>",
-        )
-        .join("") +
-      "</tbody></table>";
 
-} catch (e) { lista.innerHTML = ’
 
-Erro ao carregar dados
+    lista.innerHTML = '<table class="rel-table"><thead><tr>' +
 
-’; } }
+      '<th>Motoboy</th><th>Rota</th><th>Placa</th><th>Preenchido em</th>' +
 
-function exportarRelChecklistPDF() { if (!_relChkDados.length) {
-toast(“Nenhum dado para exportar”); return; }
+      '</tr></thead><tbody>' +
 
-const linhas = _relChkDados .map( (c) => “
-” + (c.biocondutor || “014”) + “
-” + (c.rota || “014”) + “
-” + (c.placa || “014”) + “
-” + (c.data_checklist || “014”) + “
-“, ) .join(”“);
+      _relChkDados.map(c => '<tr>' +
 
-relAbrirPDF( “Relat0f3rio de Checklist”, “
-Motoboy
-Rota
-Placa
-Preenchido em
-” + linhas + “
-“, ); }
+        '<td class="rel-nome">' + (c.biocondutor||'\u2014') + '</td>' +
+
+        '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
+
+        '<td class="rel-sub">' + (c.placa||'\u2014') + '</td>' +
+
+        '<td class="rel-hora">' + (c.data_checklist||'\u2014') + '</td>' +
+
+        '</tr>').join('') +
+
+      '</tbody></table>';
+
+  } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
+
+}
+
+
+
+function exportarRelChecklistPDF() {
+
+  if (!_relChkDados.length) { toast('Nenhum dado para exportar'); return; }
+
+  const linhas = _relChkDados.map(c => '<tr><td>' + (c.biocondutor||'\u2014') + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.placa||'\u2014') + '</td><td>' + (c.data_checklist||'\u2014') + '</td></tr>').join('');
+
+  relAbrirPDF('Relat\u00f3rio de Checklist', '<table><thead><tr><th>Motoboy</th><th>Rota</th><th>Placa</th><th>Preenchido em</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+
+}
+
+
 
 // ── UTILITÁRIOS DE EXPORTAÇÃO ─────────────────────────────────
 
-function relExportarXLSX(linhas, nomeArquivo, nomeAba) { const gerar =
-() => { const wb = XLSX.utils.book_new();
+function relExportarXLSX(linhas, nomeArquivo, nomeAba) {
+
+  const gerar = () => {
+
+    const wb = XLSX.utils.book_new();
 
     const ws = XLSX.utils.aoa_to_sheet(linhas);
 
-    XLSX.utils.book_append_sheet(wb, ws, nomeAba || "Dados");
+    XLSX.utils.book_append_sheet(wb, ws, nomeAba || 'Dados');
 
-    XLSX.writeFile(
-      wb,
-      nomeArquivo + "-" + new Date().toISOString().split("T")[0] + ".xlsx",
-    );
+    XLSX.writeFile(wb, nomeArquivo + '-' + new Date().toISOString().split('T')[0] + '.xlsx');
 
-};
+  };
 
-if (typeof XLSX !== “undefined”) { gerar(); } else { const script =
-document.createElement(“script”);
+  if (typeof XLSX !== 'undefined') { gerar(); } else {
 
-    script.src =
-      "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+    const script = document.createElement('script');
+
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
 
     script.onload = gerar;
 
     document.head.appendChild(script);
 
-} }
+  }
 
-function relAbrirPDF(titulo, tabelaHtml) { const win =
-window.open(““,”_blank”);
+}
 
-win.document.write( ’<!DOCTYPE html>
-’ + titulo + “
-” + “
-” + ’
 
-LOGLIFE
 
-’ + new Date().toLocaleDateString(“pt-BR”) + “
+function relAbrirPDF(titulo, tabelaHtml) {
 
-” + “
-” + titulo + “
-” + tabelaHtml + ’
+  const win = window.open('', '_blank');
 
-Loglife Log0edstica 0b7 Documento gerado automaticamente
+  win.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"/><title>' + titulo + '</title>' +
 
-’, );
+    '<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:32px;color:#0F2940;font-size:12px}' +
 
-win.document.close();
+    '.header{border-bottom:3px solid #00AEEF;padding-bottom:14px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:flex-end}' +
 
-setTimeout(() => win.print(), 500); }
+    '.logo{font-size:20px;font-weight:800;color:#0F4C7A}.logo span{color:#00AEEF}' +
 
-async function carregarOcorrencias() { const lista =
-document.getElementById(“oc-lista”);
+    'h1{font-size:16px;font-weight:800;color:#0F4C7A;margin-bottom:16px}' +
 
-if (!lista) return;
+    'table{width:100%;border-collapse:collapse}th{background:#0F4C7A;color:#fff;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase}' +
 
-lista.innerHTML = ’
+    'td{padding:7px 10px;border-bottom:1px solid #EBF1F5;font-size:11px}tr:nth-child(even) td{background:#F8FBFD}' +
 
-Carregando…
+    '.footer{margin-top:20px;border-top:1px solid #EBF1F5;padding-top:10px;font-size:10px;color:#94A8B8}' +
 
-’;
+    '@media print{body{padding:16px}}</style></head><body>' +
 
-const data = document.getElementById(“oc-filtro-data”)?.value || new
-Date().toISOString().split(“T”)[0];
+    '<div class="header"><div class="logo">LOG<span>LIFE</span></div><div style="font-size:11px;color:#5A7A8F">' + new Date().toLocaleDateString('pt-BR') + '</div></div>' +
 
-const tipo = document.getElementById(“oc-filtro-tipo”)?.value || ““;
+    '<h1>' + titulo + '</h1>' + tabelaHtml +
 
-const status = document.getElementById(“oc-filtro-status”)?.value || ““;
+    '<div class="footer">Loglife Log\u00edstica \u00b7 Documento gerado automaticamente</div></body></html>');
 
-try { const r = await fetch(API + “/ocorrencia?data=” + data);
+  win.document.close();
+
+  setTimeout(() => win.print(), 500);
+
+}
+
+
+
+async function carregarOcorrencias() {
+
+  const lista = document.getElementById('oc-lista');
+
+  if (!lista) return;
+
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+
+
+  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+
+  const tipo = document.getElementById('oc-filtro-tipo')?.value || '';
+
+  const status = document.getElementById('oc-filtro-status')?.value || '';
+
+
+
+  try {
+
+    const r = await fetch(API + '/ocorrencia?data=' + data);
 
     const d = await r.json();
 
     let ocs = d.ocorrencias || [];
 
-    if (tipo) ocs = ocs.filter((o) => o.tipo === tipo);
+    if (tipo) ocs = ocs.filter(o => o.tipo === tipo);
 
-    if (status) ocs = ocs.filter((o) => o.status === status);
+    if (status) ocs = ocs.filter(o => o.status === status);
 
-    if (!ocs.length) {
-      lista.innerHTML =
-        '<div class="empty">Nenhuma ocorrência encontrada</div>';
-      return;
-    }
 
-    const statusBadge = (s) =>
-      ({
-        aberta:
-          '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">🟡 Aberta</span>',
 
-        em_andamento:
-          '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EFF6FF;color:#1D4ED8">🔵 Em andamento</span>',
+    if (!ocs.length) { lista.innerHTML = '<div class="empty">Nenhuma ocorrência encontrada</div>'; return; }
 
-        resolvida:
-          '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0FDF4;color:#166534">✅ Resolvida</span>',
-      })[s] || "";
 
-    const tipoLabel = (t) =>
-      t === "nao_comparecimento"
-        ? "🔴 Não comparecimento"
-        : t === "atraso"
-          ? "⏰ Atraso"
-          : t;
 
-    const hora = (ts) =>
-      new Date(ts).toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+    const statusBadge = s => ({
 
-    lista.innerHTML = ocs
-      .map(
-        (o) => `
+      aberta:       '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">🟡 Aberta</span>',
+
+      em_andamento: '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#EFF6FF;color:#1D4ED8">🔵 Em andamento</span>',
+
+      resolvida:    '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F0FDF4;color:#166534">✅ Resolvida</span>',
+
+    })[s] || '';
+
+
+
+    const tipoLabel = t => t === 'nao_comparecimento' ? '🔴 Não comparecimento' : t === 'atraso' ? '⏰ Atraso' : t;
+
+    const hora = ts => new Date(ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+
+
+    lista.innerHTML = ocs.map(o => `
 
       <div onclick="abrirModalOcorrencia(${o.id})" style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8;cursor:pointer;transition:.15s" onmouseover="this.style.background='#F8FBFD'" onmouseout="this.style.background=''">
 
@@ -2664,7 +2752,7 @@ try { const r = await fetch(API + “/ocorrencia?data=” + data);
 
           <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
 
-            <span style="font-size:11px;font-weight:800;color:#0F4C7A;background:#EFF6FF;padding:1px 7px;border-radius:20px">${o.codigo || "—"}</span>
+            <span style="font-size:11px;font-weight:800;color:#0F4C7A;background:#EFF6FF;padding:1px 7px;border-radius:20px">${o.codigo || '—'}</span>
 
             ${statusBadge(o.status)}
 
@@ -2672,59 +2760,63 @@ try { const r = await fetch(API + “/ocorrencia?data=” + data);
 
           <div style="font-size:13px;font-weight:700;color:#0F2940">${o.motoboy_nome}</div>
 
-          <div style="font-size:11px;color:#5A7A8F;margin-top:1px">${tipoLabel(o.tipo)}${o.motivo_label ? " · " + o.motivo_label : ""}${o.rota ? " · " + o.rota : ""}</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-top:1px">${tipoLabel(o.tipo)}${o.motivo_label ? ' · ' + o.motivo_label : ''}${o.rota ? ' · ' + o.rota : ''}</div>
 
-          ${o.motivo ? `<div style="font-size:11px;color:#94A8B8;font-style:italic;margin-top:1px">↳ ${o.motivo}</div>` : ""}
+          ${o.motivo ? `<div style="font-size:11px;color:#94A8B8;font-style:italic;margin-top:1px">↳ ${o.motivo}</div>` : ''}
 
         </div>
 
         <div style="font-size:11px;color:#94A8B8;flex-shrink:0">${hora(o.timestamp)}</div>
 
-      </div>`,
-      )
-      .join("");
+      </div>`).join('');
 
-} catch (e) { lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar ocorrências
+    lista.innerHTML = '<div class="empty">Erro ao carregar ocorrências</div>';
 
-’; } }
+  }
 
-async function abrirModalOcorrencia(id) { try { const agora = new
-Date();
+}
 
-    const diaSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
 
-    const data = diaSP.toISOString().split("T")[0];
 
-    const r = await fetch(API + "/ocorrencia?data=" + data);
+async function abrirModalOcorrencia(id) {
+
+  try {
+
+    const agora = new Date();
+
+    const diaSP = new Date(agora.getTime() - 3*60*60*1000);
+
+    const data = diaSP.toISOString().split('T')[0];
+
+    const r = await fetch(API + '/ocorrencia?data=' + data);
 
     const d = await r.json();
 
-    const oc = (d.ocorrencias || []).find((o) => o.id === id);
+    const oc = (d.ocorrencias || []).find(o => o.id === id);
 
     if (!oc) return;
 
     _ocorrenciaAtual = oc;
 
-    _statusOcAtual = oc.status || "aberta";
+    _statusOcAtual = oc.status || 'aberta';
 
-    document.getElementById("moc-codigo").textContent = oc.codigo || "OC-???";
 
-    const tipoLabel =
-      oc.tipo === "nao_comparecimento" ? "🔴 Não comparecimento" : "⏰ Atraso";
 
-    document.getElementById("moc-tipo").textContent =
-      tipoLabel + (oc.motivo_label ? " · " + oc.motivo_label : "");
+    document.getElementById('moc-codigo').textContent = oc.codigo || 'OC-???';
 
-    document.getElementById("moc-obs").value = oc.obs_gestor || "";
+    const tipoLabel = oc.tipo === 'nao_comparecimento' ? '🔴 Não comparecimento' : '⏰ Atraso';
 
-    const hora = new Date(oc.timestamp).toLocaleTimeString("pt-BR", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    document.getElementById('moc-tipo').textContent = tipoLabel + (oc.motivo_label ? ' · ' + oc.motivo_label : '');
 
-    document.getElementById("moc-info").innerHTML = `
+    document.getElementById('moc-obs').value = oc.obs_gestor || '';
+
+
+
+    const hora = new Date(oc.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+    document.getElementById('moc-info').innerHTML = `
 
       <div style="display:flex;flex-direction:column;gap:8px">
 
@@ -2742,7 +2834,7 @@ Date();
 
             <div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;margin-bottom:3px">Rota</div>
 
-            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.rota || "—"}</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.rota || '—'}</div>
 
           </div>
 
@@ -2758,115 +2850,126 @@ Date();
 
             <div style="font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;margin-bottom:3px">Código tipo</div>
 
-            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.codigo_tipo || "—"}</div>
+            <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.codigo_tipo || '—'}</div>
 
           </div>
 
         </div>
 
-        ${
-          oc.motivo
-            ? `<div style="background:#FEF9EC;border-radius:8px;padding:10px 12px;border-left:3px solid #F59E0B">
+        ${oc.motivo ? `<div style="background:#FEF9EC;border-radius:8px;padding:10px 12px;border-left:3px solid #F59E0B">
 
           <div style="font-size:10px;font-weight:700;color:#92400E;text-transform:uppercase;margin-bottom:3px">Motivo informado</div>
 
           <div style="font-size:13px;color:#0F2940">${oc.motivo}</div>
 
-        </div>`
-            : ""
-        }
+        </div>` : ''}
 
-        ${
-          oc.minutos_atraso
-            ? `<div style="background:#EFF6FF;border-radius:8px;padding:10px 12px">
+        ${oc.minutos_atraso ? `<div style="background:#EFF6FF;border-radius:8px;padding:10px 12px">
 
           <div style="font-size:10px;font-weight:700;color:#1D4ED8;text-transform:uppercase;margin-bottom:3px">Previsão de atraso</div>
 
-          <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.minutos_atraso} minutos${oc.cliente_nome ? " em " + oc.cliente_nome : ""}</div>
+          <div style="font-size:13px;font-weight:700;color:#0F2940">${oc.minutos_atraso} minutos${oc.cliente_nome ? ' em ' + oc.cliente_nome : ''}</div>
 
-        </div>`
-            : ""
-        }
+        </div>` : ''}
 
       </div>`;
 
+
+
     // Marca status atual
 
-    document.querySelectorAll(".oc-status-btn").forEach((b) => {
-      b.style.opacity = "0.5";
-    });
+    document.querySelectorAll('.oc-status-btn').forEach(b => { b.style.opacity = '0.5'; });
 
     const statusMap = { aberta: 0, em_andamento: 1, resolvida: 2 };
 
-    const btns = document.querySelectorAll(".oc-status-btn");
+    const btns = document.querySelectorAll('.oc-status-btn');
 
-    if (btns[statusMap[_statusOcAtual]]) {
-      btns[statusMap[_statusOcAtual]].style.opacity = "1";
-    }
+    if (btns[statusMap[_statusOcAtual]]) { btns[statusMap[_statusOcAtual]].style.opacity = '1'; }
 
-    document.getElementById("modal-ocorrencia").style.display = "flex";
+
+
+    document.getElementById('modal-ocorrencia').style.display = 'flex';
 
     // Marca como lida
 
-    await fetch(API + "/ocorrencia", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id }),
-    });
+    await fetch(API + '/ocorrencia', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
 
-} catch (e) { console.error(e); } }
+  } catch(e) { console.error(e); }
+
+}
+
+
 
 function fecharModalOcorrencia() {
-document.getElementById(“modal-ocorrencia”).style.display = “none”;
 
-_ocorrenciaAtual = null; }
+  document.getElementById('modal-ocorrencia').style.display = 'none';
 
-function setStatusOc(status, btn) { _statusOcAtual = status;
+  _ocorrenciaAtual = null;
 
-document.querySelectorAll(“.oc-status-btn”).forEach((b) => {
-b.style.opacity = “0.5”; });
+}
 
-btn.style.opacity = “1”; }
 
-async function salvarOcorrencia() { if (!_ocorrenciaAtual) return;
 
-const obs = document.getElementById(“moc-obs”).value.trim();
+function setStatusOc(status, btn) {
 
-try { await fetch(API + “/ocorrencia”, { method: “PUT”,
+  _statusOcAtual = status;
 
-      headers: { "Content-Type": "application/json" },
+  document.querySelectorAll('.oc-status-btn').forEach(b => { b.style.opacity = '0.5'; });
 
-      body: JSON.stringify({
-        id: _ocorrenciaAtual.id,
-        obs_gestor: obs,
-        status: _statusOcAtual,
-      }),
+  btn.style.opacity = '1';
+
+}
+
+
+
+async function salvarOcorrencia() {
+
+  if (!_ocorrenciaAtual) return;
+
+  const obs = document.getElementById('moc-obs').value.trim();
+
+  try {
+
+    await fetch(API + '/ocorrencia', {
+
+      method: 'PUT',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ id: _ocorrenciaAtual.id, obs_gestor: obs, status: _statusOcAtual })
+
     });
 
-    toast("✓ Ocorrência salva");
+    toast('✓ Ocorrência salva');
 
     fecharModalOcorrencia();
 
     carregarOcorrencias();
 
-} catch (e) { toast(“Erro ao salvar”); } }
+  } catch(e) { toast('Erro ao salvar'); }
 
-function gerarPdfOcorrencia() { if (!_ocorrenciaAtual) return;
+}
 
-const oc = _ocorrenciaAtual;
 
-const obs = document.getElementById(“moc-obs”).value.trim();
 
-const hora = new Date(oc.timestamp).toLocaleString(“pt-BR”, { timeZone:
-“America/Sao_Paulo”, day: “2-digit”, month: “2-digit”, year: “numeric”,
-hour: “2-digit”, minute: “2-digit”, });
+function gerarPdfOcorrencia() {
 
-const tipoLabel = oc.tipo === “nao_comparecimento” ? “Não
-comparecimento” : “Atraso”;
+  if (!_ocorrenciaAtual) return;
 
-const win = window.open(““,”_blank”);
+  const oc = _ocorrenciaAtual;
 
-win.document .write(`<!DOCTYPE html>
+  const obs = document.getElementById('moc-obs').value.trim();
+
+  const hora = new Date(oc.timestamp).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  const tipoLabel = oc.tipo === 'nao_comparecimento' ? 'Não comparecimento' : 'Atraso';
+
+
+
+  const win = window.open('', '_blank');
+
+  win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"/>
+
     <title>Ocorrência ${oc.codigo}</title>
 
     <style>
@@ -2907,6 +3010,8 @@ win.document .write(`<!DOCTYPE html>
 
     </style>
 
+  </head><body>
+
     <div class="header">
 
       <div class="logo">LOG<span>LIFE</span> <span style="font-size:13px;font-weight:400;color:#5A7A8F">Logística</span></div>
@@ -2915,9 +3020,9 @@ win.document .write(`<!DOCTYPE html>
 
     </div>
 
-    <h1>${oc.codigo || "OC-???"}</h1>
+    <h1>${oc.codigo || 'OC-???'}</h1>
 
-    <div class="subtitulo">${hora} · ${tipoLabel}${oc.motivo_label ? " — " + oc.motivo_label : ""}</div>
+    <div class="subtitulo">${hora} · ${tipoLabel}${oc.motivo_label ? ' — ' + oc.motivo_label : ''}</div>
 
     <div class="secao">
 
@@ -2925,37 +3030,33 @@ win.document .write(`<!DOCTYPE html>
 
       <div class="grid">
 
-        <div class="campo"><div class="campo-label">Rota</div><div class="campo-valor">${oc.rota || "—"}</div></div>
+        <div class="campo"><div class="campo-label">Rota</div><div class="campo-valor">${oc.rota || '—'}</div></div>
 
-        <div class="campo"><div class="campo-label">Código do tipo</div><div class="campo-valor">${oc.codigo_tipo || "—"}</div></div>
+        <div class="campo"><div class="campo-label">Código do tipo</div><div class="campo-valor">${oc.codigo_tipo || '—'}</div></div>
 
         <div class="campo"><div class="campo-label">Tipo</div><div class="campo-valor">${tipoLabel}</div></div>
 
         <div class="campo"><div class="campo-label">Data e hora</div><div class="campo-valor">${hora}</div></div>
 
-        ${oc.minutos_atraso ? `<div class="campo" style="grid-column:1/-1"><div class="campo-label">Previsão de atraso</div><div class="campo-valor">${oc.minutos_atraso} minutos${oc.cliente_nome ? " em " + oc.cliente_nome : ""}</div></div>` : ""}
+        ${oc.minutos_atraso ? `<div class="campo" style="grid-column:1/-1"><div class="campo-label">Previsão de atraso</div><div class="campo-valor">${oc.minutos_atraso} minutos${oc.cliente_nome ? ' em ' + oc.cliente_nome : ''}</div></div>` : ''}
 
       </div>
 
     </div>
 
-    ${
-      oc.motivo
-        ? `<div class="secao">
+    ${oc.motivo ? `<div class="secao">
 
       <div class="secao-titulo">Motivo informado</div>
 
       <div class="obs-box">${oc.motivo}</div>
 
-    </div>`
-        : ""
-    }
+    </div>` : ''}
 
     <div class="secao">
 
       <div class="secao-titulo">Ação tomada pelo gestor</div>
 
-      <div class="obs-box">${obs || "Nenhuma observação registrada."}</div>
+      <div class="obs-box">${obs || 'Nenhuma observação registrada.'}</div>
 
     </div>
 
@@ -2963,59 +3064,67 @@ win.document .write(`<!DOCTYPE html>
 
       <div class="secao-titulo">Status</div>
 
-      <div style="font-size:14px;font-weight:700;color:#0F2940">${_statusOcAtual === "resolvida" ? "✅ Resolvida" : _statusOcAtual === "em_andamento" ? "🔵 Em andamento" : "🟡 Aberta"}</div>
+      <div style="font-size:14px;font-weight:700;color:#0F2940">${_statusOcAtual === 'resolvida' ? '✅ Resolvida' : _statusOcAtual === 'em_andamento' ? '🔵 Em andamento' : '🟡 Aberta'}</div>
 
     </div>
 
-    <div class="footer">Loglife Logística · Documento gerado automaticamente · ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>
+    <div class="footer">Loglife Logística · Documento gerado automaticamente · ${new Date().toLocaleString('pt-BR', {timeZone:'America/Sao_Paulo'})}</div>
 
-`);
+  </body></html>`);
 
-win.document.close();
+  win.document.close();
 
-setTimeout(() => win.print(), 500); }
+  setTimeout(() => win.print(), 500);
+
+}
 
 let _ocorrenciasVistas = new Set();
 
-async function verificarOcorrencias() { try { const r = await
-fetch(API + “/ocorrencia?nao_lidas=1”);
+
+
+async function verificarOcorrencias() {
+
+  try {
+
+    const r = await fetch(API + '/ocorrencia?nao_lidas=1');
 
     const d = await r.json();
 
     const ocorrencias = d.ocorrencias || [];
 
     for (const oc of ocorrencias) {
+
       if (_ocorrenciasVistas.has(oc.id)) continue;
 
       _ocorrenciasVistas.add(oc.id);
 
       mostrarPopupOcorrencia(oc);
+
     }
 
-} catch (e) {} }
+  } catch(e) {}
 
-function mostrarPopupOcorrencia(oc) { const popId = “popup-oc-” + oc.id;
+}
 
-if (document.getElementById(popId)) return;
 
-const popup = document.createElement(“div”);
 
-popup.id = popId;
+function mostrarPopupOcorrencia(oc) {
 
-popup.style.cssText =
-“position:fixed;top:1.5rem;right:1.5rem;z-index:99999;width:320px;background:#fff;border-radius:14px;box-shadow:0
-8px 32px rgba(0,0,0,.2);border-left:4px solid
-#F59E0B;overflow:hidden;animation:slideInRight .3s
-cubic-bezier(.34,1.1,.64,1) both”;
+  const popId = 'popup-oc-' + oc.id;
 
-const tipoLabel = oc.tipo === “nao_comparecimento” ? “🔴 Não
-comparecimento” : oc.tipo === “atraso” ? “⏰ Atraso” : oc.tipo ===
-“geral” ? “🚨 Ocorrência” : “📋 Ocorrência”;
+  if (document.getElementById(popId)) return;
 
-const tipoIcone = oc.tipo === “nao_comparecimento” ? “🔴” : oc.tipo ===
-“atraso” ? “⏰” : “🚨”;
+  const popup = document.createElement('div');
 
-popup.innerHTML = `
+  popup.id = popId;
+
+  popup.style.cssText = 'position:fixed;top:1.5rem;right:1.5rem;z-index:99999;width:320px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.2);border-left:4px solid #F59E0B;overflow:hidden;animation:slideInRight .3s cubic-bezier(.34,1.1,.64,1) both';
+
+  const tipoLabel = oc.tipo === 'nao_comparecimento' ? '🔴 Não comparecimento' : oc.tipo === 'atraso' ? '⏰ Atraso' : oc.tipo === 'geral' ? '🚨 Ocorrência' : '📋 Ocorrência';
+
+  const tipoIcone = oc.tipo === 'nao_comparecimento' ? '🔴' : oc.tipo === 'atraso' ? '⏰' : '🚨';
+
+  popup.innerHTML = `
 
     <div style="padding:12px 14px 10px">
 
@@ -3025,9 +3134,9 @@ popup.innerHTML = `
 
         <div style="flex:1">
 
-          <div style="font-size:13px;font-weight:800;color:${oc.tipo === "nao_comparecimento" ? "#991B1B" : "#92400E"}">${tipoLabel}${oc.motivo_label ? " — " + oc.motivo_label : ""}</div>
+          <div style="font-size:13px;font-weight:800;color:${oc.tipo === 'nao_comparecimento' ? '#991B1B' : '#92400E'}">${tipoLabel}${oc.motivo_label ? ' — ' + oc.motivo_label : ''}</div>
 
-          <div style="font-size:11px;color:#5A7A8F">${oc.rota || ""} · ${new Date(oc.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
+          <div style="font-size:11px;color:#5A7A8F">${oc.rota || ''} · ${new Date(oc.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
 
         </div>
 
@@ -3039,29 +3148,35 @@ popup.innerHTML = `
 
         <strong>${oc.motoboy_nome}</strong>
 
-        ${oc.tipo === "nao_comparecimento" ? " não irá comparecer hoje" : oc.tipo === "atraso" ? ` vai atrasar <strong style="color:#F59E0B">${oc.minutos_atraso} min</strong> em <strong>${oc.cliente_nome}</strong>` : " registrou uma ocorrência"}
+        ${oc.tipo === 'nao_comparecimento' ? ' não irá comparecer hoje' : oc.tipo === 'atraso' ? ` vai atrasar <strong style="color:#F59E0B">${oc.minutos_atraso} min</strong> em <strong>${oc.cliente_nome}</strong>` : ' registrou uma ocorrência'}
 
       </div>
 
-      ${oc.motivo ? `<div style="font-size:11px;color:#5A7A8F;font-style:italic">↳ ${oc.motivo}</div>` : ""}
+      ${oc.motivo ? `<div style="font-size:11px;color:#5A7A8F;font-style:italic">↳ ${oc.motivo}</div>` : ''}
 
       <button onclick="fecharOcorrencia(${oc.id},'${popId}')" style="width:100%;margin-top:10px;padding:8px;border-radius:8px;border:none;background:#FEF9EC;color:#92400E;font-size:12px;font-weight:700;cursor:pointer">✓ Entendido</button>
 
     </div>`;
 
-document.body.appendChild(popup);
+  document.body.appendChild(popup);
 
-// Remove automaticamente após 60s se não interagir
+  // Remove automaticamente após 60s se não interagir
 
-setTimeout(() => { if (document.getElementById(popId))
-fecharOcorrencia(oc.id, popId); }, 60000); }
+  setTimeout(() => { if (document.getElementById(popId)) fecharOcorrencia(oc.id, popId); }, 60000);
+
+}
+
+
 
 async function fecharOcorrencia(id, popId) {
-document.getElementById(popId)?.remove();
 
-try { await fetch(API + “/ocorrencia”, { method: “PUT”, headers: {
-“Content-Type”: “application/json” }, body: JSON.stringify({ id }), });
-} catch (e) {} }
+  document.getElementById(popId)?.remove();
+
+  try { await fetch(API + '/ocorrencia', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ id }) }); } catch(e) {}
+
+}
+
+
 
 // Inicia polling de ocorrências no painel — a cada 15s
 
@@ -3071,18 +3186,19 @@ setTimeout(verificarOcorrencias, 3000);
 
 let _dispositivosTodos = [];
 
-async function carregarDispositivos() { const lista =
-document.getElementById(“disp-lista”);
 
-const resumo = document.getElementById(“disp-resumo”);
 
-if (lista) lista.innerHTML = ’
+async function carregarDispositivos() {
 
-Carregando…
+  const lista = document.getElementById('disp-lista');
 
-’;
+  const resumo = document.getElementById('disp-resumo');
 
-try { const r = await fetch(API + “/status-dispositivos”);
+  if (lista) lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+
+    const r = await fetch(API + '/status-dispositivos');
 
     const d = await r.json();
 
@@ -3090,27 +3206,43 @@ try { const r = await fetch(API + “/status-dispositivos”);
 
     renderizarDispositivos(_dispositivosTodos);
 
-} catch (e) { if (lista) lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
 
-’; } }
+  }
 
-function renderizarDispositivos(lista) { const el =
-document.getElementById(“disp-lista”);
+}
 
-const resumo = document.getElementById(“disp-resumo”);
 
-if (!el) return;
 
-const contadores = { ok: 0, sem_app: 0, sem_gps: 0, offline: 0,
-problema: 0 };
+function renderizarDispositivos(lista) {
 
-lista.forEach((d) => { if (d.status === “ok”) contadores.ok++; else if
-(d.status === “sem_app”) contadores.sem_app++; else if (d.status ===
-“offline”) contadores.offline++; else contadores.problema++; });
+  const el = document.getElementById('disp-lista');
 
-if (resumo) resumo.innerHTML = `
+  const resumo = document.getElementById('disp-resumo');
+
+  if (!el) return;
+
+
+
+  const contadores = { ok: 0, sem_app: 0, sem_gps: 0, offline: 0, problema: 0 };
+
+  lista.forEach(d => {
+
+    if (d.status === 'ok') contadores.ok++;
+
+    else if (d.status === 'sem_app') contadores.sem_app++;
+
+    else if (d.status === 'offline') contadores.offline++;
+
+    else contadores.problema++;
+
+  });
+
+
+
+  if (resumo) resumo.innerHTML = `
 
     <div style="background:#DCFCE7;border-radius:10px;padding:10px;text-align:center;border:1px solid #86EFAC">
 
@@ -3152,57 +3284,47 @@ if (resumo) resumo.innerHTML = `
 
     </div>`;
 
-if (!lista.length) { el.innerHTML = ’
 
-Nenhum dispositivo encontrado
 
-’; return; }
+  if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum dispositivo encontrado</div>'; return; }
 
-const statusInfo = { ok: { badge: “✅ OK”, bg: “#DCFCE7”, cor: “#166534”
-},
 
-    sem_app: { badge: "📵 Sem app", bg: "#F1F5F9", cor: "#475569" },
 
-    sem_gps_bg: {
-      badge: "🟡 GPS só durante uso",
-      bg: "#FEF9EC",
-      cor: "#92400E",
-    },
+  const statusInfo = {
 
-    sem_notif: {
-      badge: "🔕 Notificação desligada",
-      bg: "#FEF2F2",
-      cor: "#991B1B",
-    },
+    ok:         { badge: '✅ OK',                    bg: '#DCFCE7', cor: '#166534' },
 
-    offline: { badge: "🔴 Offline", bg: "#FEE2E2", cor: "#991B1B" },
+    sem_app:    { badge: '📵 Sem app',               bg: '#F1F5F9', cor: '#475569' },
 
-};
+    sem_gps_bg: { badge: '🟡 GPS só durante uso',   bg: '#FEF9EC', cor: '#92400E' },
 
-const formatTempo = (min) => { if (min === null) return “—”;
+    sem_notif:  { badge: '🔕 Notificação desligada', bg: '#FEF2F2', cor: '#991B1B' },
 
-    if (min < 60) return min + "min atrás";
+    offline:    { badge: '🔴 Offline',               bg: '#FEE2E2', cor: '#991B1B' },
 
-    return (
-      Math.floor(min / 60) +
-      "h" +
-      String(min % 60).padStart(2, "0") +
-      "min atrás"
-    );
+  };
 
-};
 
-el.innerHTML = lista .map((d) => { const s = statusInfo[d.status] ||
-statusInfo.sem_app;
 
-      const tipo =
-        d.tipo === "rastreador"
-          ? "📡 Rastreador"
-          : d.rastrear
-            ? "🛵 CLT"
-            : "🛵 MEI";
+  const formatTempo = min => {
 
-      return `
+    if (min === null) return '—';
+
+    if (min < 60) return min + 'min atrás';
+
+    return Math.floor(min/60) + 'h' + String(min%60).padStart(2,'0') + 'min atrás';
+
+  };
+
+
+
+  el.innerHTML = lista.map(d => {
+
+    const s = statusInfo[d.status] || statusInfo.sem_app;
+
+    const tipo = d.tipo === 'rastreador' ? '📡 Rastreador' : d.rastrear ? '🛵 CLT' : '🛵 MEI';
+
+    return `
 
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #F0F4F8">
 
@@ -3210,333 +3332,379 @@ statusInfo.sem_app;
 
         <div style="font-size:13px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${d.nome}</div>
 
-        <div style="font-size:11px;color:#94A8B8;margin-top:1px">${tipo} ${d.fabricante ? "· " + d.fabricante : ""} ${d.ultimo_gps ? "· " + formatTempo(d.minutos_offline) : ""}</div>
+        <div style="font-size:11px;color:#94A8B8;margin-top:1px">${tipo} ${d.fabricante ? '· ' + d.fabricante : ''} ${d.ultimo_gps ? '· ' + formatTempo(d.minutos_offline) : ''}</div>
 
       </div>
 
       <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:${s.bg};color:${s.cor};white-space:nowrap">${s.badge}</span>
 
-      ${d.tem_app ? `<button onclick="event.stopPropagation();encerrarSessaoMotoboy('${d.telefone.replace(/'/g, "\\'")}','${d.nome.replace(/'/g, "\\'")}')" title="Encerrar sess\u00e3o e GPS" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0">🚫 Encerrar</button>` : ""}
+      ${d.tem_app ? `<button onclick="event.stopPropagation();encerrarSessaoMotoboy('${d.telefone.replace(/'/g,"\\'")}','${d.nome.replace(/'/g,"\\'")}')" title="Encerrar sess\u00e3o e GPS" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0">🚫 Encerrar</button>` : ''}
 
     </div>`;
-    })
-    .join("");
+
+  }).join('');
 
 }
 
-async function encerrarSessaoMotoboy(telefone, nome) { if ( !confirm(
-“Encerrar a sessão de” + nome + “? O sistema removerá o acesso do
-painel.”, ) ) return;
 
-try { const r = await fetch(API + “/logout-remoto”, { method: “POST”,
 
-      headers: { "Content-Type": "application/json" },
+async function encerrarSessaoMotoboy(telefone, nome) {
 
-      body: JSON.stringify({ telefone, nome }),
+  if (!confirm('Encerrar a sessão de ' + nome + '? O sistema removerá o acesso do painel.')) return;
+
+
+
+  try {
+
+    const r = await fetch(API + '/logout-remoto', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ telefone, nome })
+
     });
 
     const d = await r.json();
 
+
+
     // Feedback visual para você
 
-    if (d.status === "ok") {
-      toast("✓ Sessão de " + nome + " encerrada com sucesso.");
+    if (d.status === 'ok') {
+
+        toast('✓ Sessão de ' + nome + ' encerrada com sucesso.');
+
     } else {
-      // Mesmo sem o token (erro), forçamos a limpeza do painel,
 
-      // pois o objetivo administrativo é remover o usuário da tela.
+        // Mesmo sem o token (erro), forçamos a limpeza do painel,
 
-      toast("Sessão limpa do painel (sem token no app).");
+        // pois o objetivo administrativo é remover o usuário da tela.
+
+        toast('Sessão limpa do painel (sem token no app).');
+
     }
+
+
 
     // A chave da correção: forçar a atualização da tela após o comando,
 
     // independentemente do sucesso do envio do push FCM.
 
-    if (typeof carregarDispositivos === "function") {
-      carregarDispositivos();
+    if (typeof carregarDispositivos === 'function') {
+
+        carregarDispositivos();
+
     }
 
-} catch (e) { toast(“Erro de conexão ao encerrar:” + e.message); } }
+
+
+  } catch(e) {
+
+    toast('Erro de conexão ao encerrar: ' + e.message);
+
+  }
+
+}
+
+
 
 function filtrarDispositivos(filtro, btn) {
-document.querySelectorAll(‘[id^=“disp-f-”]’).forEach((b) => {
-b.style.background = “#fff”; b.style.color = “#5A7A8F”; b.style.border =
-“1.5px solid #D6E5EE”; });
 
-if (btn) { btn.style.background = “#0F4C7A”; btn.style.color = “#fff”;
-btn.style.border = “none”; }
+  document.querySelectorAll('[id^="disp-f-"]').forEach(b => {
 
-let filtrado = _dispositivosTodos;
+    b.style.background = '#fff'; b.style.color = '#5A7A8F'; b.style.border = '1.5px solid #D6E5EE';
 
-if (filtro === “ok”) filtrado = _dispositivosTodos.filter((d) =>
-d.status === “ok”); else if (filtro === “sem_app”) filtrado =
-_dispositivosTodos.filter((d) => d.status === “sem_app”); else if
-(filtro === “offline”) filtrado = _dispositivosTodos.filter((d) =>
-d.status === “offline”); else if (filtro === “problema”) filtrado =
-_dispositivosTodos.filter( (d) => d.status !== “ok” && d.status !==
-“sem_app”, );
+  });
 
-renderizarDispositivos(filtrado); }
+  if (btn) { btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.border = 'none'; }
 
-async function carregarGeofenceConfig() { const lista =
-document.getElementById(“gf-lista”);
+  let filtrado = _dispositivosTodos;
 
-const sel = document.getElementById(“gf-rota-sel”);
+  if (filtro === 'ok') filtrado = _dispositivosTodos.filter(d => d.status === 'ok');
 
-if (!lista) return;
+  else if (filtro === 'sem_app') filtrado = _dispositivosTodos.filter(d => d.status === 'sem_app');
 
-// Reset passagens para 1
+  else if (filtro === 'offline') filtrado = _dispositivosTodos.filter(d => d.status === 'offline');
 
-gfSelecionarPassagem(1, document.getElementById(“gf-btn-1”));
+  else if (filtro === 'problema') filtrado = _dispositivosTodos.filter(d => d.status !== 'ok' && d.status !== 'sem_app');
 
-try { const [rRes, gRes] = await Promise.all([ fetch(API +
-“/rotas-disponiveis?todos_dias=1”),
+  renderizarDispositivos(filtrado);
 
-      fetch(API + "/geofence-config"),
+}
+
+
+
+async function carregarGeofenceConfig() {
+
+  const lista = document.getElementById('gf-lista');
+
+  const sel = document.getElementById('gf-rota-sel');
+
+  if (!lista) return;
+
+
+
+  // Reset passagens para 1
+
+  gfSelecionarPassagem(1, document.getElementById('gf-btn-1'));
+
+
+
+  try {
+
+    const [rRes, gRes] = await Promise.all([
+
+      fetch(API + '/rotas-disponiveis?todos_dias=1'),
+
+      fetch(API + '/geofence-config')
+
     ]);
 
     const dRotas = await rRes.json();
 
     const dGeo = await gRes.json();
 
-    const rotas = (dRotas.rotas || []).map((r) => r.rota).sort();
+    const rotas = (dRotas.rotas || []).map(r => r.rota).sort();
 
     const configs = dGeo.configs || [];
 
+
+
     if (sel) {
+
       sel.innerHTML = '<option value="">Selecione...</option>';
 
-      rotas.forEach((r) => {
-        const o = document.createElement("option");
-        o.value = r;
-        o.textContent = r;
-        sel.appendChild(o);
-      });
+      rotas.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
+
     }
+
+
 
     if (!configs.length) {
-      lista.innerHTML =
-        '<div class="empty" style="font-size:12px">Nenhuma configuração — todas as rotas usam 1ª passagem</div>';
+
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhuma configuração — todas as rotas usam 1ª passagem</div>';
 
       return;
+
     }
+
+
 
     // Agrupa por rota
 
     const porRota = {};
 
-    configs.forEach((c) => {
-      if (!porRota[c.rota]) porRota[c.rota] = [];
-      porRota[c.rota].push(c);
-    });
+    configs.forEach(c => { if (!porRota[c.rota]) porRota[c.rota] = []; porRota[c.rota].push(c); });
 
-    const labelDia = (d) =>
-      ({
-        seg: "Segunda",
-        ter: "Terça",
-        qua: "Quarta",
-        qui: "Quinta",
-        sex: "Sexta",
-        sab: "Sábado",
-        dom: "Domingo",
-      })[d] || d;
 
-    const corPass = (p) =>
-      p === 3
-        ? { bg: "#FEF2F2", cor: "#991B1B" }
-        : p === 2
-          ? { bg: "#FEF9EC", cor: "#92400E" }
-          : { bg: "#EFF6FF", cor: "#1D4ED8" };
 
-    lista.innerHTML = Object.entries(porRota)
-      .map(([rota, dias]) => {
-        // Agrupa dias com mesma config
+    const labelDia = d => ({ seg:'Segunda', ter:'Terça', qua:'Quarta', qui:'Quinta', sex:'Sexta', sab:'Sábado', dom:'Domingo' })[d] || d;
 
-        const grupos = {};
+    const corPass = p => p === 3 ? { bg:'#FEF2F2', cor:'#991B1B' } : p === 2 ? { bg:'#FEF9EC', cor:'#92400E' } : { bg:'#EFF6FF', cor:'#1D4ED8' };
 
-        dias.forEach((c) => {
-          const key = c.passagens + "|" + (c.horario_limite || "");
 
-          if (!grupos[key])
-            grupos[key] = {
-              passagens: c.passagens,
-              horario_limite: c.horario_limite,
-              dias: [],
-            };
 
-          grupos[key].dias.push(c.dia_semana);
-        });
+    lista.innerHTML = Object.entries(porRota).map(([rota, dias]) => {
 
-        const abr = (d) =>
-          ({
-            seg: "Seg",
-            ter: "Ter",
-            qua: "Qua",
-            qui: "Qui",
-            sex: "Sex",
-            sab: "Sáb",
-            dom: "Dom",
-          })[d] || d;
+      // Agrupa dias com mesma config
 
-        const corP = (p) =>
-          p === 3 ? "#991B1B" : p === 2 ? "#92400E" : "#1D4ED8";
+      const grupos = {};
 
-        const linhas = Object.values(grupos)
-          .map((g) => {
-            const diasStr = g.dias.map(abr).join(" · ");
+      dias.forEach(c => {
 
-            const btns = g.dias
-              .map(
-                (d) =>
-                  `<button onclick="removerGeofence('${rota.replace(/'/g, "\\'")}','${d}')" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0" title="Remover ${abr(d)}">✕</button>`,
-              )
-              .join("");
+        const key = c.passagens + '|' + (c.horario_limite || '');
 
-            return `<div style="display:flex;align-items:center;gap:6px;padding:3px 14px 3px 24px">
+        if (!grupos[key]) grupos[key] = { passagens: c.passagens, horario_limite: c.horario_limite, dias: [] };
+
+        grupos[key].dias.push(c.dia_semana);
+
+      });
+
+      const abr = d => ({ seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' })[d] || d;
+
+      const corP = p => p === 3 ? '#991B1B' : p === 2 ? '#92400E' : '#1D4ED8';
+
+      const linhas = Object.values(grupos).map(g => {
+
+        const diasStr = g.dias.map(abr).join(' · ');
+
+        const btns = g.dias.map(d => `<button onclick="removerGeofence('${rota.replace(/'/g,"\\'")}','${d}')" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0" title="Remover ${abr(d)}">✕</button>`).join('');
+
+        return `<div style="display:flex;align-items:center;gap:6px;padding:3px 14px 3px 24px">
 
           <span style="font-size:11px;color:#5A7A8F;flex:1">${diasStr}</span>
 
           <span style="font-size:10px;font-weight:700;color:${corP(g.passagens)}">${g.passagens}ª pass.</span>
 
-          ${g.horario_limite ? `<span style="font-size:10px;color:#92400E">⏰ ${g.horario_limite}</span>` : ""}
+          ${g.horario_limite ? `<span style="font-size:10px;color:#92400E">⏰ ${g.horario_limite}</span>` : ''}
 
           ${btns}
 
         </div>`;
-          })
-          .join("");
 
-        return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
+      }).join('');
+
+      return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
 
         <div style="padding:2px 14px;font-size:12px;font-weight:700;color:#0F4C7A">${rota}</div>
 
         ${linhas}
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { if (lista) lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) {
 
-’; } }
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
 
-function gfToggleDia(dia, btn) { const ativo = btn.style.background ===
-“rgb(15, 76, 122)” || btn.dataset.ativo === “1”;
+  }
 
-if (ativo) { btn.style.background = “#fff”; btn.style.color = “#5A7A8F”;
-btn.style.borderColor = “#D6E5EE”;
+}
 
-    btn.dataset.ativo = "0";
 
-} else { btn.style.background = “#0F4C7A”; btn.style.color = “#fff”;
-btn.style.borderColor = “#0F4C7A”;
 
-    btn.dataset.ativo = "1";
+function gfToggleDia(dia, btn) {
 
-} }
+  const ativo = btn.style.background === 'rgb(15, 76, 122)' || btn.dataset.ativo === '1';
+
+  if (ativo) {
+
+    btn.style.background = '#fff'; btn.style.color = '#5A7A8F'; btn.style.borderColor = '#D6E5EE';
+
+    btn.dataset.ativo = '0';
+
+  } else {
+
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A';
+
+    btn.dataset.ativo = '1';
+
+  }
+
+}
+
+
 
 function gfSelecionarTodosDias() {
-document.querySelectorAll(“.gf-dia-btn”).forEach((btn) => {
-btn.style.background = “#0F4C7A”; btn.style.color = “#fff”;
-btn.style.borderColor = “#0F4C7A”;
 
-    btn.dataset.ativo = "1";
+  document.querySelectorAll('.gf-dia-btn').forEach(btn => {
 
-}); }
+    btn.style.background = '#0F4C7A'; btn.style.color = '#fff'; btn.style.borderColor = '#0F4C7A';
 
-async function salvarGeofence() { const rota =
-document.getElementById(“gf-rota-sel”)?.value;
+    btn.dataset.ativo = '1';
 
-const horario_limite =
-document.getElementById(“gf-horario-limite”)?.value || null;
+  });
 
-if (!rota) { toast(“Selecione uma rota”); return; }
+}
 
-// Pega dias selecionados
 
-const diasSelecionados = […document.querySelectorAll(“.gf-dia-btn”)]
-.filter((b) => b.dataset.ativo === “1”) .map((b) => b.dataset.dia);
 
-if (!diasSelecionados.length) { toast(“Selecione pelo menos um dia”);
-return; }
+async function salvarGeofence() {
 
-try { // Salva um registro por dia selecionado
+  const rota = document.getElementById('gf-rota-sel')?.value;
 
-    await Promise.all(
-      diasSelecionados.map((dia) =>
-        fetch(API + "/geofence-config", {
-          method: "POST",
+  const horario_limite = document.getElementById('gf-horario-limite')?.value || null;
 
-          headers: { "Content-Type": "application/json" },
+  if (!rota) { toast('Selecione uma rota'); return; }
 
-          body: JSON.stringify({
-            rota,
-            dia_semana: dia,
-            passagens: _gfPassagens,
-            horario_limite: horario_limite || null,
-          }),
-        }),
-      ),
-    );
 
-    toast("✓ " + rota + " · " + diasSelecionados.length + " dia(s) salvo(s)");
+
+  // Pega dias selecionados
+
+  const diasSelecionados = [...document.querySelectorAll('.gf-dia-btn')].filter(b => b.dataset.ativo === '1').map(b => b.dataset.dia);
+
+  if (!diasSelecionados.length) { toast('Selecione pelo menos um dia'); return; }
+
+
+
+  try {
+
+    // Salva um registro por dia selecionado
+
+    await Promise.all(diasSelecionados.map(dia =>
+
+      fetch(API + '/geofence-config', {
+
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ rota, dia_semana: dia, passagens: _gfPassagens, horario_limite: horario_limite || null })
+
+      })
+
+    ));
+
+    toast('✓ ' + rota + ' · ' + diasSelecionados.length + ' dia(s) salvo(s)');
 
     // Limpa seleção
 
-    document.querySelectorAll(".gf-dia-btn").forEach((b) => {
-      b.style.background = "#fff";
-      b.style.color = "#5A7A8F";
-      b.style.borderColor = "#D6E5EE";
+    document.querySelectorAll('.gf-dia-btn').forEach(b => {
 
-      b.dataset.ativo = "0";
+      b.style.background = '#fff'; b.style.color = '#5A7A8F'; b.style.borderColor = '#D6E5EE';
+
+      b.dataset.ativo = '0';
+
     });
 
-    document.getElementById("gf-horario-limite").value = "";
+    document.getElementById('gf-horario-limite').value = '';
 
     carregarGeofenceConfig();
 
-} catch (e) { toast(“Erro ao salvar”); } }
+  } catch(e) { toast('Erro ao salvar'); }
 
-async function removerGeofence(rota, dia_semana) { const label =
-dia_semana ? rota + ” · ” + dia_semana : rota;
+}
 
-if (!confirm(“Remover configuração de” + label + “?”)) return;
 
-try { await fetch(API + “/geofence-config”, { method: “DELETE”,
 
-      headers: { "Content-Type": "application/json" },
+async function removerGeofence(rota, dia_semana) {
 
-      body: JSON.stringify({ rota, dia_semana }),
+  const label = dia_semana ? rota + ' · ' + dia_semana : rota;
+
+  if (!confirm('Remover configuração de ' + label + '?')) return;
+
+  try {
+
+    await fetch(API + '/geofence-config', {
+
+      method: 'DELETE',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ rota, dia_semana })
+
     });
 
-    toast("✓ Configuração removida");
+    toast('✓ Configuração removida');
 
     carregarGeofenceConfig();
 
-} catch (e) { toast(“Erro ao remover”); } }
+  } catch(e) { toast('Erro ao remover'); }
+
+}
+
+
 
 // ── NOTIFICAÇÕES MOTOBOY ─────────────────────────────────────
 
-function abrirNotificacoes() { const win =
-document.getElementById(“notif-window”);
+function abrirNotificacoes() {
 
-if (win) { win.style.display = win.style.display === “none” ? “flex” :
-“none”; if (win.style.display === “flex”) carregarNotificacoes();
-return; }
+  const win = document.getElementById('notif-window');
 
-const el = document.createElement(“div”);
+  if (win) { win.style.display = win.style.display === 'none' ? 'flex' : 'none'; if (win.style.display === 'flex') carregarNotificacoes(); return; }
 
-el.id = “notif-window”;
 
-el.style.cssText =
-“position:fixed;bottom:20px;right:60px;width:420px;max-width:calc(100vw -
-80px);background:#fff;border-radius:16px;box-shadow:0 10px 40px
-rgba(0,0,0,.2);z-index:9998;display:flex;flex-direction:column;max-height:620px”;
 
-el.innerHTML = `
+  const el = document.createElement('div');
+
+  el.id = 'notif-window';
+
+  el.style.cssText = 'position:fixed;bottom:20px;right:60px;width:420px;max-width:calc(100vw - 80px);background:#fff;border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,.2);z-index:9998;display:flex;flex-direction:column;max-height:620px';
+
+  el.innerHTML = `
 
     <div style="padding:14px 16px;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
 
@@ -3664,13 +3832,9 @@ el.innerHTML = `
 
           <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">
 
-            ${["seg", "ter", "qua", "qui", "sex", "sab", "dom"]
-              .map(
-                (d) => `
+            ${['seg','ter','qua','qui','sex','sab','dom'].map(d => `
 
-            <button onclick="agToggleDia('${d}',this)" id="ag-dia-${d}" style="padding:4px 8px;border-radius:6px;border:1.5px solid #0F4C7A;background:#0F4C7A;color:#fff;font-size:10px;font-weight:700;cursor:pointer">${d.charAt(0).toUpperCase() + d.slice(1)}</button>`,
-              )
-              .join("")}
+            <button onclick="agToggleDia('${d}',this)" id="ag-dia-${d}" style="padding:4px 8px;border-radius:6px;border:1.5px solid #0F4C7A;background:#0F4C7A;color:#fff;font-size:10px;font-weight:700;cursor:pointer">${d.charAt(0).toUpperCase()+d.slice(1)}</button>`).join('')}
 
           </div>
 
@@ -3736,20 +3900,23 @@ el.innerHTML = `
 
     </div>`;
 
-document.body.appendChild(el);
+  document.body.appendChild(el);
 
-// Popula selects de destinatários
 
-fetch(API + “/motoboys?todos=1&agrupado=1”) .then((r) => r.json())
-.then((d) => { const nomes = […new Set((d.motoboys || []).map((m) =>
-m.nome))].sort();
 
-      ["notif-dest", "ag-dest"].forEach((id) => {
-        const sel = document.getElementById(id);
+  // Popula selects de destinatários
 
-        if (!sel) return;
+  fetch(API + '/motoboys?todos=1&agrupado=1').then(r => r.json()).then(d => {
 
-        sel.innerHTML = `
+    const nomes = [...new Set((d.motoboys||[]).map(m => m.nome))].sort();
+
+    ['notif-dest','ag-dest'].forEach(id => {
+
+      const sel = document.getElementById(id);
+
+      if (!sel) return;
+
+      sel.innerHTML = `
 
         <option value="todos">📢 Todos os motoboys</option>
 
@@ -3757,128 +3924,143 @@ m.nome))].sort();
 
         <option value="grupo_mei">🟡 Grupo MEI</option>`;
 
-        nomes.forEach((n) => {
-          const o = document.createElement("option");
-          o.value = n;
-          o.textContent = "👤 " + n;
-          sel.appendChild(o);
-        });
-      });
-    })
-    .catch(() => {});
+      nomes.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = '👤 ' + n; sel.appendChild(o); });
 
-carregarNotificacoes();
+    });
 
-carregarMensagensAgendadas(); }
+  }).catch(() => {});
 
-function notifAba(aba) { const enviar =
-document.getElementById(“notif-panel-enviar”);
 
-const agendadas = document.getElementById(“notif-panel-agendadas”);
 
-const btnEnviar = document.getElementById(“notif-aba-enviar”);
+  carregarNotificacoes();
 
-const btnAg = document.getElementById(“notif-aba-agendadas”);
+  carregarMensagensAgendadas();
 
-if (aba === “enviar”) { enviar.style.display = “block”;
+}
 
-    agendadas.style.display = "none";
 
-    btnEnviar.style.background = "#EFF6FF";
-    btnEnviar.style.color = "#0F4C7A";
-    btnEnviar.style.borderBottomColor = "#0F4C7A";
 
-    btnAg.style.background = "#fff";
-    btnAg.style.color = "#94A8B8";
-    btnAg.style.borderBottomColor = "transparent";
+function notifAba(aba) {
 
-} else { enviar.style.display = “none”;
+  const enviar = document.getElementById('notif-panel-enviar');
 
-    agendadas.style.display = "flex";
+  const agendadas = document.getElementById('notif-panel-agendadas');
 
-    btnAg.style.background = "#EFF6FF";
-    btnAg.style.color = "#0F4C7A";
-    btnAg.style.borderBottomColor = "#0F4C7A";
+  const btnEnviar = document.getElementById('notif-aba-enviar');
 
-    btnEnviar.style.background = "#fff";
-    btnEnviar.style.color = "#94A8B8";
-    btnEnviar.style.borderBottomColor = "transparent";
+  const btnAg = document.getElementById('notif-aba-agendadas');
+
+  if (aba === 'enviar') {
+
+    enviar.style.display = 'block';
+
+    agendadas.style.display = 'none';
+
+    btnEnviar.style.background = '#EFF6FF'; btnEnviar.style.color = '#0F4C7A'; btnEnviar.style.borderBottomColor = '#0F4C7A';
+
+    btnAg.style.background = '#fff'; btnAg.style.color = '#94A8B8'; btnAg.style.borderBottomColor = 'transparent';
+
+  } else {
+
+    enviar.style.display = 'none';
+
+    agendadas.style.display = 'flex';
+
+    btnAg.style.background = '#EFF6FF'; btnAg.style.color = '#0F4C7A'; btnAg.style.borderBottomColor = '#0F4C7A';
+
+    btnEnviar.style.background = '#fff'; btnEnviar.style.color = '#94A8B8'; btnEnviar.style.borderBottomColor = 'transparent';
 
     carregarMensagensAgendadas();
 
-} }
+  }
+
+}
+
+
 
 // Dias selecionados para agendamento
 
-let _agDias = new Set([“seg”, “ter”, “qua”, “qui”, “sex”, “sab”,
-“dom”]);
+let _agDias = new Set(['seg','ter','qua','qui','sex','sab','dom']);
 
 let _agHorarios = new Set();
 
-let _agTipoRecorrencia = “semanal”;
+let _agTipoRecorrencia = 'semanal';
 
-function agTipoRecorrencia(tipo, btn) { _agTipoRecorrencia = tipo;
 
-const btnSemanal = document.getElementById(“ag-rec-semanal”);
 
-const btnIntervalo = document.getElementById(“ag-rec-intervalo”);
+function agTipoRecorrencia(tipo, btn) {
 
-const painelSemanal = document.getElementById(“ag-painel-semanal”);
+  _agTipoRecorrencia = tipo;
 
-const painelIntervalo = document.getElementById(“ag-painel-intervalo”);
+  const btnSemanal = document.getElementById('ag-rec-semanal');
 
-if (tipo === “semanal”) { btnSemanal.style.background = “#0F4C7A”;
-btnSemanal.style.color = “#fff”; btnSemanal.style.borderColor =
-“#0F4C7A”;
+  const btnIntervalo = document.getElementById('ag-rec-intervalo');
 
-    btnIntervalo.style.background = "#fff";
-    btnIntervalo.style.color = "#5A7A8F";
-    btnIntervalo.style.borderColor = "#D6E5EE";
+  const painelSemanal = document.getElementById('ag-painel-semanal');
 
-    painelSemanal.style.display = "block";
-    painelIntervalo.style.display = "none";
+  const painelIntervalo = document.getElementById('ag-painel-intervalo');
 
-} else { btnIntervalo.style.background = “#0F4C7A”;
-btnIntervalo.style.color = “#fff”; btnIntervalo.style.borderColor =
-“#0F4C7A”;
+  if (tipo === 'semanal') {
 
-    btnSemanal.style.background = "#fff";
-    btnSemanal.style.color = "#5A7A8F";
-    btnSemanal.style.borderColor = "#D6E5EE";
+    btnSemanal.style.background='#0F4C7A'; btnSemanal.style.color='#fff'; btnSemanal.style.borderColor='#0F4C7A';
 
-    painelIntervalo.style.display = "block";
-    painelSemanal.style.display = "none";
+    btnIntervalo.style.background='#fff'; btnIntervalo.style.color='#5A7A8F'; btnIntervalo.style.borderColor='#D6E5EE';
 
-} }
+    painelSemanal.style.display='block'; painelIntervalo.style.display='none';
 
-function agAdicionarHorario() { const input =
-document.getElementById(“ag-horario-input”);
+  } else {
 
-const horario = input?.value;
+    btnIntervalo.style.background='#0F4C7A'; btnIntervalo.style.color='#fff'; btnIntervalo.style.borderColor='#0F4C7A';
 
-if (!horario) { toast(“Selecione um horário”); return; }
+    btnSemanal.style.background='#fff'; btnSemanal.style.color='#5A7A8F'; btnSemanal.style.borderColor='#D6E5EE';
 
-if (_agHorarios.has(horario)) { toast(“Horário já adicionado”); return;
+    painelIntervalo.style.display='block'; painelSemanal.style.display='none';
+
+  }
+
 }
 
-_agHorarios.add(horario);
 
-renderizarHorarios();
 
-input.value = ““; }
+function agAdicionarHorario() {
 
-function agRemoverHorario(h) { _agHorarios.delete(h);
+  const input = document.getElementById('ag-horario-input');
 
-renderizarHorarios(); }
+  const horario = input?.value;
 
-function renderizarHorarios() { const lista =
-document.getElementById(“ag-horarios-lista”);
+  if (!horario) { toast('Selecione um horário'); return; }
 
-if (!lista) return;
+  if (_agHorarios.has(horario)) { toast('Horário já adicionado'); return; }
 
-const sorted = Array.from(_agHorarios).sort();
+  _agHorarios.add(horario);
 
-lista.innerHTML = sorted .map( (h) => `
+  renderizarHorarios();
+
+  input.value = '';
+
+}
+
+
+
+function agRemoverHorario(h) {
+
+  _agHorarios.delete(h);
+
+  renderizarHorarios();
+
+}
+
+
+
+function renderizarHorarios() {
+
+  const lista = document.getElementById('ag-horarios-lista');
+
+  if (!lista) return;
+
+  const sorted = Array.from(_agHorarios).sort();
+
+  lista.innerHTML = sorted.map(h => `
 
     <div style="display:flex;align-items:center;gap:4px;background:#EFF6FF;border-radius:6px;padding:4px 8px">
 
@@ -3886,107 +4068,119 @@ lista.innerHTML = sorted .map( (h) => `
 
       <button onclick="agRemoverHorario('${h}')" style="background:none;border:none;color:#EF4444;font-size:12px;cursor:pointer;padding:0;line-height:1">✕</button>
 
-    </div>`,
-    )
-    .join("");
+    </div>`).join('');
 
 }
 
-function previewAgImagem(input) { const file = input.files[0]; if
-(!file) return;
 
-const reader = new FileReader();
 
-reader.onload = (e) => { const thumb =
-document.getElementById(“ag-img-thumb”);
+function previewAgImagem(input) {
 
-    const preview = document.getElementById("ag-img-preview");
+  const file = input.files[0]; if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = e => {
+
+    const thumb = document.getElementById('ag-img-thumb');
+
+    const preview = document.getElementById('ag-img-preview');
 
     if (thumb) thumb.src = e.target.result;
 
-    if (preview) preview.style.display = "block";
+    if (preview) preview.style.display = 'block';
 
-};
+  };
 
-reader.readAsDataURL(file); }
+  reader.readAsDataURL(file);
 
-function removerAgImagem() { const input =
-document.getElementById(“ag-img-file”);
+}
 
-const preview = document.getElementById(“ag-img-preview”);
+function removerAgImagem() {
 
-if (input) input.value = ““;
+  const input = document.getElementById('ag-img-file');
 
-if (preview) preview.style.display = “none”; }
+  const preview = document.getElementById('ag-img-preview');
 
-async function salvarMensagemAgendada() { const titulo =
-document.getElementById(“ag-titulo”)?.value?.trim();
+  if (input) input.value = '';
 
-const mensagem = document.getElementById(“ag-msg”)?.value?.trim();
+  if (preview) preview.style.display = 'none';
 
-const destinatario = document.getElementById(“ag-dest”)?.value;
+}
 
-const imgFile = document.getElementById(“ag-img-file”)?.files?.[0];
 
-const intervalo_dias = parseInt(
-document.getElementById(“ag-intervalo”)?.value || “1”, );
 
-if (!mensagem) { toast(“Digite uma mensagem”); return; }
+async function salvarMensagemAgendada() {
 
-if (_agHorarios.size === 0) { toast(“Adicione pelo menos um horário”);
-return; }
+  const titulo = document.getElementById('ag-titulo')?.value?.trim();
 
-if (_agTipoRecorrencia === “semanal” && _agDias.size === 0) {
-toast(“Selecione pelo menos um dia”); return; }
+  const mensagem = document.getElementById('ag-msg')?.value?.trim();
 
-let imagem_url = ““;
+  const destinatario = document.getElementById('ag-dest')?.value;
 
-if (imgFile) { try { const form = new FormData(); form.append(“imagem”,
-imgFile);
+  const imgFile = document.getElementById('ag-img-file')?.files?.[0];
 
-      const r = await fetch(API + "/upload-imagem", {
-        method: "POST",
-        body: form,
-      });
+  const intervalo_dias = parseInt(document.getElementById('ag-intervalo')?.value || '1');
+
+
+
+  if (!mensagem) { toast('Digite uma mensagem'); return; }
+
+  if (_agHorarios.size === 0) { toast('Adicione pelo menos um horário'); return; }
+
+  if (_agTipoRecorrencia === 'semanal' && _agDias.size === 0) { toast('Selecione pelo menos um dia'); return; }
+
+
+
+  let imagem_url = '';
+
+  if (imgFile) {
+
+    try {
+
+      const form = new FormData(); form.append('imagem', imgFile);
+
+      const r = await fetch(API + '/upload-imagem', { method: 'POST', body: form });
 
       const d = await r.json();
 
       if (d.url) imagem_url = d.url;
-    } catch (e) {
-      toast("Erro ao enviar imagem");
-      return;
-    }
 
-}
+    } catch(e) { toast('Erro ao enviar imagem'); return; }
 
-try { await fetch(API + “/mensagem-agendada”, { method: “POST”,
+  }
 
-      headers: { "Content-Type": "application/json" },
+
+
+  try {
+
+    await fetch(API + '/mensagem-agendada', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
 
       body: JSON.stringify({
-        titulo,
-        mensagem,
-        imagem_url,
-        destinatario,
+
+        titulo, mensagem, imagem_url, destinatario,
 
         horarios: Array.from(_agHorarios).sort(),
 
         horario: Array.from(_agHorarios).sort()[0],
 
-        dias_semana:
-          _agTipoRecorrencia === "semanal"
-            ? Array.from(_agDias).join(",")
-            : "todos",
+        dias_semana: _agTipoRecorrencia === 'semanal' ? Array.from(_agDias).join(',') : 'todos',
 
         tipo_recorrencia: _agTipoRecorrencia,
 
-        intervalo_dias,
-      }),
+        intervalo_dias
+
+      })
+
     });
 
-    document.getElementById("ag-titulo").value = "";
+    document.getElementById('ag-titulo').value = '';
 
-    document.getElementById("ag-msg").value = "";
+    document.getElementById('ag-msg').value = '';
 
     _agHorarios.clear();
 
@@ -3994,84 +4188,93 @@ try { await fetch(API + “/mensagem-agendada”, { method: “POST”,
 
     removerAgImagem();
 
-    toast("✓ Mensagem agendada!");
+    toast('✓ Mensagem agendada!');
 
     carregarMensagensAgendadas();
 
-} catch (e) { toast(“Erro ao agendar”); } }
+  } catch(e) { toast('Erro ao agendar'); }
 
-async function carregarMensagensAgendadas() { const lista =
-document.getElementById(“ag-lista”);
+}
 
-if (!lista) return;
 
-try { const [rMsg, rMb] = await Promise.all([ fetch(API +
-“/mensagem-agendada”),
 
-      fetch(API + "/motoboys?todos=1&agrupado=1"),
+async function carregarMensagensAgendadas() {
+
+  const lista = document.getElementById('ag-lista');
+
+  if (!lista) return;
+
+  try {
+
+    const [rMsg, rMb] = await Promise.all([
+
+      fetch(API + '/mensagem-agendada'),
+
+      fetch(API + '/motoboys?todos=1&agrupado=1')
+
     ]);
 
     const dMsg = await rMsg.json();
 
-    const dMb = await rMb.json();
+    const dMb  = await rMb.json();
 
     const msgs = dMsg.mensagens || [];
 
     const totalMotoboys = (dMb.motoboys || []).length;
 
-    if (!msgs.length) {
-      lista.innerHTML =
-        '<div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Nenhuma mensagem agendada</div>';
-      return;
-    }
 
-    const labelDias = (ds) => {
-      if (!ds || ds === "seg,ter,qua,qui,sex,sab,dom") return "Todos os dias";
 
-      return ds
-        .split(",")
-        .map((d) => d.charAt(0).toUpperCase() + d.slice(1))
-        .join(", ");
+    if (!msgs.length) { lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Nenhuma mensagem agendada</div>'; return; }
+
+
+
+    const labelDias = ds => {
+
+      if (!ds || ds === 'seg,ter,qua,qui,sex,sab,dom') return 'Todos os dias';
+
+      return ds.split(',').map(d => d.charAt(0).toUpperCase()+d.slice(1)).join(', ');
+
     };
+
+
 
     // Busca leituras de todas as mensagens disparadas hoje
 
     const leituras = {};
 
-    await Promise.all(
-      msgs
-        .filter((m) => m.ultima_execucao)
-        .map(async (m) => {
-          try {
-            const r = await fetch(
-              API + "/mensagem-agendada-leitura?id=" + m.id,
-            );
+    await Promise.all(msgs.filter(m => m.ultima_execucao).map(async m => {
 
-            const d = await r.json();
+      try {
 
-            leituras[m.id] = d.leituras || [];
-          } catch (e) {
-            leituras[m.id] = [];
-          }
-        }),
-    );
+        const r = await fetch(API + '/mensagem-agendada-leitura?id=' + m.id);
 
-    lista.innerHTML = msgs
-      .map((m) => {
-        const lidas = leituras[m.id] || [];
+        const d = await r.json();
 
-        const qtdLidas = lidas.length;
+        leituras[m.id] = d.leituras || [];
 
-        const total = m.destinatario === "todos" ? totalMotoboys : 1;
+      } catch(e) { leituras[m.id] = []; }
 
-        const pct = total > 0 ? Math.round((qtdLidas / total) * 100) : 0;
+    }));
 
-        const corPct =
-          pct === 100 ? "#0F9B78" : pct > 0 ? "#F59E0B" : "#94A8B8";
 
-        const foiDisparada = !!m.ultima_execucao;
 
-        return `
+    lista.innerHTML = msgs.map(m => {
+
+      const lidas = leituras[m.id] || [];
+
+      const qtdLidas = lidas.length;
+
+      const total = m.destinatario === 'todos' ? totalMotoboys : 1;
+
+      const pct = total > 0 ? Math.round(qtdLidas/total*100) : 0;
+
+      const corPct = pct === 100 ? '#0F9B78' : pct > 0 ? '#F59E0B' : '#94A8B8';
+
+      const foiDisparada = !!m.ultima_execucao;
+
+
+
+      return `
 
       <div style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid #EBF1F5">
 
@@ -4079,17 +4282,17 @@ try { const [rMsg, rMb] = await Promise.all([ fetch(API +
 
           <div style="flex:1;min-width:0">
 
-            ${m.titulo ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:2px">${m.titulo}</div>` : ""}
+            ${m.titulo ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:2px">${m.titulo}</div>` : ''}
 
             <div style="font-size:12px;color:#0F2940;line-height:1.4;margin-bottom:4px">${m.mensagem}</div>
 
-            ${m.imagem_url ? `<img src="${m.imagem_url}" style="max-width:100%;border-radius:6px;max-height:80px;object-fit:cover;margin-bottom:4px"/>` : ""}
+            ${m.imagem_url ? `<img src="${m.imagem_url}" style="max-width:100%;border-radius:6px;max-height:80px;object-fit:cover;margin-bottom:4px"/>` : ''}
 
             <div style="font-size:10px;color:#94A8B8">
 
-              ⏰ ${(m.horarios || m.horario || "").split(",").join(" · ")} · 
+              ⏰ ${(m.horarios || m.horario || '').split(',').join(' · ')} · 
 
-              ${m.tipo_recorrencia === "intervalo" ? `A cada ${m.intervalo_dias} dia(s)` : labelDias(m.dias_semana)} · 
+              ${m.tipo_recorrencia === 'intervalo' ? `A cada ${m.intervalo_dias} dia(s)` : labelDias(m.dias_semana)} · 
 
               ${labelDest(m.destinatario)}
 
@@ -4099,7 +4302,7 @@ try { const [rMsg, rMb] = await Promise.all([ fetch(API +
 
           <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
 
-            <button onclick="toggleMensagemAgendada(${m.id},${m.ativa})" style="background:none;border:1.5px solid #D6E5EE;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;color:${m.ativa ? "#0F9B78" : "#94A8B8"}">${m.ativa ? "✓ Ativa" : "Pausada"}</button>
+            <button onclick="toggleMensagemAgendada(${m.id},${m.ativa})" style="background:none;border:1.5px solid #D6E5EE;border-radius:6px;padding:3px 7px;font-size:11px;cursor:pointer;color:${m.ativa?'#0F9B78':'#94A8B8'}">${m.ativa?'✓ Ativa':'Pausada'}</button>
 
             <button onclick="deletarMensagemAgendada(${m.id})" style="background:none;border:none;color:#EF4444;font-size:13px;cursor:pointer">✕</button>
 
@@ -4107,9 +4310,7 @@ try { const [rMsg, rMb] = await Promise.all([ fetch(API +
 
         </div>
 
-        ${
-          foiDisparada
-            ? `
+        ${foiDisparada ? `
 
         <div style="margin-top:8px">
 
@@ -4125,170 +4326,198 @@ try { const [rMsg, rMb] = await Promise.all([ fetch(API +
 
           </div>
 
-          ${lidas.length ? `<div style="font-size:10px;color:#94A8B8">✓ ${lidas.map((l) => l.nome || l.telefone).join(", ")}</div>` : ""}
+          ${lidas.length ? `<div style="font-size:10px;color:#94A8B8">✓ ${lidas.map(l => l.nome || l.telefone).join(', ')}</div>` : ''}
 
-        </div>`
-            : `<div style="margin-top:6px;font-size:10px;color:#94A8B8">Ainda não disparada hoje</div>`
-        }
+        </div>` : `<div style="margin-top:6px;font-size:10px;color:#94A8B8">Ainda não disparada hoje</div>`}
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) { lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#EF4444;font-size:12px">Erro ao carregar</div>'; }
 
-’; } }
+}
 
-async function toggleMensagemAgendada(id, ativa) { try { await
-fetch(API + “/mensagem-agendada”, { method: “PUT”, headers: {
-“Content-Type”: “application/json” }, body: JSON.stringify({ id, ativa:
-!ativa }), });
 
-    carregarMensagensAgendadas();
 
-} catch (e) { toast(“Erro”); } }
+async function toggleMensagemAgendada(id, ativa) {
 
-async function deletarMensagemAgendada(id) { if (!confirm(“Remover esta
-mensagem agendada?”)) return;
+  try {
 
-try { await fetch(API + “/mensagem-agendada”, { method: “DELETE”,
-headers: { “Content-Type”: “application/json” }, body: JSON.stringify({
-id }), });
-
-    toast("✓ Removida");
+    await fetch(API + '/mensagem-agendada', { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id, ativa: !ativa }) });
 
     carregarMensagensAgendadas();
 
-} catch (e) { toast(“Erro”); } }
+  } catch(e) { toast('Erro'); }
 
-function previewNotifImagem(input) { const file = input.files[0];
+}
 
-if (!file) return;
 
-const reader = new FileReader();
 
-reader.onload = (e) => { const thumb =
-document.getElementById(“notif-img-thumb”);
+async function deletarMensagemAgendada(id) {
 
-    const preview = document.getElementById("notif-img-preview");
+  if (!confirm('Remover esta mensagem agendada?')) return;
+
+  try {
+
+    await fetch(API + '/mensagem-agendada', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ id }) });
+
+    toast('✓ Removida');
+
+    carregarMensagensAgendadas();
+
+  } catch(e) { toast('Erro'); }
+
+}
+
+
+
+function previewNotifImagem(input) {
+
+  const file = input.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = e => {
+
+    const thumb = document.getElementById('notif-img-thumb');
+
+    const preview = document.getElementById('notif-img-preview');
 
     if (thumb) thumb.src = e.target.result;
 
-    if (preview) preview.style.display = "block";
+    if (preview) preview.style.display = 'block';
 
-};
+  };
 
-reader.readAsDataURL(file); }
+  reader.readAsDataURL(file);
 
-function removerNotifImagem() { const input =
-document.getElementById(“notif-img-file”);
+}
 
-const preview = document.getElementById(“notif-img-preview”);
 
-if (input) input.value = ““;
 
-if (preview) preview.style.display = “none”; }
+function removerNotifImagem() {
 
-async function enviarNotificacao() { const titulo =
-document.getElementById(“notif-titulo”)?.value?.trim();
+  const input = document.getElementById('notif-img-file');
 
-const mensagem = document.getElementById(“notif-msg”)?.value?.trim();
+  const preview = document.getElementById('notif-img-preview');
 
-const destinatario = document.getElementById(“notif-dest”)?.value;
+  if (input) input.value = '';
 
-const imgFile = document.getElementById(“notif-img-file”)?.files?.[0];
+  if (preview) preview.style.display = 'none';
 
-if (!mensagem) { toast(“Digite uma mensagem”); return; }
+}
 
-let imagem_url = ““;
 
-// Upload da imagem se houver
 
-if (imgFile) { try { const form = new FormData();
+async function enviarNotificacao() {
 
-      form.append("imagem", imgFile);
+  const titulo = document.getElementById('notif-titulo')?.value?.trim();
 
-      const r = await fetch(API + "/upload-imagem", {
-        method: "POST",
-        body: form,
-      });
+  const mensagem = document.getElementById('notif-msg')?.value?.trim();
+
+  const destinatario = document.getElementById('notif-dest')?.value;
+
+  const imgFile = document.getElementById('notif-img-file')?.files?.[0];
+
+  if (!mensagem) { toast('Digite uma mensagem'); return; }
+
+
+
+  let imagem_url = '';
+
+
+
+  // Upload da imagem se houver
+
+  if (imgFile) {
+
+    try {
+
+      const form = new FormData();
+
+      form.append('imagem', imgFile);
+
+      const r = await fetch(API + '/upload-imagem', { method: 'POST', body: form });
 
       const d = await r.json();
 
       if (d.url) imagem_url = d.url;
-    } catch (e) {
-      toast("Erro ao enviar imagem");
-      return;
-    }
 
-}
+    } catch(e) { toast('Erro ao enviar imagem'); return; }
 
-try { // Salva no D1 (para polling no app)
+  }
 
-    await fetch(API + "/notificacao-motoboy", {
-      method: "POST",
 
-      headers: { "Content-Type": "application/json" },
 
-      body: JSON.stringify({
-        titulo,
-        mensagem,
-        imagem_url,
-        destinatario,
-        enviada_por: "admin",
-      }),
+  try {
+
+    // Salva no D1 (para polling no app)
+
+    await fetch(API + '/notificacao-motoboy', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ titulo, mensagem, imagem_url, destinatario, enviada_por: 'admin' })
+
     });
 
     // Dispara via FCM (notificação nativa mesmo com app fechado)
 
-    const fcmRes = await fetch(API + "/disparar-fcm", {
-      method: "POST",
+    const fcmRes = await fetch(API + '/disparar-fcm', {
 
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
 
-      body: JSON.stringify({ titulo, mensagem, imagem_url, destinatario }),
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ titulo, mensagem, imagem_url, destinatario })
+
     });
 
     const fcmData = await fcmRes.json();
 
-    document.getElementById("notif-titulo").value = "";
+    document.getElementById('notif-titulo').value = '';
 
-    document.getElementById("notif-msg").value = "";
+    document.getElementById('notif-msg').value = '';
 
     removerNotifImagem();
 
-    toast(
-      "✓ Notificação enviada! FCM: " +
-        (fcmData.enviados || 0) +
-        " dispositivos",
-    );
+    toast('✓ Notificação enviada! FCM: ' + (fcmData.enviados || 0) + ' dispositivos');
 
     carregarNotificacoes();
 
-} catch (e) { toast(“Erro ao enviar”); } }
+  } catch(e) { toast('Erro ao enviar'); }
+
+}
+
+
 
 // ── LABEL DESTINATÁRIO (global) ──────────────────────────────
 
-const labelDest = (d) => d === “todos” ? “Todos” : d === “grupo_clt” ?
-“🔵 CLT” : d === “grupo_mei” ? “🟡 MEI” : d;
+const labelDest = d => d === 'todos' ? 'Todos' : d === 'grupo_clt' ? '🔵 CLT' : d === 'grupo_mei' ? '🟡 MEI' : d;
 
-async function carregarNotificacoes() { const lista =
-document.getElementById(“notif-lista”);
 
-if (!lista) return;
 
-lista.innerHTML = ’
+async function carregarNotificacoes() {
 
-Carregando…
+  const lista = document.getElementById('notif-lista');
 
-’;
+  if (!lista) return;
 
-try { const [rNotif, rMb] = await Promise.all([ fetch(API +
-“/notificacao-motoboy?admin=1”),
+  lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#94A8B8;font-size:12px">Carregando...</div>';
 
-      fetch(API + "/motoboys?todos=1&agrupado=1"),
+  try {
+
+    const [rNotif, rMb] = await Promise.all([
+
+      fetch(API + '/notificacao-motoboy?admin=1'),
+
+      fetch(API + '/motoboys?todos=1&agrupado=1')
+
     ]);
 
     const dNotif = await rNotif.json();
@@ -4299,46 +4528,47 @@ try { const [rNotif, rMb] = await Promise.all([ fetch(API +
 
     const notifs = dNotif.notificacoes || [];
 
+
+
     if (!notifs.length) {
-      lista.innerHTML =
-        '<div style="text-align:center;padding:1.5rem;color:#94A8B8;font-size:12px">Nenhuma notificação enviada hoje</div>';
+
+      lista.innerHTML = '<div style="text-align:center;padding:1.5rem;color:#94A8B8;font-size:12px">Nenhuma notificação enviada hoje</div>';
 
       return;
+
     }
 
-    lista.innerHTML = notifs
-      .map((n) => {
-        let lidas = [];
 
-        try {
-          lidas = JSON.parse(n.lida_por || "[]");
-        } catch (e) {}
 
-        const qtdLidas = lidas.length;
+    lista.innerHTML = notifs.map(n => {
 
-        const total = n.destinatario === "todos" ? totalMotoboys : 1;
+      let lidas = [];
 
-        const hora = new Date(n.timestamp).toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
+      try { lidas = JSON.parse(n.lida_por || '[]'); } catch(e) {}
 
-        const pct = total > 0 ? Math.round((qtdLidas / total) * 100) : 0;
+      const qtdLidas = lidas.length;
 
-        const corPct =
-          pct === 100 ? "#0F9B78" : pct > 0 ? "#F59E0B" : "#94A8B8";
+      const total = n.destinatario === 'todos' ? totalMotoboys : 1;
 
-        return `<div style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid #EBF1F5">
+      const hora = new Date(n.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+      const pct = total > 0 ? Math.round(qtdLidas/total*100) : 0;
+
+      const corPct = pct === 100 ? '#0F9B78' : pct > 0 ? '#F59E0B' : '#94A8B8';
+
+
+
+      return `<div style="background:#F8FBFD;border-radius:10px;padding:10px 12px;margin-bottom:8px;border:1px solid #EBF1F5">
 
         <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:6px">
 
           <div style="flex:1;min-width:0">
 
-            ${n.titulo ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:2px">${n.titulo}</div>` : ""}
+            ${n.titulo ? `<div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:2px">${n.titulo}</div>` : ''}
 
             <div style="font-size:12px;color:#0F2940;line-height:1.4">${n.mensagem}</div>
 
-            ${n.imagem_url ? `<img src="${n.imagem_url}" style="margin-top:6px;max-width:100%;border-radius:6px;max-height:120px;object-fit:cover"/>` : ""}
+            ${n.imagem_url ? `<img src="${n.imagem_url}" style="margin-top:6px;max-width:100%;border-radius:6px;max-height:120px;object-fit:cover"/>` : ''}
 
           </div>
 
@@ -4361,331 +4591,386 @@ try { const [rNotif, rMb] = await Promise.all([ fetch(API +
         </div>
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) {
 
-’; } }
+    lista.innerHTML = '<div style="text-align:center;padding:1rem;color:#EF4444;font-size:12px">Erro ao carregar</div>';
 
-async function deletarNotificacao(id) { if (!confirm(“Remover esta
-notificação?”)) return;
+  }
 
-try { await fetch(API + “/notificacao-motoboy”, { method: “DELETE”,
-headers: { “Content-Type”: “application/json” }, body: JSON.stringify({
-id }), });
+}
 
-    toast("✓ Removida");
+
+
+async function deletarNotificacao(id) {
+
+  if (!confirm('Remover esta notificação?')) return;
+
+  try {
+
+    await fetch(API + '/notificacao-motoboy', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+
+    toast('✓ Removida');
 
     carregarNotificacoes();
 
-} catch (e) { toast(“Erro ao remover”); } }
+  } catch(e) { toast('Erro ao remover'); }
+
+}
+
+
 
 // ── MANUTENÇÃO ────────────────────────────────────────────────
 
 let _manutencaoAtiva = false;
 
-async function verificarStatusManutencao() { try { const r = await
-fetch(API + “/manutencao”);
+
+
+async function verificarStatusManutencao() {
+
+  try {
+
+    const r = await fetch(API + '/manutencao');
 
     const d = await r.json();
 
     _manutencaoAtiva = d.ativo;
 
-    const btn = document.getElementById("btn-manutencao-fab");
+    const btn = document.getElementById('btn-manutencao-fab');
 
     if (btn) {
+
       btn.style.background = _manutencaoAtiva
-        ? "linear-gradient(135deg,#EF4444,#DC2626)"
-        : "linear-gradient(135deg,#F59E0B,#D97706)";
 
-      btn.title = _manutencaoAtiva
-        ? "🔧 Manutenção ATIVA — clique para desligar"
-        : "Ativar modo manutenção";
+        ? 'linear-gradient(135deg,#EF4444,#DC2626)'
 
-      btn.textContent = _manutencaoAtiva ? "🚨" : "🔧";
+        : 'linear-gradient(135deg,#F59E0B,#D97706)';
+
+      btn.title = _manutencaoAtiva ? '🔧 Manutenção ATIVA — clique para desligar' : 'Ativar modo manutenção';
+
+      btn.textContent = _manutencaoAtiva ? '🚨' : '🔧';
+
     }
 
-} catch (e) {} }
+  } catch(e) {}
 
-async function toggleManutencao() { const novoStatus =
-!_manutencaoAtiva;
+}
 
-if (novoStatus) { const msg = prompt( “Mensagem para os motoboys (deixe
-em branco para padrão):”, “Sistema em manutenção. Voltamos em breve!”,
-);
+
+
+async function toggleManutencao() {
+
+  const novoStatus = !_manutencaoAtiva;
+
+  if (novoStatus) {
+
+    const msg = prompt('Mensagem para os motoboys (deixe em branco para padrão):', 'Sistema em manutenção. Voltamos em breve!');
 
     if (msg === null) return; // cancelou
 
-    const testersStr = prompt(
-      "Telefone(s) que continuam com acesso (testers) — separados por vírgula:",
-      "",
-    );
+    const testersStr = prompt('Telefone(s) que continuam com acesso (testers) — separados por vírgula:', '');
 
-    const testers = testersStr
-      ? testersStr
-          .split(",")
-          .map((t) => t.replace(/\D/g, "").trim())
-          .filter((t) => t)
-      : [];
+    const testers = testersStr ? testersStr.split(',').map(t => t.replace(/\D/g,'').trim()).filter(t => t) : [];
 
     try {
-      await fetch(API + "/manutencao", {
-        method: "POST",
 
-        headers: { "Content-Type": "application/json" },
+      await fetch(API + '/manutencao', {
 
-        body: JSON.stringify({
-          ativo: true,
-          mensagem: msg || "Sistema em manutenção. Voltamos em breve!",
-          testers,
-        }),
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ ativo: true, mensagem: msg || 'Sistema em manutenção. Voltamos em breve!', testers })
+
       });
 
       _manutencaoAtiva = true;
 
-      toast(
-        "🔧 Manutenção ativada" +
-          (testers.length ? ` · ${testers.length} tester(s) liberado(s)` : ""),
-      );
-    } catch (e) {
-      toast("Erro ao ativar manutenção");
-    }
+      toast('🔧 Manutenção ativada' + (testers.length ? ` · ${testers.length} tester(s) liberado(s)` : ''));
 
-} else { if ( !confirm( “Desligar modo manutenção? Os motoboys poderão
-acessar o app novamente.”, ) ) return;
+    } catch(e) { toast('Erro ao ativar manutenção'); }
+
+  } else {
+
+    if (!confirm('Desligar modo manutenção? Os motoboys poderão acessar o app novamente.')) return;
 
     try {
-      await fetch(API + "/manutencao", {
-        method: "POST",
 
-        headers: { "Content-Type": "application/json" },
+      await fetch(API + '/manutencao', {
 
-        body: JSON.stringify({ ativo: false }),
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ ativo: false })
+
       });
 
       _manutencaoAtiva = false;
 
-      toast("✓ Sistema online — motoboys podem acessar novamente");
-    } catch (e) {
-      toast("Erro ao desligar manutenção");
-    }
+      toast('✓ Sistema online — motoboys podem acessar novamente');
+
+    } catch(e) { toast('Erro ao desligar manutenção'); }
+
+  }
+
+  verificarStatusManutencao();
 
 }
 
-verificarStatusManutencao(); }
+
 
 // Verifica status ao carregar
 
 setTimeout(verificarStatusManutencao, 1000);
 
-// ── POPOVER DE ROTA (position:fixed para não ser cortado pelo
-overflow) ───
+
+
+// ── POPOVER DE ROTA (position:fixed para não ser cortado pelo overflow) ───
 
 let _popoverTimer = null;
 
-document.addEventListener(“mouseover”, (e) => { const card =
-e.target.closest(“.rota-card”);
+document.addEventListener('mouseover', e => {
 
-if (!card) return;
+  const card = e.target.closest('.rota-card');
 
-const popover = card.querySelector(“.rota-popover”);
+  if (!card) return;
 
-if (!popover) return;
+  const popover = card.querySelector('.rota-popover');
 
-clearTimeout(_popoverTimer);
+  if (!popover) return;
 
-// Posiciona o popover fixo em relação ao card
+  clearTimeout(_popoverTimer);
 
-const rect = card.getBoundingClientRect();
+  // Posiciona o popover fixo em relação ao card
 
-const spaceRight = window.innerWidth - rect.right;
+  const rect = card.getBoundingClientRect();
 
-const spaceLeft = rect.left;
+  const spaceRight = window.innerWidth - rect.right;
 
-if (spaceRight >= 296) { popover.style.left = rect.right + 8 + “px”;
+  const spaceLeft  = rect.left;
 
-    popover.style.right = "auto";
+  if (spaceRight >= 296) {
 
-} else { popover.style.right = window.innerWidth - rect.left + 8 + “px”;
+    popover.style.left = (rect.right + 8) + 'px';
 
-    popover.style.left = "auto";
+    popover.style.right = 'auto';
 
-}
+  } else {
 
-const topPos = Math.min(rect.top, window.innerHeight - 420);
+    popover.style.right = (window.innerWidth - rect.left + 8) + 'px';
 
-popover.style.top = Math.max(8, topPos) + “px”;
+    popover.style.left = 'auto';
 
-popover.style.display = “block”; });
+  }
 
-document.addEventListener(“mouseout”, (e) => { const card =
-e.target.closest(“.rota-card”);
+  const topPos = Math.min(rect.top, window.innerHeight - 420);
 
-if (!card) return;
+  popover.style.top  = Math.max(8, topPos) + 'px';
 
-const popover = card.querySelector(“.rota-popover”);
+  popover.style.display = 'block';
 
-if (!popover) return;
-
-// Pequeno delay para não fechar ao mover para o popover
-
-_popoverTimer = setTimeout(() => { popover.style.display = “none”; },
-120); });
-
-document.addEventListener(“mouseover”, (e) => { if
-(e.target.closest(“.rota-popover”)) clearTimeout(_popoverTimer); });
-
-document.addEventListener(“mouseout”, (e) => { const pop =
-e.target.closest(“.rota-popover”);
-
-if (!pop) return;
-
-_popoverTimer = setTimeout(() => { pop.style.display = “none”; }, 120);
 });
 
-function iniciarAutoRefresh() { pararAutoRefresh();
 
-autoRefreshInterval = setInterval(() => { if (typeof carregarPainel ===
-“function”) carregarPainel(true); }, 30000); }
 
-function pararAutoRefresh() { if (autoRefreshInterval) {
-clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+document.addEventListener('mouseout', e => {
 
-if (typeof pararAutoRefreshMapa === “function”) pararAutoRefreshMapa();
+  const card = e.target.closest('.rota-card');
+
+  if (!card) return;
+
+  const popover = card.querySelector('.rota-popover');
+
+  if (!popover) return;
+
+  // Pequeno delay para não fechar ao mover para o popover
+
+  _popoverTimer = setTimeout(() => { popover.style.display = 'none'; }, 120);
+
+});
+
+
+
+document.addEventListener('mouseover', e => {
+
+  if (e.target.closest('.rota-popover')) clearTimeout(_popoverTimer);
+
+});
+
+document.addEventListener('mouseout', e => {
+
+  const pop = e.target.closest('.rota-popover');
+
+  if (!pop) return;
+
+  _popoverTimer = setTimeout(() => { pop.style.display = 'none'; }, 120);
+
+});
+
+
+
+function iniciarAutoRefresh() {
+
+  pararAutoRefresh();
+
+  autoRefreshInterval = setInterval(() => {
+
+    if (typeof carregarPainel === 'function') carregarPainel(true);
+
+  }, 30000);
+
 }
 
-function atualizarBreadcrumb(id) { const bc =
-document.getElementById(“tb-breadcrumb”);
+function pararAutoRefresh() {
 
-if (bc && BREADCRUMBS[id]) bc.innerHTML = BREADCRUMBS[id]; }
+  if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
 
-function atualizarTopbarData() { const el =
-document.getElementById(“topbar-data”);
+  if (typeof pararAutoRefreshMapa === 'function') pararAutoRefreshMapa();
 
-if (!el) return;
+}
 
-const d = new Date();
+function atualizarBreadcrumb(id) {
 
-const dias = [“Dom”, “Seg”, “Ter”, “Qua”, “Qui”, “Sex”, “Sáb”];
+  const bc = document.getElementById('tb-breadcrumb');
 
-el.textContent = dias[d.getDay()] + “,” + d.toLocaleDateString(“pt-BR”);
+  if (bc && BREADCRUMBS[id]) bc.innerHTML = BREADCRUMBS[id];
+
+}
+
+function atualizarTopbarData() {
+
+  const el = document.getElementById('topbar-data');
+
+  if (!el) return;
+
+  const d = new Date();
+
+  const dias = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+  el.textContent = dias[d.getDay()] + ', ' + d.toLocaleDateString('pt-BR');
+
 }
 
 // ── REVERTER COLETA ──────────────────────────────────────
 
 let reverterClienteData = null;
 
-async function buscarClienteReverter() { const num =
-document.getElementById(“reverter-num-cliente”).value.trim();
+async function buscarClienteReverter() {
 
-const msg = document.getElementById(“reverter-msg”);
+  const num = document.getElementById('reverter-num-cliente').value.trim();
 
-const resultado = document.getElementById(“reverter-resultado”);
+  const msg = document.getElementById('reverter-msg');
 
-const btn = document.getElementById(“reverter-btn”);
+  const resultado = document.getElementById('reverter-resultado');
 
-msg.className = “msg”; msg.textContent = ““;
+  const btn = document.getElementById('reverter-btn');
 
-if (!num) return;
+  msg.className = 'msg'; msg.textContent = '';
 
-msg.className = “msg loading”; msg.textContent = “Buscando…”;
+  if (!num) return;
 
-try { const r = await fetch( API + “/buscar-cliente?num=” +
-encodeURIComponent(num), );
+  msg.className = 'msg loading'; msg.textContent = 'Buscando...';
+
+  try {
+
+    const r = await fetch(API + '/buscar-cliente?num=' + encodeURIComponent(num));
 
     const d = await r.json();
 
-    if (d.status === "ok" && d.cliente) {
+    if (d.status === 'ok' && d.cliente) {
+
       reverterClienteData = d.cliente;
 
-      document.getElementById("reverter-rc-nome").textContent =
-        d.cliente.nome || "—";
+      document.getElementById('reverter-rc-nome').textContent = d.cliente.nome || '—';
 
-      document.getElementById("reverter-rc-coletor").textContent =
-        (d.cliente.biocondutor || "—") +
-        (d.cliente.rota ? " · " + d.cliente.rota : "");
+      document.getElementById('reverter-rc-coletor').textContent = (d.cliente.biocondutor || '—') + (d.cliente.rota ? ' · ' + d.cliente.rota : '');
 
-      document.getElementById("reverter-rc-horario").textContent =
-        d.cliente.hora_confirmacao || "—";
+      document.getElementById('reverter-rc-horario').textContent = d.cliente.hora_confirmacao || '—';
 
-      const stEl = document.getElementById("reverter-rc-status");
+      const stEl = document.getElementById('reverter-rc-status');
 
-      const prod = d.cliente.resposta === "produtivo";
+      const prod = d.cliente.resposta === 'produtivo';
 
-      stEl.textContent = prod ? "Produtivo" : "Improdutivo";
+      stEl.textContent = prod ? 'Produtivo' : 'Improdutivo';
 
-      stEl.className = "rc-badge " + (prod ? "rc-prod" : "rc-improd");
+      stEl.className = 'rc-badge ' + (prod ? 'rc-prod' : 'rc-improd');
 
-      resultado.classList.add("show");
+      resultado.classList.add('show');
 
-      btn.style.display = "flex";
+      btn.style.display = 'flex';
 
-      msg.className = "msg";
-      msg.textContent = "";
+      msg.className = 'msg'; msg.textContent = '';
+
     } else {
-      resultado.classList.remove("show");
 
-      btn.style.display = "none";
+      resultado.classList.remove('show');
 
-      msg.className = "msg error";
-      msg.textContent = "⚠️ Cliente não encontrado";
+      btn.style.display = 'none';
+
+      msg.className = 'msg error'; msg.textContent = '⚠️ Cliente não encontrado';
+
     }
 
-} catch (e) { msg.className = “msg error”; msg.textContent = “Erro de
-conexão”; } }
+  } catch(e) { msg.className = 'msg error'; msg.textContent = 'Erro de conexão'; }
 
-async function confirmarReverterColeta() { if (!reverterClienteData)
-return;
+}
 
-const msg = document.getElementById(“reverter-msg”);
+async function confirmarReverterColeta() {
 
-const btn = document.getElementById(“reverter-btn”);
+  if (!reverterClienteData) return;
 
-btn.disabled = true;
+  const msg = document.getElementById('reverter-msg');
 
-msg.className = “msg loading”; msg.textContent = “Revertendo…”;
+  const btn = document.getElementById('reverter-btn');
 
-try { const r = await fetch(API + “/reverter-coleta”, { method: “POST”,
+  btn.disabled = true;
 
-      headers: { "Content-Type": "application/json" },
+  msg.className = 'msg loading'; msg.textContent = 'Revertendo...';
 
-      body: JSON.stringify({
-        num_cliente: reverterClienteData.num_cliente || reverterClienteData.id,
-      }),
+  try {
+
+    const r = await fetch(API + '/reverter-coleta', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ num_cliente: reverterClienteData.num_cliente || reverterClienteData.id })
+
     });
 
     const d = await r.json();
 
-    if (d.status === "ok") {
-      msg.className = "msg success";
-      msg.textContent = "✓ Coleta revertida para Pendente!";
+    if (d.status === 'ok') {
 
-      document.getElementById("reverter-resultado").classList.remove("show");
+      msg.className = 'msg success'; msg.textContent = '✓ Coleta revertida para Pendente!';
 
-      btn.style.display = "none";
+      document.getElementById('reverter-resultado').classList.remove('show');
 
-      document.getElementById("reverter-num-cliente").value = "";
+      btn.style.display = 'none';
+
+      document.getElementById('reverter-num-cliente').value = '';
 
       reverterClienteData = null;
 
-      setTimeout(() => {
-        msg.className = "msg";
-        msg.textContent = "";
-      }, 3000);
+      setTimeout(() => { msg.className = 'msg'; msg.textContent = ''; }, 3000);
 
-      if (typeof carregarPainel === "function") carregarPainel();
+      if (typeof carregarPainel === 'function') carregarPainel();
+
     } else {
-      msg.className = "msg error";
-      msg.textContent = "Erro ao reverter";
+
+      msg.className = 'msg error'; msg.textContent = 'Erro ao reverter';
 
       btn.disabled = false;
+
     }
 
-} catch (e) { msg.className = “msg error”; msg.textContent = “Erro de
-conexão”; btn.disabled = false; } }
+  } catch(e) { msg.className = 'msg error'; msg.textContent = 'Erro de conexão'; btn.disabled = false; }
+
+}
 
 // ── MINI MAPA NO PAINEL ──────────────────────────────────
 
@@ -4693,37 +4978,39 @@ let miniMapaInst = null;
 
 let miniMapaMarkers = {};
 
-const MINI_CORES = [ “#0F9B78”, “#8B5CF6”, “#1E9FD9”, “#F59E0B”,
-“#DC2626”, “#0F4C7A”,];
+const MINI_CORES = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A'];
 
-function iniciarMiniMapa() { const el =
-document.getElementById(“mini-mapa-painel”);
+function iniciarMiniMapa() {
 
-if (!el) return;
+  const el = document.getElementById('mini-mapa-painel');
 
-if (typeof L === “undefined”) { setTimeout(iniciarMiniMapa, 500);
-return; }
+  if (!el) return;
 
-if (!miniMapaInst) { miniMapaInst = L.map(“mini-mapa-painel”, {
-zoomControl: false, dragging: false, scrollWheelZoom: false, })
+  if (typeof L === 'undefined') { setTimeout(iniciarMiniMapa, 500); return; }
 
-      .setView([-23.5505, -46.633], 13);
+  if (!miniMapaInst) {
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",
-      {
-        attribution: "© OpenStreetMap © CARTO",
-        maxZoom: 19,
-        subdomains: "abcd",
-      },
-    ).addTo(miniMapaInst);
+    miniMapaInst = L.map('mini-mapa-painel', { zoomControl:false, dragging:false, scrollWheelZoom:false })
+
+      .setView([-23.5505, -46.6330], 13);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+
+      attribution: '© OpenStreetMap © CARTO', maxZoom:19, subdomains:'abcd'
+
+    }).addTo(miniMapaInst);
+
+  }
+
+  carregarMiniMapa();
 
 }
 
-carregarMiniMapa(); }
+async function carregarMiniMapa() {
 
-async function carregarMiniMapa() { try { const r = await fetch(API +
-“/localizacao”);
+  try {
+
+    const r = await fetch(API + '/localizacao');
 
     const d = await r.json();
 
@@ -4731,144 +5018,157 @@ async function carregarMiniMapa() { try { const r = await fetch(API +
 
     const agora = Date.now();
 
-    const ONLINE_LIM = 5 * 60 * 1000;
+    const ONLINE_LIM = 5*60*1000;
 
-    const IDLE_LIM = 10 * 60 * 1000;
+    const IDLE_LIM = 10*60*1000;
 
-    const online = locs.filter((l) => agora - l.timestamp < ONLINE_LIM).length;
+    const online = locs.filter(l => agora-l.timestamp < ONLINE_LIM).length;
 
-    const idle = locs.filter(
-      (l) =>
-        agora - l.timestamp >= ONLINE_LIM && agora - l.timestamp < IDLE_LIM,
-    ).length;
+    const idle   = locs.filter(l => agora-l.timestamp >= ONLINE_LIM && agora-l.timestamp < IDLE_LIM).length;
 
-    const elOn = document.getElementById("mini-mapa-online");
+    const elOn = document.getElementById('mini-mapa-online');
 
-    const elIdle = document.getElementById("mini-mapa-idle");
+    const elIdle = document.getElementById('mini-mapa-idle');
 
-    const elOff = document.getElementById("mini-mapa-off");
+    const elOff = document.getElementById('mini-mapa-off');
 
-    if (elOn) elOn.textContent = online;
+    if(elOn) elOn.textContent = online;
 
-    if (elIdle) elIdle.textContent = idle;
+    if(elIdle) elIdle.textContent = idle;
 
     try {
-      const r2 = await fetch(API + "/motoboys?todos=1&agrupado=1");
+
+      const r2 = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
       const d2 = await r2.json();
 
-      const total = new Set((d2.motoboys || []).map((m) => m.nome)).size;
+      const total = new Set((d2.motoboys||[]).map(m=>m.nome)).size;
 
-      if (elOff) elOff.textContent = Math.max(0, total - locs.length);
-    } catch (e) {
-      if (elOff) elOff.textContent = "—";
-    }
+      if(elOff) elOff.textContent = Math.max(0, total - locs.length);
+
+    } catch(e) { if(elOff) elOff.textContent = '—'; }
 
     if (!miniMapaInst) return;
 
     locs.forEach((l, i) => {
+
       const cor = MINI_CORES[i % MINI_CORES.length];
 
-      const status = agora - l.timestamp < ONLINE_LIM ? "online" : "parado";
+      const status = agora-l.timestamp < ONLINE_LIM ? 'online' : 'parado';
 
-      const iniciais = l.nome
-        .split(" ")
-        .map((p) => p[0])
-        .slice(0, 2)
-        .join("");
+      const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
 
       const icon = L.divIcon({
-        className: "",
 
-        html: `<div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:20px;height:20px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;opacity:${status === "online" ? 1 : 0.65}"><span style="transform:rotate(45deg);font-size:7px;font-weight:700">${iniciais}</span></div>`,
+        className:'',
 
-        iconSize: [20, 20],
-        iconAnchor: [10, 20],
-        popupAnchor: [0, -20],
+        html:`<div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:20px;height:20px;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;opacity:${status==='online'?1:.65}"><span style="transform:rotate(45deg);font-size:7px;font-weight:700">${iniciais}</span></div>`,
+
+        iconSize:[20,20],iconAnchor:[10,20],popupAnchor:[0,-20]
+
       });
 
       if (miniMapaMarkers[l.nome]) {
-        miniMapaMarkers[l.nome].setLatLng([l.lat, l.lng]);
+
+        miniMapaMarkers[l.nome].setLatLng([l.lat,l.lng]);
 
         miniMapaMarkers[l.nome].setIcon(icon);
-      } else {
-        miniMapaMarkers[l.nome] = L.marker([l.lat, l.lng], { icon })
-          .addTo(miniMapaInst)
 
-          .bindPopup(
-            `<div style="font-size:11px;font-weight:700;color:#0F4C7A">${l.nome}</div>`,
-            { maxWidth: 120 },
-          );
+      } else {
+
+        miniMapaMarkers[l.nome] = L.marker([l.lat,l.lng],{icon}).addTo(miniMapaInst)
+
+          .bindPopup(`<div style="font-size:11px;font-weight:700;color:#0F4C7A">${l.nome}</div>`,{maxWidth:120});
+
       }
+
     });
 
     if (locs.length > 0) {
-      const bounds = L.latLngBounds(locs.map((l) => [l.lat, l.lng]));
 
-      miniMapaInst.fitBounds(bounds, { padding: [20, 20], maxZoom: 14 });
+      const bounds = L.latLngBounds(locs.map(l=>[l.lat,l.lng]));
+
+      miniMapaInst.fitBounds(bounds, {padding:[20,20],maxZoom:14});
+
     }
 
-} catch (e) {} }
+  } catch(e) {}
+
+}
 
 let _rotasListaAberta = true;
 
-function toggleRotasLista() { const wrap =
-document.getElementById(“painel-rotas-wrap”);
+function toggleRotasLista() {
 
-const btn = document.getElementById(“rotas-toggle-btn”);
+  const wrap = document.getElementById('painel-rotas-wrap');
 
-if (!wrap) return;
+  const btn = document.getElementById('rotas-toggle-btn');
 
-_rotasListaAberta = !_rotasListaAberta;
+  if (!wrap) return;
 
-wrap.style.display = _rotasListaAberta ? “block” : “none”;
+  _rotasListaAberta = !_rotasListaAberta;
 
-if (btn) { btn.textContent = _rotasListaAberta ? “▾” : “▸”;
+  wrap.style.display = _rotasListaAberta ? 'block' : 'none';
 
-    btn.style.background = _rotasListaAberta ? "#F0F4F8" : "#E8F4FB";
+  if (btn) {
 
-    btn.style.color = _rotasListaAberta ? "#5A7A8F" : "#1E9FD9";
+    btn.textContent = _rotasListaAberta ? '▾' : '▸';
 
-} }
+    btn.style.background = _rotasListaAberta ? '#F0F4F8' : '#E8F4FB';
 
-async function atualizarVersaoApp() { // Busca versão atual para
-incrementar automaticamente
+    btn.style.color = _rotasListaAberta ? '#5A7A8F' : '#1E9FD9';
 
-let versaoAtual = “1.0.0”;
+  }
 
-try { const r = await fetch(API + “/app-versao”);
+}
+
+
+
+async function atualizarVersaoApp() {
+
+  // Busca versão atual para incrementar automaticamente
+
+  let versaoAtual = '1.0.0';
+
+  try {
+
+    const r = await fetch(API + '/app-versao');
 
     const d = await r.json();
 
     if (d.versao) versaoAtual = d.versao;
 
-} catch (e) {}
+  } catch(e) {}
 
-// Auto-incrementa patch version (ex: 1.0.3 → 1.0.4)
 
-const partes = versaoAtual.split(“.”).map(Number);
 
-partes[2] = (partes[2] || 0) + 1;
+  // Auto-incrementa patch version (ex: 1.0.3 → 1.0.4)
 
-const proxVersao = partes.join(“.”);
+  const partes = versaoAtual.split('.').map(Number);
 
-if (document.getElementById(“modal-live-update”)) {
-document.getElementById(“lu-versao-display”).textContent = proxVersao;
+  partes[2] = (partes[2] || 0) + 1;
 
-    document.getElementById("modal-live-update").style.display = "flex";
+  const proxVersao = partes.join('.');
+
+
+
+  if (document.getElementById('modal-live-update')) {
+
+    document.getElementById('lu-versao-display').textContent = proxVersao;
+
+    document.getElementById('modal-live-update').style.display = 'flex';
 
     return;
 
-}
+  }
 
-const modal = document.createElement(“div”);
+  const modal = document.createElement('div');
 
-modal.id = “modal-live-update”;
+  modal.id = 'modal-live-update';
 
-modal.style.cssText =
-“position:fixed;inset:0;background:rgba(15,75,122,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem”;
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,75,122,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
 
-modal.innerHTML = `
+  modal.innerHTML = `
 
     <div style="background:#fff;border-radius:20px;padding:1.75rem;width:100%;max-width:440px;box-shadow:0 20px 60px rgba(0,0,0,0.2)">
 
@@ -4920,85 +5220,91 @@ modal.innerHTML = `
 
     </div>
 
-`;
+  `;
 
-document.body.appendChild(modal); }
+  document.body.appendChild(modal);
 
-async function limparUpdate() { if (!confirm(“Remover o update ativo? O
-banner vai sumir do app.”)) return;
+}
 
-try { const r = await fetch(API + “/limpar-update”, { method: “POST” });
+
+
+async function limparUpdate() {
+
+  if (!confirm('Remover o update ativo? O banner vai sumir do app.')) return;
+
+  try {
+
+    const r = await fetch(API + '/limpar-update', { method: 'POST' });
 
     const d = await r.json();
 
-    if (d.status === "ok") {
-      toast("✓ Update removido — banner não aparece mais");
+    if (d.status === 'ok') {
 
-      document.getElementById("modal-live-update").style.display = "none";
+      toast('✓ Update removido — banner não aparece mais');
+
+      document.getElementById('modal-live-update').style.display = 'none';
+
     }
 
-} catch (e) { toast(“Erro ao limpar update”); } }
+  } catch(e) { toast('Erro ao limpar update'); }
 
-async function publicarBundle() { const versao =
-document.getElementById(“lu-versao”)?.value?.trim();
+}
 
-const arquivo = document.getElementById(“lu-arquivo”)?.files?.[0];
 
-const msg = document.getElementById(“lu-msg”);
 
-if (!versao) { if (msg) { msg.style.display = “block”; msg.innerHTML = ’
+async function publicarBundle() {
 
-⚠️ Informe a versão
+  const versao  = document.getElementById('lu-versao')?.value?.trim();
 
-’; } return; }
+  const arquivo = document.getElementById('lu-arquivo')?.files?.[0];
 
-if (!arquivo) { if (msg) { msg.style.display = “block”; msg.innerHTML =
-’
+  const msg = document.getElementById('lu-msg');
 
-⚠️ Selecione o arquivo .zip
 
-’; } return; }
 
-if (msg) { msg.style.display = “block”; msg.innerHTML = ’
+  if (!versao) { if(msg){msg.style.display='block';msg.innerHTML='<div style="color:#EF4444;font-size:12px">⚠️ Informe a versão</div>'} return; }
 
-⏳ Enviando bundle…
+  if (!arquivo) { if(msg){msg.style.display='block';msg.innerHTML='<div style="color:#EF4444;font-size:12px">⚠️ Selecione o arquivo .zip</div>'} return; }
 
-’; }
 
-const form = new FormData();
 
-form.append(“bundle”, arquivo);
+  if(msg){msg.style.display='block';msg.innerHTML='<div style="color:#8B5CF6;font-size:12px">⏳ Enviando bundle...</div>'}
 
-form.append(“versao”, versao);
 
-try { const r = await fetch(API + “/publicar-update”, { method: “POST”,
-body: form, });
+
+  const form = new FormData();
+
+  form.append('bundle', arquivo);
+
+  form.append('versao', versao);
+
+
+
+  try {
+
+    const r = await fetch(API + '/publicar-update', { method: 'POST', body: form });
 
     const d = await r.json();
 
-    if (d.status === "ok") {
-      if (msg) {
-        msg.innerHTML =
-          '<div style="color:#0F9B78;font-size:12px">✅ Versão ' +
-          d.versao +
-          " publicada! Os apps vão atualizar ao abrir.</div>";
-      }
+    if (d.status === 'ok') {
 
-      toast("✓ Versão " + d.versao + " publicada com sucesso");
+      if(msg){msg.innerHTML='<div style="color:#0F9B78;font-size:12px">✅ Versão ' + d.versao + ' publicada! Os apps vão atualizar ao abrir.</div>'}
+
+      toast('✓ Versão ' + d.versao + ' publicada com sucesso');
+
     } else {
-      if (msg) {
-        msg.innerHTML =
-          '<div style="color:#EF4444;font-size:12px">❌ Erro: ' +
-          (d.msg || "falha desconhecida") +
-          "</div>";
-      }
+
+      if(msg){msg.innerHTML='<div style="color:#EF4444;font-size:12px">❌ Erro: ' + (d.msg||'falha desconhecida') + '</div>'}
+
     }
 
-} catch (e) { if (msg) { msg.innerHTML = ’
+  } catch(e) {
 
-❌ Erro de conexão
+    if(msg){msg.innerHTML='<div style="color:#EF4444;font-size:12px">❌ Erro de conexão</div>'}
 
-’; } } }
+  }
+
+}
 
 // ── MAPA RASTREAMENTO ────────────────────────────────────────
 
@@ -5014,8 +5320,7 @@ let mapaSyncTimer = null;
 
 let mapaSyncSegundos = 120;
 
-const CORES_MB = [ “#0F9B78”, “#8B5CF6”, “#1E9FD9”, “#F59E0B”,
-“#DC2626”, “#0F4C7A”, “#EC4899”, “#14B8A6”,];
+const CORES_MB = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
 
 // Dados da última busca — usados para atualizar tempos a cada segundo
 
@@ -5025,278 +5330,286 @@ let _ultimosOfflineMapa = [];
 
 let _timerTempoLista = null;
 
-function iniciarAutoRefreshMapa() { pararAutoRefreshMapa();
 
-mapaSyncSegundos = 10;
 
-mapaSyncTimer = setInterval(() => { mapaSyncSegundos–;
+function iniciarAutoRefreshMapa() {
 
-    const el = document.getElementById("mapa-sync-countdown");
+  pararAutoRefreshMapa();
 
-    const bar = document.getElementById("mapa-sync-bar");
+  mapaSyncSegundos = 10;
 
-    if (el) el.textContent = "0:" + String(mapaSyncSegundos).padStart(2, "0");
+  mapaSyncTimer = setInterval(() => {
 
-    if (bar) bar.style.width = ((10 - mapaSyncSegundos) / 10) * 100 + "%";
+    mapaSyncSegundos--;
 
-    if (mapaSyncSegundos <= 0) {
-      mapaSyncSegundos = 10;
-      carregarMapa();
-      carregarKMDia();
+    const el = document.getElementById('mapa-sync-countdown');
+
+    const bar = document.getElementById('mapa-sync-bar');
+
+    if (el) el.textContent = '0:'+String(mapaSyncSegundos).padStart(2,'0');
+
+    if (bar) bar.style.width = ((10-mapaSyncSegundos)/10*100)+'%';
+
+    if (mapaSyncSegundos <= 0) { mapaSyncSegundos = 10; carregarMapa(); carregarKMDia(); }
+
+  }, 1000);
+
+
+
+  // Atualiza só os tempos da lista a cada segundo sem nova requisição
+
+  _timerTempoLista = setInterval(() => {
+
+    if (_ultimosLocsMapa.length > 0) {
+
+      const agora = Date.now();
+
+      const ONLINE_LIM = 5*60*1000;
+
+      const IDLE_LIM = 10*60*1000;
+
+      renderizarListaMapa(_ultimosLocsMapa, _ultimosOfflineMapa, agora, ONLINE_LIM, IDLE_LIM);
+
     }
 
-}, 1000);
+  }, 1000);
 
-// Atualiza só os tempos da lista a cada segundo sem nova requisição
-
-_timerTempoLista = setInterval(() => { if (_ultimosLocsMapa.length > 0)
-{ const agora = Date.now();
-
-      const ONLINE_LIM = 5 * 60 * 1000;
-
-      const IDLE_LIM = 10 * 60 * 1000;
-
-      renderizarListaMapa(
-        _ultimosLocsMapa,
-        _ultimosOfflineMapa,
-        agora,
-        ONLINE_LIM,
-        IDLE_LIM,
-      );
-    }
-
-}, 1000); }
-
-function pararAutoRefreshMapa() { if (mapaRefreshInterval) {
-clearInterval(mapaRefreshInterval); mapaRefreshInterval = null; }
-
-if (mapaSyncTimer) { clearInterval(mapaSyncTimer); mapaSyncTimer = null;
 }
 
-if (_timerTempoLista) { clearInterval(_timerTempoLista);
-_timerTempoLista = null; } }
+function pararAutoRefreshMapa() {
 
-function iniciarLeafletMap() { if (leafletMap) return;
+  if (mapaRefreshInterval) { clearInterval(mapaRefreshInterval); mapaRefreshInterval = null; }
 
-const el = document.getElementById(“leaflet-map”);
+  if (mapaSyncTimer) { clearInterval(mapaSyncTimer); mapaSyncTimer = null; }
 
-if (!el) return;
+  if (_timerTempoLista) { clearInterval(_timerTempoLista); _timerTempoLista = null; }
 
-if (typeof L === “undefined”) { setTimeout(iniciarLeafletMap, 500);
-return; }
+}
 
-leafletMap = L.map(“leaflet-map”, { zoomControl: true }).setView(
-[-23.5505, -46.633], 13, );
+function iniciarLeafletMap() {
 
-L.tileLayer(
-“https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png”,
-{ attribution: ‘© OpenStreetMap © CARTO’,
+  if (leafletMap) return;
 
-      maxZoom: 19,
-      subdomains: "abcd",
-    },
+  const el = document.getElementById('leaflet-map');
 
-).addTo(leafletMap); }
+  if (!el) return;
 
-function criarIconeLeaflet(cor, iniciais, status) { const online =
-status === “online”;
+  if (typeof L === 'undefined') { setTimeout(iniciarLeafletMap, 500); return; }
 
-return L.divIcon({ className: ““,
+  leafletMap = L.map('leaflet-map', { zoomControl: true }).setView([-23.5505, -46.6330], 13);
+
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+
+    attribution: '© OpenStreetMap © <a href="https://carto.com/attributions">CARTO</a>',
+
+    maxZoom: 19, subdomains: 'abcd'
+
+  }).addTo(leafletMap);
+
+}
+
+function criarIconeLeaflet(cor, iniciais, status) {
+
+  const online = status === 'online';
+
+  return L.divIcon({
+
+    className: '',
 
     html: `<div style="position:relative">
 
-      <div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:36px;height:36px;border:3px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;opacity:${online ? 1 : 0.7}">
+      <div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:36px;height:36px;border:3px solid #fff;box-shadow:0 3px 12px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;opacity:${online?1:.7}">
 
         <span style="transform:rotate(45deg);font-size:11px;font-weight:700">${iniciais}</span>
 
       </div>
 
-      ${online ? `<div style="position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:#16A34A;border:2px solid #fff;border-radius:50%"></div>` : ""}
+      ${online?`<div style="position:absolute;top:-4px;right:-4px;width:12px;height:12px;background:#16A34A;border:2px solid #fff;border-radius:50%"></div>`:''}
 
     </div>`,
 
-    iconSize: [36, 36],
-    iconAnchor: [18, 36],
-    popupAnchor: [0, -36],
+    iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36]
 
-}); }
+  });
 
-async function buscarEndereco(lat, lng) { try { const r = await fetch(
-https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR,
+}
 
-      { headers: { "User-Agent": "Loglife/1.0" } },
-    );
+async function buscarEndereco(lat, lng) {
+
+  try {
+
+    const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=pt-BR`,
+
+      { headers: { 'User-Agent': 'Loglife/1.0' } });
 
     const d = await r.json();
 
     if (d.address) {
+
       const end = d.address;
 
-      const partes = [
-        end.road || end.pedestrian || end.path,
-        end.house_number,
-        end.suburb || end.neighbourhood || end.city_district,
-        end.city || end.town,
-      ].filter(Boolean);
+      const partes = [end.road||end.pedestrian||end.path, end.house_number, end.suburb||end.neighbourhood||end.city_district, end.city||end.town].filter(Boolean);
 
-      return (
-        partes.join(", ") ||
-        d.display_name?.split(",").slice(0, 3).join(",") ||
-        "—"
-      );
+      return partes.join(', ') || d.display_name?.split(',').slice(0,3).join(',') || '—';
+
     }
 
-    return "—";
+    return '—';
 
-} catch (e) { return “—”; } }
+  } catch(e) { return '—'; }
 
-async function carregarMapa() { try { iniciarLeafletMap();
+}
+
+async function carregarMapa() {
+
+  try {
+
+    iniciarLeafletMap();
 
     const [rLoc, rMb] = await Promise.all([
-      fetch(API + "/localizacao"),
 
-      fetch(API + "/motoboys?todos=1&agrupado=1"),
+      fetch(API + '/localizacao'),
+
+      fetch(API + '/motoboys?todos=1&agrupado=1')
+
     ]);
 
     const dLoc = await rLoc.json();
 
-    const dMb = await rMb.json();
+    const dMb  = await rMb.json();
 
     const locs = dLoc.localizacoes || [];
 
-    const todosMotoboys = [
-      ...new Set((dMb.motoboys || []).map((m) => m.nome)),
-    ].sort();
+    const todosMotoboys = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
 
     const agora = Date.now();
 
-    const ONLINE_LIM = 5 * 60 * 1000;
+    const ONLINE_LIM = 5*60*1000;
 
-    const IDLE_LIM = 10 * 60 * 1000;
+    const IDLE_LIM   = 10*60*1000;
 
-    const online = locs.filter((l) => agora - l.timestamp < ONLINE_LIM);
+    const online  = locs.filter(l => agora-l.timestamp < ONLINE_LIM);
 
-    const idle = locs.filter(
-      (l) =>
-        agora - l.timestamp >= ONLINE_LIM && agora - l.timestamp < IDLE_LIM,
-    );
+    const idle    = locs.filter(l => agora-l.timestamp >= ONLINE_LIM && agora-l.timestamp < IDLE_LIM);
 
     // Quem passou de 10min sem enviar vai para offline
 
-    const locsAtivos = locs.filter((l) => agora - l.timestamp < IDLE_LIM);
+    const locsAtivos = locs.filter(l => agora-l.timestamp < IDLE_LIM);
 
-    const comSinal = new Set(locsAtivos.map((l) => l.nome));
+    const comSinal = new Set(locsAtivos.map(l => l.nome));
 
-    const offline = todosMotoboys.filter((n) => !comSinal.has(n));
+    const offline  = todosMotoboys.filter(n => !comSinal.has(n));
 
-    const elOn = document.getElementById("mapa-count-online");
+    const elOn = document.getElementById('mapa-count-online');
 
-    const elId = document.getElementById("mapa-count-idle");
+    const elId = document.getElementById('mapa-count-idle');
 
-    const elOf = document.getElementById("mapa-count-off");
+    const elOf = document.getElementById('mapa-count-off');
 
-    if (elOn) elOn.textContent = online.length;
+    if(elOn) elOn.textContent = online.length;
 
-    if (elId) elId.textContent = idle.length;
+    if(elId) elId.textContent = idle.length;
 
-    if (elOf) elOf.textContent = offline.length;
+    if(elOf) elOf.textContent = offline.length;
 
-    const badge = document.getElementById("mapa-live-badge");
+    const badge = document.getElementById('mapa-live-badge');
 
-    if (badge) badge.style.display = locs.length > 0 ? "flex" : "none";
+    if(badge) badge.style.display = locs.length > 0 ? 'flex' : 'none';
 
     if (leafletMap) {
-      Object.keys(leafletMarkers).forEach((nome) => {
-        if (!comSinal.has(nome)) {
-          leafletMap.removeLayer(leafletMarkers[nome]);
-          delete leafletMarkers[nome];
-        }
+
+      Object.keys(leafletMarkers).forEach(nome => {
+
+        if (!comSinal.has(nome)) { leafletMap.removeLayer(leafletMarkers[nome]); delete leafletMarkers[nome]; }
+
       });
 
       locs.forEach((l, i) => {
+
         const cor = CORES_MB[i % CORES_MB.length];
 
-        const status = agora - l.timestamp < ONLINE_LIM ? "online" : "parado";
+        const status = agora-l.timestamp < ONLINE_LIM ? 'online' : 'parado';
 
-        const iniciais = l.nome
-          .split(" ")
-          .map((p) => p[0])
-          .slice(0, 2)
-          .join("");
+        const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
 
-        const diff = agora - l.timestamp;
+        const diff = agora-l.timestamp;
 
-        const min = Math.floor(diff / 60000);
+        const min = Math.floor(diff/60000);
 
-        const seg = Math.floor((diff % 60000) / 1000);
+        const seg = Math.floor((diff%60000)/1000);
 
-        const tempo = min > 0 ? min + "min atrás" : seg + "s atrás";
+        const tempo = min > 0 ? min+'min atrás' : seg+'s atrás';
 
-        const stCor = status === "online" ? "#16A34A" : "#F59E0B";
+        const stCor = status==='online'?'#16A34A':'#F59E0B';
 
-        const stBg = status === "online" ? "#DCFCE7" : "#FEF9EC";
+        const stBg  = status==='online'?'#DCFCE7':'#FEF9EC';
 
-        const stTxt = status === "online" ? "● Online" : "⚠ Parado";
+        const stTxt = status==='online'?'● Online':'⚠ Parado';
 
         const popup = `<div style="font-family:-apple-system,sans-serif;min-width:180px">
 
           <div style="font-size:14px;font-weight:700;color:#0F4C7A;margin-bottom:6px">${l.nome}</div>
 
-          <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px" id="end-${l.nome.replace(/\s/g, "-")}">📍 Buscando endereço...</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px" id="end-${l.nome.replace(/\s/g,'-')}">📍 Buscando endereço...</div>
 
           <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">🕐 ${tempo}</div>
 
-          <div style="font-size:11px;color:#5A7A8F;margin-bottom:6px">🎯 Precisão: ${Math.round(l.precisao || 0)}m</div>
+          <div style="font-size:11px;color:#5A7A8F;margin-bottom:6px">🎯 Precisão: ${Math.round(l.precisao||0)}m</div>
 
           <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${stBg};color:${stCor}">${stTxt}</span>
 
           <div style="margin-top:8px;display:flex;gap:6px">
 
-            <button onclick="verTrajeto('${l.nome.replace(/'/g, "\\'")}',this)" style="flex:1;padding:5px 8px;border-radius:7px;border:none;background:#0F4C7A;color:#fff;font-size:11px;font-weight:700;cursor:pointer">🗺️ Trajeto</button>
+            <button onclick="verTrajeto('${l.nome.replace(/'/g,"\\'")}',this)" style="flex:1;padding:5px 8px;border-radius:7px;border:none;background:#0F4C7A;color:#fff;font-size:11px;font-weight:700;cursor:pointer">🗺️ Trajeto</button>
 
-            <button onclick="limparTrajeto('${l.nome.replace(/'/g, "\\'")}',this)" style="flex:1;padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:600;cursor:pointer">✕ Limpar</button>
+            <button onclick="limparTrajeto('${l.nome.replace(/'/g,"\\'")}',this)" style="flex:1;padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:600;cursor:pointer">✕ Limpar</button>
 
           </div>
 
         </div>`;
 
         if (leafletMarkers[l.nome]) {
-          leafletMarkers[l.nome].setLatLng([l.lat, l.lng]);
 
-          leafletMarkers[l.nome].setIcon(
-            criarIconeLeaflet(cor, iniciais, status),
-          );
+          leafletMarkers[l.nome].setLatLng([l.lat,l.lng]);
+
+          leafletMarkers[l.nome].setIcon(criarIconeLeaflet(cor,iniciais,status));
 
           leafletMarkers[l.nome].setPopupContent(popup);
+
         } else {
-          const marker = L.marker([l.lat, l.lng], {
-            icon: criarIconeLeaflet(cor, iniciais, status),
-          })
 
-            .addTo(leafletMap)
-            .bindPopup(popup, { maxWidth: 220 });
+          const marker = L.marker([l.lat,l.lng],{icon:criarIconeLeaflet(cor,iniciais,status)})
 
-          marker.on("popupopen", async () => {
-            const endEl = document.getElementById(
-              "end-" + l.nome.replace(/\s/g, "-"),
-            );
+            .addTo(leafletMap).bindPopup(popup,{maxWidth:220});
 
-            if (endEl && endEl.textContent.includes("Buscando")) {
+          marker.on('popupopen', async () => {
+
+            const endEl = document.getElementById('end-'+l.nome.replace(/\s/g,'-'));
+
+            if (endEl && endEl.textContent.includes('Buscando')) {
+
               const endereco = await buscarEndereco(l.lat, l.lng);
 
-              if (endEl) endEl.textContent = "📍 " + endereco;
+              if (endEl) endEl.textContent = '📍 ' + endereco;
+
             }
+
           });
 
           leafletMarkers[l.nome] = marker;
+
         }
+
       });
 
       if (locs.length > 0) {
-        const bounds = L.latLngBounds(locs.map((l) => [l.lat, l.lng]));
 
-        leafletMap.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+        const bounds = L.latLngBounds(locs.map(l=>[l.lat,l.lng]));
+
+        leafletMap.fitBounds(bounds,{padding:[50,50],maxZoom:15});
+
       }
+
     }
 
     renderizarListaMapa(locsAtivos, offline, agora, ONLINE_LIM, IDLE_LIM);
@@ -5307,148 +5620,141 @@ async function carregarMapa() { try { iniciarLeafletMap();
 
     _ultimosOfflineMapa = offline;
 
-} catch (e) { console.error(“carregarMapa erro:”, e); } }
+  } catch(e) { console.error('carregarMapa erro:', e); }
 
-async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM,
-IDLE_LIM) { const el = document.getElementById(“mapa-lista-motoboys”);
+}
 
-if (!el) return;
 
-// Busca KM e geofence do dia
 
-const hoje = new Date();
+async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
 
-const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
+  const el = document.getElementById('mapa-lista-motoboys');
 
-const dataHoje = diaSP.toISOString().split(“T”)[0];
+  if (!el) return;
 
-let kmPontos = {}, geofenceEvts = {};
 
-try { const [rH, rG] = await Promise.all([ fetch(API +
-“/localizacao?dia=” + dataHoje),
 
-      fetch(API + "/geofence-evento?data=" + dataHoje).catch(() => ({
-        json: () => ({ eventos: [] }),
-      })),
+  // Busca KM e geofence do dia
+
+  const hoje = new Date();
+
+  const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
+
+  const dataHoje = diaSP.toISOString().split('T')[0];
+
+  let kmPontos = {}, geofenceEvts = {};
+
+  try {
+
+    const [rH, rG] = await Promise.all([
+
+      fetch(API + '/localizacao?dia=' + dataHoje),
+
+      fetch(API + '/geofence-evento?data=' + dataHoje).catch(() => ({json:()=>({eventos:[]})}))
+
     ]);
 
-    const dH = await rH.json();
-    const dG = await rG.json();
+    const dH = await rH.json(); const dG = await rG.json();
 
-    (dH.historico || []).forEach((p) => {
-      if (!kmPontos[p.nome]) kmPontos[p.nome] = [];
-      kmPontos[p.nome].push(p);
-    });
+    (dH.historico || []).forEach(p => { if (!kmPontos[p.nome]) kmPontos[p.nome]=[]; kmPontos[p.nome].push(p); });
 
-    (dG.eventos || []).forEach((e) => {
-      if (!geofenceEvts[e.nome]) geofenceEvts[e.nome] = [];
-      geofenceEvts[e.nome].push(e);
-    });
+    (dG.eventos || []).forEach(e => { if (!geofenceEvts[e.nome]) geofenceEvts[e.nome]=[]; geofenceEvts[e.nome].push(e); });
 
-} catch (e) {}
+  } catch(e) {}
 
-function calcKm(pts) { if (!pts || pts.length < 2) return 0;
 
-    const s = [...pts].sort((a, b) => a.timestamp - b.timestamp);
+
+  function calcKm(pts) {
+
+    if (!pts || pts.length < 2) return 0;
+
+    const s = [...pts].sort((a,b)=>a.timestamp-b.timestamp);
 
     let km = 0;
 
     for (let i = 1; i < s.length; i++) {
-      const R = 6371,
-        dLat = ((s[i].lat - s[i - 1].lat) * Math.PI) / 180,
-        dLng = ((s[i].lng - s[i - 1].lng) * Math.PI) / 180;
 
-      const a =
-        Math.sin(dLat / 2) ** 2 +
-        Math.cos((s[i - 1].lat * Math.PI) / 180) *
-          Math.cos((s[i].lat * Math.PI) / 180) *
-          Math.sin(dLng / 2) ** 2;
+      const R=6371,dLat=(s[i].lat-s[i-1].lat)*Math.PI/180,dLng=(s[i].lng-s[i-1].lng)*Math.PI/180;
 
-      const d = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      const a=Math.sin(dLat/2)**2+Math.cos(s[i-1].lat*Math.PI/180)*Math.cos(s[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
 
-      if (d < 5) km += d;
+      const d=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+
+      if(d<5) km+=d;
+
     }
 
-    return Math.round(km * 10) / 10;
+    return Math.round(km*10)/10;
 
-}
+  }
 
-function horaEvt(evts, tipo) { if (!evts) return null;
 
-    const evs = evts
-      .filter((e) => e.tipo && e.tipo.includes(tipo))
-      .sort((a, b) => a.timestamp - b.timestamp);
+
+   function horaEvt(evts, tipo) {
+
+    if (!evts) return null;
+
+    const evs = evts.filter(e => e.tipo && e.tipo.includes(tipo)).sort((a,b) => a.timestamp - b.timestamp);
 
     if (!evs.length) return null;
 
     // Mesma regra: Base só 1ª e última, Polaris mostra todas as passagens.
 
-    const paraExibir =
-      tipo === "base" && evs.length > 1 ? [evs[0], evs[evs.length - 1]] : evs;
+    const paraExibir = (tipo === 'base' && evs.length > 1) ? [evs[0], evs[evs.length - 1]] : evs;
 
-    return paraExibir
-      .map((ev) => {
-        const sp = new Date(ev.timestamp - 3 * 60 * 60 * 1000);
+    return paraExibir.map(ev => {
 
-        return (
-          String(sp.getUTCHours()).padStart(2, "0") +
-          ":" +
-          String(sp.getUTCMinutes()).padStart(2, "0")
-        );
-      })
-      .join(", ");
+      const sp = new Date(ev.timestamp - 3*60*60*1000);
 
-}
+      return String(sp.getUTCHours()).padStart(2,'0')+':'+String(sp.getUTCMinutes()).padStart(2,'0');
 
-let html = ““;
+    }).join(', ');
 
-locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
+  }
+
+
+
+  let html = '';
+
+  locs.forEach((l, i) => {
+
+    const cor = CORES_MB[i % CORES_MB.length];
 
     const diff = agora - l.timestamp;
 
     const isOnline = diff < ONLINE_LIM;
 
-    const min = Math.floor(diff / 60000);
+    const min = Math.floor(diff/60000);
 
-    const seg = Math.floor((diff % 60000) / 1000);
+    const seg = Math.floor((diff%60000)/1000);
 
-    const tempo = min > 0 ? min + "min atrás" : seg + "s atrás";
+    const tempo = min > 0 ? min+'min atrás' : seg+'s atrás';
 
-    const iniciais = l.nome
-      .split(" ")
-      .map((p) => p[0])
-      .slice(0, 2)
-      .join("");
+    const iniciais = l.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
 
-    const stBg = isOnline ? "#DCFCE7" : "#FEF9EC";
+    const stBg  = isOnline ? '#DCFCE7' : '#FEF9EC';
 
-    const stCor = isOnline ? "#16A34A" : "#92400E";
+    const stCor = isOnline ? '#16A34A' : '#92400E';
 
-    const stTxt = isOnline ? "● online" : "⚠ parado";
+    const stTxt = isOnline ? '● online' : '⚠ parado';
 
-    const fab = (l.fabricante || "").toLowerCase();
+    const fab = (l.fabricante || '').toLowerCase();
 
-    const fabLabel = fab.includes("samsung")
-      ? "Samsung"
-      : fab.includes("motorola")
-        ? "Motorola"
-        : fab.includes("xiaomi")
-          ? "Xiaomi"
-          : fab
-            ? fab.charAt(0).toUpperCase() + fab.slice(1)
-            : "";
+    const fabLabel = fab.includes('samsung')?'Samsung':fab.includes('motorola')?'Motorola':fab.includes('xiaomi')?'Xiaomi':fab?fab.charAt(0).toUpperCase()+fab.slice(1):'';
 
     const km = calcKm(kmPontos[l.nome]);
 
-    const base = horaEvt(geofenceEvts[l.nome], "base");
+    const base = horaEvt(geofenceEvts[l.nome], 'base');
 
-    const polaris = horaEvt(geofenceEvts[l.nome], "final");
+    const polaris = horaEvt(geofenceEvts[l.nome], 'final');
 
     const gpsOk = l.gps_background !== false && l.gps_background !== 0;
 
     const sinalFraco = l.precisao && l.precisao > 50;
 
-    html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g, "\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
+
+
+    html += `<div onclick="focarMotoboy('${l.nome.replace(/'/g,"\\'")}') " style="padding:10px 14px;border-bottom:1px solid #F5F9FC;cursor:pointer;transition:.15s" onmouseover="this.style.background='#E8F4FB'" onmouseout="this.style.background='#fff'">
 
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
 
@@ -5458,11 +5764,11 @@ locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
 
           <div style="font-size:13px;font-weight:700;color:#0F2940;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.nome}</div>
 
-          <div style="font-size:10px;color:#94A8B8;margin-top:1px">${tempo}${fabLabel ? " · " + fabLabel : ""}</div>
+          <div style="font-size:10px;color:#94A8B8;margin-top:1px">${tempo}${fabLabel?' · '+fabLabel:''}</div>
 
         </div>
 
-        ${sinalFraco ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FEF2F2;color:#991B1B;white-space:nowrap;flex-shrink:0" title="Precis\u00e3o GPS: ' + Math.round(l.precisao) + 'm">\ud83d\udcf5 Sinal fraco</span>' : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap;flex-shrink:0">${stTxt}</span>`}
+        ${sinalFraco ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#FEF2F2;color:#991B1B;white-space:nowrap;flex-shrink:0" title="Precis\u00e3o GPS: '+Math.round(l.precisao)+'m">\ud83d\udcf5 Sinal fraco</span>' : `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${stBg};color:${stCor};white-space:nowrap;flex-shrink:0">${stTxt}</span>`}
 
       </div>
 
@@ -5470,7 +5776,7 @@ locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
 
         <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
 
-          <div style="font-size:11px;font-weight:800;color:#0F9B78">${km > 0 ? km + "km" : "—"}</div>
+          <div style="font-size:11px;font-weight:800;color:#0F9B78">${km>0?km+'km':'—'}</div>
 
           <div style="font-size:9px;color:#5A7A8F">KM hoje</div>
 
@@ -5478,7 +5784,7 @@ locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
 
         <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
 
-          <div style="font-size:11px;font-weight:800;color:#1E9FD9">${base || "—"}</div>
+          <div style="font-size:11px;font-weight:800;color:#1E9FD9">${base||'—'}</div>
 
           <div style="font-size:9px;color:#5A7A8F">Base</div>
 
@@ -5486,7 +5792,7 @@ locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
 
         <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
 
-          <div style="font-size:11px;font-weight:800;color:#7C3AED">${polaris || "—"}</div>
+          <div style="font-size:11px;font-weight:800;color:#7C3AED">${polaris||'—'}</div>
 
           <div style="font-size:9px;color:#5A7A8F">Polaris</div>
 
@@ -5494,7 +5800,7 @@ locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
 
         <div style="background:#F0F6FB;border-radius:6px;padding:4px 6px;text-align:center">
 
-          <div style="font-size:11px;font-weight:800;color:${gpsOk ? "#0F9B78" : "#EF4444"}">${gpsOk ? "✓ bg" : "✗ bg"}</div>
+          <div style="font-size:11px;font-weight:800;color:${gpsOk?'#0F9B78':'#EF4444'}">${gpsOk?'✓ bg':'✗ bg'}</div>
 
           <div style="font-size:9px;color:#5A7A8F">GPS</div>
 
@@ -5504,14 +5810,17 @@ locs.forEach((l, i) => { const cor = CORES_MB[i % CORES_MB.length];
 
     </div>`;
 
-});
+  });
 
-// Renderiza offline separado
 
-let htmlOffline = ““;
 
-offline.forEach((nome) => { const iniciais = nome .split(” “) .map((p)
-=> p[0]) .slice(0, 2) .join(”“);
+  // Renderiza offline separado
+
+  let htmlOffline = '';
+
+  offline.forEach(nome => {
+
+    const iniciais = nome.split(' ').map(p=>p[0]).slice(0,2).join('');
 
     htmlOffline += `<div style="padding:10px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:10px;opacity:.5">
 
@@ -5523,41 +5832,41 @@ offline.forEach((nome) => { const iniciais = nome .split(” “) .map((p)
 
     </div>`;
 
-});
+  });
 
-// Atualiza seções separadas
 
-const elOnline = document.getElementById(“mapa-lista-online”);
 
-const elOffline = document.getElementById(“mapa-lista-offline”);
+  // Atualiza seções separadas
 
-const countOnline = document.getElementById(“mapa-count-online”);
+  const elOnline = document.getElementById('mapa-lista-online');
 
-const countOffline = document.getElementById(“mapa-count-offline”);
+  const elOffline = document.getElementById('mapa-lista-offline');
 
-if (elOnline) elOnline.innerHTML = html || ’
+  const countOnline = document.getElementById('mapa-count-online');
 
-Nenhum online
+  const countOffline = document.getElementById('mapa-count-offline');
 
-’;
 
-if (elOffline) elOffline.innerHTML = htmlOffline || ’
 
-Nenhum offline
+  if (elOnline) elOnline.innerHTML = html || '<div class="empty" style="padding:8px;font-size:12px">Nenhum online</div>';
 
-’;
+  if (elOffline) elOffline.innerHTML = htmlOffline || '<div class="empty" style="padding:8px;font-size:12px">Nenhum offline</div>';
 
-if (countOnline) countOnline.textContent = locs.length;
+  if (countOnline) countOnline.textContent = locs.length;
 
-if (countOffline) countOffline.textContent = offline.length;
+  if (countOffline) countOffline.textContent = offline.length;
 
-// Fallback — se não tem as seções separadas, usa o container antigo
 
-if (!elOnline) { el.innerHTML = html + htmlOffline || ’
 
-Nenhum motoboy com GPS ativo
+  // Fallback — se não tem as seções separadas, usa o container antigo
 
-’; } }
+  if (!elOnline) {
+
+    el.innerHTML = (html + htmlOffline) || '<div class="empty">Nenhum motoboy com GPS ativo</div>';
+
+  }
+
+}
 
 // ── PRESENÇAS ─────────────────────────────────────────────────
 
@@ -5565,44 +5874,45 @@ let presencasLista = [];
 
 let presencasMarcados = new Set();
 
-async function carregarPresencas() { const el =
-document.getElementById(“presencas-lista”);
+async function carregarPresencas() {
 
-if (!el) return;
+  const el = document.getElementById('presencas-lista');
 
-el.innerHTML = ’
+  if (!el) return;
 
-Carregando…
+  el.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
 
-’;
+  const dataEl = document.getElementById('presencas-data');
 
-const dataEl = document.getElementById(“presencas-data”);
+  if (dataEl) {
 
-if (dataEl) { const dias = [ “Domingo”, “Segunda”, “Terça”, “Quarta”,
-“Quinta”, “Sexta”, “Sábado”, ];
+    const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
 
     const d = new Date();
 
-    dataEl.textContent =
-      dias[d.getDay()] + ", " + d.toLocaleDateString("pt-BR");
+    dataEl.textContent = dias[d.getDay()] + ', ' + d.toLocaleDateString('pt-BR');
 
-}
+  }
 
-try { const [rMb, rPres, rLoc] = await Promise.all([ fetch(API +
-“/motoboys?todos=1&agrupado=1”),
+  try {
 
-      fetch(API + "/presencas"),
+    const [rMb, rPres, rLoc] = await Promise.all([
 
-      fetch(API + "/localizacao"),
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
+
+      fetch(API + '/presencas'),
+
+      fetch(API + '/localizacao')
+
     ]);
 
-    const dMb = await rMb.json();
+    const dMb   = await rMb.json();
 
     const dPres = await rPres.json();
 
-    const dLoc = await rLoc.json();
+    const dLoc  = await rLoc.json();
 
-    const comGPS = new Set((dLoc.localizacoes || []).map((l) => l.nome));
+    const comGPS = new Set((dLoc.localizacoes||[]).map(l => l.nome));
 
     const mbs = dMb.motoboys || [];
 
@@ -5610,126 +5920,103 @@ try { const [rMb, rPres, rLoc] = await Promise.all([ fetch(API +
 
     presencasLista = [];
 
-    mbs.forEach((m) => {
+    mbs.forEach(m => {
+
       if (!vistos.has(m.nome)) {
+
         vistos.add(m.nome);
 
-        const rotasDia = mbs
-          .filter((x) => x.nome === m.nome && x.rota)
-          .map((x) => x.rota);
+        const rotasDia = mbs.filter(x => x.nome===m.nome && x.rota).map(x => x.rota);
 
-        presencasLista.push({
-          nome: m.nome,
-          telefone: m.telefone || m.contato || "—",
-          rotas: [...new Set(rotasDia)],
-          gpsAutorizado: comGPS.has(m.nome),
-        });
+        presencasLista.push({ nome:m.nome, telefone:m.telefone||m.contato||'—', rotas:[...new Set(rotasDia)], gpsAutorizado:comGPS.has(m.nome) });
+
       }
+
     });
 
-    presencasLista.sort((a, b) => {
-      const aR = a.rotas.length > 0,
-        bR = b.rotas.length > 0;
-      if (aR && !bR) return -1;
-      if (!aR && bR) return 1;
-      return a.nome.localeCompare(b.nome);
-    });
+    presencasLista.sort((a,b) => { const aR=a.rotas.length>0, bR=b.rotas.length>0; if(aR&&!bR)return -1; if(!aR&&bR)return 1; return a.nome.localeCompare(b.nome); });
 
     const marcados = dPres.marcados || [];
 
     presencasMarcados = new Set(marcados);
 
-    if (!marcados.length)
-      presencasLista.forEach((m) => {
-        if (m.rotas.length > 0) presencasMarcados.add(m.nome);
-      });
+    if (!marcados.length) presencasLista.forEach(m => { if(m.rotas.length>0) presencasMarcados.add(m.nome); });
 
     renderizarPresencas();
 
-} catch (e) { el.innerHTML = ’
+  } catch(e) { el.innerHTML = '<div class="empty">Erro ao carregar motoboys</div>'; }
 
-Erro ao carregar motoboys
+}
 
-’; } }
+function renderizarPresencas() {
 
-function renderizarPresencas() { const busca = (
-document.getElementById(“presencas-busca”)?.value || “” ).toLowerCase();
+  const busca = (document.getElementById('presencas-busca')?.value||'').toLowerCase();
 
-const el = document.getElementById(“presencas-lista”);
+  const el = document.getElementById('presencas-lista');
 
-if (!el) return;
+  if (!el) return;
 
-const CORES = [ “#0F9B78”, “#8B5CF6”, “#1E9FD9”, “#F59E0B”, “#DC2626”,
-“#0F4C7A”, “#EC4899”, “#14B8A6”, ];
+  const CORES = ['#0F9B78','#8B5CF6','#1E9FD9','#F59E0B','#DC2626','#0F4C7A','#EC4899','#14B8A6'];
 
-const comRota = presencasLista.filter((m) => m.rotas.length > 0);
+  const comRota = presencasLista.filter(m => m.rotas.length>0);
 
-const semRota = presencasLista.filter((m) => m.rotas.length === 0);
+  const semRota = presencasLista.filter(m => m.rotas.length===0);
 
-const elT = document.getElementById(“pres-total”); if (elT)
-elT.textContent = presencasLista.length;
+  const elT = document.getElementById('pres-total');   if(elT) elT.textContent = presencasLista.length;
 
-const elM = document.getElementById(“pres-marcados”); if (elM)
-elM.textContent = presencasMarcados.size;
+  const elM = document.getElementById('pres-marcados'); if(elM) elM.textContent = presencasMarcados.size;
 
-const elS = document.getElementById(“pres-semrota”); if (elS)
-elS.textContent = semRota.length;
+  const elS = document.getElementById('pres-semrota'); if(elS) elS.textContent = semRota.length;
 
-const elG = document.getElementById(“pres-gps”); if (elG)
-elG.textContent = presencasLista.filter((m) => m.gpsAutorizado).length;
+  const elG = document.getElementById('pres-gps');     if(elG) elG.textContent = presencasLista.filter(m=>m.gpsAutorizado).length;
 
-const cbAll = document.getElementById(“pres-cb-all”);
+  const cbAll  = document.getElementById('pres-cb-all');
 
-const lblAll = document.getElementById(“pres-label-all”);
+  const lblAll = document.getElementById('pres-label-all');
 
-const todosMarcados = presencasLista.length > 0 &&
-presencasLista.every((m) => presencasMarcados.has(m.nome));
+  const todosMarcados = presencasLista.length>0 && presencasLista.every(m=>presencasMarcados.has(m.nome));
 
-if (cbAll) { cbAll.style.background = todosMarcados ? “#0F4C7A” :
-“#fff”; cbAll.style.borderColor = todosMarcados ? “#0F4C7A” : “#D6E5EE”;
-cbAll.textContent = todosMarcados ? “✓” : ““; }
+  if(cbAll){ cbAll.style.background=todosMarcados?'#0F4C7A':'#fff'; cbAll.style.borderColor=todosMarcados?'#0F4C7A':'#D6E5EE'; cbAll.textContent=todosMarcados?'✓':''; }
 
-if (lblAll) lblAll.textContent = todosMarcados ? “Desmarcar todos” :
-“Marcar todos”;
+  if(lblAll) lblAll.textContent = todosMarcados?'Desmarcar todos':'Marcar todos';
 
-function renderGrupo(lista, titulo) { if (!lista.length) return ““;
+  function renderGrupo(lista, titulo) {
 
-    const filtrado = lista.filter(
-      (m) => !busca || m.nome.toLowerCase().includes(busca),
-    );
+    if (!lista.length) return '';
 
-    if (!filtrado.length) return "";
+    const filtrado = lista.filter(m => !busca||m.nome.toLowerCase().includes(busca));
+
+    if (!filtrado.length) return '';
 
     let html = `<div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.08em;padding:10px 4px 6px">${titulo}</div>`;
 
-    filtrado.forEach((m) => {
-      const cor = CORES[presencasLista.indexOf(m) % CORES.length];
+    filtrado.forEach(m => {
 
-      const iniciais = m.nome
-        .split(" ")
-        .map((p) => p[0])
-        .slice(0, 2)
-        .join("");
+      const cor = CORES[presencasLista.indexOf(m)%CORES.length];
+
+      const iniciais = m.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
 
       const marcado = presencasMarcados.has(m.nome);
 
-      const rotaTxt = m.rotas.length > 0 ? m.rotas.join(", ") : "Sem rota";
+      const rotaTxt = m.rotas.length>0?m.rotas.join(', '):'Sem rota';
 
-      const rotaBg = m.rotas.length > 0 ? "#E8F4FB" : "#F3F4F6";
+      const rotaBg  = m.rotas.length>0?'#E8F4FB':'#F3F4F6';
 
-      const rotaCor = m.rotas.length > 0 ? "#0F4C7A" : "#9CA3AF";
+      const rotaCor = m.rotas.length>0?'#0F4C7A':'#9CA3AF';
 
       const gpsBadge = m.gpsAutorizado
+
         ? `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">📍 GPS ✓</span>`
+
         : `<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:#F3F4F6;color:#9CA3AF">📍 Pendente</span>`;
 
-      html += `<div onclick="presencasToggle('${m.nome.replace(/'/g, "\\'")}') "
+      html += `<div onclick="presencasToggle('${m.nome.replace(/'/g,"\\'")}') "
 
-        style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:1.5px solid ${marcado ? "#5DCAA5" : "#EBF1F5"};background:${marcado ? "#F0FAF6" : "#fff"};margin-bottom:6px;cursor:pointer;transition:.15s">
+        style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:10px;border:1.5px solid ${marcado?'#5DCAA5':'#EBF1F5'};background:${marcado?'#F0FAF6':'#fff'};margin-bottom:6px;cursor:pointer;transition:.15s">
 
-        <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${marcado ? "#0F9B78" : "#D6E5EE"};background:${marcado ? "#0F9B78" : "#fff"};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0">${marcado ? "✓" : ""}</div>
+        <div style="width:20px;height:20px;border-radius:6px;border:1.5px solid ${marcado?'#0F9B78':'#D6E5EE'};background:${marcado?'#0F9B78':'#fff'};display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff;flex-shrink:0">${marcado?'✓':''}</div>
 
-        <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid ${marcado ? "#0F9B78" : "transparent"}">${iniciais}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:${cor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;border:2px solid ${marcado?'#0F9B78':'transparent'}">${iniciais}</div>
 
         <div style="flex:1;min-width:0">
 
@@ -5748,146 +6035,156 @@ function renderGrupo(lista, titulo) { if (!lista.length) return ““;
         </div>
 
       </div>`;
+
     });
 
     return html;
 
+  }
+
+  el.innerHTML = renderGrupo(comRota,'Com rota hoje') + renderGrupo(semRota,'Sem rota hoje');
+
+  if (!el.innerHTML.trim()) el.innerHTML = '<div class="empty">Nenhum motoboy encontrado</div>';
+
 }
 
-el.innerHTML = renderGrupo(comRota, “Com rota hoje”) +
-renderGrupo(semRota, “Sem rota hoje”);
+function presencasToggle(nome) {
 
-if (!el.innerHTML.trim()) el.innerHTML = ’
+  if (presencasMarcados.has(nome)) presencasMarcados.delete(nome);
 
-Nenhum motoboy encontrado
+  else presencasMarcados.add(nome);
 
-’; }
+  renderizarPresencas();
 
-function presencasToggle(nome) { if (presencasMarcados.has(nome))
-presencasMarcados.delete(nome); else presencasMarcados.add(nome);
+}
 
-renderizarPresencas(); }
+function presencasToggleTodos() {
 
-function presencasToggleTodos() { const todosMarcados =
-presencasLista.every((m) => presencasMarcados.has(m.nome), );
+  const todosMarcados = presencasLista.every(m => presencasMarcados.has(m.nome));
 
-if (todosMarcados) presencasMarcados.clear(); else
-presencasLista.forEach((m) => presencasMarcados.add(m.nome));
+  if (todosMarcados) presencasMarcados.clear();
 
-renderizarPresencas(); }
+  else presencasLista.forEach(m => presencasMarcados.add(m.nome));
+
+  renderizarPresencas();
+
+}
 
 function filtrarPresencas() { renderizarPresencas(); }
 
-async function salvarPresencas() { try { const r = await fetch(API +
-“/presencas”, { method: “POST”,
+async function salvarPresencas() {
 
-      headers: { "Content-Type": "application/json" },
+  try {
 
-      body: JSON.stringify({ marcados: [...presencasMarcados] }),
+    const r = await fetch(API + '/presencas', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ marcados: [...presencasMarcados] })
+
     });
 
     const d = await r.json();
 
-    if (d.status === "ok")
-      toast(
-        "✓ Configuração salva — " +
-          presencasMarcados.size +
-          " motoboys marcados",
-      );
-    else toast("Erro ao salvar");
+    if (d.status === 'ok') toast('✓ Configuração salva — ' + presencasMarcados.size + ' motoboys marcados');
 
-} catch (e) { toast(“Erro de conexão”); } }
+    else toast('Erro ao salvar');
 
-async function iniciarImportacao() { const sel =
-document.getElementById(“chk-download-motoboy”);
-
-if (sel && sel.options.length <= 1) { try { const r = await fetch(API +
-“/motoboys?todos=1&agrupado=1”);
-
-      const d = await r.json();
-
-      const nomes = [...new Set((d.motoboys || []).map((m) => m.nome))].sort();
-
-      nomes.forEach((n) => {
-        const o = document.createElement("option");
-        o.value = n;
-        o.textContent = n;
-        sel.appendChild(o);
-      });
-    } catch (e) {}
+  } catch(e) { toast('Erro de conexão'); }
 
 }
 
-const dataEl = document.getElementById(“chk-download-data”);
+async function iniciarImportacao() {
 
-if (dataEl && !dataEl.value) dataEl.value = new
-Date().toISOString().split(“T”)[0]; }
+  const sel = document.getElementById('chk-download-motoboy');
+
+  if(sel && sel.options.length <= 1) {
+
+    try {
+
+      const r = await fetch(API+'/motoboys?todos=1&agrupado=1');
+
+      const d = await r.json();
+
+      const nomes = [...new Set((d.motoboys||[]).map(m=>m.nome))].sort();
+
+      nomes.forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+
+    } catch(e) {}
+
+  }
+
+  const dataEl = document.getElementById('chk-download-data');
+
+  if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
+
+}
 
 // ── KM RODADO + HORÁRIOS ─────────────────────────────────────
 
-async function carregarKMDia() { const el =
-document.getElementById(“mapa-km-lista”);
+async function carregarKMDia() {
 
-if (!el) return;
+  const el = document.getElementById('mapa-km-lista');
 
-try { const rLoc = await fetch(API + “/localizacao”);
+  if (!el) return;
+
+  try {
+
+    const rLoc = await fetch(API + '/localizacao');
 
     const dLoc = await rLoc.json();
 
     const locs = dLoc.localizacoes || [];
 
     if (!locs.length) {
-      el.innerHTML =
-        '<div style="font-size:11px;color:#94A8B8;text-align:center;padding:8px">Nenhum motoboy online</div>';
+
+      el.innerHTML = '<div style="font-size:11px;color:#94A8B8;text-align:center;padding:8px">Nenhum motoboy online</div>';
 
       return;
+
     }
 
     const hoje = new Date();
 
-    const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
+    const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
 
-    const data = diaSP.toISOString().split("T")[0];
+    const data = diaSP.toISOString().split('T')[0];
 
-    const promises = locs.map(async (l) => {
+    const promises = locs.map(async l => {
+
       try {
-        const r = await fetch(
-          `${API}/km-rodado?nome=${encodeURIComponent(l.nome)}&data=${data}`,
-        );
+
+        const r = await fetch(`${API}/km-rodado?nome=${encodeURIComponent(l.nome)}&data=${data}`);
 
         const d = await r.json();
 
         return { nome: l.nome, km: d.km || 0, horario: d.horario };
-      } catch (e) {
-        return { nome: l.nome, km: 0 };
-      }
+
+      } catch(e) { return { nome: l.nome, km: 0 }; }
+
     });
 
     const resultados = await Promise.all(promises);
 
-    resultados.sort((a, b) => b.km - a.km);
+    resultados.sort((a,b) => b.km - a.km);
 
-    el.innerHTML = resultados
-      .map((r) => {
-        const iniciais = r.nome
-          .split(" ")
-          .map((p) => p[0])
-          .slice(0, 2)
-          .join("");
+    el.innerHTML = resultados.map(r => {
 
-        const cor = r.km > 50 ? "#0F9B78" : r.km > 20 ? "#1E9FD9" : "#5A7A8F";
+      const iniciais = r.nome.split(' ').map(p=>p[0]).slice(0,2).join('');
 
-        const horario = r.horario
-          ? `${r.horario.inicio}–${r.horario.fim}`
-          : "—";
+      const cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : '#5A7A8F';
 
-        return `<div style="display:flex;align-items:center;gap:7px;padding:5px 4px;border-radius:7px;margin-bottom:3px">
+      const horario = r.horario ? `${r.horario.inicio}–${r.horario.fim}` : '—';
+
+      return `<div style="display:flex;align-items:center;gap:7px;padding:5px 4px;border-radius:7px;margin-bottom:3px">
 
         <div style="width:24px;height:24px;border-radius:50%;background:#E8F4FB;color:#0F4C7A;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0">${iniciais}</div>
 
         <div style="flex:1;min-width:0">
 
-          <div style="font-size:11px;font-weight:700;color:#0F2940;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome.split(" ")[0]}</div>
+          <div style="font-size:11px;font-weight:700;color:#0F2940;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.nome.split(' ')[0]}</div>
 
           <div style="font-size:9px;color:#94A8B8">${horario}</div>
 
@@ -5896,539 +6193,538 @@ try { const rLoc = await fetch(API + “/localizacao”);
         <div style="font-size:13px;font-weight:800;color:${cor};flex-shrink:0">${r.km}km</div>
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { el.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) {
 
-’; } }
+    el.innerHTML = '<div style="font-size:11px;color:#94A8B8;text-align:center;padding:8px">Erro ao carregar</div>';
 
-async function carregarKmCompleto() { const lista =
-document.getElementById(“km-lista-completa”);
-
-const elTotal = document.getElementById(“km-total-dia”);
-
-const elMedia = document.getElementById(“km-media-dia”);
-
-const elAtivos = document.getElementById(“km-ativos-dia”);
-
-const elLabel = document.getElementById(“km-data-label”);
-
-const filtroEl = document.getElementById(“km-data-filtro”);
-
-if (filtroEl && !filtroEl.value) { const hoje = new Date();
-
-    const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
-
-    filtroEl.value = diaSP.toISOString().split("T")[0];
+  }
 
 }
 
-const data = filtroEl && filtroEl.value ? filtroEl.value : new
-Date().toISOString().split(“T”)[0];
 
-const partes = data.split(“-”);
 
-if (elLabel) elLabel.textContent = partes[2] + “/” + partes[1] + “/” +
-partes[0];
+async function carregarKmCompleto() {
 
-if (lista) lista.innerHTML = ’
+  const lista = document.getElementById('km-lista-completa');
 
-Carregando…
+  const elTotal = document.getElementById('km-total-dia');
 
-’;
+  const elMedia = document.getElementById('km-media-dia');
 
-try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
+  const elAtivos = document.getElementById('km-ativos-dia');
+
+  const elLabel = document.getElementById('km-data-label');
+
+  const filtroEl = document.getElementById('km-data-filtro');
+
+
+
+  if (filtroEl && !filtroEl.value) {
+
+    const hoje = new Date();
+
+    const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
+
+    filtroEl.value = diaSP.toISOString().split('T')[0];
+
+  }
+
+  const data = (filtroEl && filtroEl.value) ? filtroEl.value : new Date().toISOString().split('T')[0];
+
+  const partes = data.split('-');
+
+  if (elLabel) elLabel.textContent = partes[2] + '/' + partes[1] + '/' + partes[0];
+
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
+
+
+  try {
+
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
     const dMb = await rMb.json();
 
-    const nomes = Array.from(
-      new Set(
-        (dMb.motoboys || []).map(function (m) {
-          return m.nome;
-        }),
-      ),
-    ).sort();
+    const nomes = Array.from(new Set((dMb.motoboys || []).map(function(m) { return m.nome; }))).sort();
 
-    const promises = nomes.map(function (nome) {
-      return fetch(
-        API + "/km-rodado?nome=" + encodeURIComponent(nome) + "&data=" + data,
-      )
-        .then(function (r) {
-          return r.json();
-        })
 
-        .then(function (d) {
-          return { nome: nome, km: d.km || 0, horario: d.horario };
-        })
 
-        .catch(function () {
-          return { nome: nome, km: 0 };
-        });
+    const promises = nomes.map(function(nome) {
+
+      return fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data)
+
+        .then(function(r) { return r.json(); })
+
+        .then(function(d) { return { nome: nome, km: d.km || 0, horario: d.horario }; })
+
+        .catch(function() { return { nome: nome, km: 0 }; });
+
     });
+
+
 
     const resultados = await Promise.all(promises);
 
-    const comKm = resultados.filter(function (r) {
-      return r.km > 0;
-    });
+    const comKm = resultados.filter(function(r) { return r.km > 0; });
 
-    resultados.sort(function (a, b) {
-      return b.km - a.km;
-    });
+    resultados.sort(function(a, b) { return b.km - a.km; });
 
-    const totalKm = comKm.reduce(function (s, r) {
-      return s + r.km;
-    }, 0);
+
+
+    const totalKm = comKm.reduce(function(s, r) { return s + r.km; }, 0);
 
     const mediaKm = comKm.length > 0 ? (totalKm / comKm.length).toFixed(1) : 0;
 
-    const maxKm = Math.max.apply(
-      null,
-      resultados
-        .map(function (x) {
-          return x.km;
-        })
-        .concat([1]),
-    );
+    const maxKm = Math.max.apply(null, resultados.map(function(x) { return x.km; }).concat([1]));
 
-    if (elTotal) elTotal.textContent = totalKm.toFixed(1) + "km";
 
-    if (elMedia) elMedia.textContent = mediaKm + "km";
+
+    if (elTotal) elTotal.textContent = totalKm.toFixed(1) + 'km';
+
+    if (elMedia) elMedia.textContent = mediaKm + 'km';
 
     if (elAtivos) elAtivos.textContent = comKm.length;
+
+
 
     if (!lista) return;
 
     if (!resultados.length) {
-      lista.innerHTML =
-        '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>';
+
+      lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>';
 
       return;
+
     }
 
-    var html = "";
 
-    resultados.forEach(function (r) {
-      var cor = r.km > 50 ? "#0F9B78" : r.km > 20 ? "#1E9FD9" : "#5A7A8F";
+
+    var html = '';
+
+    resultados.forEach(function(r) {
+
+      var cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : '#5A7A8F';
 
       var barPct = Math.min(100, (r.km / maxKm) * 100);
 
-      var iniciais = r.nome
-        .split(" ")
-        .map(function (p) {
-          return p[0];
-        })
-        .slice(0, 2)
-        .join("");
+      var iniciais = r.nome.split(' ').map(function(p) { return p[0]; }).slice(0, 2).join('');
 
-      var horario = r.horario ? r.horario.inicio + " – " + r.horario.fim : "—";
+      var horario = r.horario ? (r.horario.inicio + ' – ' + r.horario.fim) : '—';
 
-      var bgCor = r.km > 0 ? "#E8F4FB" : "#F3F4F6";
+      var bgCor = r.km > 0 ? '#E8F4FB' : '#F3F4F6';
 
-      var txtCor = r.km > 0 ? "#0F4C7A" : "#9CA3AF";
+      var txtCor = r.km > 0 ? '#0F4C7A' : '#9CA3AF';
 
-      var kmTxt = r.km > 0 ? r.km + "km" : "—";
+      var kmTxt = r.km > 0 ? r.km + 'km' : '—';
 
-      html +=
-        '<div style="padding:12px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:12px">';
+      html += '<div style="padding:12px 14px;border-bottom:1px solid #F5F9FC;display:flex;align-items:center;gap:12px">';
 
-      html +=
-        '<div style="width:34px;height:34px;border-radius:50%;background:' +
-        bgCor +
-        ";color:" +
-        txtCor +
-        ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">' +
-        iniciais +
-        "</div>";
+      html += '<div style="width:34px;height:34px;border-radius:50%;background:' + bgCor + ';color:' + txtCor + ';display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0">' + iniciais + '</div>';
 
       html += '<div style="flex:1;min-width:0">';
 
-      html +=
-        '<div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' +
-        r.nome +
-        "</div>";
+      html += '<div style="font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + r.nome + '</div>';
 
-      html +=
-        '<div style="font-size:10px;color:#94A8B8;margin-top:2px">⏰ ' +
-        horario +
-        "</div>";
+      html += '<div style="font-size:10px;color:#94A8B8;margin-top:2px">⏰ ' + horario + '</div>';
 
-      html +=
-        '<div style="margin-top:5px;height:4px;background:#F0F4F8;border-radius:4px;overflow:hidden"><div style="height:100%;width:' +
-        barPct +
-        "%;background:" +
-        cor +
-        ';border-radius:4px"></div></div>';
+      html += '<div style="margin-top:5px;height:4px;background:#F0F4F8;border-radius:4px;overflow:hidden"><div style="height:100%;width:' + barPct + '%;background:' + cor + ';border-radius:4px"></div></div>';
 
-      html += "</div>";
+      html += '</div>';
 
-      html +=
-        '<div style="font-size:16px;font-weight:800;color:' +
-        cor +
-        ';flex-shrink:0;min-width:52px;text-align:right">' +
-        kmTxt +
-        "</div>";
+      html += '<div style="font-size:16px;font-weight:800;color:' + cor + ';flex-shrink:0;min-width:52px;text-align:right">' + kmTxt + '</div>';
 
-      html += "</div>";
+      html += '</div>';
+
     });
 
     lista.innerHTML = html;
 
-} catch (e) { if (lista) lista.innerHTML = ’
 
-Erro ao carregar
 
-’; } }
+  } catch(e) {
+
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
+
+  }
+
+}
 
 // ── QUILOMETRAGEM ─────────────────────────────────────────────
 
 let _kmDadosAtual = []; // Cache para exportação
 
-let _kmAbaAtual = “dia”;
+let _kmAbaAtual = 'dia';
 
-function kmMudarAba(aba, el) { _kmAbaAtual = aba;
 
-document.querySelectorAll(‘[id^=“km-tab-btn-”]’).forEach((b) => {
-b.style.color = “#6B7280”;
 
-    b.style.borderBottomColor = "transparent";
+function kmMudarAba(aba, el) {
 
-});
+  _kmAbaAtual = aba;
 
-el.style.color = “#0F9B78”;
+  document.querySelectorAll('[id^="km-tab-btn-"]').forEach(b => {
 
-el.style.borderBottomColor = “#0F9B78”;
+    b.style.color = '#6B7280';
 
-// Mostra filtro certo
+    b.style.borderBottomColor = 'transparent';
 
-[“dia”, “periodo”, “motoboy”, “rota”, “metricas”].forEach((a) => { const
-el2 = document.getElementById(“km-filtro-” + a);
+  });
 
-    if (el2) el2.style.display = a === aba ? "flex" : "none";
+  el.style.color = '#0F9B78';
 
-});
+  el.style.borderBottomColor = '#0F9B78';
 
-// Mostra conteúdo certo
 
-const lista = document.getElementById(“km-lista-completa”);
 
-const metricas = document.getElementById(“km-metricas-conteudo”);
+  // Mostra filtro certo
 
-if (aba === “metricas”) { if (lista) lista.style.display = “none”;
+  ['dia','periodo','motoboy','rota','metricas'].forEach(a => {
 
-    if (metricas) metricas.style.display = "block";
+    const el2 = document.getElementById('km-filtro-' + a);
 
-} else { if (lista) lista.style.display = “block”;
+    if (el2) el2.style.display = a === aba ? 'flex' : 'none';
 
-    if (metricas) metricas.style.display = "none";
+  });
+
+
+
+  // Mostra conteúdo certo
+
+  const lista = document.getElementById('km-lista-completa');
+
+  const metricas = document.getElementById('km-metricas-conteudo');
+
+  if (aba === 'metricas') {
+
+    if (lista) lista.style.display = 'none';
+
+    if (metricas) metricas.style.display = 'block';
+
+  } else {
+
+    if (lista) lista.style.display = 'block';
+
+    if (metricas) metricas.style.display = 'none';
+
+  }
+
+
+
+  // Popula selects se necessário
+
+  if (aba === 'motoboy') kmPopularSelectMotoboy();
+
+  if (aba === 'rota') kmPopularSelectRota();
+
+
+
+  // Título da tabela
+
+  const titulos = { dia: 'KM por motoboy', periodo: 'KM por motoboy no período', motoboy: 'Histórico do motoboy', rota: 'KM por rota', metricas: 'Métricas' };
+
+  const t = document.getElementById('km-tabela-titulo');
+
+  if (t) t.textContent = titulos[aba] || 'KM';
+
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Selecione os filtros e clique em Buscar</div>';
+
+  kmZerarKPIs();
 
 }
 
-// Popula selects se necessário
 
-if (aba === “motoboy”) kmPopularSelectMotoboy();
 
-if (aba === “rota”) kmPopularSelectRota();
+function kmZerarKPIs() {
 
-// Título da tabela
+  ['km-total-dia','km-media-dia','km-ativos-dia','km-maior-dia'].forEach(id => {
 
-const titulos = { dia: “KM por motoboy”, periodo: “KM por motoboy no
-período”, motoboy: “Histórico do motoboy”, rota: “KM por rota”,
-metricas: “Métricas”, };
+    const el = document.getElementById(id);
 
-const t = document.getElementById(“km-tabela-titulo”);
+    if (el) el.textContent = '—';
 
-if (t) t.textContent = titulos[aba] || “KM”;
+  });
 
-if (lista) lista.innerHTML = ’
+}
 
-Selecione os filtros e clique em Buscar
 
-’;
 
-kmZerarKPIs(); }
+async function kmPopularSelectMotoboy() {
 
-function kmZerarKPIs() { [“km-total-dia”, “km-media-dia”,
-“km-ativos-dia”, “km-maior-dia”].forEach( (id) => { const el =
-document.getElementById(id);
+  const sel = document.getElementById('km-sel-motoboy');
 
-      if (el) el.textContent = "—";
-    },
+  if (!sel || sel.options.length > 1) return;
 
-); }
+  try {
 
-async function kmPopularSelectMotoboy() { const sel =
-document.getElementById(“km-sel-motoboy”);
-
-if (!sel || sel.options.length > 1) return;
-
-try { const r = await fetch(API + “/motoboys?todos=1&agrupado=1”);
+    const r = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
     const d = await r.json();
 
-    const nomes = [...new Set((d.motoboys || []).map((m) => m.nome))].sort();
+    const nomes = [...new Set((d.motoboys||[]).map(m => m.nome))].sort();
 
-    nomes.forEach((n) => {
-      const o = document.createElement("option");
-      o.value = n;
-      o.textContent = n;
-      sel.appendChild(o);
-    });
+    nomes.forEach(n => { const o = document.createElement('option'); o.value = n; o.textContent = n; sel.appendChild(o); });
 
-} catch (e) {} }
+  } catch(e) {}
 
-async function kmPopularSelectRota() { const sel =
-document.getElementById(“km-sel-rota”);
+}
 
-if (!sel || sel.options.length > 1) return;
 
-try { const r = await fetch(API + “/rotas-disponiveis?todos_dias=1”);
+
+async function kmPopularSelectRota() {
+
+  const sel = document.getElementById('km-sel-rota');
+
+  if (!sel || sel.options.length > 1) return;
+
+  try {
+
+    const r = await fetch(API + '/rotas-disponiveis?todos_dias=1');
 
     const d = await r.json();
 
-    (d.rotas || []).forEach((r) => {
-      const o = document.createElement("option");
-      o.value = r.rota;
-      o.textContent = r.rota;
-      sel.appendChild(o);
-    });
+    (d.rotas||[]).forEach(r => { const o = document.createElement('option'); o.value = r.rota; o.textContent = r.rota; sel.appendChild(o); });
 
-} catch (e) {} }
+  } catch(e) {}
 
-function kmDataAtual() { const hoje = new Date();
+}
 
-const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
 
-return diaSP.toISOString().split(“T”)[0]; }
 
-function kmFormatarData(data) { const p = data.split(“-”);
+function kmDataAtual() {
 
-return p[2] + “/” + p[1] + “/” + p[0]; }
+  const hoje = new Date();
 
-function kmAtualizarKPIs(resultados) { const comKm =
-resultados.filter((r) => r.km > 0);
+  const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
 
-const totalKm = comKm.reduce((s, r) => s + r.km, 0);
+  return diaSP.toISOString().split('T')[0];
 
-const mediaKm = comKm.length > 0 ? (totalKm / comKm.length).toFixed(1) :
-0;
+}
 
-const maiorKm = comKm.length > 0 ? Math.max(…comKm.map((r) => r.km)) :
-0;
 
-const elTotal = document.getElementById(“km-total-dia”);
 
-const elMedia = document.getElementById(“km-media-dia”);
+function kmFormatarData(data) {
 
-const elAtivos = document.getElementById(“km-ativos-dia”);
+  const p = data.split('-');
 
-const elMaior = document.getElementById(“km-maior-dia”);
+  return p[2] + '/' + p[1] + '/' + p[0];
 
-if (elTotal) elTotal.textContent = totalKm.toFixed(1) + “km”;
+}
 
-if (elMedia) elMedia.textContent = mediaKm + “km”;
 
-if (elAtivos) elAtivos.textContent = comKm.length;
 
-if (elMaior) elMaior.textContent = maiorKm + “km”; }
+function kmAtualizarKPIs(resultados) {
 
-function kmRenderizarLinha(r, maxKm) { const cor = r.km > 50 ? “#0F9B78”
-: r.km > 20 ? “#1E9FD9” : r.km > 0 ? “#5A7A8F” : “#D1D5DB”;
+  const comKm = resultados.filter(r => r.km > 0);
 
-const barPct = maxKm > 0 ? Math.min(100, (r.km / maxKm) * 100) : 0;
+  const totalKm = comKm.reduce((s,r) => s + r.km, 0);
 
-const iniciais = (r.nome || ““) .split(” “) .map((p) => p[0]) .slice(0,
-2) .join(”“);
+  const mediaKm = comKm.length > 0 ? (totalKm / comKm.length).toFixed(1) : 0;
 
-const bgCor = r.km > 0 ? “#E8F4FB” : “#F3F4F6”;
+  const maiorKm = comKm.length > 0 ? Math.max(...comKm.map(r => r.km)) : 0;
 
-const txtCor = r.km > 0 ? “#0F4C7A” : “#9CA3AF”;
+  const elTotal = document.getElementById('km-total-dia');
 
-const kmTxt = r.km > 0 ? r.km + “km” : “—”;
+  const elMedia = document.getElementById('km-media-dia');
 
-const inicio = r.horario ? r.horario.inicio : r.inicio || “—”;
+  const elAtivos = document.getElementById('km-ativos-dia');
 
-const fim = r.horario ? r.horario.fim : r.fim || “—”;
+  const elMaior = document.getElementById('km-maior-dia');
 
-const pontos = r.pontos || “—”;
+  if (elTotal) elTotal.textContent = totalKm.toFixed(1) + 'km';
 
-return ( ’
+  if (elMedia) elMedia.textContent = mediaKm + 'km';
 
-’ + ’
+  if (elAtivos) elAtivos.textContent = comKm.length;
 
-’ + ‘<div style=“width:32px;height:32px;border-radius:50%;background:’ +
-bgCor +”;color:” + txtCor
-+’;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0”>’ +
-iniciais + “
+  if (elMaior) elMaior.textContent = maiorKm + 'km';
 
-” + ’
+}
 
-’ + ‘<div style=“font-size:13px;font-weight:600;color:’ + (r.km > 0
-?”#0F2940” : “#9CA3AF”)
-+’;overflow:hidden;text-overflow:ellipsis;white-space:nowrap”>’ +
-(r.nome || r.rota || “—”) + “
 
-” + ’
 
-’ + ‘<div style=“height:100%;width:’ + barPct +”%;background:” + cor
-+’;border-radius:3px”>
+function kmRenderizarLinha(r, maxKm) {
 
-’ + “
+  const cor = r.km > 50 ? '#0F9B78' : r.km > 20 ? '#1E9FD9' : r.km > 0 ? '#5A7A8F' : '#D1D5DB';
 
-” + “
-” + “
-” + ’
+  const barPct = maxKm > 0 ? Math.min(100, (r.km / maxKm) * 100) : 0;
 
-’ + inicio + “
+  const iniciais = (r.nome || '').split(' ').map(p => p[0]).slice(0,2).join('');
 
-” + ’
+  const bgCor = r.km > 0 ? '#E8F4FB' : '#F3F4F6';
 
-’ + fim + “
+  const txtCor = r.km > 0 ? '#0F4C7A' : '#9CA3AF';
 
-” + ’
+  const kmTxt = r.km > 0 ? r.km + 'km' : '—';
 
-’ + pontos + “
+  const inicio = r.horario ? r.horario.inicio : (r.inicio || '—');
 
-” + ’
+  const fim = r.horario ? r.horario.fim : (r.fim || '—');
 
-’ + kmTxt + “
+  const pontos = r.pontos || '—';
 
-” + “
-” ); }
 
-async function carregarKmCompleto() { const lista =
-document.getElementById(“km-lista-completa”);
 
-const filtroEl = document.getElementById(“km-data-filtro”);
+  return '<div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 80px;padding:11px 14px;border-bottom:1px solid #F5F9FC;align-items:center">' +
 
-if (filtroEl && !filtroEl.value) filtroEl.value = kmDataAtual();
+    '<div style="display:flex;align-items:center;gap:10px">' +
 
-const data = filtroEl && filtroEl.value ? filtroEl.value :
-kmDataAtual();
+      '<div style="width:32px;height:32px;border-radius:50%;background:' + bgCor + ';color:' + txtCor + ';display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">' + iniciais + '</div>' +
 
-const elLabel = document.getElementById(“km-data-label”);
+      '<div style="min-width:0">' +
 
-if (elLabel) elLabel.textContent = kmFormatarData(data);
+        '<div style="font-size:13px;font-weight:600;color:' + (r.km > 0 ? '#0F2940' : '#9CA3AF') + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (r.nome || r.rota || '—') + '</div>' +
 
-if (lista) lista.innerHTML = ’
+        '<div style="margin-top:3px;height:3px;background:#F0F4F8;border-radius:3px;overflow:hidden;max-width:120px">' +
 
-Carregando…
+          '<div style="height:100%;width:' + barPct + '%;background:' + cor + ';border-radius:3px"></div>' +
 
-’;
+        '</div>' +
 
-kmZerarKPIs();
+      '</div>' +
 
-try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
+    '</div>' +
+
+    '<div style="font-size:12px;color:#5A7A8F;text-align:center">' + inicio + '</div>' +
+
+    '<div style="font-size:12px;color:#5A7A8F;text-align:center">' + fim + '</div>' +
+
+    '<div style="font-size:12px;color:#94A8B8;text-align:center">' + pontos + '</div>' +
+
+    '<div style="font-size:15px;font-weight:800;color:' + cor + ';text-align:right">' + kmTxt + '</div>' +
+
+  '</div>';
+
+}
+
+
+
+async function carregarKmCompleto() {
+
+  const lista = document.getElementById('km-lista-completa');
+
+  const filtroEl = document.getElementById('km-data-filtro');
+
+  if (filtroEl && !filtroEl.value) filtroEl.value = kmDataAtual();
+
+  const data = (filtroEl && filtroEl.value) ? filtroEl.value : kmDataAtual();
+
+  const elLabel = document.getElementById('km-data-label');
+
+  if (elLabel) elLabel.textContent = kmFormatarData(data);
+
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
+  kmZerarKPIs();
+
+
+
+  try {
+
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
     const dMb = await rMb.json();
 
-    const nomes = [...new Set((dMb.motoboys || []).map((m) => m.nome))].sort();
+    const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
 
-    const promises = nomes.map((nome) =>
-      fetch(
-        API + "/km-rodado?nome=" + encodeURIComponent(nome) + "&data=" + data,
-      )
-        .then((r) => r.json())
+    const promises = nomes.map(nome =>
 
-        .then((d) => ({
-          nome,
-          km: d.km || 0,
-          horario: d.horario,
-          pontos: d.pontos || 0,
-        }))
+      fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data)
 
-        .catch(() => ({ nome, km: 0, pontos: 0 })),
+        .then(r => r.json())
+
+        .then(d => ({ nome, km: d.km || 0, horario: d.horario, pontos: d.pontos || 0 }))
+
+        .catch(() => ({ nome, km: 0, pontos: 0 }))
+
     );
 
     const resultados = await Promise.all(promises);
 
-    resultados.sort((a, b) => b.km - a.km);
+    resultados.sort((a,b) => b.km - a.km);
 
-    _kmDadosAtual = resultados.map((r) => ({ ...r, data }));
+    _kmDadosAtual = resultados.map(r => ({ ...r, data }));
 
     kmAtualizarKPIs(resultados);
 
-    const maxKm = Math.max(...resultados.map((r) => r.km), 1);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
 
     if (!lista) return;
 
-    if (!resultados.length) {
-      lista.innerHTML =
-        '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>';
-      return;
-    }
+    if (!resultados.length) { lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum dado</div>'; return; }
 
-    lista.innerHTML = resultados
-      .map((r) => kmRenderizarLinha(r, maxKm))
-      .join("");
+    lista.innerHTML = resultados.map(r => kmRenderizarLinha(r, maxKm)).join('');
 
-} catch (e) { if (lista) lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
 
-’; } }
+  }
 
-async function carregarKmPeriodo() { const inicio =
-document.getElementById(“km-data-inicio”)?.value;
+}
 
-const fim = document.getElementById(“km-data-fim”)?.value;
 
-if (!inicio || !fim) { alert(“Selecione data início e fim”); return; }
 
-const lista = document.getElementById(“km-lista-completa”);
+async function carregarKmPeriodo() {
 
-const elLabel = document.getElementById(“km-data-label”);
+  const inicio = document.getElementById('km-data-inicio')?.value;
 
-if (elLabel) elLabel.textContent = kmFormatarData(inicio) + ” a ” +
-kmFormatarData(fim);
+  const fim = document.getElementById('km-data-fim')?.value;
 
-if (lista) lista.innerHTML = ’
+  if (!inicio || !fim) { alert('Selecione data início e fim'); return; }
 
-Carregando…
+  const lista = document.getElementById('km-lista-completa');
 
-’;
+  const elLabel = document.getElementById('km-data-label');
 
-kmZerarKPIs();
+  if (elLabel) elLabel.textContent = kmFormatarData(inicio) + ' a ' + kmFormatarData(fim);
 
-try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
+  kmZerarKPIs();
+
+
+
+  try {
+
+    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
 
     const dMb = await rMb.json();
 
-    const nomes = [...new Set((dMb.motoboys || []).map((m) => m.nome))].sort();
+    const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
+
+
 
     // Gerar lista de datas no período
 
     const datas = [];
 
-    let cur = new Date(inicio + "T00:00:00");
+    let cur = new Date(inicio + 'T00:00:00');
 
-    const fim2 = new Date(fim + "T00:00:00");
+    const fim2 = new Date(fim + 'T00:00:00');
 
     while (cur <= fim2) {
-      datas.push(cur.toISOString().split("T")[0]);
+
+      datas.push(cur.toISOString().split('T')[0]);
 
       cur.setDate(cur.getDate() + 1);
+
     }
+
+
 
     // Buscar KM por motoboy somando todos os dias
 
-    const promises = nomes.map(async (nome) => {
-      let kmTotal = 0,
-        pontosTotal = 0,
-        horario = null;
+    const promises = nomes.map(async nome => {
+
+      let kmTotal = 0, pontosTotal = 0, horario = null;
 
       for (const data of datas) {
+
         try {
-          const r = await fetch(
-            API +
-              "/km-rodado?nome=" +
-              encodeURIComponent(nome) +
-              "&data=" +
-              data,
-          );
+
+          const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data);
 
           const d = await r.json();
 
@@ -6437,99 +6733,92 @@ try { const rMb = await fetch(API + “/motoboys?todos=1&agrupado=1”);
           pontosTotal += d.pontos || 0;
 
           if (!horario && d.horario) horario = d.horario;
-        } catch (e) {}
+
+        } catch(e) {}
+
       }
 
-      return {
-        nome,
-        km: Math.round(kmTotal * 10) / 10,
-        pontos: pontosTotal,
-        horario,
-        dias: datas.length,
-      };
+      return { nome, km: Math.round(kmTotal * 10) / 10, pontos: pontosTotal, horario, dias: datas.length };
+
     });
+
+
 
     const resultados = await Promise.all(promises);
 
-    resultados.sort((a, b) => b.km - a.km);
+    resultados.sort((a,b) => b.km - a.km);
 
-    _kmDadosAtual = resultados.map((r) => ({
-      ...r,
-      periodo: kmFormatarData(inicio) + " a " + kmFormatarData(fim),
-    }));
+    _kmDadosAtual = resultados.map(r => ({ ...r, periodo: kmFormatarData(inicio) + ' a ' + kmFormatarData(fim) }));
 
     kmAtualizarKPIs(resultados);
 
-    const maxKm = Math.max(...resultados.map((r) => r.km), 1);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
 
     if (!lista) return;
 
-    lista.innerHTML = resultados
-      .map((r) => kmRenderizarLinha(r, maxKm))
-      .join("");
+    lista.innerHTML = resultados.map(r => kmRenderizarLinha(r, maxKm)).join('');
 
-} catch (e) { if (lista) lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
 
-’; } }
+  }
 
-async function carregarKmMotoboy() { const nome =
-document.getElementById(“km-sel-motoboy”)?.value;
+}
 
-const inicio = document.getElementById(“km-motoboy-inicio”)?.value;
 
-const fim = document.getElementById(“km-motoboy-fim”)?.value;
 
-if (!nome) { alert(“Selecione um motoboy”); return; }
+async function carregarKmMotoboy() {
 
-if (!inicio || !fim) { alert(“Selecione o período”); return; }
+  const nome = document.getElementById('km-sel-motoboy')?.value;
 
-const lista = document.getElementById(“km-lista-completa”);
+  const inicio = document.getElementById('km-motoboy-inicio')?.value;
 
-const elLabel = document.getElementById(“km-data-label”);
+  const fim = document.getElementById('km-motoboy-fim')?.value;
 
-if (elLabel) elLabel.textContent = nome + ” · ” +
-kmFormatarData(inicio) + ” a ” + kmFormatarData(fim);
+  if (!nome) { alert('Selecione um motoboy'); return; }
 
-if (lista) lista.innerHTML = ’
+  if (!inicio || !fim) { alert('Selecione o período'); return; }
 
-Carregando…
+  const lista = document.getElementById('km-lista-completa');
 
-’;
+  const elLabel = document.getElementById('km-data-label');
 
-kmZerarKPIs();
+  if (elLabel) elLabel.textContent = nome + ' · ' + kmFormatarData(inicio) + ' a ' + kmFormatarData(fim);
 
-try { const datas = [];
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
 
-    let cur = new Date(inicio + "T00:00:00");
+  kmZerarKPIs();
 
-    const fim2 = new Date(fim + "T00:00:00");
 
-    while (cur <= fim2) {
-      datas.push(cur.toISOString().split("T")[0]);
-      cur.setDate(cur.getDate() + 1);
-    }
 
-    const promises = datas.map(async (data) => {
+  try {
+
+    const datas = [];
+
+    let cur = new Date(inicio + 'T00:00:00');
+
+    const fim2 = new Date(fim + 'T00:00:00');
+
+    while (cur <= fim2) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); }
+
+
+
+    const promises = datas.map(async data => {
+
       try {
-        const r = await fetch(
-          API + "/km-rodado?nome=" + encodeURIComponent(nome) + "&data=" + data,
-        );
+
+        const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data);
 
         const d = await r.json();
 
-        return {
-          nome,
-          data,
-          km: d.km || 0,
-          pontos: d.pontos || 0,
-          horario: d.horario,
-        };
-      } catch (e) {
-        return { nome, data, km: 0, pontos: 0 };
-      }
+        return { nome, data, km: d.km || 0, pontos: d.pontos || 0, horario: d.horario };
+
+      } catch(e) { return { nome, data, km: 0, pontos: 0 }; }
+
     });
+
+
 
     const resultados = await Promise.all(promises);
 
@@ -6537,210 +6826,235 @@ try { const datas = [];
 
     kmAtualizarKPIs(resultados);
 
-    const maxKm = Math.max(...resultados.map((r) => r.km), 1);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
 
     if (!lista) return;
+
+
 
     // Renderiza com data em vez de nome
 
-    lista.innerHTML = resultados
-      .map((r) => {
-        const r2 = { ...r, nome: kmFormatarData(r.data) };
+    lista.innerHTML = resultados.map(r => {
 
-        return kmRenderizarLinha(r2, maxKm);
-      })
-      .join("");
+      const r2 = { ...r, nome: kmFormatarData(r.data) };
 
-} catch (e) { if (lista) lista.innerHTML = ’
+      return kmRenderizarLinha(r2, maxKm);
 
-Erro ao carregar
+    }).join('');
 
-’; } }
+  } catch(e) {
 
-async function carregarKmRota() { const rota =
-document.getElementById(“km-sel-rota”)?.value;
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
 
-const data = document.getElementById(“km-rota-data”)?.value ||
-kmDataAtual();
+  }
 
-if (!rota) { alert(“Selecione uma rota”); return; }
+}
 
-const lista = document.getElementById(“km-lista-completa”);
 
-const elLabel = document.getElementById(“km-data-label”);
 
-if (elLabel) elLabel.textContent = rota + ” · ” + kmFormatarData(data);
+async function carregarKmRota() {
 
-if (lista) lista.innerHTML = ’
+  const rota = document.getElementById('km-sel-rota')?.value;
 
-Carregando…
+  const data = document.getElementById('km-rota-data')?.value || kmDataAtual();
 
-’;
+  if (!rota) { alert('Selecione uma rota'); return; }
 
-kmZerarKPIs();
+  const lista = document.getElementById('km-lista-completa');
 
-try { // Buscar motoboys que trabalharam nessa rota
+  const elLabel = document.getElementById('km-data-label');
 
-    const rMb = await fetch(API + "/motoboys?todos=1");
+  if (elLabel) elLabel.textContent = rota + ' · ' + kmFormatarData(data);
+
+  if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
+  kmZerarKPIs();
+
+
+
+  try {
+
+    // Buscar motoboys que trabalharam nessa rota
+
+    const rMb = await fetch(API + '/motoboys?todos=1');
 
     const dMb = await rMb.json();
 
-    const motoboysDaRota = [
-      ...new Set(
-        (dMb.motoboys || []).filter((m) => m.rota === rota).map((m) => m.nome),
-      ),
-    ];
+    const motoboysDaRota = [...new Set((dMb.motoboys||[]).filter(m => m.rota === rota).map(m => m.nome))];
 
-    const promises = motoboysDaRota.map((nome) =>
-      fetch(
-        API + "/km-rodado?nome=" + encodeURIComponent(nome) + "&data=" + data,
-      )
-        .then((r) => r.json())
 
-        .then((d) => ({
-          nome,
-          rota,
-          km: d.km || 0,
-          pontos: d.pontos || 0,
-          horario: d.horario,
-        }))
 
-        .catch(() => ({ nome, rota, km: 0, pontos: 0 })),
+    const promises = motoboysDaRota.map(nome =>
+
+      fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data)
+
+        .then(r => r.json())
+
+        .then(d => ({ nome, rota, km: d.km || 0, pontos: d.pontos || 0, horario: d.horario }))
+
+        .catch(() => ({ nome, rota, km: 0, pontos: 0 }))
+
     );
+
+
 
     const resultados = await Promise.all(promises);
 
-    resultados.sort((a, b) => b.km - a.km);
+    resultados.sort((a,b) => b.km - a.km);
 
-    _kmDadosAtual = resultados.map((r) => ({ ...r, data }));
+    _kmDadosAtual = resultados.map(r => ({ ...r, data }));
 
     kmAtualizarKPIs(resultados);
 
-    const maxKm = Math.max(...resultados.map((r) => r.km), 1);
+    const maxKm = Math.max(...resultados.map(r => r.km), 1);
 
     if (!lista) return;
 
-    if (!resultados.length) {
-      lista.innerHTML =
-        '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum motoboy encontrado para esta rota</div>';
-      return;
-    }
+    if (!resultados.length) { lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8">Nenhum motoboy encontrado para esta rota</div>'; return; }
 
-    lista.innerHTML = resultados
-      .map((r) => kmRenderizarLinha(r, maxKm))
-      .join("");
+    lista.innerHTML = resultados.map(r => kmRenderizarLinha(r, maxKm)).join('');
 
-} catch (e) { if (lista) lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#EF4444">Erro ao carregar</div>';
 
-’; } }
+  }
 
-async function kmExportarExcel() { if (!_kmDadosAtual.length) {
-alert(“Nenhum dado para exportar. Faça uma busca primeiro.”); return; }
+}
 
-const label = document.getElementById(“km-data-label”)?.textContent ||
-“relatorio-km”;
 
-// Busca dados enriquecidos (geofence + confirmação)
 
-const dados = await enriquecerDadosKm(_kmDadosAtual);
+async function kmExportarExcel() {
 
-// Monta array para SheetJS
+  if (!_kmDadosAtual.length) { alert('Nenhum dado para exportar. Faça uma busca primeiro.'); return; }
 
-const linhas = [ [ “Motoboy”, “Data”, “Início”, “Base Loglife”,
-“Polaris”, “KM Rodado”, “Vel. Média (km/h)”, “TMD”, “Pontos GPS”, ], ];
+  const label = document.getElementById('km-data-label')?.textContent || 'relatorio-km';
 
-dados.forEach((r) => { linhas.push([ r.nome || “—”,
 
-      r.data ? kmFormatarData(r.data) : r.periodo || "—",
 
-      r.inicio || "—",
+  // Busca dados enriquecidos (geofence + confirmação)
 
-      r.base || "—",
+  const dados = await enriquecerDadosKm(_kmDadosAtual);
 
-      r.polaris || "—",
+
+
+  // Monta array para SheetJS
+
+  const linhas = [
+
+    ['Motoboy','Data','Início','Base Loglife','Polaris','KM Rodado','Vel. Média (km/h)','TMD','Pontos GPS']
+
+  ];
+
+  dados.forEach(r => {
+
+    linhas.push([
+
+      r.nome || '—',
+
+      r.data ? kmFormatarData(r.data) : (r.periodo || '—'),
+
+      r.inicio || '—',
+
+      r.base || '—',
+
+      r.polaris || '—',
 
       r.km || 0,
 
-      r.vel_media || "—",
+      r.vel_media || '—',
 
-      r.tmd || "—",
+      r.tmd || '—',
 
-      r.pontos || 0,
+      r.pontos || 0
+
     ]);
 
-});
+  });
 
-// Gera XLSX via SheetJS
 
-const script = document.createElement(“script”);
 
-script.src =
-“https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js”;
+  // Gera XLSX via SheetJS
 
-script.onload = () => { const wb = XLSX.utils.book_new();
+  const script = document.createElement('script');
+
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+
+  script.onload = () => {
+
+    const wb = XLSX.utils.book_new();
 
     const ws = XLSX.utils.aoa_to_sheet(linhas);
 
-    ws["!cols"] = [20, 12, 8, 10, 10, 12, 16, 8, 10].map((w) => ({ wch: w }));
+    ws['!cols'] = [20,12,8,10,10,12,16,8,10].map(w => ({wch:w}));
 
-    XLSX.utils.book_append_sheet(wb, ws, "Quilometragem");
+    XLSX.utils.book_append_sheet(wb, ws, 'Quilometragem');
 
-    XLSX.writeFile(
-      wb,
-      "km-loglife-" + label.replace(/[^a-zA-Z0-9]/g, "-") + ".xlsx",
-    );
+    XLSX.writeFile(wb, 'km-loglife-' + label.replace(/[^a-zA-Z0-9]/g,'-') + '.xlsx');
 
-};
+  };
 
-if (typeof XLSX !== “undefined”) { script.onload(); } else {
-document.head.appendChild(script); } }
+  if (typeof XLSX !== 'undefined') {
 
-function kmExportarPDF() { if (!_kmDadosAtual.length) { alert(“Nenhum
-dado para exportar. Faça uma busca primeiro.”); return; }
+    script.onload();
 
-const label = document.getElementById(“km-data-label”)?.textContent ||
-““;
+  } else {
 
-const total = document.getElementById(“km-total-dia”)?.textContent ||
-“—”;
+    document.head.appendChild(script);
 
-const media = document.getElementById(“km-media-dia”)?.textContent ||
-“—”;
+  }
 
-const ativos = document.getElementById(“km-ativos-dia”)?.textContent ||
-“—”;
+}
 
-enriquecerDadosKm(_kmDadosAtual).then((dados) => { const linhas = dados
-.map((r) => { const data = r.data ? kmFormatarData(r.data) : r.periodo
-|| “—”;
 
-        return `<tr>
 
-        <td>${r.nome || "—"}</td>
+function kmExportarPDF() {
+
+  if (!_kmDadosAtual.length) { alert('Nenhum dado para exportar. Faça uma busca primeiro.'); return; }
+
+  const label = document.getElementById('km-data-label')?.textContent || '';
+
+  const total = document.getElementById('km-total-dia')?.textContent || '—';
+
+  const media = document.getElementById('km-media-dia')?.textContent || '—';
+
+  const ativos = document.getElementById('km-ativos-dia')?.textContent || '—';
+
+
+
+  enriquecerDadosKm(_kmDadosAtual).then(dados => {
+
+    const linhas = dados.map(r => {
+
+      const data = r.data ? kmFormatarData(r.data) : (r.periodo || '—');
+
+      return `<tr>
+
+        <td>${r.nome||'—'}</td>
 
         <td>${data}</td>
 
-        <td>${r.inicio || "—"}</td>
+        <td>${r.inicio||'—'}</td>
 
-        <td>${r.base || "—"}</td>
+        <td>${r.base||'—'}</td>
 
-        <td>${r.polaris || "—"}</td>
+        <td>${r.polaris||'—'}</td>
 
-        <td><strong>${r.km || 0} km</strong></td>
+        <td><strong>${r.km||0} km</strong></td>
 
-        <td>${r.vel_media || "—"}</td>
+        <td>${r.vel_media||'—'}</td>
 
-        <td>${r.tmd || "—"}</td>
+        <td>${r.tmd||'—'}</td>
 
-        <td>${r.pontos || 0}</td>
+        <td>${r.pontos||0}</td>
 
       </tr>`;
-      })
-      .join("");
 
-    const win = window.open("", "_blank");
+    }).join('');
+
+
+
+    const win = window.open('', '_blank');
 
     win.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"/>
 
@@ -6792,7 +7106,7 @@ enriquecerDadosKm(_kmDadosAtual).then((dados) => { const linhas = dados
 
       <h1>📏 Relatório de Quilometragem</h1>
 
-      <div class="sub">${label} · Gerado em ${new Date().toLocaleString("pt-BR", { timeZone: "America/Sao_Paulo" })}</div>
+      <div class="sub">${label} · Gerado em ${new Date().toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo'})}</div>
 
       <div class="kpis">
 
@@ -6826,157 +7140,165 @@ enriquecerDadosKm(_kmDadosAtual).then((dados) => { const linhas = dados
 
     setTimeout(() => win.print(), 500);
 
-}); }
+  });
 
-async function enriquecerDadosKm(dados) { const agora = new Date();
+}
 
-const diaSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
 
-const hoje = diaSP.toISOString().split(“T”)[0];
 
-return await Promise.all( dados.map(async (r) => { const data = r.data
-|| hoje;
+async function enriquecerDadosKm(dados) {
 
-      let inicio = "—",
-        base = "—",
-        polaris = "—",
-        vel_media = "—",
-        tmd = "—";
+  const agora = new Date();
 
-      try {
-        // Busca eventos de geofence
+  const diaSP = new Date(agora.getTime() - 3*60*60*1000);
 
-        const rG = await fetch(
-          API +
-            "/geofence-evento?data=" +
-            data +
-            "&nome=" +
-            encodeURIComponent(r.nome),
-        );
+  const hoje = diaSP.toISOString().split('T')[0];
 
-        const dG = await rG.json();
 
-        const eventos = dG.eventos || [];
 
-        const evBase = eventos.find((e) => e.tipo && e.tipo.includes("base"));
+  return await Promise.all(dados.map(async r => {
 
-        const evsPolaris = eventos
-          .filter((e) => e.tipo && e.tipo.includes("final"))
-          .sort((a, b) => a.timestamp - b.timestamp);
+    const data = r.data || hoje;
 
-        if (evBase) base = formatarHoraTs(evBase.timestamp);
+    let inicio = '—', base = '—', polaris = '—', vel_media = '—', tmd = '—';
 
-        if (evsPolaris.length)
-          polaris = evsPolaris
-            .map((e) => formatarHoraTs(e.timestamp))
-            .join(", ");
+    try {
 
-        // Busca confirmação de presença (início)
+      // Busca eventos de geofence
 
-        const rC = await fetch(
-          API +
-            "/historico-confirmacoes?data_inicio=" +
-            data +
-            "&data_fim=" +
-            data,
-        );
+      const rG = await fetch(API + '/geofence-evento?data=' + data + '&nome=' + encodeURIComponent(r.nome));
 
-        const dC = await rC.json();
+      const dG = await rG.json();
 
-        const conf = (dC.confirmacoes || []).find(
-          (c) => c.nome === r.nome && c.resposta === "sim",
-        );
+      const eventos = dG.eventos || [];
 
-        if (conf) inicio = formatarHoraTs(conf.timestamp);
+      const evBase = eventos.find(e => e.tipo && e.tipo.includes('base'));
 
-        // Velocidade média e TMD
+      const evsPolaris = eventos.filter(e => e.tipo && e.tipo.includes('final')).sort((a,b) => a.timestamp - b.timestamp);
 
-        if (evBase && conf && r.km > 0) {
-          const minutos = (evBase.timestamp - conf.timestamp) / 60000;
+      if (evBase) base = formatarHoraTs(evBase.timestamp);
 
-          if (minutos > 0) {
-            vel_media = Math.round((r.km / (minutos / 60)) * 10) / 10 + " km/h";
+      if (evsPolaris.length) polaris = evsPolaris.map(e => formatarHoraTs(e.timestamp)).join(', ');
 
-            const h = Math.floor(minutos / 60);
 
-            const m = Math.round(minutos % 60);
 
-            tmd = h + "h" + String(m).padStart(2, "0") + "m";
-          }
+      // Busca confirmação de presença (início)
+
+      const rC = await fetch(API + '/historico-confirmacoes?data_inicio=' + data + '&data_fim=' + data);
+
+      const dC = await rC.json();
+
+      const conf = (dC.confirmacoes || []).find(c => c.nome === r.nome && c.resposta === 'sim');
+
+      if (conf) inicio = formatarHoraTs(conf.timestamp);
+
+
+
+      // Velocidade média e TMD
+
+      if (evBase && conf && r.km > 0) {
+
+        const minutos = (evBase.timestamp - conf.timestamp) / 60000;
+
+        if (minutos > 0) {
+
+          vel_media = Math.round(r.km / (minutos / 60) * 10) / 10 + ' km/h';
+
+          const h = Math.floor(minutos / 60);
+
+          const m = Math.round(minutos % 60);
+
+          tmd = h + 'h' + String(m).padStart(2,'0') + 'm';
+
         }
-      } catch (e) {}
 
-      return { ...r, inicio, base, polaris, vel_media, tmd };
-    }),
+      }
 
-); }
+    } catch(e) {}
 
-function formatarHoraTs(ts) { if (!ts) return “—”;
 
-const d = new Date(ts);
 
-const sp = new Date(d.getTime() - 3 * 60 * 60 * 1000);
+    return { ...r, inicio, base, polaris, vel_media, tmd };
 
-return ( String(sp.getUTCHours()).padStart(2, “0”) + “:” +
-String(sp.getUTCMinutes()).padStart(2, “0”) ); }
+  }));
 
-async function limparGPSOffline() { if (!confirm(“Remover do mapa todos
-os motoboys sem GPS há mais de 24h?”)) return;
+}
 
-try { const r = await fetch(API + “/limpar-localizacoes”, { method:
-“POST” });
+
+
+function formatarHoraTs(ts) {
+
+  if (!ts) return '—';
+
+  const d = new Date(ts);
+
+  const sp = new Date(d.getTime() - 3*60*60*1000);
+
+  return String(sp.getUTCHours()).padStart(2,'0') + ':' + String(sp.getUTCMinutes()).padStart(2,'0');
+
+}
+
+
+
+async function limparGPSOffline() {
+
+  if (!confirm('Remover do mapa todos os motoboys sem GPS há mais de 24h?')) return;
+
+  try {
+
+    const r = await fetch(API + '/limpar-localizacoes', { method: 'POST' });
 
     const d = await r.json();
 
-    toast("✓ " + (d.deletados || 0) + " registro(s) removido(s)");
+    toast('✓ ' + (d.deletados || 0) + ' registro(s) removido(s)');
 
-    if (typeof carregarMapa === "function") carregarMapa();
+    if (typeof carregarMapa === 'function') carregarMapa();
 
-} catch (e) { toast(“Erro ao limpar”); } }
+  } catch(e) { toast('Erro ao limpar'); }
 
-async function configurarHorarios() { const modal =
-document.getElementById(“modal-horarios”);
+}
 
-const lista = document.getElementById(“horarios-lista”);
 
-if (!modal || !lista) return;
 
-modal.style.display = “flex”;
+async function configurarHorarios() {
 
-lista.innerHTML = ’
+  const modal = document.getElementById('modal-horarios');
 
-Carregando…
+  const lista = document.getElementById('horarios-lista');
 
-’;
+  if (!modal || !lista) return;
 
-try { const [rMb, rHor] = await Promise.all([ fetch(API +
-“/motoboys?todos=1&agrupado=1”),
+  modal.style.display = 'flex';
 
-      fetch(API + "/horarios-motoboy"),
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+
+    const [rMb, rHor] = await Promise.all([
+
+      fetch(API + '/motoboys?todos=1&agrupado=1'),
+
+      fetch(API + '/horarios-motoboy')
+
     ]);
 
-    const dMb = await rMb.json();
+    const dMb  = await rMb.json();
 
     const dHor = await rHor.json();
 
     const horariosCache = {};
 
-    (dHor.horarios || []).forEach((h) => {
-      horariosCache[h.nome] = h;
-    });
+    (dHor.horarios || []).forEach(h => { horariosCache[h.nome] = h; });
 
-    const nomes = [...new Set((dMb.motoboys || []).map((m) => m.nome))].sort();
+    const nomes = [...new Set((dMb.motoboys || []).map(m => m.nome))].sort();
 
-    lista.innerHTML = nomes
-      .map((nome) => {
-        const h = horariosCache[nome] || {
-          hora_inicio: "06:00",
-          hora_fim: "14:00",
-        };
+    lista.innerHTML = nomes.map(nome => {
 
-        const id = nome.replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_]/g, "");
+      const h = horariosCache[nome] || { hora_inicio: '06:00', hora_fim: '14:00' };
 
-        return `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #EBF1F5;margin-bottom:6px;background:#F8FBFD">
+      const id = nome.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+
+      return `<div style="display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;border:1.5px solid #EBF1F5;margin-bottom:6px;background:#F8FBFD">
 
         <div style="flex:1;font-size:13px;font-weight:600;color:#0F4C7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${nome}</div>
 
@@ -6986,38 +7308,51 @@ try { const [rMb, rHor] = await Promise.all([ fetch(API +
 
         <input type="time" id="hf_${id}" value="${h.hora_fim}" style="height:32px;border-radius:6px;border:1.5px solid #D6E5EE;padding:0 6px;font-size:12px;color:#0F4C7A;width:80px;outline:none"/>
 
-        <button onclick="salvarHorario('${nome.replace(/'/g, "\\'")}','${id}')" style="height:32px;padding:0 10px;border-radius:6px;border:none;background:#0F9B78;color:#fff;font-size:11px;font-weight:700;cursor:pointer">✓</button>
+        <button onclick="salvarHorario('${nome.replace(/'/g,"\\'")}','${id}')" style="height:32px;padding:0 10px;border-radius:6px;border:none;background:#0F9B78;color:#fff;font-size:11px;font-weight:700;cursor:pointer">✓</button>
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar motoboys
+  } catch(e) {
 
-’; } }
+    lista.innerHTML = '<div class="empty">Erro ao carregar motoboys</div>';
 
-async function salvarHorario(nome, id) { const hi =
-document.getElementById(“hi_” + id)?.value;
+  }
 
-const hf = document.getElementById(“hf_” + id)?.value;
+}
 
-if (!hi || !hf) return;
+async function salvarHorario(nome, id) {
 
-try { const r = await fetch(API + “/horarios-motoboy”, { method: “POST”,
+  const hi = document.getElementById('hi_' + id)?.value;
 
-      headers: { "Content-Type": "application/json" },
+  const hf = document.getElementById('hf_' + id)?.value;
 
-      body: JSON.stringify({ nome, hora_inicio: hi, hora_fim: hf }),
+  if (!hi || !hf) return;
+
+  try {
+
+    const r = await fetch(API + '/horarios-motoboy', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify({ nome, hora_inicio: hi, hora_fim: hf })
+
     });
 
     const d = await r.json();
 
-    if (d.status === "ok") toast("✓ Horário salvo para " + nome.split(" ")[0]);
-    else toast("Erro ao salvar");
+    if (d.status === 'ok') toast('✓ Horário salvo para ' + nome.split(' ')[0]);
 
-} catch (e) { toast(“Erro de conexão”); } }
+    else toast('Erro ao salvar');
+
+  } catch(e) { toast('Erro de conexão'); }
+
+}
+
+
 
 // ── CHAT DO PAINEL ────────────────────────────────────────────
 
@@ -7029,39 +7364,57 @@ let chatPollingTimer = null;
 
 let chatUltimoTs = 0;
 
-function abrirChat() { const win =
-document.getElementById(“chat-window”);
 
-if (!win) return;
 
-win.style.display = “flex”;
+function abrirChat() {
 
-carregarChatLista();
+  const win = document.getElementById('chat-window');
 
-// Polling de novas mensagens a cada 5s
+  if (!win) return;
 
-if (!chatPollingTimer) { chatPollingTimer = setInterval(() => { if
-(chatMotoboyAtual) carregarMensagens(chatMotoboyAtual, true);
+  win.style.display = 'flex';
+
+  carregarChatLista();
+
+  // Polling de novas mensagens a cada 5s
+
+  if (!chatPollingTimer) {
+
+    chatPollingTimer = setInterval(() => {
+
+      if (chatMotoboyAtual) carregarMensagens(chatMotoboyAtual, true);
 
       atualizarBadgeChat();
+
     }, 5000);
 
-} }
+  }
 
-function fecharChat() { const win =
-document.getElementById(“chat-window”);
+}
 
-if (win) win.style.display = “none”;
 
-if (chatPollingTimer) { clearInterval(chatPollingTimer);
-chatPollingTimer = null; } }
 
-async function carregarChatLista() { const lista =
-document.getElementById(“chat-lista”);
+function fecharChat() {
 
-if (!lista) return;
+  const win = document.getElementById('chat-window');
 
-try { const r = await fetch(API + “/chat/lista”);
+  if (win) win.style.display = 'none';
+
+  if (chatPollingTimer) { clearInterval(chatPollingTimer); chatPollingTimer = null; }
+
+}
+
+
+
+async function carregarChatLista() {
+
+  const lista = document.getElementById('chat-lista');
+
+  if (!lista) return;
+
+  try {
+
+    const r = await fetch(API + '/chat/lista');
 
     const d = await r.json();
 
@@ -7069,182 +7422,199 @@ try { const r = await fetch(API + “/chat/lista”);
 
     renderizarChatLista(chatMotoboys);
 
-} catch (e) { lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    lista.innerHTML = '<div style="padding:1rem;color:#EF4444;font-size:12px">Erro ao carregar</div>';
 
-’; } }
-
-function renderizarChatLista(lista) { const el =
-document.getElementById(“chat-lista”);
-
-if (!el) return;
-
-if (!lista.length) { el.innerHTML = ’
-
-Nenhum motoboy
-
-’;
-
-    return;
+  }
 
 }
 
-el.innerHTML = lista .map((m) => { const iniciais = (m.nome || ““)
-.split(” “) .map((p) => p[0]) .slice(0, 2) .join(”“);
 
-      const temNaoLidas = m.nao_lidas > 0;
 
-      const ativo = chatMotoboyAtual === m.telefone;
+function renderizarChatLista(lista) {
 
-      const ultimaMsg = m.ultima_msg
-        ? m.ultima_msg.length > 28
-          ? m.ultima_msg.slice(0, 28) + "…"
-          : m.ultima_msg
-        : "Sem mensagens";
+  const el = document.getElementById('chat-lista');
 
-      const tsLabel = m.ultima_ts
-        ? new Date(m.ultima_ts).toLocaleTimeString("pt-BR", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : "";
+  if (!el) return;
 
-      return `<div onclick="abrirConversa('${m.telefone}','${(m.nome || "").replace(/'/g, "\\'")}')" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;gap:10px;background:${ativo ? "#E8F4FB" : "transparent"};transition:.15s">
+  if (!lista.length) {
+
+    el.innerHTML = '<div style="padding:1rem;text-align:center;color:#94A8B8;font-size:12px">Nenhum motoboy</div>';
+
+    return;
+
+  }
+
+  el.innerHTML = lista.map(m => {
+
+    const iniciais = (m.nome || '').split(' ').map(p => p[0]).slice(0,2).join('');
+
+    const temNaoLidas = m.nao_lidas > 0;
+
+    const ativo = chatMotoboyAtual === m.telefone;
+
+    const ultimaMsg = m.ultima_msg ? (m.ultima_msg.length > 28 ? m.ultima_msg.slice(0,28) + '…' : m.ultima_msg) : 'Sem mensagens';
+
+    const tsLabel = m.ultima_ts ? new Date(m.ultima_ts).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '';
+
+    return `<div onclick="abrirConversa('${m.telefone}','${(m.nome||'').replace(/'/g,"\\'")}')" style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #EBF1F5;display:flex;align-items:center;gap:10px;background:${ativo ? '#E8F4FB' : 'transparent'};transition:.15s">
 
       <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1E9FD9,#0F7BB0);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">${iniciais}</div>
 
       <div style="flex:1;min-width:0">
 
-        <div style="font-size:13px;font-weight:${temNaoLidas ? "700" : "600"};color:#0F4C7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.nome || m.telefone}</div>
+        <div style="font-size:13px;font-weight:${temNaoLidas ? '700' : '600'};color:#0F4C7A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.nome || m.telefone}</div>
 
-        <div style="font-size:11px;color:${temNaoLidas ? "#1E9FD9" : "#94A8B8"};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${ultimaMsg}</div>
+        <div style="font-size:11px;color:${temNaoLidas ? '#1E9FD9' : '#94A8B8'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px">${ultimaMsg}</div>
 
       </div>
 
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0">
 
-        ${tsLabel ? `<div style="font-size:10px;color:#94A8B8">${tsLabel}</div>` : ""}
+        ${tsLabel ? `<div style="font-size:10px;color:#94A8B8">${tsLabel}</div>` : ''}
 
-        ${temNaoLidas ? `<div style="background:#DC2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${m.nao_lidas}</div>` : ""}
+        ${temNaoLidas ? `<div style="background:#DC2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center">${m.nao_lidas}</div>` : ''}
 
       </div>
 
     </div>`;
-    })
-    .join("");
+
+  }).join('');
 
 }
 
-function filtrarMotoboys() { const busca = (
-document.getElementById(“chat-busca”)?.value || “” ).toLowerCase();
 
-const filtrados = chatMotoboys.filter( (m) => (m.nome ||
-““).toLowerCase().includes(busca) || (m.telefone ||”“).includes(busca),
-);
 
-renderizarChatLista(filtrados); }
+function filtrarMotoboys() {
 
-async function abrirConversa(tel, nome) { chatMotoboyAtual = tel;
+  const busca = (document.getElementById('chat-busca')?.value || '').toLowerCase();
 
-chatUltimoTs = 0;
+  const filtrados = chatMotoboys.filter(m => (m.nome || '').toLowerCase().includes(busca) || (m.telefone || '').includes(busca));
 
-// Header da conversa
+  renderizarChatLista(filtrados);
 
-const header = document.getElementById(“chat-conv-header”);
+}
 
-const avatarEl = document.getElementById(“chat-conv-avatar”);
 
-const nomeEl = document.getElementById(“chat-conv-nome”);
 
-const rotaEl = document.getElementById(“chat-conv-rota”);
+async function abrirConversa(tel, nome) {
 
-const inputEl = document.getElementById(“chat-conv-input”);
+  chatMotoboyAtual = tel;
 
-if (header) header.style.display = “flex”;
+  chatUltimoTs = 0;
 
-if (inputEl) inputEl.style.display = “flex”;
 
-if (nomeEl) nomeEl.textContent = nome;
 
-const mb = chatMotoboys.find((m) => m.telefone === tel);
+  // Header da conversa
 
-if (rotaEl) rotaEl.textContent = mb?.rota || ““;
+  const header = document.getElementById('chat-conv-header');
 
-if (avatarEl) avatarEl.textContent = nome .split(” “) .map((p) => p[0])
-.slice(0, 2) .join(”“);
+  const avatarEl = document.getElementById('chat-conv-avatar');
 
-// Foca no input
+  const nomeEl = document.getElementById('chat-conv-nome');
 
-setTimeout(() => document.getElementById(“chat-input-text”)?.focus(),
-100);
+  const rotaEl = document.getElementById('chat-conv-rota');
 
-// Atualiza lista (para remover badge)
+  const inputEl = document.getElementById('chat-conv-input');
 
-renderizarChatLista(chatMotoboys);
 
-await carregarMensagens(tel, false);
 
-// Marca como lido
+  if (header) header.style.display = 'flex';
 
-fetch(API + “/chat/marcar-lido”, { method: “POST”,
+  if (inputEl) inputEl.style.display = 'flex';
 
-    headers: { "Content-Type": "application/json" },
+  if (nomeEl) nomeEl.textContent = nome;
 
-    body: JSON.stringify({ telefone_motoboy: tel, remetente: "motoboy" }),
 
-}); }
 
-function mostrarNotifChatPainel(m) { // Som
+  const mb = chatMotoboys.find(m => m.telefone === tel);
 
-try { const ctx = new (window.AudioContext ||
-window.webkitAudioContext)();
+  if (rotaEl) rotaEl.textContent = mb?.rota || '';
 
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
+  if (avatarEl) avatarEl.textContent = nome.split(' ').map(p => p[0]).slice(0,2).join('');
 
-    o.connect(g);
-    g.connect(ctx.destination);
 
-    o.frequency.value = 660;
-    g.gain.setValueAtTime(0.15, ctx.currentTime);
+
+  // Foca no input
+
+  setTimeout(() => document.getElementById('chat-input-text')?.focus(), 100);
+
+
+
+  // Atualiza lista (para remover badge)
+
+  renderizarChatLista(chatMotoboys);
+
+
+
+  await carregarMensagens(tel, false);
+
+
+
+  // Marca como lido
+
+  fetch(API + '/chat/marcar-lido', {
+
+    method: 'POST',
+
+    headers: { 'Content-Type': 'application/json' },
+
+    body: JSON.stringify({ telefone_motoboy: tel, remetente: 'motoboy' })
+
+  });
+
+}
+
+
+
+function mostrarNotifChatPainel(m) {
+
+  // Som
+
+  try {
+
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const o = ctx.createOscillator(); const g = ctx.createGain();
+
+    o.connect(g); g.connect(ctx.destination);
+
+    o.frequency.value = 660; g.gain.setValueAtTime(0.15, ctx.currentTime);
 
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
 
-    o.start();
-    o.stop(ctx.currentTime + 0.5);
+    o.start(); o.stop(ctx.currentTime + 0.5);
 
-} catch (e) {}
+  } catch(e) {}
 
-const popId = “pop-chat-painel-” + m.id;
 
-if (document.getElementById(popId)) return;
 
-const isAudio = m.tipo === “audio” && m.audio_url;
+  const popId = 'pop-chat-painel-' + m.id;
 
-const pop = document.createElement(“div”);
+  if (document.getElementById(popId)) return;
 
-pop.id = popId;
+  const isAudio = m.tipo === 'audio' && m.audio_url;
 
-pop.style.cssText =
-“position:fixed;top:1.5rem;right:1.5rem;z-index:99999;width:300px;background:#fff;border-radius:14px;box-shadow:0
-8px 32px rgba(0,0,0,.2);border-left:4px solid
-#1E9FD9;overflow:hidden;animation:slideInRight .3s
-cubic-bezier(.34,1.1,.64,1) both”;
+  const pop = document.createElement('div');
 
-pop.innerHTML = `
+  pop.id = popId;
+
+  pop.style.cssText = 'position:fixed;top:1.5rem;right:1.5rem;z-index:99999;width:300px;background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,.2);border-left:4px solid #1E9FD9;overflow:hidden;animation:slideInRight .3s cubic-bezier(.34,1.1,.64,1) both';
+
+  pop.innerHTML = `
 
     <div style="padding:12px 14px 10px">
 
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
 
-        <span style="font-size:18px">${isAudio ? "🎤" : "💬"}</span>
+        <span style="font-size:18px">${isAudio ? '🎤' : '💬'}</span>
 
         <div style="flex:1">
 
           <div style="font-size:13px;font-weight:800;color:#0F4C7A">Nova mensagem</div>
 
-          <div style="font-size:11px;color:#5A7A8F">${m.nome_motoboy || "Motoboy"} · ${new Date(m.timestamp).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}</div>
+          <div style="font-size:11px;color:#5A7A8F">${m.nome_motoboy || 'Motoboy'} · ${new Date(m.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</div>
 
         </div>
 
@@ -7252,97 +7622,105 @@ pop.innerHTML = `
 
       </div>
 
-      ${
-        isAudio
-          ? `<audio src="${m.audio_url}" controls style="width:100%;margin-bottom:8px"></audio>`
-          : `<div style="font-size:13px;color:#0F2940;margin-bottom:8px;line-height:1.4">${m.mensagem}</div>`
-      }
+      ${isAudio
 
-      <button onclick="document.getElementById('${popId}').remove();abrirConversa('${(m.telefone_motoboy || "").replace(/'/g, "\\'")}')" style="width:100%;padding:8px;border-radius:8px;border:none;background:#EFF6FF;color:#0F4C7A;font-size:12px;font-weight:700;cursor:pointer">💬 Responder</button>
+        ? `<audio src="${m.audio_url}" controls style="width:100%;margin-bottom:8px"></audio>`
+
+        : `<div style="font-size:13px;color:#0F2940;margin-bottom:8px;line-height:1.4">${m.mensagem}</div>`}
+
+      <button onclick="document.getElementById('${popId}').remove();abrirConversa('${(m.telefone_motoboy||'').replace(/'/g,"\\'")}')" style="width:100%;padding:8px;border-radius:8px;border:none;background:#EFF6FF;color:#0F4C7A;font-size:12px;font-weight:700;cursor:pointer">💬 Responder</button>
 
     </div>`;
 
-document.body.appendChild(pop);
+  document.body.appendChild(pop);
 
-setTimeout(() => document.getElementById(popId)?.remove(), 30000); }
+  setTimeout(() => document.getElementById(popId)?.remove(), 30000);
 
-async function carregarMensagens(tel, silent) { const msgs =
-document.getElementById(“chat-conv-msgs”);
+}
 
-if (!msgs) return;
 
-if (!silent) msgs.innerHTML = ’
 
-Carregando…
+async function carregarMensagens(tel, silent) {
 
-’;
+  const msgs = document.getElementById('chat-conv-msgs');
 
-try { const r = await fetch( API + “/chat/mensagens?telefone=” +
-encodeURIComponent(tel), );
+  if (!msgs) return;
+
+  if (!silent) msgs.innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
+
+
+
+  try {
+
+    const r = await fetch(API + '/chat/mensagens?telefone=' + encodeURIComponent(tel));
 
     const d = await r.json();
 
     const lista = d.mensagens || [];
 
+
+
     // Se silent e não há novas mensagens, não re-renderiza
 
-    if (
-      silent &&
-      lista.length > 0 &&
-      lista[lista.length - 1].timestamp === chatUltimoTs
-    )
-      return;
+    if (silent && lista.length > 0 && lista[lista.length-1].timestamp === chatUltimoTs) return;
+
+
 
     // Detecta mensagens novas do motoboy (quando chat não está aberto ou é de outro motoboy)
 
     if (chatUltimoTs > 0) {
-      const novas = lista.filter(
-        (m) => m.remetente === "motoboy" && m.timestamp > chatUltimoTs,
-      );
+
+      const novas = lista.filter(m => m.remetente === 'motoboy' && m.timestamp > chatUltimoTs);
 
       for (const m of novas) mostrarNotifChatPainel(m);
+
     }
 
-    if (lista.length > 0) chatUltimoTs = lista[lista.length - 1].timestamp;
+
+
+    if (lista.length > 0) chatUltimoTs = lista[lista.length-1].timestamp;
+
+
 
     if (!lista.length) {
-      msgs.innerHTML =
-        '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Nenhuma mensagem ainda</div>';
+
+      msgs.innerHTML = '<div style="margin:auto;text-align:center;color:#94A8B8;font-size:13px">Nenhuma mensagem ainda</div>';
 
       return;
+
     }
 
-    msgs.innerHTML = lista
-      .map((m) => {
-        const isAdmin = m.remetente === "admin";
 
-        const hora = new Date(m.timestamp).toLocaleTimeString("pt-BR", {
-          hour: "2-digit",
-          minute: "2-digit",
-        });
 
-        const conteudo =
-          m.tipo === "audio" && m.audio_url
-            ? `<div style="display:flex;align-items:center;gap:8px">
+    msgs.innerHTML = lista.map(m => {
 
-            <button onclick="this.nextElementSibling.paused?this.nextElementSibling.play()&&(this.textContent='⏸'):this.nextElementSibling.pause()&&(this.textContent='▶')" style="width:32px;height:32px;border-radius:50%;border:none;background:${isAdmin ? "rgba(255,255,255,.3)" : "#EFF6FF"};color:${isAdmin ? "#fff" : "#0F4C7A"};font-size:14px;cursor:pointer;flex-shrink:0">▶</button>
+      const isAdmin = m.remetente === 'admin';
+
+      const hora = new Date(m.timestamp).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+
+      const conteudo = (m.tipo === 'audio' && m.audio_url)
+
+        ? `<div style="display:flex;align-items:center;gap:8px">
+
+            <button onclick="this.nextElementSibling.paused?this.nextElementSibling.play()&&(this.textContent='⏸'):this.nextElementSibling.pause()&&(this.textContent='▶')" style="width:32px;height:32px;border-radius:50%;border:none;background:${isAdmin?'rgba(255,255,255,.3)':'#EFF6FF'};color:${isAdmin?'#fff':'#0F4C7A'};font-size:14px;cursor:pointer;flex-shrink:0">▶</button>
 
             <audio src="${m.audio_url}" onended="this.previousElementSibling.textContent='▶'" style="display:none"></audio>
 
             <div style="flex:1">
 
-              <div style="font-size:11px;opacity:.7">🎤 Áudio · ${m.duracao || 0}s</div>
+              <div style="font-size:11px;opacity:.7">🎤 Áudio · ${m.duracao||0}s</div>
 
-              <div style="background:${isAdmin ? "rgba(255,255,255,.2)" : "#D6E5EE"};border-radius:99px;height:3px;margin-top:4px;width:80px"></div>
+              <div style="background:${isAdmin?'rgba(255,255,255,.2)':'#D6E5EE'};border-radius:99px;height:3px;margin-top:4px;width:80px"></div>
 
             </div>
 
           </div>`
-            : `<div>${m.mensagem}</div>`;
 
-        return `<div style="display:flex;justify-content:${isAdmin ? "flex-end" : "flex-start"};margin-bottom:8px">
+        : `<div>${m.mensagem}</div>`;
 
-        <div style="max-width:75%;padding:9px 12px;border-radius:${isAdmin ? "14px 14px 4px 14px" : "14px 14px 14px 4px"};background:${isAdmin ? "linear-gradient(135deg,#1E9FD9,#0F7BB0)" : "#fff"};color:${isAdmin ? "#fff" : "#0F2940"};font-size:13px;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,.08)">
+      return `<div style="display:flex;justify-content:${isAdmin ? 'flex-end' : 'flex-start'};margin-bottom:8px">
+
+        <div style="max-width:75%;padding:9px 12px;border-radius:${isAdmin ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};background:${isAdmin ? 'linear-gradient(135deg,#1E9FD9,#0F7BB0)' : '#fff'};color:${isAdmin ? '#fff' : '#0F2940'};font-size:13px;line-height:1.4;box-shadow:0 1px 4px rgba(0,0,0,.08)">
 
           ${conteudo}
 
@@ -7351,74 +7729,106 @@ encodeURIComponent(tel), );
         </div>
 
       </div>`;
-      })
-      .join("");
+
+    }).join('');
+
+
 
     // Scroll para o fim
 
     msgs.scrollTop = msgs.scrollHeight;
 
-} catch (e) {} }
+  } catch(e) {}
 
-async function enviarChat() { if (!chatMotoboyAtual) return;
+}
 
-const input = document.getElementById(“chat-input-text”);
 
-const msg = input?.value?.trim();
 
-if (!msg) return;
+async function enviarChat() {
 
-input.value = ““;
+  if (!chatMotoboyAtual) return;
 
-input.disabled = true;
+  const input = document.getElementById('chat-input-text');
 
-try { const mb = chatMotoboys.find((m) => m.telefone ===
-chatMotoboyAtual);
+  const msg = input?.value?.trim();
 
-    await fetch(API + "/chat/enviar", {
-      method: "POST",
+  if (!msg) return;
 
-      headers: { "Content-Type": "application/json" },
+  input.value = '';
+
+  input.disabled = true;
+
+
+
+  try {
+
+    const mb = chatMotoboys.find(m => m.telefone === chatMotoboyAtual);
+
+    await fetch(API + '/chat/enviar', {
+
+      method: 'POST',
+
+      headers: { 'Content-Type': 'application/json' },
 
       body: JSON.stringify({
+
         telefone_motoboy: chatMotoboyAtual,
 
-        nome_motoboy: mb?.nome || "",
+        nome_motoboy: mb?.nome || '',
 
-        remetente: "admin",
+        remetente: 'admin',
 
-        mensagem: msg,
-      }),
+        mensagem: msg
+
+      })
+
     });
 
     await carregarMensagens(chatMotoboyAtual, false);
 
     await carregarChatLista();
 
-} catch (e) {}
+  } catch(e) {}
 
-input.disabled = false;
+  input.disabled = false;
 
-input.focus(); }
+  input.focus();
 
-async function atualizarBadgeChat() { try { const r = await fetch(API +
-“/chat/nao-lidas”);
+}
+
+
+
+async function atualizarBadgeChat() {
+
+  try {
+
+    const r = await fetch(API + '/chat/nao-lidas');
 
     const d = await r.json();
 
-    const badge = document.getElementById("chat-fab-badge");
+    const badge = document.getElementById('chat-fab-badge');
 
     if (badge) {
+
       if (d.total > 0) {
-        badge.style.display = "flex";
+
+        badge.style.display = 'flex';
 
         badge.textContent = d.total;
+
       } else {
-        badge.style.display = "none";
+
+        badge.style.display = 'none';
+
       }
+
     }
 
-} catch (e) {} }
+  } catch(e) {}
+
+}
+
+
 
 // Verifica badge a cada 15s
 
@@ -7428,6 +7838,8 @@ setTimeout(atualizarBadgeChat, 2000);
 
 // ── FIM CHAT DO PAINEL ────────────────────────────────────────
 
+
+
 // ── REPLAY DA ROTA ────────────────────────────────────────────
 
 let replayMapaInst = null;
@@ -7436,64 +7848,73 @@ let replayPolyline = null;
 
 let replayMarkers = [];
 
-async function popularSelectMotoboysReplay() { const sel =
-document.getElementById(“replay-motoboy-select”);
 
-if (!sel || sel.options.length > 1) return; // já populado
 
-try { const r = await fetch(API + “/motoboys?todos=1”);
+async function popularSelectMotoboysReplay() {
+
+  const sel = document.getElementById('replay-motoboy-select');
+
+  if (!sel || sel.options.length > 1) return; // já populado
+
+  try {
+
+    const r = await fetch(API + '/motoboys?todos=1');
 
     const d = await r.json();
 
-    const nomes = [...new Set((d.motoboys || []).map((m) => m.nome))].sort();
+    const nomes = [...new Set((d.motoboys || []).map(m => m.nome))].sort();
 
-    sel.innerHTML =
-      '<option value="">Selecione o motoboy...</option>' +
-      nomes.map((n) => `<option value="${n}">${n}</option>`).join("");
+    sel.innerHTML = '<option value="">Selecione o motoboy...</option>' + nomes.map(n => `<option value="${n}">${n}</option>`).join('');
 
-} catch (e) {} }
+  } catch(e) {}
 
-function iniciarReplayMapa() { if (replayMapaInst) return;
+}
 
-const el = document.getElementById(“replay-mapa”);
 
-if (!el || typeof L === “undefined”) { setTimeout(iniciarReplayMapa,
-300); return; }
 
-replayMapaInst = L.map(“replay-mapa”, { zoomControl: true }).setView(
-[-23.5505, -46.6333], 12, );
+function iniciarReplayMapa() {
 
-L.tileLayer(
-“https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png”,
-{ attribution: “© OpenStreetMap © CARTO”, maxZoom: 19, subdomains:
-“abcd”, }, ).addTo(replayMapaInst); }
+  if (replayMapaInst) return;
 
-async function carregarReplayRota() { const data =
-document.getElementById(“replay-data”)?.value;
+  const el = document.getElementById('replay-mapa');
 
-const nome = document.getElementById(“replay-motoboy-select”)?.value;
+  if (!el || typeof L === 'undefined') { setTimeout(iniciarReplayMapa, 300); return; }
 
-const lista = document.getElementById(“replay-lista”);
+  replayMapaInst = L.map('replay-mapa', { zoomControl: true }).setView([-23.5505, -46.6333], 12);
 
-if (!data || !nome) { toast(“Selecione a data e o motoboy”); return; }
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
 
-iniciarReplayMapa();
+    attribution: '© OpenStreetMap © CARTO', maxZoom: 19, subdomains: 'abcd'
 
-lista.innerHTML = ’
+  }).addTo(replayMapaInst);
 
-Carregando…
+}
 
-’;
 
-try { const dataIso = data; // já vem como YYYY-MM-DD do input date
 
-    const r = await fetch(
-      API +
-        "/replay-rota?data=" +
-        dataIso +
-        "&nome=" +
-        encodeURIComponent(nome),
-    );
+async function carregarReplayRota() {
+
+  const data = document.getElementById('replay-data')?.value;
+
+  const nome = document.getElementById('replay-motoboy-select')?.value;
+
+  const lista = document.getElementById('replay-lista');
+
+  if (!data || !nome) { toast('Selecione a data e o motoboy'); return; }
+
+
+
+  iniciarReplayMapa();
+
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
+
+
+
+  try {
+
+    const dataIso = data; // já vem como YYYY-MM-DD do input date
+
+    const r = await fetch(API + '/replay-rota?data=' + dataIso + '&nome=' + encodeURIComponent(nome));
 
     const d = await r.json();
 
@@ -7501,71 +7922,79 @@ try { const dataIso = data; // já vem como YYYY-MM-DD do input date
 
     const clientes = d.clientes || [];
 
+
+
     // Se o Leaflet ainda não carregou, espera um pouco e tenta de novo (CDN pode estar lento)
 
     if (!replayMapaInst) {
-      await new Promise((res) => setTimeout(res, 600));
+
+      await new Promise(res => setTimeout(res, 600));
 
       iniciarReplayMapa();
+
     }
+
+
 
     // Limpa camadas anteriores
 
     if (replayMapaInst) {
-      if (replayPolyline) {
-        replayMapaInst.removeLayer(replayPolyline);
-        replayPolyline = null;
-      }
 
-      replayMarkers.forEach((m) => replayMapaInst.removeLayer(m));
+      if (replayPolyline) { replayMapaInst.removeLayer(replayPolyline); replayPolyline = null; }
+
+      replayMarkers.forEach(m => replayMapaInst.removeLayer(m));
 
       replayMarkers = [];
+
     }
+
+
 
     if (!trajeto.length && !clientes.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">Nenhum dado encontrado para essa data/motoboy</div>';
 
-      document.getElementById("replay-kpi-km").textContent = "—";
+      lista.innerHTML = '<div class="rel-empty">Nenhum dado encontrado para essa data/motoboy</div>';
 
-      document.getElementById("replay-kpi-chegadas").textContent = "—";
+      document.getElementById('replay-kpi-km').textContent = '—';
 
-      document.getElementById("replay-kpi-periodo").textContent = "—";
+      document.getElementById('replay-kpi-chegadas').textContent = '—';
+
+      document.getElementById('replay-kpi-periodo').textContent = '—';
 
       return;
+
     }
+
+
 
     // Desenha o trajeto (linha real, com curvas)
 
     let km = 0;
 
     if (trajeto.length > 1) {
-      if (replayMapaInst && typeof L !== "undefined") {
-        const latlngs = trajeto.map((p) => [p.lat, p.lng]);
 
-        replayPolyline = L.polyline(latlngs, {
-          color: "#1E9FD9",
-          weight: 4,
-          opacity: 0.85,
-        }).addTo(replayMapaInst);
+      if (replayMapaInst && typeof L !== 'undefined') {
+
+        const latlngs = trajeto.map(p => [p.lat, p.lng]);
+
+        replayPolyline = L.polyline(latlngs, { color: '#1E9FD9', weight: 4, opacity: .85 }).addTo(replayMapaInst);
+
       }
 
       for (let i = 1; i < trajeto.length; i++) {
-        const R = 6371,
-          dLat = ((trajeto[i].lat - trajeto[i - 1].lat) * Math.PI) / 180,
-          dLng = ((trajeto[i].lng - trajeto[i - 1].lng) * Math.PI) / 180;
 
-        const a =
-          Math.sin(dLat / 2) ** 2 +
-          Math.cos((trajeto[i - 1].lat * Math.PI) / 180) *
-            Math.cos((trajeto[i].lat * Math.PI) / 180) *
-            Math.sin(dLng / 2) ** 2;
+        const R = 6371, dLat = (trajeto[i].lat - trajeto[i-1].lat) * Math.PI/180, dLng = (trajeto[i].lng - trajeto[i-1].lng) * Math.PI/180;
 
-        const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        const a = Math.sin(dLat/2)**2 + Math.cos(trajeto[i-1].lat*Math.PI/180)*Math.cos(trajeto[i].lat*Math.PI/180)*Math.sin(dLng/2)**2;
+
+        const dist = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 
         if (dist < 5) km += dist;
+
       }
+
     }
+
+
 
     // Desenha os pins dos clientes — usa a coordenada CADASTRADA do cliente
 
@@ -7578,6 +8007,7 @@ try { const dataIso = data; // já vem como YYYY-MM-DD do input date
     const bounds = [];
 
     clientes.forEach((c, i) => {
+
       const lat = c.cliente_lat ?? c.lat;
 
       const lng = c.cliente_lng ?? c.lng;
@@ -7588,122 +8018,109 @@ try { const dataIso = data; // já vem como YYYY-MM-DD do input date
 
       bounds.push([lat, lng]);
 
-      if (!replayMapaInst || typeof L === "undefined") return;
+      if (!replayMapaInst || typeof L === 'undefined') return;
 
-      const cor = temChegada ? "#0F9B78" : "#F59E0B";
+      const cor = temChegada ? '#0F9B78' : '#F59E0B';
 
       const icon = L.divIcon({
-        className: "",
+
+        className: '',
 
         html: `<div style="background:${cor};color:#fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);width:30px;height:30px;border:3px solid #fff;box-shadow:0 3px 10px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center">
 
-          <span style="transform:rotate(45deg);font-size:11px;font-weight:800">${i + 1}</span>
+          <span style="transform:rotate(45deg);font-size:11px;font-weight:800">${i+1}</span>
 
         </div>`,
 
-        iconSize: [30, 30],
-        iconAnchor: [15, 30],
-        popupAnchor: [0, -30],
+        iconSize: [30,30], iconAnchor: [15,30], popupAnchor: [0,-30]
+
       });
 
-      const horaChegada = temChegada
-        ? new Date(c.horario_chegada_gps).toLocaleTimeString("pt-BR", {
-            timeZone: "America/Sao_Paulo",
-            hour: "2-digit",
-            minute: "2-digit",
-          })
-        : null;
+      const horaChegada = temChegada ? new Date(c.horario_chegada_gps).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'}) : null;
 
-      const marker = L.marker([lat, lng], { icon })
-        .addTo(replayMapaInst)
-        .bindPopup(
-          `<div style="font-family:-apple-system,sans-serif;min-width:180px">
+      const marker = L.marker([lat, lng], { icon }).addTo(replayMapaInst).bindPopup(
+
+        `<div style="font-family:-apple-system,sans-serif;min-width:180px">
 
           <div style="font-weight:700;color:#0F4C7A;margin-bottom:4px">${c.nome_cliente}</div>
 
-          <div style="font-size:12px;color:#5A7A8F;margin-bottom:4px">${temChegada ? "🕐 Chegada: " + horaChegada : "⚠️ Sem chegada GPS"}</div>
+          <div style="font-size:12px;color:#5A7A8F;margin-bottom:4px">${temChegada ? '🕐 Chegada: ' + horaChegada : '⚠️ Sem chegada GPS'}</div>
 
           <div style="font-size:11px;color:#94A8B8;font-family:monospace">${Number(lat).toFixed(6)}, ${Number(lng).toFixed(6)}</div>
 
-          ${c.cliente_endereco ? `<div style="font-size:11px;color:#94A8B8;margin-top:2px">${c.cliente_endereco}</div>` : ""}
+          ${c.cliente_endereco ? `<div style="font-size:11px;color:#94A8B8;margin-top:2px">${c.cliente_endereco}</div>` : ''}
 
-        </div>`,
-        );
+        </div>`
+
+      );
 
       replayMarkers.push(marker);
+
     });
 
-    if (trajeto.length) trajeto.forEach((p) => bounds.push([p.lat, p.lng]));
 
-    if (bounds.length && replayMapaInst && typeof L !== "undefined")
-      replayMapaInst.fitBounds(L.latLngBounds(bounds), { padding: [30, 30] });
+
+    if (trajeto.length) trajeto.forEach(p => bounds.push([p.lat, p.lng]));
+
+    if (bounds.length && replayMapaInst && typeof L !== 'undefined') replayMapaInst.fitBounds(L.latLngBounds(bounds), { padding: [30,30] });
+
+
 
     // KPIs
 
-    document.getElementById("replay-kpi-km").textContent =
-      Math.round(km * 10) / 10 + " km";
+    document.getElementById('replay-kpi-km').textContent = (Math.round(km*10)/10) + ' km';
 
-    const comChegada = clientes.filter((c) => c.horario_chegada_gps).length;
+    const comChegada = clientes.filter(c => c.horario_chegada_gps).length;
 
-    document.getElementById("replay-kpi-chegadas").textContent =
-      comChegada + "/" + clientes.length;
+    document.getElementById('replay-kpi-chegadas').textContent = comChegada + '/' + clientes.length;
 
     if (trajeto.length) {
-      const ini = new Date(trajeto[0].timestamp).toLocaleTimeString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
 
-      const fim = new Date(
-        trajeto[trajeto.length - 1].timestamp,
-      ).toLocaleTimeString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      const ini = new Date(trajeto[0].timestamp).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'});
 
-      document.getElementById("replay-kpi-periodo").textContent =
-        ini + " – " + fim;
+      const fim = new Date(trajeto[trajeto.length-1].timestamp).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'});
+
+      document.getElementById('replay-kpi-periodo').textContent = ini + ' – ' + fim;
+
     } else {
-      document.getElementById("replay-kpi-periodo").textContent = "—";
+
+      document.getElementById('replay-kpi-periodo').textContent = '—';
+
     }
+
+
 
     // Lista de clientes
 
     if (!clientes.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">Nenhuma coleta registrada nessa data</div>';
+
+      lista.innerHTML = '<div class="rel-empty">Nenhuma coleta registrada nessa data</div>';
 
       return;
+
     }
 
     function fmtHora(ts) {
+
       if (!ts) return null;
 
-      return new Date(ts).toLocaleTimeString("pt-BR", {
-        timeZone: "America/Sao_Paulo",
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      return new Date(ts).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+
     }
 
-    lista.innerHTML = clientes
-      .map((c, i) => {
-        const horaChegada = fmtHora(c.horario_chegada_gps);
+    lista.innerHTML = clientes.map((c, i) => {
 
-        const horaFinal = fmtHora(c.timestamp);
+      const horaChegada = fmtHora(c.horario_chegada_gps);
 
-        const diff =
-          c.horario_chegada_gps && c.timestamp
-            ? Math.round((c.timestamp - c.horario_chegada_gps) / 60000)
-            : null;
+      const horaFinal = fmtHora(c.timestamp);
 
-        const ok = !!c.horario_chegada_gps;
+      const diff = (c.horario_chegada_gps && c.timestamp) ? Math.round((c.timestamp - c.horario_chegada_gps) / 60000) : null;
 
-        return `<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F5F9FC">
+      const ok = !!c.horario_chegada_gps;
 
-        <div style="width:26px;height:26px;border-radius:50%;background:#E8F4FB;color:#0F4C7A;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i + 1}</div>
+      return `<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid #F5F9FC">
+
+        <div style="width:26px;height:26px;border-radius:50%;background:#E8F4FB;color:#0F4C7A;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${i+1}</div>
 
         <div style="flex:1;min-width:0">
 
@@ -7719,7 +8136,7 @@ try { const dataIso = data; // já vem como YYYY-MM-DD do input date
 
             <div style="font-size:8.5px;font-weight:700;color:#94A8B8;text-transform:uppercase">Chegada GPS</div>
 
-            <div style="font-size:13px;font-weight:800;color:${ok ? "#0F4C7A" : "#94A8B8"};margin-top:1px">${horaChegada || "sem GPS"}</div>
+            <div style="font-size:13px;font-weight:800;color:${ok?'#0F4C7A':'#94A8B8'};margin-top:1px">${horaChegada || 'sem GPS'}</div>
 
           </div>
 
@@ -7727,68 +8144,69 @@ try { const dataIso = data; // já vem como YYYY-MM-DD do input date
 
             <div style="font-size:8.5px;font-weight:700;color:#94A8B8;text-transform:uppercase">Finalização</div>
 
-            <div style="font-size:13px;font-weight:800;color:#0F4C7A;margin-top:1px">${horaFinal || "\u2014"}</div>
+            <div style="font-size:13px;font-weight:800;color:#0F4C7A;margin-top:1px">${horaFinal || '\u2014'}</div>
 
-            ${diff !== null && diff > 0 ? `<div style="font-size:9.5px;font-weight:700;color:#94A8B8;margin-top:1px">+${diff}min</div>` : ""}
+            ${diff !== null && diff > 0 ? `<div style="font-size:9.5px;font-weight:700;color:#94A8B8;margin-top:1px">+${diff}min</div>` : ''}
 
           </div>
 
         </div>
 
-        <span style="font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;background:${ok ? "#E1F5EE" : "#FCEBEB"};color:${ok ? "#085041" : "#991B1B"}">${ok ? "✓ OK" : "⚠ Sem chegada"}</span>
+        <span style="font-size:9.5px;font-weight:700;padding:3px 9px;border-radius:99px;flex-shrink:0;background:${ok?'#E1F5EE':'#FCEBEB'};color:${ok?'#085041':'#991B1B'}">${ok?'✓ OK':'⚠ Sem chegada'}</span>
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar dados
+  } catch(e) {
 
-’; } }
+    lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>';
+
+  }
+
+}
+
+
 
 // ── AUDITORIA DE COORDENADAS — outliers por rota ─────────────
 
-async function carregarRelCoordenadas() { const lista =
-document.getElementById(“rel-coord-lista”);
+async function carregarRelCoordenadas() {
 
-if (!lista) return;
+  const lista = document.getElementById('rel-coord-lista');
 
-lista.innerHTML = ’
+  if (!lista) return;
 
-Analisando coordenadas…
+  lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Analisando coordenadas...</div>';
 
-’;
+  try {
 
-try { const r = await fetch(API +
-“/auditoria-coordenadas?limite_km=1.5”);
+    const r = await fetch(API + '/auditoria-coordenadas?limite_km=1.5');
 
     const d = await r.json();
 
     const suspeitos = d.suspeitos || [];
 
-    document.getElementById("rel-coord-kpi-total").textContent =
-      suspeitos.length;
+    document.getElementById('rel-coord-kpi-total').textContent = suspeitos.length;
 
-    document.getElementById("rel-coord-kpi-analisados").textContent =
-      d.total_analisados || 0;
+    document.getElementById('rel-coord-kpi-analisados').textContent = d.total_analisados || 0;
+
+
 
     if (!suspeitos.length) {
-      lista.innerHTML =
-        '<div class="rel-empty">✓ Nenhuma coordenada suspeita encontrada</div>';
+
+      lista.innerHTML = '<div class="rel-empty">✓ Nenhuma coordenada suspeita encontrada</div>';
 
       return;
+
     }
 
-    lista.innerHTML =
-      `<table class="rel-table"><thead><tr>
+
+
+    lista.innerHTML = `<table class="rel-table"><thead><tr>
 
       <th>Cliente</th><th>Rota</th><th>Distância do centro</th><th>Coordenada atual</th><th>Endereço</th><th></th>
 
-    </tr></thead><tbody>` +
-      suspeitos
-        .map(
-          (s) => `
+    </tr></thead><tbody>` + suspeitos.map(s => `
 
       <tr>
 
@@ -7796,126 +8214,155 @@ try { const r = await fetch(API +
 
         <td>${s.rota}</td>
 
-        <td><span class="rel-badge ${s.distancia_centro_km > 3 ? "rel-b-err" : "rel-b-warn"}">${s.distancia_centro_km} km</span></td>
+        <td><span class="rel-badge ${s.distancia_centro_km > 3 ? 'rel-b-err' : 'rel-b-warn'}">${s.distancia_centro_km} km</span></td>
 
         <td style="font-family:monospace;font-size:11px">${s.lat.toFixed(6)}, ${s.lng.toFixed(6)}</td>
 
-        <td style="font-size:11px;color:#94A8B8">${s.endereco || "—"}</td>
+        <td style="font-size:11px;color:#94A8B8">${s.endereco || '—'}</td>
 
-        <td><button class="rel-btn-outline" onclick='abrirCorrigirCoordenada(${s.id}, "${(s.numero_cliente || "").replace(/"/g, "")}", "${(s.nome || "").replace(/"/g, "")}", "${(s.rota || "").replace(/"/g, "")}", ${s.lat}, ${s.lng}, "${(s.endereco || "").replace(/"/g, "")}")'>✏️ Corrigir</button></td>
+        <td><button class="rel-btn-outline" onclick='abrirCorrigirCoordenada(${s.id}, "${(s.numero_cliente||'').replace(/"/g,'')}", "${(s.nome||'').replace(/"/g,'')}", "${(s.rota||'').replace(/"/g,'')}", ${s.lat}, ${s.lng}, "${(s.endereco||'').replace(/"/g,'')}")'>✏️ Corrigir</button></td>
 
       </tr>
 
-    `,
-        )
-        .join("") +
-      "</tbody></table>";
+    `).join('') + '</tbody></table>';
 
-} catch (e) { lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar auditoria
+    lista.innerHTML = '<div class="rel-empty">Erro ao carregar auditoria</div>';
 
-’; } }
-
-// Abre o modal de editar cliente já preenchido, focando no campo de
-coordenada
-
-function abrirCorrigirCoordenada( id, numero_cliente, nome, rota, lat,
-lng, endereco, mostrar_endereco, horario, dias_ativos, nome_motoboy, ) {
-const c = { id, numero_cliente, nome, rota, lat, lng, endereco,
-
-    mostrar_endereco: mostrar_endereco || 0,
-
-    horario: horario || "",
-
-    dias_ativos: dias_ativos || "",
-
-    nome_motoboy: nome_motoboy || "",
-
-};
-
-if (typeof abrirEditarAlocado === “function”) { abrirEditarAlocado(c);
-
-    setTimeout(() => {
-      const campoCoord = document.getElementById("mec-coord");
-
-      if (campoCoord) {
-        campoCoord.style.borderColor = "#DC2626";
-        campoCoord.focus();
-      }
-    }, 200);
-
-} else { toast(‘Abra “Buscar cliente” e edite o cliente:’ + nome); } }
-
-// ── GEOCODIFICAÇÃO: busca lat/lng a partir do endereço, com
-confirmação ──
-
-async function buscarCoordenadaPorEndereco() { const endereco =
-document.getElementById(“cc-endereco”)?.value?.trim();
-
-const status = document.getElementById(“cc-geocode-status”);
-
-if (!endereco) { toast(“Digite o endereço primeiro”); return; }
-
-if (status) { status.style.display = “block”;
-
-    status.style.color = "#5A7A8F";
-
-    status.innerHTML = '<span class="spinner"></span> Buscando coordenada...';
+  }
 
 }
 
-try { const r = await fetch( API + “/geocodificar-endereco?endereco=” +
-encodeURIComponent(endereco), );
+
+
+// Abre o modal de editar cliente já preenchido, focando no campo de coordenada
+
+function abrirCorrigirCoordenada(id, numero_cliente, nome, rota, lat, lng, endereco, mostrar_endereco, horario, dias_ativos, nome_motoboy) {
+
+  const c = {
+
+    id, numero_cliente, nome, rota, lat, lng, endereco,
+
+    mostrar_endereco: mostrar_endereco || 0,
+
+    horario: horario || '',
+
+    dias_ativos: dias_ativos || '',
+
+    nome_motoboy: nome_motoboy || ''
+
+  };
+
+  if (typeof abrirEditarAlocado === 'function') {
+
+    abrirEditarAlocado(c);
+
+    setTimeout(() => {
+
+      const campoCoord = document.getElementById('mec-coord');
+
+      if (campoCoord) { campoCoord.style.borderColor = '#DC2626'; campoCoord.focus(); }
+
+    }, 200);
+
+  } else {
+
+    toast('Abra "Buscar cliente" e edite o cliente: ' + nome);
+
+  }
+
+}
+
+
+
+// ── GEOCODIFICAÇÃO: busca lat/lng a partir do endereço, com confirmação ──
+
+async function buscarCoordenadaPorEndereco() {
+
+  const endereco = document.getElementById('cc-endereco')?.value?.trim();
+
+  const status = document.getElementById('cc-geocode-status');
+
+  if (!endereco) { toast('Digite o endereço primeiro'); return; }
+
+
+
+  if (status) {
+
+    status.style.display = 'block';
+
+    status.style.color = '#5A7A8F';
+
+    status.innerHTML = '<span class="spinner"></span> Buscando coordenada...';
+
+  }
+
+
+
+  try {
+
+    const r = await fetch(API + '/geocodificar-endereco?endereco=' + encodeURIComponent(endereco));
 
     const d = await r.json();
 
-    if (d.status !== "ok") {
-      if (status) {
-        status.style.color = "#DC2626";
+    if (d.status !== 'ok') {
 
-        status.textContent =
-          "✗ " +
-          (d.msg ||
-            "Endereço não encontrado — confira ou digite a coordenada manualmente");
+      if (status) {
+
+        status.style.color = '#DC2626';
+
+        status.textContent = '✗ ' + (d.msg || 'Endereço não encontrado — confira ou digite a coordenada manualmente');
+
       }
 
       return;
+
     }
 
-    const precisaoLabel =
-      {
-        ROOFTOP: "✓ Exato (endereço específico)",
 
-        RANGE_INTERPOLATED: "✓ Bem preciso (interpolado entre números)",
 
-        GEOMETRIC_CENTER: "⚠️ Aproximado (centro de uma área/rua)",
+    const precisaoLabel = {
 
-        APPROXIMATE: "⚠️ Aproximado",
-      }[d.precisao] ||
-      (d.confiavel ? "✓ Confiável" : "⚠️ Confira no mapa antes de usar");
+      ROOFTOP: '✓ Exato (endereço específico)',
+
+      RANGE_INTERPOLATED: '✓ Bem preciso (interpolado entre números)',
+
+      GEOMETRIC_CENTER: '⚠️ Aproximado (centro de uma área/rua)',
+
+      APPROXIMATE: '⚠️ Aproximado'
+
+    }[d.precisao] || (d.confiavel ? '✓ Confiável' : '⚠️ Confira no mapa antes de usar');
+
+
 
     if (status) {
-      status.style.display = "none";
+
+      status.style.display = 'none';
+
     }
+
+
 
     // Card de confirmação — exige clique explícito antes de preencher a coordenada
 
-    const containerId = "cc-geocode-confirm";
+    const containerId = 'cc-geocode-confirm';
 
     let container = document.getElementById(containerId);
 
     if (!container) {
-      container = document.createElement("div");
+
+      container = document.createElement('div');
 
       container.id = containerId;
 
-      document.getElementById("cc-endereco").closest(".field").after(container);
+      document.getElementById('cc-endereco').closest('.field').after(container);
+
     }
 
-    const corBorda = d.confiavel ? "#0F9B78" : "#F59E0B";
+    const corBorda = d.confiavel ? '#0F9B78' : '#F59E0B';
 
-    const corFundo = d.confiavel ? "#F0FAF7" : "#FEF9EC";
+    const corFundo = d.confiavel ? '#F0FAF7' : '#FEF9EC';
 
     container.innerHTML = `
 
@@ -7923,7 +8370,7 @@ encodeURIComponent(endereco), );
 
         <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:4px">📍 ${d.endereco_formatado}</div>
 
-        <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">Precisão: ${precisaoLabel}${d.match_parcial ? " · ⚠️ correspondência parcial — confirme o número" : ""}</div>
+        <div style="font-size:11px;color:#5A7A8F;margin-bottom:2px">Precisão: ${precisaoLabel}${d.match_parcial ? ' · ⚠️ correspondência parcial — confirme o número' : ''}</div>
 
         <div style="font-size:11px;color:#94A8B8;font-family:monospace;margin-bottom:10px">${d.lat.toFixed(7)}, ${d.lng.toFixed(7)} (fonte: ${d.fonte})</div>
 
@@ -7939,184 +8386,213 @@ encodeURIComponent(endereco), );
 
     `;
 
-} catch (e) { if (status) { status.style.color = “#DC2626”;
+  } catch (e) {
 
-      status.textContent = "✗ Erro ao buscar coordenada";
+    if (status) {
+
+      status.style.color = '#DC2626';
+
+      status.textContent = '✗ Erro ao buscar coordenada';
+
     }
 
-} }
+  }
 
-function confirmarCoordenadaGeocodificada(lat, lng) { const campoCoord =
-document.getElementById(“cc-coord”);
+}
 
-if (campoCoord) campoCoord.value = lat.toFixed(7) + “,” +
-lng.toFixed(7);
 
-const container = document.getElementById(“cc-geocode-confirm”);
 
-if (container) container.remove();
+function confirmarCoordenadaGeocodificada(lat, lng) {
 
-toast(“Coordenada aplicada ✓”); }
+  const campoCoord = document.getElementById('cc-coord');
 
-// ── PONTOS DA ROTA — checkpoints opcionais, vinculados à rota
-───────────
+  if (campoCoord) campoCoord.value = lat.toFixed(7) + ',' + lng.toFixed(7);
 
-// Registram apenas o horário em que o motoboy passou por ali (raio
-200m,
+  const container = document.getElementById('cc-geocode-confirm');
+
+  if (container) container.remove();
+
+  toast('Coordenada aplicada ✓');
+
+}
+
+// ── PONTOS DA ROTA — checkpoints opcionais, vinculados à rota ───────────
+
+// Registram apenas o horário em que o motoboy passou por ali (raio 200m,
 
 // detectado pelo cron do worker — não depende do app/APK).
 
+
+
 let _prEditId = null;
 
-async function carregarPontosRota() { const lista =
-document.getElementById(“pr-lista”);
 
-const sel = document.getElementById(“pr-rota-sel”);
 
-const selPp = document.getElementById(“pp-rota-sel”);
+async function carregarPontosRota() {
 
-if (!lista) return;
+  const lista = document.getElementById('pr-lista');
 
-try { const [rRotas, rPontos] = await Promise.all([ fetch(API +
-“/rotas-disponiveis?todos_dias=1”),
+  const sel = document.getElementById('pr-rota-sel');
 
-      fetch(API + "/pontos-rota"),
+  const selPp = document.getElementById('pp-rota-sel');
+
+  if (!lista) return;
+
+
+
+  try {
+
+    const [rRotas, rPontos] = await Promise.all([
+
+      fetch(API + '/rotas-disponiveis?todos_dias=1'),
+
+      fetch(API + '/pontos-rota')
+
     ]);
 
     const dRotas = await rRotas.json();
 
     const dPontos = await rPontos.json();
 
-    const rotas = (dRotas.rotas || []).map((r) => r.rota).sort();
+    const rotas = (dRotas.rotas || []).map(r => r.rota).sort();
 
     const pontos = dPontos.pontos || [];
 
+
+
     if (sel) {
+
       sel.innerHTML = '<option value="">Selecione...</option>';
 
-      rotas.forEach((r) => {
-        const o = document.createElement("option");
-        o.value = r;
-        o.textContent = r;
-        sel.appendChild(o);
-      });
+      rotas.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; sel.appendChild(o); });
+
     }
 
     if (selPp) {
+
       selPp.innerHTML = '<option value="">Todas as rotas</option>';
 
-      rotas.forEach((r) => {
-        const o = document.createElement("option");
-        o.value = r;
-        o.textContent = r;
-        selPp.appendChild(o);
-      });
+      rotas.forEach(r => { const o = document.createElement('option'); o.value = r; o.textContent = r; selPp.appendChild(o); });
+
     }
+
+
 
     if (!pontos.length) {
-      lista.innerHTML =
-        '<div class="empty" style="font-size:12px">Nenhum ponto cadastrado</div>';
+
+      lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhum ponto cadastrado</div>';
 
       return;
+
     }
+
+
 
     const porRota = {};
 
-    pontos.forEach((p) => {
-      if (!porRota[p.rota]) porRota[p.rota] = [];
-      porRota[p.rota].push(p);
-    });
+    pontos.forEach(p => { if (!porRota[p.rota]) porRota[p.rota] = []; porRota[p.rota].push(p); });
 
-    lista.innerHTML = Object.entries(porRota)
-      .map(([rota, pts]) => {
-        const linhas = pts
-          .map(
-            (p) => `
+
+
+    lista.innerHTML = Object.entries(porRota).map(([rota, pts]) => {
+
+      const linhas = pts.map(p => `
 
         <div style="display:flex;align-items:center;gap:6px;padding:5px 14px 5px 24px">
 
-          <span style="font-size:11px;color:#5A7A8F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📌 ${p.nome}${p.endereco ? " · " + p.endereco : ""}</span>
+          <span style="font-size:11px;color:#5A7A8F;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">📌 ${p.nome}${p.endereco ? ' · ' + p.endereco : ''}</span>
 
-          <button onclick="editarPontoRota(${p.id},'${(p.rota || "").replace(/'/g, "\\'")}','${(p.nome || "").replace(/'/g, "\\'")}',${p.lat},${p.lng},'${(p.endereco || "").replace(/'/g, "\\'")}')" style="background:none;border:none;color:#1D4ED8;font-size:11px;cursor:pointer;padding:0">✏️</button>
+          <button onclick="editarPontoRota(${p.id},'${(p.rota||'').replace(/'/g,"\\'")}','${(p.nome||'').replace(/'/g,"\\'")}',${p.lat},${p.lng},'${(p.endereco||'').replace(/'/g,"\\'")}')" style="background:none;border:none;color:#1D4ED8;font-size:11px;cursor:pointer;padding:0">✏️</button>
 
           <button onclick="removerPontoRota(${p.id})" style="background:none;border:none;color:#D1D5DB;font-size:11px;cursor:pointer;padding:0">✕</button>
 
-        </div>`,
-          )
-          .join("");
+        </div>`).join('');
 
-        return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
+      return `<div style="border-bottom:1px solid #F0F4F8;padding:6px 0">
 
         <div style="padding:2px 14px;font-size:12px;font-weight:700;color:#0F4C7A">${rota}</div>
 
         ${linhas}
 
       </div>`;
-      })
-      .join("");
 
-} catch (e) { if (lista) lista.innerHTML = ’
+    }).join('');
 
-Erro ao carregar
+  } catch(e) {
 
-’; } }
+    if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
 
-async function buscarCoordenadaPontoRota() { const endereco =
-document.getElementById(“pr-endereco”)?.value?.trim();
+  }
 
-const status = document.getElementById(“pr-geocode-status”);
+}
 
-if (!endereco) { toast(“Digite o endereço primeiro”); return; }
 
-if (status) { status.style.display = “block”; status.style.color =
-“#5A7A8F”; status.innerHTML = ‘ Buscando coordenada…’; }
 
-try { const r = await fetch( API + “/geocodificar-endereco?endereco=” +
-encodeURIComponent(endereco), );
+async function buscarCoordenadaPontoRota() {
+
+  const endereco = document.getElementById('pr-endereco')?.value?.trim();
+
+  const status = document.getElementById('pr-geocode-status');
+
+  if (!endereco) { toast('Digite o endereço primeiro'); return; }
+
+
+
+  if (status) { status.style.display = 'block'; status.style.color = '#5A7A8F'; status.innerHTML = '<span class="spinner"></span> Buscando coordenada...'; }
+
+
+
+  try {
+
+    const r = await fetch(API + '/geocodificar-endereco?endereco=' + encodeURIComponent(endereco));
 
     const d = await r.json();
 
-    if (d.status !== "ok") {
-      if (status) {
-        status.style.color = "#DC2626";
-        status.textContent =
-          "✗ " +
-          (d.msg ||
-            "Endereço não encontrado — digite a coordenada manualmente");
-      }
+    if (d.status !== 'ok') {
+
+      if (status) { status.style.color = '#DC2626'; status.textContent = '✗ ' + (d.msg || 'Endereço não encontrado — digite a coordenada manualmente'); }
 
       return;
+
     }
 
-    const precisaoLabel =
-      {
-        ROOFTOP: "✓ Exato (endereço específico)",
 
-        RANGE_INTERPOLATED: "✓ Bem preciso (interpolado entre números)",
 
-        GEOMETRIC_CENTER: "⚠️ Aproximado (centro de uma área/rua)",
+    const precisaoLabel = {
 
-        APPROXIMATE: "⚠️ Aproximado",
-      }[d.precisao] ||
-      (d.confiavel ? "✓ Confiável" : "⚠️ Confira antes de usar");
+      ROOFTOP: '✓ Exato (endereço específico)',
 
-    if (status) status.style.display = "none";
+      RANGE_INTERPOLATED: '✓ Bem preciso (interpolado entre números)',
 
-    const containerId = "pr-geocode-confirm";
+      GEOMETRIC_CENTER: '⚠️ Aproximado (centro de uma área/rua)',
+
+      APPROXIMATE: '⚠️ Aproximado'
+
+    }[d.precisao] || (d.confiavel ? '✓ Confiável' : '⚠️ Confira antes de usar');
+
+
+
+    if (status) status.style.display = 'none';
+
+
+
+    const containerId = 'pr-geocode-confirm';
 
     let container = document.getElementById(containerId);
 
     if (!container) {
-      container = document.createElement("div");
+
+      container = document.createElement('div');
 
       container.id = containerId;
 
-      document.getElementById("pr-endereco").closest("div").after(container);
+      document.getElementById('pr-endereco').closest('div').after(container);
+
     }
 
-    const corBorda = d.confiavel ? "#0F9B78" : "#F59E0B";
+    const corBorda = d.confiavel ? '#0F9B78' : '#F59E0B';
 
-    const corFundo = d.confiavel ? "#F0FAF7" : "#FEF9EC";
+    const corFundo = d.confiavel ? '#F0FAF7' : '#FEF9EC';
 
     container.innerHTML = `
 
@@ -8138,136 +8614,183 @@ encodeURIComponent(endereco), );
 
       </div>`;
 
-} catch (e) { if (status) { status.style.color = “#DC2626”;
-status.textContent = “✗ Erro ao buscar coordenada”; } } }
+  } catch(e) {
 
-function confirmarCoordenadaPontoRota(lat, lng) { const campo =
-document.getElementById(“pr-coord”);
+    if (status) { status.style.color = '#DC2626'; status.textContent = '✗ Erro ao buscar coordenada'; }
 
-if (campo) campo.value = lat.toFixed(7) + “,” + lng.toFixed(7);
+  }
 
-document.getElementById(“pr-geocode-confirm”)?.remove();
-
-toast(“Coordenada aplicada ✓”); }
-
-function editarPontoRota(id, rota, nome, lat, lng, endereco) { _prEditId
-= id;
-
-document.getElementById(“pr-rota-sel”).value = rota;
-
-document.getElementById(“pr-nome”).value = nome;
-
-document.getElementById(“pr-endereco”).value = endereco || ““;
-
-document.getElementById(“pr-coord”).value = lat.toFixed(7) + “,” +
-lng.toFixed(7);
-
-const btn = document.getElementById(“pr-btn-salvar”);
-
-if (btn) btn.textContent = “✓ Salvar alterações”;
-
-document .getElementById(“pr-nome”) ?.scrollIntoView({ behavior:
-“smooth”, block: “center” }); }
-
-function cancelarEdicaoPontoRota() { _prEditId = null;
-
-document.getElementById(“pr-nome”).value = ““;
-
-document.getElementById(“pr-endereco”).value = ““;
-
-document.getElementById(“pr-coord”).value = ““;
-
-const btn = document.getElementById(“pr-btn-salvar”);
-
-if (btn) btn.textContent = “✓ Adicionar ponto”; }
-
-async function salvarPontoRota() { const rota =
-document.getElementById(“pr-rota-sel”)?.value;
-
-const nome = document.getElementById(“pr-nome”)?.value?.trim();
-
-const coord = document.getElementById(“pr-coord”)?.value?.trim();
-
-const endereco = document.getElementById(“pr-endereco”)?.value?.trim();
-
-if (!rota) { toast(“Selecione a rota”); return; }
-
-if (!nome) { toast(“Informe o nome do ponto”); return; }
-
-if (!coord || !coord.includes(“,”)) { toast( “Informe as coordenadas
-(busque pelo endereço ou digite manualmente)”, ); return; }
-
-const [latStr, lngStr] = coord.split(“,”).map((s) => s.trim());
-
-const lat = parseFloat(latStr), lng = parseFloat(lngStr);
-
-if (isNaN(lat) || isNaN(lng)) { toast(“Coordenadas inválidas”); return;
 }
 
-try { if (_prEditId) { await fetch(API + “/pontos-rota”, { method:
-“PUT”,
 
-        headers: { "Content-Type": "application/json" },
 
-        body: JSON.stringify({ id: _prEditId, nome, lat, lng, endereco }),
+function confirmarCoordenadaPontoRota(lat, lng) {
+
+  const campo = document.getElementById('pr-coord');
+
+  if (campo) campo.value = lat.toFixed(7) + ',' + lng.toFixed(7);
+
+  document.getElementById('pr-geocode-confirm')?.remove();
+
+  toast('Coordenada aplicada ✓');
+
+}
+
+
+
+function editarPontoRota(id, rota, nome, lat, lng, endereco) {
+
+  _prEditId = id;
+
+  document.getElementById('pr-rota-sel').value = rota;
+
+  document.getElementById('pr-nome').value = nome;
+
+  document.getElementById('pr-endereco').value = endereco || '';
+
+  document.getElementById('pr-coord').value = lat.toFixed(7) + ',' + lng.toFixed(7);
+
+  const btn = document.getElementById('pr-btn-salvar');
+
+  if (btn) btn.textContent = '✓ Salvar alterações';
+
+  document.getElementById('pr-nome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+}
+
+
+
+function cancelarEdicaoPontoRota() {
+
+  _prEditId = null;
+
+  document.getElementById('pr-nome').value = '';
+
+  document.getElementById('pr-endereco').value = '';
+
+  document.getElementById('pr-coord').value = '';
+
+  const btn = document.getElementById('pr-btn-salvar');
+
+  if (btn) btn.textContent = '✓ Adicionar ponto';
+
+}
+
+
+
+async function salvarPontoRota() {
+
+  const rota = document.getElementById('pr-rota-sel')?.value;
+
+  const nome = document.getElementById('pr-nome')?.value?.trim();
+
+  const coord = document.getElementById('pr-coord')?.value?.trim();
+
+  const endereco = document.getElementById('pr-endereco')?.value?.trim();
+
+
+
+  if (!rota) { toast('Selecione a rota'); return; }
+
+  if (!nome) { toast('Informe o nome do ponto'); return; }
+
+  if (!coord || !coord.includes(',')) { toast('Informe as coordenadas (busque pelo endereço ou digite manualmente)'); return; }
+
+
+
+  const [latStr, lngStr] = coord.split(',').map(s => s.trim());
+
+  const lat = parseFloat(latStr), lng = parseFloat(lngStr);
+
+  if (isNaN(lat) || isNaN(lng)) { toast('Coordenadas inválidas'); return; }
+
+
+
+  try {
+
+    if (_prEditId) {
+
+      await fetch(API + '/pontos-rota', {
+
+        method: 'PUT',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ id: _prEditId, nome, lat, lng, endereco })
+
       });
 
-      toast("✓ Ponto atualizado");
+      toast('✓ Ponto atualizado');
+
     } else {
-      await fetch(API + "/pontos-rota", {
-        method: "POST",
 
-        headers: { "Content-Type": "application/json" },
+      await fetch(API + '/pontos-rota', {
 
-        body: JSON.stringify({ rota, nome, lat, lng, endereco }),
+        method: 'POST',
+
+        headers: { 'Content-Type': 'application/json' },
+
+        body: JSON.stringify({ rota, nome, lat, lng, endereco })
+
       });
 
-      toast("✓ Ponto adicionado");
+      toast('✓ Ponto adicionado');
+
     }
 
     cancelarEdicaoPontoRota();
 
-    document.getElementById("pr-geocode-confirm")?.remove();
+    document.getElementById('pr-geocode-confirm')?.remove();
 
     carregarPontosRota();
 
-} catch (e) { toast(“Erro ao salvar”); } }
+  } catch(e) { toast('Erro ao salvar'); }
 
-async function removerPontoRota(id) { if (!confirm(“Remover este
-ponto?”)) return;
+}
 
-try { await fetch(API + “/pontos-rota”, { method: “DELETE”, headers: {
-“Content-Type”: “application/json” }, body: JSON.stringify({ id }), });
 
-    toast("✓ Ponto removido");
+
+async function removerPontoRota(id) {
+
+  if (!confirm('Remover este ponto?')) return;
+
+  try {
+
+    await fetch(API + '/pontos-rota', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id }) });
+
+    toast('✓ Ponto removido');
 
     carregarPontosRota();
 
-} catch (e) { toast(“Erro ao remover”); } }
+  } catch(e) { toast('Erro ao remover'); }
 
-// ── PASSAGENS NOS PONTOS — lista cronológica
-────────────────────────────
+}
 
-async function carregarPassagensPontos() { const lista =
-document.getElementById(“pp-lista”);
 
-const data = document.getElementById(“pp-data”)?.value;
 
-const rota = document.getElementById(“pp-rota-sel”)?.value;
+// ── PASSAGENS NOS PONTOS — lista cronológica ────────────────────────────
 
-if (!lista) return;
+async function carregarPassagensPontos() {
 
-if (!data) { toast(“Selecione a data”); return; }
+  const lista = document.getElementById('pp-lista');
 
-lista.innerHTML = ’
+  const data = document.getElementById('pp-data')?.value;
 
-Carregando…
+  const rota = document.getElementById('pp-rota-sel')?.value;
 
-’;
+  if (!lista) return;
 
-try { let urlReq = API + “/passagens-pontos?data=” + data;
+  if (!data) { toast('Selecione a data'); return; }
 
-    if (rota) urlReq += "&rota=" + encodeURIComponent(rota);
+
+
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+
+  try {
+
+    let urlReq = API + '/passagens-pontos?data=' + data;
+
+    if (rota) urlReq += '&rota=' + encodeURIComponent(rota);
 
     const r = await fetch(urlReq);
 
@@ -8275,46 +8798,49 @@ try { let urlReq = API + “/passagens-pontos?data=” + data;
 
     const passagens = d.passagens || [];
 
+
+
     if (!passagens.length) {
-      lista.innerHTML =
-        '<div class="empty">Nenhuma passagem registrada nesta data</div>';
+
+      lista.innerHTML = '<div class="empty">Nenhuma passagem registrada nesta data</div>';
 
       return;
+
     }
+
+
 
     const porMotoboy = {};
 
-    passagens.forEach((p) => {
-      const key = p.nome_motoboy + "|" + p.rota;
+    passagens.forEach(p => {
 
-      if (!porMotoboy[key])
-        porMotoboy[key] = { nome: p.nome_motoboy, rota: p.rota, passagens: [] };
+      const key = p.nome_motoboy + '|' + p.rota;
+
+      if (!porMotoboy[key]) porMotoboy[key] = { nome: p.nome_motoboy, rota: p.rota, passagens: [] };
 
       porMotoboy[key].passagens.push(p);
+
     });
 
-    function fmtHora(ts) {
-      const sp = new Date(ts - 3 * 60 * 60 * 1000);
 
-      return (
-        String(sp.getUTCHours()).padStart(2, "0") +
-        ":" +
-        String(sp.getUTCMinutes()).padStart(2, "0")
-      );
+
+    function fmtHora(ts) {
+
+      const sp = new Date(ts - 3*60*60*1000);
+
+      return String(sp.getUTCHours()).padStart(2,'0') + ':' + String(sp.getUTCMinutes()).padStart(2,'0');
+
     }
 
-    lista.innerHTML = Object.values(porMotoboy)
-      .map(
-        (g) => `
+
+
+    lista.innerHTML = Object.values(porMotoboy).map(g => `
 
       <div style="border-bottom:1px solid #F0F4F8;padding:8px 0">
 
         <div style="padding:2px 14px;font-size:12px;font-weight:700;color:#0F4C7A">${g.nome} <span style="font-weight:400;color:#94A8B8">· ${g.rota}</span></div>
 
-        ${g.passagens
-          .sort((a, b) => a.timestamp - b.timestamp)
-          .map(
-            (p) => `
+        ${g.passagens.sort((a,b)=>a.timestamp-b.timestamp).map(p => `
 
           <div style="display:flex;align-items:center;gap:8px;padding:4px 14px 4px 24px">
 
@@ -8324,70 +8850,93 @@ try { let urlReq = API + “/passagens-pontos?data=” + data;
 
             <span style="font-size:10px;color:#94A8B8;margin-left:auto">${p.distancia_m}m</span>
 
-          </div>`,
-          )
-          .join("")}
+          </div>`).join('')}
 
-      </div>`,
-      )
-      .join("");
+      </div>`).join('');
 
-} catch (e) { lista.innerHTML = ’
+  } catch(e) {
 
-Erro ao carregar
+    lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
 
-’; } }
+  }
 
-async function reprocessarPassagensPontos() { const data =
-document.getElementById(“pp-data”)?.value;
+}
 
-const rota = document.getElementById(“pp-rota-sel”)?.value;
 
-if (!data) { toast(“Selecione a data”); return; }
 
-if ( !confirm( “Reprocessar passagens de” + data + (rota ? ” para a rota
-” + rota : ” para todas as rotas”) + “? Isso busca no histórico de GPS
-se algum motoboy já passou pelos pontos cadastrados.”, ) ) return;
+async function reprocessarPassagensPontos() {
 
-toast(“Reprocessando…”);
+  const data = document.getElementById('pp-data')?.value;
 
-try { const body = { data };
+  const rota = document.getElementById('pp-rota-sel')?.value;
+
+  if (!data) { toast('Selecione a data'); return; }
+
+  if (!confirm('Reprocessar passagens de ' + data + (rota ? ' para a rota ' + rota : ' para todas as rotas') + '? Isso busca no histórico de GPS se algum motoboy já passou pelos pontos cadastrados.')) return;
+
+
+
+  toast('Reprocessando...');
+
+  try {
+
+    const body = { data };
 
     if (rota) body.rota = rota;
 
-    const r = await fetch(API + "/passagens-reprocessar", {
-      method: "POST",
+    const r = await fetch(API + '/passagens-reprocessar', {
 
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
 
-      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+
+      body: JSON.stringify(body)
+
     });
 
     const d = await r.json();
 
-    toast("✓ " + (d.inseridos || 0) + " passagem(ns) encontrada(s)");
+    toast('✓ ' + (d.inseridos || 0) + ' passagem(ns) encontrada(s)');
 
     carregarPassagensPontos();
 
-} catch (e) { toast(“Erro ao reprocessar”); } }
+  } catch(e) { toast('Erro ao reprocessar'); }
+
+}
+
+
 
 // Adicione isto no final do seu core.js
 
-function validarData(dataString) { if (!dataString) return false;
+function validarData(dataString) {
 
-const data = new Date(dataString);
+    if (!dataString) return false;
 
-return !isNaN(data.getTime()); }
+    const data = new Date(dataString);
 
-function dataEstaOk(inputElement) { const valor = inputElement.value;
+    return !isNaN(data.getTime());
 
-if (!validarData(valor)) return false;
+}
 
-const dataSelecionada = new Date(valor);
 
-const hoje = new Date();
 
-hoje.setHours(0, 0, 0, 0);
+function dataEstaOk(inputElement) {
 
-return dataSelecionada <= hoje; // Retorna true se a data for hoje ou
-passada }
+    const valor = inputElement.value;
+
+    if (!validarData(valor)) return false;
+
+
+
+    const dataSelecionada = new Date(valor);
+
+    const hoje = new Date();
+
+    hoje.setHours(0, 0, 0, 0);
+
+
+
+    return dataSelecionada <= hoje; // Retorna true se a data for hoje ou passada
+
+} 
+
