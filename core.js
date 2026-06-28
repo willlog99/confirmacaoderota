@@ -17,17 +17,21 @@ let autoRefreshInterval = null;
 function getDataLocalSP() {
   const agora = new Date();
 
-  const sp = new Date(
-    agora.toLocaleString("en-US", {
-      timeZone: "America/Sao_Paulo"
-    })
+  console.log("Agora:", agora.toString());
+  console.log("UTC:", agora.toISOString());
+
+  console.log(
+    "SP:",
+    new Intl.DateTimeFormat("pt-BR", {
+      timeZone: "America/Sao_Paulo",
+      dateStyle: "full",
+      timeStyle: "long"
+    }).format(agora)
   );
 
-  return [
-    sp.getFullYear(),
-    String(sp.getMonth() + 1).padStart(2, "0"),
-    String(sp.getDate()).padStart(2, "0")
-  ].join("-");
+  return new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "America/Sao_Paulo"
+  }).format(agora);
 }
 
 
