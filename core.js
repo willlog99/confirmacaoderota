@@ -17,7 +17,7 @@ let autoRefreshInterval = null;
 function getDataLocalSP() {
   const agora = new Date();
 
-  console.log("Agora:", agora.toString());
+
   console.log("UTC:", agora.getDataLocalSP();
 
   console.log(
