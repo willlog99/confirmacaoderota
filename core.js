@@ -15,9 +15,19 @@ let autoRefreshInterval = null;
 
 
 function getDataLocalSP() {
+  const agora = new Date();
 
-  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+  const sp = new Date(
+    agora.toLocaleString("en-US", {
+      timeZone: "America/Sao_Paulo"
+    })
+  );
 
+  return [
+    sp.getFullYear(),
+    String(sp.getMonth() + 1).padStart(2, "0"),
+    String(sp.getDate()).padStart(2, "0")
+  ].join("-");
 }
 
 
