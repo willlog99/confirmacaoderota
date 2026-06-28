@@ -18,7 +18,7 @@ function getDataLocalSP() {
   const agora = new Date();
 
   console.log("Agora:", agora.toString());
-  console.log("UTC:", agora.toISOString());
+  console.log("UTC:", agora.getDataLocalSP();
 
   console.log(
     "SP:",
@@ -234,7 +234,7 @@ function setView(id, el) {
 
     const input = document.getElementById('oc-filtro-data');
 
-    if (input && !input.value) input.value = new Date().toISOString().split('T')[0];
+    if (input && !input.value) input.value = new Date().getDataLocalSP().split('T')[0];
 
     carregarOcorrencias();
 
@@ -258,7 +258,7 @@ function setView(id, el) {
 
       const diaSP = new Date(agora.getTime() - 3*60*60*1000);
 
-      ppData.value = diaSP.toISOString().split('T')[0];
+      ppData.value = diaSP.getDataLocalSP().split('T')[0];
 
     }
 
@@ -280,7 +280,7 @@ function setView(id, el) {
 
     const dataInp = document.getElementById('replay-data');
 
-    if (dataInp && !dataInp.value) dataInp.value = new Date().toISOString().split('T')[0];
+    if (dataInp && !dataInp.value) dataInp.value = new Date().getDataLocalSP().split('T')[0];
 
   }
 
@@ -570,7 +570,7 @@ async function carregarMetricas() {
 
   const hoje = new Date();
 
-  let dataInicio, dataFim = hoje.toISOString().split('T')[0];
+  let dataInicio, dataFim = hoje.getDataLocalSP().split('T')[0];
 
 
 
@@ -586,13 +586,13 @@ async function carregarMetricas() {
 
     const d = new Date(hoje); d.setDate(d.getDate() - 7);
 
-    dataInicio = d.toISOString().split('T')[0];
+    dataInicio = d.getDataLocalSP().split('T')[0];
 
   } else {
 
     const d = new Date(hoje); d.setDate(d.getDate() - 30);
 
-    dataInicio = d.toISOString().split('T')[0];
+    dataInicio = d.getDataLocalSP().split('T')[0];
 
   }
 
@@ -640,7 +640,7 @@ async function carregarMetricas() {
 
     const fim = new Date(dataFim);
 
-    while (cur <= fim) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+    while (cur <= fim) { datas.push(cur.getDataLocalSP().split('T')[0]); cur.setDate(cur.getDate()+1); }
 
 
 
@@ -1914,7 +1914,7 @@ async function criarOcorrenciaGestor() {
 
 async function gerarPdfDia() {
 
-  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+  const data = document.getElementById('oc-filtro-data')?.value || new Date().getDataLocalSP().split('T')[0];
 
   try {
 
@@ -2064,7 +2064,7 @@ function relMudarTipo(tipo) {
 
   });
 
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = new Date().getDataLocalSP().split('T')[0];
 
   if (tipo === 'km') {
 
@@ -2648,7 +2648,7 @@ function relExportarXLSX(linhas, nomeArquivo, nomeAba) {
 
     XLSX.utils.book_append_sheet(wb, ws, nomeAba || 'Dados');
 
-    XLSX.writeFile(wb, nomeArquivo + '-' + new Date().toISOString().split('T')[0] + '.xlsx');
+    XLSX.writeFile(wb, nomeArquivo + '-' + new Date().getDataLocalSP().split('T')[0] + '.xlsx');
 
   };
 
@@ -2714,7 +2714,7 @@ async function carregarOcorrencias() {
 
 
 
-  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+  const data = document.getElementById('oc-filtro-data')?.value || new Date().getDataLocalSP().split('T')[0];
 
   const tipo = document.getElementById('oc-filtro-tipo')?.value || '';
 
@@ -2802,7 +2802,7 @@ async function abrirModalOcorrencia(id) {
 
     const diaSP = new Date(agora.getTime() - 3*60*60*1000);
 
-    const data = diaSP.toISOString().split('T')[0];
+    const data = diaSP.getDataLocalSP().split('T')[0];
 
     const r = await fetch(API + '/ocorrencia?data=' + data);
 
@@ -5654,7 +5654,7 @@ async function renderizarListaMapa(locs, offline, agora, ONLINE_LIM, IDLE_LIM) {
 
   const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
 
-  const dataHoje = diaSP.toISOString().split('T')[0];
+  const dataHoje = diaSP.getDataLocalSP().split('T')[0];
 
   let kmPontos = {}, geofenceEvts = {};
 
@@ -6132,7 +6132,7 @@ async function iniciarImportacao() {
 
   const dataEl = document.getElementById('chk-download-data');
 
-  if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
+  if(dataEl && !dataEl.value) dataEl.value = new Date().getDataLocalSP().split('T')[0];
 
 }
 
@@ -6164,7 +6164,7 @@ async function carregarKMDia() {
 
     const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
 
-    const data = diaSP.toISOString().split('T')[0];
+    const data = diaSP.getDataLocalSP()I.split('T')[0];
 
     const promises = locs.map(async l => {
 
@@ -6242,11 +6242,11 @@ async function carregarKmCompleto() {
 
     const diaSP = new Date(hoje.getTime() - 3 * 60 * 60 * 1000);
 
-    filtroEl.value = diaSP.toISOString().split('T')[0];
+    filtroEl.value = diaSP.getDataLocalSP().split('T')[0];
 
   }
 
-  const data = (filtroEl && filtroEl.value) ? filtroEl.value : new Date().toISOString().split('T')[0];
+  const data = (filtroEl && filtroEl.value) ? filtroEl.value : new Date().getDataLocalSP().split('T')[0];
 
   const partes = data.split('-');
 
@@ -6512,7 +6512,7 @@ function kmDataAtual() {
 
   const diaSP = new Date(hoje.getTime() - 3*60*60*1000);
 
-  return diaSP.toISOString().split('T')[0];
+  return diaSP.getDataLocalSP().split('T')[0];
 
 }
 
@@ -6720,7 +6720,7 @@ async function carregarKmPeriodo() {
 
     while (cur <= fim2) {
 
-      datas.push(cur.toISOString().split('T')[0]);
+      datas.push(cur.getDataLocalSP().split('T')[0]);
 
       cur.setDate(cur.getDate() + 1);
 
@@ -6814,7 +6814,7 @@ async function carregarKmMotoboy() {
 
     const fim2 = new Date(fim + 'T00:00:00');
 
-    while (cur <= fim2) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); }
+    while (cur <= fim2) { datas.push(cur.getDataLocalSP().split('T')[0]); cur.setDate(cur.getDate() + 1); }
 
 
 
@@ -7166,7 +7166,7 @@ async function enriquecerDadosKm(dados) {
 
   const diaSP = new Date(agora.getTime() - 3*60*60*1000);
 
-  const hoje = diaSP.toISOString().split('T')[0];
+  const hoje = diaSP.getDataLocalSP().split('T')[0];
 
 
 
