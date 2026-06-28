@@ -61,7 +61,14 @@ async function renderizarPainel(data) {
   try {
   const todasRotas = data.rotas || [];
   const clientesPorRota = data.clientes_por_rota || {};
-  const confirmacoes = data.confirmacoes || [];
+  let confirmacoes = data.confirmacoes || [];
+
+  // /painel-dados retorna confirmações sem filtro de data — descarta as de dias anteriores.
+  // c.data vem no formato 'DD/MM/YYYY, HH:MM' (pt-BR); compara com a data atual de SP.
+  const hojeBR = (typeof getDataLocalSP === 'function') ? getDataLocalSP() : new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+  const [aa, mm, dd] = hojeBR.split('-');
+  const hojeBRFmt = `${dd}/${mm}/${aa}`;
+  confirmacoes = confirmacoes.filter(c => !c.data || c.data.startsWith(hojeBRFmt));
 
   // Filtrar rotas pelo dia selecionado
   const rotas = filtroDia === 'todos'
