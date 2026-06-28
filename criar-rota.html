@@ -176,6 +176,15 @@
         <input type="text" id="nome-rota" placeholder="Ex: SAO PAULO 01" style="text-transform:uppercase"/>
       </div>
 
+      <div class="field">
+        <label>Dias de operação</label>
+        <div class="dias-opts">
+          <div class="dia-opt" onclick="toggleDia('seg-sex',this)">Seg-Sex</div>
+          <div class="dia-opt" onclick="toggleDia('sab',this)">Sábado</div>
+          <div class="dia-opt" onclick="toggleDia('dom',this)">Domingo</div>
+        </div>
+      </div>
+
       <button class="btn btn-primary" onclick="irPara(3)">Próximo: Clientes →</button>
     </div>
 
@@ -579,6 +588,7 @@
   function irPara(n) {
     if (n === 3 && !motoboySelected) { showMsg('msg1', 'Selecione um motorista', 'error'); return; }
     if (n === 3 && !document.getElementById('nome-rota').value.trim()) { showMsg('msg1', 'Digite o nome da rota', 'error'); return; }
+    if (n === 3 && diasSelecionados.length === 0) { showMsg('msg1', 'Selecione pelo menos um dia de operação', 'error'); return; }
     if (n === 4 && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
     if (n === 4) renderizarResumo();
 
@@ -614,6 +624,12 @@
   async function criarRota() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
 
+    // Monta dia_semana a partir de diasSelecionados.
+    // Valores reconhecidos pelo backend: 'seg-sex', 'sabado', 'domingo'.
+    // Combinações viram lista separada por vírgula: 'sabado,domingo', etc.
+    const mapaDiaLabel = { 'seg-sex': 'seg-sex', 'sab': 'sabado', 'dom': 'domingo' };
+    const diaSemana = diasSelecionados.map(d => mapaDiaLabel[d]).filter(Boolean).join(',') || 'seg-sex';
+
     const clientesData = clientesEncontrados.filter(c => clientesSelecionados.has(c.id)).map(c => ({
       id_base: c.id,
       numero_cliente: c.numero_cliente,
@@ -639,7 +655,7 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           rota: nomeRota,
-          dia_semana: 'seg-sex',
+          dia_semana: diaSemana,
           telefone_motoboy: motoboySelected.telefone,
           nome_motoboy: motoboySelected.nome,
           clientes: clientesData
