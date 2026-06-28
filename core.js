@@ -5,6 +5,11 @@
 const API = 'https://confirmacaoderota.willlog99.workers.dev';
 const _diaSemana = new Date().getDay();
 let autoRefreshInterval = null;
+
+function getDataLocalSP() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+}
+
 // ── FUNÇÕES ──
 function abrirMenu() {
   document.getElementById('menu-overlay').classList.add('open');
@@ -368,9 +373,10 @@ async function carregarResumoDia() {
   const lista = document.getElementById('resumo-dia-lista');
   if (!lista) return;
 
-  const agora = new Date();
-  const diaSP = new Date(agora.getTime() - 3*60*60*1000);
-  const hoje = diaSP.toISOString().split('T')[0];
+  // Usa a função centralizada que garante a data correta de SP
+  const hoje = getDataLocalSP(); 
+  
+  // Para exibir no layout, formatamos apenas a visualização
   const hojeStr = new Date(hoje + 'T12:00:00').toLocaleDateString('pt-BR', {day:'2-digit',month:'2-digit'});
 
   const dataEl = document.getElementById('resumo-dia-data');
@@ -379,12 +385,14 @@ async function carregarResumoDia() {
   lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
 
   try {
+    // Agora 'hoje' contém a string '2026-06-27' (exemplo) sempre correta
     const [rMb, rConf, rGeo, rKm] = await Promise.all([
       fetch(API + '/motoboys?todos=1&agrupado=1'),
       fetch(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje),
       fetch(API + '/geofence-evento?data=' + hoje),
       fetch(API + '/localizacao?dia=' + hoje)
     ]);
+    // ... restante do seu código segue igual
 
     const dMb   = await rMb.json();
     const dConf = await rConf.json();
