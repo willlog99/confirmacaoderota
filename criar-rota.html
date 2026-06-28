@@ -303,10 +303,25 @@
       showMsg('msg-dup', 'Erro: ' + e.message, 'error');
     }
   }
+  // Mapeamento: dias da etapa 1 (valores internos do form) -> dias reais do cliente (3 letras)
+  // Seg-Sex => seg/ter/qua/qui/sex | Sab => sab | Dom => dom
+  const MAPA_DIAS_ROTA_PARA_CLIENTE = {
+    'seg-sex': ['seg','ter','qua','qui','sex'],
+    'sab': ['sab'],
+    'dom': ['dom']
+  };
+
+  function diasPermitidosCliente() {
+    // Une os dias de todos os chips da etapa 1 (sem duplicar)
+    const set = new Set();
+    diasSelecionados.forEach(d => (MAPA_DIAS_ROTA_PARA_CLIENTE[d] || []).forEach(x => set.add(x)));
+    return [...set];
+  }
+
   let diasSelecionados = []; // ['seg-sex'] ou ['sab'] ou ['dom'] ou combinações
   let clientesEncontrados = [];
   let clientesSelecionados = new Set();
-  let clientesDias = {}; // id => array de dias ativos
+  let clientesDias = {}; // id => array de dias ativos (já filtrados pelos permitidos)
   let clientesMostrarEndereco = {}; // id => true/false
   let clientesContraPedido = {}; // id => true/false
   let todosMotoboys = [];
@@ -391,6 +406,8 @@
       diasSelecionados.push(dia);
       el.classList.add('sel');
     }
+    // Re-renderiza a lista de clientes (chips de dias) para refletir o novo filtro
+    if (clientesEncontrados.length) renderizarListaClientes();
   }
 
   // ETAPA 3 - CLIENTES
@@ -423,6 +440,12 @@
 
   function renderizarListaClientes() {
     const lista = document.getElementById('cli-lista');
+    // Normaliza: descarta dias que ficaram fora do permitido pela etapa 1
+    const permitidos = diasPermitidosCliente();
+    clientesSelecionados.forEach(id => {
+      const arr = clientesDias[id] || [];
+      clientesDias[id] = arr.filter(d => permitidos.includes(d));
+    });
     const rows = clientesEncontrados.map(c => {
       const sel = clientesSelecionados.has(c.id);
       const dias = clientesDias[c.id] || [];
@@ -501,7 +524,8 @@
   }
 
   function gerarDiasTicks(id, diasAtivos) {
-    const opcoes = [
+    // Mostra APENAS os dias permitidos pela etapa 1 (Seg-Sex => 5 dias; Sab => 1; Dom => 1)
+    const todosDias = [
       { key: 'seg', label: 'Seg' },
       { key: 'ter', label: 'Ter' },
       { key: 'qua', label: 'Qua' },
@@ -510,8 +534,10 @@
       { key: 'sab', label: 'Sáb' },
       { key: 'dom', label: 'Dom' },
     ];
-    // Mostra todos os 7 dias — você escolhe livremente quais ativar para este cliente
-    return opcoes.map(o => {
+    const permitidos = diasPermitidosCliente();
+    // Preserva a ordem visual original (Seg→Dom) só dos dias permitidos
+    const visiveis = todosDias.filter(o => permitidos.includes(o.key));
+    return visiveis.map(o => {
       const ativo = diasAtivos.includes(o.key);
       return `<span class="cli-dia-tick${ativo ? ' ativo' : ''}" onclick="event.stopPropagation();toggleDiaCliente(${id},'${o.key}',this)">${o.label}</span>`;
     }).join('');
@@ -533,7 +559,8 @@
       if (endTexto) endTexto.remove();
     } else {
       clientesSelecionados.add(id);
-      clientesDias[id] = []; // não herda dias automaticamente — fica vinculado mas sem dia ativo até você escolher
+      // Pré-marca TODOS os dias permitidos pela etapa 1 — você pode desmarcar se quiser
+      clientesDias[id] = [...diasPermitidosCliente()];
       row.classList.add('sel');
       row.querySelector('.cli-checkbox').textContent = '✓';
 
@@ -575,10 +602,12 @@
   }
 
   function selecionarTodos() {
+    const permitidos = diasPermitidosCliente();
     clientesEncontrados.forEach(c => {
       if (!clientesSelecionados.has(c.id)) {
         clientesSelecionados.add(c.id);
-        clientesDias[c.id] = []; // sem dia marcado — escolha individual depois
+        // Pré-marca todos os dias permitidos pela etapa 1
+        clientesDias[c.id] = [...permitidos];
       }
     });
     renderizarListaClientes();
