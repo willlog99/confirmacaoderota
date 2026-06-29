@@ -984,7 +984,7 @@ async function gerarPdfDia() {
 }
 // ── RELATÓRIOS — NAVEGAÇÃO ───────────────────────────────────
 function relMudarTipo(tipo) {
-  ['km','inconsistencias','horarios','checklist','coordenadas'].forEach(t => {
+  ['km','horarios','checklist'].forEach(t => {
     const el = document.getElementById('rel-sub-' + t);
     const btn = document.getElementById('rel-nav-' + t);
     if (el) el.style.display = t === tipo ? 'block' : 'none';
@@ -994,11 +994,6 @@ function relMudarTipo(tipo) {
   if (tipo === 'km') {
     const d = document.getElementById('rel-km-data');
     if (d && !d.value) d.value = hoje;
-  }
-  if (tipo === 'inconsistencias') {
-    const i1 = document.getElementById('rel-inc-inicio'), i2 = document.getElementById('rel-inc-fim');
-    if (i1 && !i1.value) i1.value = hoje;
-    if (i2 && !i2.value) i2.value = hoje;
   }
   if (tipo === 'horarios') {
     const h = document.getElementById('rel-hor-data');
