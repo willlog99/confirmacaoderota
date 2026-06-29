@@ -851,8 +851,11 @@
     }
 
     const cardEtapa2 = motoboyTipo === 'rastreador' ? 'card3gps' : 'card3';
-    if (n === 3 && motoboyTipo !== 'rastreador' && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
-    if (n === 3 && motoboyTipo === 'rastreador' && !pontosGPS.length) { showMsg('msg3gps', 'Adicione pelo menos um ponto no mapa', 'error'); return; }
+    // Só EXIGE cliente selecionado ao tentar SAIR da etapa 2 (irPara(4)),
+    // não ao ENTRAR nela. O botão "Próximo: Confirmar" já fica disabled
+    // quando não há cliente, então essa validação seria redundante.
+    if (n === 4 && motoboyTipo !== 'rastreador' && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
+    if (n === 4 && motoboyTipo === 'rastreador' && !pontosGPS.length) { showMsg('msg3gps', 'Adicione pelo menos um ponto no mapa', 'error'); return; }
     if (n === 4) renderizarResumo();
 
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
@@ -1005,6 +1008,7 @@
     document.getElementById('card1').classList.add('ativa');
     for (let i = 1; i <= 4; i++) {
       const et = document.getElementById('et' + i);
+      if (!et) continue;  // HTML pula et2 (etapas são et1, et3, et4)
       et.classList.remove('ativa','completa');
       if (i === 1) et.classList.add('ativa');
     }
