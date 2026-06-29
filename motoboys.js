@@ -821,6 +821,7 @@ async function salvarTipoMotoboy(telefone) {
       body: JSON.stringify({ telefone, tipo, precisa_checklist, rastrear })
     });
     document.getElementById('modal-editar-tipo')?.remove();
+    if (typeof invalidarCache === 'function') invalidarCache('motoboys-agrupado');
     toast('✓ Configuração atualizada');
     carregarMotoboysGerenciar();
   } catch(e) { toast('Erro ao salvar'); }
@@ -852,6 +853,7 @@ async function adicionarMotoboy() {
     document.getElementById('mb-nome').value = '';
     document.getElementById('mb-tel').value = '';
     if (document.getElementById('mb-placa')) document.getElementById('mb-placa').value = '';
+    if (typeof invalidarCache === 'function') invalidarCache('motoboys-agrupado');
     showMsg('msg-mb','✅ Motorista adicionado! Checklist criado.','success');
     carregarMotoboysGerenciar();
   } catch(e) { showMsg('msg-mb','Erro: '+e.message,'error'); }
@@ -861,6 +863,7 @@ async function adicionarMotoboy() {
 async function excluirMotoboy(telefone) {
   if (!confirm('Excluir este motorista e todas as suas rotas?')) return;
   await fetch(API + '/motoboys', { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify({telefone}) });
+  if (typeof invalidarCache === 'function') invalidarCache('motoboys-agrupado');
   toast('Motorista excluído');
   carregarMotoboysGerenciar();
 }

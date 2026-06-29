@@ -5,6 +5,45 @@
 const API = 'https://confirmacaoderota.willlog99.workers.dev';
 const _diaSemana = new Date().getDay();
 let autoRefreshInterval = null;
+
+// ── CACHE DE REQUISIÇÕES ─────────────────────────────────
+// Evita repetir requests pesados que mudam pouco (motoboys, resumo do dia).
+// Cada cache expira sozinho após TTL.
+const _cache = new Map();
+const CACHE_TTL_MS = {
+  'motoboys-agrupado': 60_000,   // 1 min — lista raramente muda
+  'resumo-dia':        60_000,   // 1 min — atualiza via interval
+};
+function _cacheKey(url) {
+  // chave curta baseada no path do endpoint
+  if (url.includes('/motoboys?todos=1&agrupado=1')) return 'motoboys-agrupado';
+  if (url.includes('/motoboys?todos=1')) return 'motoboys-agrupado'; // mesmo retorno
+  if (url.includes('/historico-confirmacoes') && url.includes('data_inicio=') && url.includes('data_fim=')) {
+    return 'resumo-dia';
+  }
+  return null;
+}
+async function fetchCacheado(url, opts) {
+  const key = _cacheKey(url);
+  if (key) {
+    const hit = _cache.get(key);
+    if (hit && Date.now() - hit.ts < (CACHE_TTL_MS[key] || 0)) {
+      return new Response(JSON.stringify(hit.data), { status: 200, headers: { 'Content-Type': 'application/json' } });
+    }
+  }
+  const resp = await fetch(url, opts);
+  if (key && resp.ok) {
+    try {
+      const data = await resp.clone().json();
+      _cache.set(key, { ts: Date.now(), data });
+    } catch(e) { /* não cacheia */ }
+  }
+  return resp;
+}
+function invalidarCache(key) {
+  if (key) _cache.delete(key);
+  else _cache.clear();
+}
 function _fmtHoraSP(ts){if(!ts)return '\u2014';return new Date(ts).toLocaleTimeString('pt-BR',{timeZone:'America/Sao_Paulo',hour:'2-digit',minute:'2-digit'});}
 function getDataLocalSP() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
@@ -78,9 +117,9 @@ function setView(id, el) {
   if (typeof atualizarBreadcrumb === 'function') atualizarBreadcrumb(id);
   if (id === 'painel') {
     if (typeof carregarPainel === 'function') carregarPainel();
-    carregarResumoDia();
     iniciarAutoRefresh();
     iniciarMiniMapa();
+    // carregarResumoDia() é chamado em aplicarLoginPainel e via interval — não duplicar aqui.
   }
   if (id === 'confirmacoes' && typeof carregarConfirmacoes === 'function') carregarConfirmacoes();
   if (id === 'motoristas' && typeof carregarMotoristasList === 'function') carregarMotoristasList();
@@ -101,7 +140,7 @@ function setView(id, el) {
       carregarKMDia();
     }, 100);
   }
-  if (id === 'painel') { carregarResumoDia(); }
+  if (id === 'painel') { /* carregarResumoDia removido daqui — disparado por interval + aplicarLoginPainel */ }
   if (id === 'painel-usuarios') carregarUsuariosPainel();
   if (id === 'ocorrencias') {
     const input = document.getElementById('oc-filtro-data');
@@ -154,7 +193,7 @@ async function carregarHorariosTrabalho() {
   if (!lista) return;
   try {
     const [rMb, rHt] = await Promise.all([
-      fetch(API + '/motoboys?todos=1&agrupado=1'),
+      fetchCacheado(API + '/motoboys?todos=1&agrupado=1'),
       fetch(API + '/horario-trabalho')
     ]);
     const dMb = await rMb.json();
@@ -280,7 +319,7 @@ async function carregarMetricas() {
   const tbody = document.getElementById('km-metricas-tbody');
   if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="padding:2rem;text-align:center;color:#94A8B8"><span class="spinner"></span> Carregando...</td></tr>';
   try {
-    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const rMb = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
     const rastreadores = (dMb.motoboys || []).filter(m => m.rastrear !== false && m.rastrear !== 0);
     if (!rastreadores.length) {
@@ -344,6 +383,8 @@ if ('serviceWorker' in navigator) {
 }
 // ── RESUMO DO DIA ─────────────────────────────────────────────
 async function carregarResumoDia() {
+  // Pausa se aba não está visível — também economiza bater do usuário em outros apps
+  if (typeof _abaVisivel !== 'undefined' && !_abaVisivel) return;
   const lista = document.getElementById('resumo-dia-lista');
   if (!lista) return;
   // Usa a função centralizada que garante a data correta de SP
@@ -356,8 +397,8 @@ async function carregarResumoDia() {
   try {
     // Agora 'hoje' contém a string '2026-06-27' (exemplo) sempre correta
     const [rMb, rConf, rGeo, rKm] = await Promise.all([
-      fetch(API + '/motoboys?todos=1&agrupado=1'),
-      fetch(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje),
+      fetchCacheado(API + '/motoboys?todos=1&agrupado=1'),
+      fetchCacheado(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje),
       fetch(API + '/geofence-evento?data=' + hoje),
       fetch(API + '/localizacao?dia=' + hoje)
     ]);
@@ -427,6 +468,12 @@ async function carregarResumoDia() {
   } catch(e) { lista.innerHTML = '<div class="empty">Erro ao carregar</div>'; }
 }
 setInterval(carregarResumoDia, 5 * 60 * 1000);
+// Pausa verificações de ocorrências quando a aba não está visível
+// (evita requests em background que ninguém vai ver).
+let _abaVisivel = !document.hidden;
+document.addEventListener('visibilitychange', () => {
+  _abaVisivel = !document.hidden;
+});
 // ── LOGIN PAINEL ─────────────────────────────────────────────
 let _painelUsuario = null;
 async function fazerLoginPainel() {
@@ -970,7 +1017,7 @@ async function carregarRelKm() {
   if (!data) { toast('Selecione a data'); return; }
   lista.innerHTML = '<div class="rel-empty"><span class="spinner"></span> Carregando...</div>';
   try {
-    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const rMb = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
     const motoboys = (dMb.motoboys || []).filter(m => m.rastrear !== 0 && m.rastrear !== false);
     const rKm = await fetch(API + '/localizacao?dia=' + data);
@@ -1417,6 +1464,8 @@ function gerarPdfOcorrencia() {
 }
 let _ocorrenciasVistas = new Set();
 async function verificarOcorrencias() {
+  // Pausa quando aba não está visível — evita poluir logs do backend e gastar requisições
+  if (typeof _abaVisivel !== 'undefined' && !_abaVisivel) return;
   try {
     const r = await fetch(API + '/ocorrencia?nao_lidas=1');
     const d = await r.json();
@@ -2226,6 +2275,8 @@ document.addEventListener('mouseout', e => {
 function iniciarAutoRefresh() {
   pararAutoRefresh();
   autoRefreshInterval = setInterval(() => {
+    // Não gasta request se a aba estiver oculta
+    if (typeof _abaVisivel !== 'undefined' && !_abaVisivel) return;
     if (typeof carregarPainel === 'function') carregarPainel(true);
   }, 30000);
 }
@@ -2911,7 +2962,7 @@ async function carregarKmCompleto() {
   if (elLabel) elLabel.textContent = partes[2] + '/' + partes[1] + '/' + partes[0];
   if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
   try {
-    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const rMb = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
     const nomes = Array.from(new Set((dMb.motoboys || []).map(function(m) { return m.nome; }))).sort();
     const promises = nomes.map(function(nome) {
@@ -3077,7 +3128,7 @@ async function carregarKmCompleto() {
   if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
   kmZerarKPIs();
   try {
-    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const rMb = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
     const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
     const promises = nomes.map(nome =>
@@ -3108,7 +3159,7 @@ async function carregarKmPeriodo() {
   if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
   kmZerarKPIs();
   try {
-    const rMb = await fetch(API + '/motoboys?todos=1&agrupado=1');
+    const rMb = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
     const dMb = await rMb.json();
     const nomes = [...new Set((dMb.motoboys||[]).map(m => m.nome))].sort();
     // Gerar lista de datas no período
