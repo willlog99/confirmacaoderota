@@ -1512,11 +1512,15 @@ function renderizarDispositivos(lista) {
     </div>`;
   if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum dispositivo encontrado</div>'; return; }
   const statusInfo = {
-    ok:         { badge: '✅ OK',                    bg: '#DCFCE7', cor: '#166534' },
-    sem_app:    { badge: '📵 Sem app',               bg: '#F1F5F9', cor: '#475569' },
-    sem_gps_bg: { badge: '🟡 GPS só durante uso',   bg: '#FEF9EC', cor: '#92400E' },
-    sem_notif:  { badge: '🔕 Notificação desligada', bg: '#FEF2F2', cor: '#991B1B' },
-    offline:    { badge: '🔴 Offline',               bg: '#FEE2E2', cor: '#991B1B' },
+    ok:              { badge: '✅ OK',                    bg: '#DCFCE7', cor: '#166534' },
+    sem_app:         { badge: '📵 Sem app',               bg: '#F1F5F9', cor: '#475569' },
+    sem_gps_bg:      { badge: '🟡 GPS só durante uso',   bg: '#FEF9EC', cor: '#92400E' },
+    sem_notif:       { badge: '🔕 Notificação desligada', bg: '#FEF2F2', cor: '#991B1B' },
+    offline:         { badge: '🔴 Offline',               bg: '#FEE2E2', cor: '#991B1B' },
+    // Quando o app confirma o logout remoto (mata GPS, limpa sessão e avisa o backend)
+    encerrado:       { badge: '✓ Encerrado',              bg: '#D1FAE5', cor: '#065F46' },
+    // App recebeu o comando push (FCM) mas não confirmou em 2-180min — push provavelmente expirou
+    logout_ignorado: { badge: '⚠ Encerrar não confirmou', bg: '#FEF3C7', cor: '#92400E' },
   };
   const formatTempo = min => {
     if (min === null) return '—';
@@ -1533,7 +1537,8 @@ function renderizarDispositivos(lista) {
         <div style="font-size:11px;color:#94A8B8;margin-top:1px">${tipo} ${d.fabricante ? '· ' + d.fabricante : ''} ${d.ultimo_gps ? '· ' + formatTempo(d.minutos_offline) : ''}</div>
       </div>
       <span style="font-size:10px;font-weight:700;padding:3px 10px;border-radius:20px;background:${s.bg};color:${s.cor};white-space:nowrap">${s.badge}</span>
-      ${d.tem_app ? `<button onclick="event.stopPropagation();encerrarSessaoMotoboy('${d.telefone.replace(/'/g,"\\'")}','${d.nome.replace(/'/g,"\\'")}')" title="Encerrar sess\u00e3o e GPS" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0">🚫 Encerrar</button>` : ''}
+      ${d.tem_app && d.status !== 'encerrado' && d.status !== 'logout_ignorado' ? `<button onclick="event.stopPropagation();encerrarSessaoMotoboy('${d.telefone.replace(/'/g,"\\'")}','${d.nome.replace(/'/g,"\\'")}')" title="Encerrar sessão e GPS" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0">🚫 Encerrar</button>` : ''}
+      ${d.status === 'logout_ignorado' ? `<button onclick="event.stopPropagation();reenviarLogout('${d.telefone.replace(/'/g,"\\'")}','${d.nome.replace(/'/g,"\\'")}')" title="Reenviar logout forçado (anterior foi ignorado)" style="background:#FEF9EC;border:1.5px solid #FDE68A;color:#92400E;border-radius:8px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;flex-shrink:0">🔁 Reenviar</button>` : ''}
     </div>`;
   }).join('');
 }
@@ -1561,6 +1566,27 @@ async function encerrarSessaoMotoboy(telefone, nome) {
     }
   } catch(e) {
     toast('Erro de conexão ao encerrar: ' + e.message);
+  }
+}
+// Reenvio do logout forçado — usado quando o app do motoboy IGNOROU o comando
+// anterior (push FCM provavelmente expirou). Mesmo endpoint, nova tentativa.
+async function reenviarLogout(telefone, nome) {
+  if (!confirm('Reenviar o comando de logout para ' + nome + '?\n\nO comando anterior foi ignorado pelo aparelho. Essa é uma nova tentativa via FCM.')) return;
+  try {
+    const r = await fetch(API + '/logout-remoto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone, nome })
+    });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      toast('✓ Reenvio feito para ' + nome + '. Aguarde até 2min para confirmar.');
+    } else {
+      toast('Aviso: ' + (d.msg || 'sem token FCM para este motoboy'));
+    }
+    if (typeof carregarDispositivos === 'function') carregarDispositivos();
+  } catch(e) {
+    toast('Erro de conexão ao reenviar: ' + e.message);
   }
 }
 function filtrarDispositivos(filtro, btn) {
