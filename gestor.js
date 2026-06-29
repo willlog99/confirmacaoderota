@@ -445,27 +445,33 @@ async function carregarChecklistsGestor(filtro) {
   const el = document.getElementById('lista-checklists-gestor');
   el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
   try {
-    const hoje = new Date().toLocaleDateString('pt-BR');
-    const r = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
+    // Usa o mesmo endpoint que o painel principal — assim os badges de status ficam consistentes.
+    // (filtro 'hoje'/'semana'/'todos' é apenas rótulo — mantemos o comportamento de mostrar hoje,
+    // porque o painel já tem suas próprias views de histórico)
+    const r = await fetch(API + '/checklist/resumo-hoje');
     const d = await r.json();
-    const lista = d.checklists || [];
-    if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum checklist respondido</div>'; return; }
+    const lista = d.enviados || [];
+    if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum checklist respondido hoje</div>'; return; }
+
+    const badgeStatus = (status) => {
+      if (!status) return `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#FEF9EC;color:#92400E">⏳ Pendente</span>`;
+      if (status === 'aprovado') return `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✓ Aprovado</span>`;
+      if (status === 'reprovado') return `<span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#FCEBEB;color:#DC2626">✗ Reprovado</span>`;
+      return '';
+    };
+
     el.innerHTML = lista.map(c => `
-      <div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px;cursor:pointer"
+      <div style="background:#F8FBFD;border-radius:12px;border:1.5px solid #EBF1F5;padding:12px;margin-bottom:8px;cursor:pointer;border-left:3px solid ${c.status==='aprovado'?'#0F9B78':c.status==='reprovado'?'#DC2626':'#F59E0B'}"
         onclick="this.querySelector('.chk-detalhe').style.display=this.querySelector('.chk-detalhe').style.display==='none'?'block':'none'">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:13px;font-weight:700;color:#0F4C7A">${c.biocondutor}</span>
-          <span style="font-size:11px;font-weight:700;padding:3px 8px;border-radius:20px;background:#E8F8F0;color:#0F9B78">✓ Completo</span>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:8px">
+          <span style="font-size:13px;font-weight:700;color:#0F4C7A;flex:1">${c.biocondutor}</span>
+          ${badgeStatus(c.status)}
         </div>
-        <div style="font-size:11px;color:#5A7A8F">${c.data || hoje}</div>
-        <div class="chk-detalhe" style="display:none;margin-top:8px;border-top:1px solid #F0F4F8;padding-top:8px">
-          ${Object.entries(c.respostas||{}).map(([k,v]) => {
-            const ok = v === 'sim' || v === 'ok' || v === 'conforme';
-            return `<div style="display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px">
-              <div style="width:20px;height:20px;border-radius:50%;background:${ok?'#E8F8F0':'#FCEBEB'};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:${ok?'#0F9B78':'#DC2626'};flex-shrink:0">${ok?'✓':'✗'}</div>
-              <span style="color:#0F4C7A">${k}</span>
-            </div>`;
-          }).join('')}
+        <div style="font-size:11px;color:#5A7A8F">🛣️ ${c.rota || '—'} · 🚗 ${c.placa || '—'} · ${c.data_checklist || ''}</div>
+        ${c.status === 'reprovado' && c.motivo ? `<div style="font-size:11px;color:#791F1F;background:#FCEBEB;padding:6px 8px;border-radius:6px;margin-top:6px">💬 ${c.motivo}</div>` : ''}
+        <div class="chk-detalhe" style="display:none;margin-top:8px;border-top:1px solid #F0F4F8;padding-top:8px;font-size:11px;color:#5A7A8F">
+          <div>Status: <b>${c.status || 'pendente'}</b></div>
+          <div>Enviado: ${c.data_checklist || '—'}</div>
         </div>
       </div>`).join('');
   } catch(e) {

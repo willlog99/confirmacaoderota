@@ -1428,75 +1428,295 @@ function carregarHistoricoDisparos() {
 }
 
 
+// ──────────────────────────────────────────────────────────────────
+// CHECKLISTS — versão com aprovados/reprovados/pendentes/faltantes
+// Usa /checklist/resumo-hoje que retorna TUDO em 1 request:
+//   { data, dia_semana, rotas_ativas_hoje, enviados[], faltantes[], totais }
+// ──────────────────────────────────────────────────────────────────
+
+function badgeChecklist(status) {
+  // status ∈ 'pendente' | 'aprovado' | 'reprovado' | null (sem aprovação ainda)
+  if (!status) return `<span style="background:#FEF9EC;color:#92400E;padding:3px 8px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:.3px">⏳ PENDENTE</span>`;
+  if (status === 'aprovado') return `<span style="background:#E1F5EE;color:#085041;padding:3px 8px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:.3px">✅ APROVADO</span>`;
+  if (status === 'reprovado') return `<span style="background:#FCEBEB;color:#791F1F;padding:3px 8px;border-radius:7px;font-size:10px;font-weight:700;letter-spacing:.3px">❌ REPROVADO</span>`;
+  return '';
+}
+
 async function carregarChecklists() {
   const el = document.getElementById('lista-checklists');
   el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
   document.getElementById('card-lista-checklists').style.display = 'block';
   document.getElementById('card-detalhe-checklist').style.display = 'none';
   try {
-    const hoje = new Date().toLocaleDateString('pt-BR');
-    const r = await fetch(API + '/checklist?data=' + encodeURIComponent(hoje));
+    const r = await fetch(API + '/checklist/resumo-hoje');
     const d = await r.json();
-    const lista = d.checklists || [];
-    if (!lista.length) { el.innerHTML = '<div class="empty">Nenhum checklist hoje</div>'; return; }
-    el.innerHTML = lista.map(c => `
-      <div class="list-item" style="cursor:pointer" onclick="abrirDetalheChecklist(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-        <div class="list-item-row">
-          <div class="list-item-name">${c.biocondutor}</div>
-          <div class="list-item-meta">${c.data_checklist ? c.data_checklist.split(' ').pop() : ''}</div>
+
+    const tot = d.totais || {};
+    const faltantes = d.faltantes || [];
+    const enviados = d.enviados || [];
+    const rotasAtivas = d.rotas_ativas_hoje || [];
+
+    // Cabeçalho com totais rápidos
+    const header = `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem;font-size:12px">
+        <div style="flex:1;min-width:80px;padding:8px 10px;border-radius:9px;background:#E1F5EE;color:#085041;text-align:center"><div style="font-size:18px;font-weight:800">${tot.enviados||0}</div><div style="font-size:10px;font-weight:700;letter-spacing:.3px">ENVIADOS</div></div>
+        <div style="flex:1;min-width:80px;padding:8px 10px;border-radius:9px;background:#FCEBEB;color:#791F1F;text-align:center"><div style="font-size:18px;font-weight:800">${tot.faltantes||0}</div><div style="font-size:10px;font-weight:700;letter-spacing:.3px">FALTANTES</div></div>
+        <div style="flex:1;min-width:80px;padding:8px 10px;border-radius:9px;background:#FEF9EC;color:#92400E;text-align:center"><div style="font-size:18px;font-weight:800">${tot.pendentes_aprovacao||0}</div><div style="font-size:10px;font-weight:700;letter-spacing:.3px">PENDENTES</div></div>
+        <div style="flex:1;min-width:80px;padding:8px 10px;border-radius:9px;background:#E8F4FB;color:#0F4C7A;text-align:center"><div style="font-size:18px;font-weight:800">${tot.reprovados||0}</div><div style="font-size:10px;font-weight:700;letter-spacing:.3px">REPROVADOS</div></div>
+      </div>
+    `;
+
+    const semNada = !enviados.length && !faltantes.length;
+    if (semNada) { el.innerHTML = header + '<div class="empty">Nenhuma rota ativa hoje</div>'; return; }
+
+    let html = header;
+
+    // ── SEÇÃO 1: FALTANTES (motoboys com rota ativa que NÃO enviaram) ──
+    if (faltantes.length) {
+      html += `<div style="font-size:11px;font-weight:800;color:#791F1F;text-transform:uppercase;letter-spacing:.4px;margin:8px 0 6px">⚠ Não enviaram checklist (${faltantes.length})</div>`;
+      html += faltantes.map(f => `
+        <div class="list-item" style="border-left:3px solid #DC2626">
+          <div class="list-item-row">
+            <div class="list-item-name">${escapeHtml(f.motoboy)}</div>
+            <div style="font-size:10px;font-weight:700;color:#791F1F;background:#FCEBEB;padding:3px 8px;border-radius:7px">FALTANDO</div>
+          </div>
+          <div style="font-size:12px;color:#5A7A8F;margin-top:4px">🛣️ ${escapeHtml(f.rota)} · 📱 ${f.telefone || '—'}</div>
         </div>
-        <div style="font-size:12px;color:#5A7A8F;margin-top:4px">🛣️ ${c.rota || '—'} · 🚗 ${c.placa || '—'}</div>
-      </div>`).join('');
-  } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro</div>'; }
+      `).join('');
+    }
+
+    // ── SEÇÃO 2: ENVIADOS (com status) ──
+    if (enviados.length) {
+      html += `<div style="font-size:11px;font-weight:800;color:#0F4C7A;text-transform:uppercase;letter-spacing:.4px;margin:14px 0 6px">📋 Checklists enviados (${enviados.length})</div>`;
+      // Agrupa por status (pendente primeiro, depois aprovado, depois reprovado)
+      const ordem = ['pendente', 'aprovado', 'reprovado'];
+      const grupos = { pendente: [], aprovado: [], reprovado: [] };
+      enviados.forEach(e => { (grupos[e.status] || grupos.pendente).push(e); });
+
+      ordem.forEach(st => {
+        const lista = grupos[st];
+        if (!lista.length) return;
+        lista.forEach(c => {
+          html += `
+            <div class="list-item" style="cursor:pointer;border-left:3px solid ${st==='aprovado'?'#0F9B78':st==='reprovado'?'#DC2626':'#F59E0B'}" onclick="abrirDetalheChecklist(${c.id})">
+              <div class="list-item-row">
+                <div class="list-item-name">${escapeHtml(c.biocondutor)}</div>
+                ${badgeChecklist(st)}
+              </div>
+              <div style="font-size:12px;color:#5A7A8F;margin-top:4px">🛣️ ${escapeHtml(c.rota || '—')} · 🚗 ${escapeHtml(c.placa || '—')} · 🕒 ${(c.data_checklist || '').split(' ').pop() || ''}</div>
+              ${st==='reprovado' && c.motivo ? `<div style="font-size:11px;color:#791F1F;margin-top:4px;background:#FCEBEB;padding:4px 8px;border-radius:6px">💬 ${escapeHtml(c.motivo)}</div>` : ''}
+            </div>`;
+        });
+      });
+    }
+
+    el.innerHTML = html;
+  } catch(e) { el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>'; }
 }
 
 
-function abrirDetalheChecklist(c) {
+async function abrirDetalheChecklist(checklistId) {
+  const el = document.getElementById('detalhe-checklist-conteudo');
+  el.innerHTML = '<div class="empty"><span class="spinner"></span></div>';
   document.getElementById('card-lista-checklists').style.display = 'none';
   document.getElementById('card-detalhe-checklist').style.display = 'block';
-  document.getElementById('detalhe-checklist-titulo').textContent = c.biocondutor;
+  document.getElementById('detalhe-checklist-titulo').textContent = 'Carregando...';
+  try {
+    const r = await fetch(API + '/checklist/detalhe?id=' + checklistId);
+    const d = await r.json();
+    if (d.status === 'erro') { el.innerHTML = '<div class="empty" style="color:#A32D2D">' + (d.msg || 'Erro') + '</div>'; return; }
+    const c = d.checklist || {};
+    const apr = d.aprovacao || null;
+    const tel = d.telefone || '';
 
-  const campos = [
-    { label: 'Placa', valor: c.placa },
-    { label: 'Conservação da Moto', valor: c.conservacao_moto },
-    { label: 'Pneu Dianteiro', valor: c.pneu_dianteiro },
-    { label: 'Pneu Traseiro', valor: c.pneu_traseiro },
-    { label: 'Bolsa Térmica — Limpeza', valor: c.bolsa_limpeza },
-    { label: 'Bolsa Térmica — Estado Geral', valor: c.bolsa_estado },
-    { label: 'Bolsa Térmica — Identificação', valor: c.bolsa_identificacao },
-    { label: 'Colete Refletivo', valor: c.colete },
-    { label: 'Documento do Veículo', valor: c.documento },
-    { label: 'Mata Cachorro', valor: c.mata_cachorro },
-    { label: 'Caixa Refrigerada', valor: c.caixa_refrigerada },
-    { label: 'Quantidade de Gelox', valor: c.qtd_gelox },
-    { label: 'Quantidade de Gelo Seco', valor: c.qtd_gelo_seco },
-    { label: 'Caixa Ambiente', valor: c.caixa_ambiente },
-    { label: 'Caixa Térmica tem Identificação?', valor: c.caixa_identificacao },
-    { label: 'Há amostras pendentes do dia anterior no cooler?', valor: c.amostras_pendentes },
-    { label: 'Baú com cadeado?', valor: c.bau_cadeado },
-  ];
+    document.getElementById('detalhe-checklist-titulo').textContent = c.biocondutor || '—';
 
-  const cor = v => {
-    if (!v) return '#94A8B8';
-    if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return '#085041';
-    if (['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return '#791F1F';
-    return '#0F4C7A';
-  };
-  const bg = v => {
-    if (!v) return '#F7FBFD';
-    if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return '#E1F5EE';
-    if (['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return '#FCEBEB';
-    return '#E8F4FB';
-  };
+    const campos = [
+      { label: 'Placa', valor: c.placa },
+      { label: 'Conservação da Moto', valor: c.conservacao_moto },
+      { label: 'Pneu Dianteiro', valor: c.pneu_dianteiro },
+      { label: 'Pneu Traseiro', valor: c.pneu_traseiro },
+      { label: 'Bolsa Térmica — Limpeza', valor: c.bolsa_limpeza },
+      { label: 'Bolsa Térmica — Estado Geral', valor: c.bolsa_estado },
+      { label: 'Bolsa Térmica — Identificação', valor: c.bolsa_identificacao },
+      { label: 'Colete Refletivo', valor: c.colete },
+      { label: 'Documento do Veículo', valor: c.documento },
+      { label: 'Mata Cachorro', valor: c.mata_cachorro },
+      { label: 'Caixa Refrigerada', valor: c.caixa_refrigerada },
+      { label: 'Quantidade de Gelox', valor: c.qtd_gelox },
+      { label: 'Quantidade de Gelo Seco', valor: c.qtd_gelo_seco },
+      { label: 'Caixa Ambiente', valor: c.caixa_ambiente },
+      { label: 'Caixa Térmica tem Identificação?', valor: c.caixa_identificacao },
+      { label: 'Há amostras pendentes do dia anterior no cooler?', valor: c.amostras_pendentes },
+      { label: 'Baú com cadeado?', valor: c.bau_cadeado },
+    ];
 
-  document.getElementById('detalhe-checklist-conteudo').innerHTML = `
-    <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">🛣️ ${c.rota || '—'} · 📅 ${c.data_checklist || '—'}</div>
-    ${campos.map(f => `
-      <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5">
-        <div style="font-size:13px;color:#5A7A8F;font-weight:500">${f.label}</div>
-        <div style="font-size:13px;font-weight:700;padding:4px 10px;border-radius:7px;background:${bg(String(f.valor))};color:${cor(String(f.valor))}">${f.valor !== null && f.valor !== undefined && f.valor !== '' ? f.valor : '—'}</div>
-      </div>`).join('')}
-  `;
+    const cor = v => {
+      if (!v) return '#94A8B8';
+      if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return '#085041';
+      if (['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return '#791F1F';
+      return '#0F4C7A';
+    };
+    const bg = v => {
+      if (!v) return '#F7FBFD';
+      if (['Conforme','Sim','Limpa','Dentro do padrão'].includes(v)) return '#E1F5EE';
+      if (['Não Conforme','Não','Suja','Fora do padrão'].includes(v)) return '#FCEBEB';
+      return '#E8F4FB';
+    };
+
+    // Bloco de status/aprovação
+    let statusHTML = '';
+    if (apr && apr.status === 'aprovado') {
+      statusHTML = `<div style="background:#E1F5EE;border:1.5px solid #5DCAA5;border-radius:10px;padding:12px;margin-bottom:1rem;display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">✅</div>
+        <div style="flex:1"><div style="font-weight:800;color:#085041">Checklist aprovado</div><div style="font-size:11px;color:#085041;opacity:.8">por ${escapeHtml(apr.aprovado_por || 'admin')} · ${formatarTimestamp(apr.timestamp)}</div></div>
+      </div>`;
+    } else if (apr && apr.status === 'reprovado') {
+      statusHTML = `<div style="background:#FCEBEB;border:1.5px solid #F09595;border-radius:10px;padding:12px;margin-bottom:1rem">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px"><div style="font-size:24px">❌</div><div style="font-weight:800;color:#791F1F">Checklist reprovado</div></div>
+        <div style="font-size:13px;color:#791F1F;background:#fff;padding:8px 10px;border-radius:7px;border:1px solid #F09595"><b>Motivo:</b> ${escapeHtml(apr.motivo || '—')}</div>
+        <div style="font-size:11px;color:#791F1F;margin-top:6px;opacity:.8">por ${escapeHtml(apr.aprovado_por || 'admin')} · ${formatarTimestamp(apr.timestamp)}</div>
+      </div>`;
+    } else {
+      statusHTML = `<div style="background:#FEF9EC;border:1.5px solid #F5C57B;border-radius:10px;padding:12px;margin-bottom:1rem;display:flex;align-items:center;gap:10px">
+        <div style="font-size:24px">⏳</div>
+        <div><div style="font-weight:800;color:#92400E">Aguardando aprovação</div><div style="font-size:11px;color:#92400E;opacity:.8">Use os botões abaixo</div></div>
+      </div>`;
+    }
+
+    // Botões de ação — sempre mostram (permite reavaliar)
+    const acoesHTML = `
+      <div style="display:flex;gap:8px;margin-top:1rem;margin-bottom:6px">
+        <button onclick="aprovarChecklist(${c.id})" style="flex:1;background:#0F9B78;color:#fff;border:none;padding:12px;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer">✅ Aprovar</button>
+        <button onclick="abrirModalReprovar(${c.id},'${escapeAttr(c.biocondutor)}')" style="flex:1;background:#DC2626;color:#fff;border:none;padding:12px;border-radius:9px;font-size:14px;font-weight:800;cursor:pointer">❌ Reprovar</button>
+      </div>
+      <div id="acao-feedback" style="font-size:12px;text-align:center;color:#5A7A8F;min-height:18px"></div>
+    `;
+
+    el.innerHTML = `
+      <div style="font-size:12px;color:#5A7A8F;margin-bottom:1rem">🛣️ ${escapeHtml(c.rota || '—')} · 📅 ${escapeHtml(c.data_checklist || '—')} · 📱 ${escapeHtml(tel || '—')}</div>
+      ${statusHTML}
+      ${campos.map(f => `
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #EBF1F5">
+          <div style="font-size:13px;color:#5A7A8F;font-weight:500">${f.label}</div>
+          <div style="font-size:13px;font-weight:700;padding:4px 10px;border-radius:7px;background:${bg(String(f.valor))};color:${cor(String(f.valor))}">${f.valor !== null && f.valor !== undefined && f.valor !== '' ? escapeHtml(f.valor) : '—'}</div>
+        </div>`).join('')}
+      ${acoesHTML}
+    `;
+  } catch(e) {
+    el.innerHTML = '<div class="empty" style="color:#A32D2D">Erro: ' + e.message + '</div>';
+  }
+}
+
+
+async function aprovarChecklist(checklistId) {
+  const fb = document.getElementById('acao-feedback');
+  if (fb) { fb.textContent = 'Aprovando...'; fb.style.color = '#5A7A8F'; }
+  try {
+    const r = await fetch(API + '/checklist/aprovar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checklist_id: checklistId, status: 'aprovado', aprovado_por: getAdminNome() })
+    });
+    const d = await r.json();
+    if (d.status !== 'ok') throw new Error(d.msg || 'Erro');
+    if (fb) { fb.textContent = '✅ Aprovado!'; fb.style.color = '#085041'; }
+    setTimeout(() => abrirDetalheChecklist(checklistId), 600);
+    // Recarrega a lista em background para atualizar contadores
+    setTimeout(() => carregarChecklists(), 1500);
+  } catch(e) {
+    if (fb) { fb.textContent = '❌ ' + e.message; fb.style.color = '#791F1F'; }
+  }
+}
+
+
+function abrirModalReprovar(checklistId, motoboy) {
+  const motoboyEsc = (motoboy || '').replace(/[<>&"']/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;' }[c]));
+  // Reusa o overlay/modal padrão se existir, senão cria inline
+  let overlay = document.getElementById('modal-reprovar-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'modal-reprovar-overlay';
+    overlay.style.cssText = 'display:none;position:fixed;inset:0;background:rgba(15,75,122,0.55);z-index:300;align-items:flex-end;justify-content:center';
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:20px 20px 0 0;padding:1.5rem;width:100%;max-width:480px">
+        <div style="font-size:11px;color:#94A8B8;margin-bottom:4px;font-weight:700;text-transform:uppercase">Reprovar checklist</div>
+        <div style="font-size:16px;font-weight:700;color:#0F4C7A;margin-bottom:1rem" id="reprovar-nome">—</div>
+        <div style="font-size:11px;font-weight:700;color:#5A7A8F;margin-bottom:4px;text-transform:uppercase">Motivo (mínimo 5 caracteres)</div>
+        <textarea id="reprovar-motivo" placeholder="Ex: Pneu traseiro furado, não pode sair com a moto." style="width:100%;min-height:110px;border-radius:10px;border:1.5px solid #D6E5EE;font-size:14px;padding:10px 12px;color:#0F4C7A;background:#fff;outline:none;resize:vertical;font-family:inherit;margin-bottom:1rem"></textarea>
+        <div class="msg" id="msg-reprovar" style="margin-bottom:8px"></div>
+        <div style="display:flex;gap:8px">
+          <button onclick="fecharModalReprovar()" style="flex:1;padding:12px;border-radius:10px;background:#fff;color:#5A7A8F;border:1.5px solid #D6E5EE;font-size:14px;font-weight:600;cursor:pointer">Cancelar</button>
+          <button id="btn-confirmar-reprovar" style="flex:1;padding:12px;border-radius:10px;background:linear-gradient(135deg,#DC2626,#791F1F);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer">❌ Reprovar e notificar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = 'flex';
+  document.getElementById('reprovar-nome').textContent = motoboyEsc;
+  const txt = document.getElementById('reprovar-motivo');
+  txt.value = '';
+  txt.focus();
+  showMsgRep('msg-reprovar', '', '');
+  const btn = document.getElementById('btn-confirmar-reprovar');
+  btn.onclick = () => confirmarReprovar(checklistId);
+}
+
+function fecharModalReprovar() {
+  const overlay = document.getElementById('modal-reprovar-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function showMsgRep(id, text, type) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (!text) { el.className = 'msg'; el.textContent = ''; return; }
+  el.textContent = text;
+  el.className = 'msg show ' + type;
+}
+
+async function confirmarReprovar(checklistId) {
+  const motivo = (document.getElementById('reprovar-motivo').value || '').trim();
+  if (motivo.length < 5) { showMsgRep('msg-reprovar', 'Motivo precisa de pelo menos 5 caracteres', 'error'); return; }
+  const btn = document.getElementById('btn-confirmar-reprovar');
+  btn.disabled = true; btn.textContent = 'Enviando...';
+  try {
+    const r = await fetch(API + '/checklist/aprovar', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ checklist_id: checklistId, status: 'reprovado', motivo, aprovado_por: getAdminNome() })
+    });
+    const d = await r.json();
+    if (d.status !== 'ok') throw new Error(d.msg || 'Erro');
+    const msg = d.notificacao_enviada ? '✅ Reprovado e notificação enviada!' : '✅ Reprovado (mas a notificação falhou — verifique o app)';
+    showMsgRep('msg-reprovar', msg, 'success');
+    setTimeout(() => { fecharModalReprovar(); abrirDetalheChecklist(checklistId); }, 1200);
+    setTimeout(() => carregarChecklists(), 2200);
+  } catch(e) {
+    showMsgRep('msg-reprovar', '❌ ' + e.message, 'error');
+    btn.disabled = false; btn.textContent = '❌ Reprovar e notificar';
+  }
+}
+
+
+// Helpers usados pelas funções acima (reaproveitam padrões do projeto)
+function escapeHtml(s) {
+  if (s === null || s === undefined) return '';
+  return String(s).replace(/[<>&"']/g, c => ({ '<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+function formatarTimestamp(ts) {
+  if (!ts) return '';
+  const d = new Date(Number(ts));
+  if (isNaN(d.getTime())) return '';
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mi = String(d.getMinutes()).padStart(2,'0');
+  return `${dd}/${mm}/${yy} ${hh}:${mi}`;
+}
+function getAdminNome() {
+  // Tenta pegar nome do admin do localStorage ou retorna genérico
+  try { return localStorage.getItem('admin_nome') || localStorage.getItem('painel_admin_nome') || 'admin'; } catch(e) { return 'admin'; }
 }
 
 
