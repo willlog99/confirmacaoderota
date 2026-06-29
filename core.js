@@ -1026,6 +1026,13 @@ async function carregarRelKm() {
     const rGeo = await fetch(API + '/geofence-evento?data=' + data);
     const dGeo = await rGeo.json();
     const eventos = dGeo.eventos || [];
+    // Coletas manuais do dia — usado para diferenciar quem marcou vs só GPS
+    let coletasManuais = [];
+    try {
+      const rCol = await fetch(API + '/relatorio-horarios?data=' + data);
+      const dCol = await rCol.json();
+      coletasManuais = dCol.coletas || [];
+    } catch(e) {}
     const kmPorNome = {};
     historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
     function calcKm(pts) {
@@ -1067,7 +1074,20 @@ async function carregarRelKm() {
       const inicio = pts && pts.length ? _fmtHoraSP(Math.min(...pts.map(p=>p.timestamp))) : '\u2014';
       const base = horaEvt(m.nome, 'base');
       const polaris = horaEvt(m.nome, 'final');
-      return { nome: m.nome, inicio, base, polaris, km, tmdMin, velMedia, temPolaris: polaris !== '\u2014' };
+      // Comparar marca\u00e7\u00e3o manual vs detec\u00e7\u00e3o GPS Polaris:
+      //  \u2022 "marcou" \u2014 pelo menos 1 coleta em historico_coletas com horario_chegada preenchido pra este motoboy
+      //  \u2022 "so_gps" \u2014 tem passagem final_passagem_N no geofence_eventos mas nenhuma coleta manual
+      //  \u2022 "sem_dados" \u2014 nem GPS nem marca\u00e7\u00e3o
+      const marcouManual = coletasManuais.some(c =>
+        (c.nome_motoboy || '').toUpperCase() === m.nome.toUpperCase() &&
+        c.horario_chegada && String(c.horario_chegada).trim() !== ''
+      );
+      const temPolaris = polaris !== '\u2014';
+      let confirmStatus;
+      if (marcouManual) confirmStatus = 'marcou';
+      else if (temPolaris) confirmStatus = 'so_gps';
+      else confirmStatus = 'sem_dados';
+      return { nome: m.nome, inicio, base, polaris, km, tmdMin, velMedia, temPolaris, confirmStatus };
     }).filter(r => r.km > 0 || r.inicio !== '\u2014');
     const total = _relKmDados.reduce((s,r) => s + r.km, 0);
     const media = _relKmDados.length ? total / _relKmDados.length : 0;
@@ -1078,32 +1098,42 @@ async function carregarRelKm() {
     document.getElementById('rel-km-kpi-vel').textContent = (velMediaGeral > 0 ? Math.round(velMediaGeral*10)/10 : 0) + ' km/h';
     if (!_relKmDados.length) { lista.innerHTML = '<div class="rel-empty">Nenhum dado encontrado nesta data</div>'; return; }
     lista.innerHTML = '<table class="rel-table"><thead><tr>' +
-      '<th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th><th>Status</th>' +
+      '<th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th><th>Status</th><th>Confirma\u00e7\u00e3o</th>' +
       '</tr></thead><tbody>' +
-      _relKmDados.map(r => '<tr>' +
-        '<td class="rel-nome">' + r.nome + '</td>' +
-        '<td class="rel-hora">' + r.inicio + '</td>' +
-        '<td class="rel-hora">' + r.base + '</td>' +
-        '<td class="rel-hora">' + r.polaris + '</td>' +
-        '<td class="rel-km">' + r.km + ' km</td>' +
-        '<td class="rel-hora">' + formatMin(r.tmdMin) + '</td>' +
-        '<td class="rel-hora">' + (r.velMedia > 0 ? r.velMedia + ' km/h' : '\u2014') + '</td>' +
-        '<td>' + (r.temPolaris ? '<span class="rel-badge rel-b-ok">\u2713 Completo</span>' : '<span class="rel-badge rel-b-warn">\u26a0 Sem Polaris</span>') + '</td>' +
-        '</tr>').join('') +
+      _relKmDados.map(r => {
+        const confirmBadge = r.confirmStatus === 'marcou'
+          ? '<span class="rel-badge rel-b-ok" title="Teve pelo menos 1 coleta confirmada manualmente">\u2713 marcou</span>'
+          : r.confirmStatus === 'so_gps'
+            ? '<span class="rel-badge rel-b-warn" title="Passagem na Polaris detectada por GPS, mas nenhuma coleta confirmada manualmente">\u26a0 s\u00f3 GPS</span>'
+            : '<span class="rel-badge rel-b-err" title="Sem passagem Polaris detectada e sem coleta manual">\u2014 sem dados</span>';
+        return '<tr>' +
+          '<td class="rel-nome">' + r.nome + '</td>' +
+          '<td class="rel-hora">' + r.inicio + '</td>' +
+          '<td class="rel-hora">' + r.base + '</td>' +
+          '<td class="rel-hora">' + r.polaris + '</td>' +
+          '<td class="rel-km">' + r.km + ' km</td>' +
+          '<td class="rel-hora">' + formatMin(r.tmdMin) + '</td>' +
+          '<td class="rel-hora">' + (r.velMedia > 0 ? r.velMedia + ' km/h' : '\u2014') + '</td>' +
+          '<td>' + (r.temPolaris ? '<span class="rel-badge rel-b-ok">\u2713 Completo</span>' : '<span class="rel-badge rel-b-warn">\u26a0 Sem Polaris</span>') + '</td>' +
+          '<td>' + confirmBadge + '</td>' +
+          '</tr>';
+      }).join('') +
       '</tbody></table>';
   } catch(e) { lista.innerHTML = '<div class="rel-empty">Erro ao carregar dados</div>'; }
 }
 function exportarRelKmExcel() {
   if (!_relKmDados.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = [['Motoboy','In\u00edcio','Base','Polaris','KM','TMD (min)','Vel. M\u00e9dia (km/h)']];
-  _relKmDados.forEach(r => linhas.push([r.nome, r.inicio, r.base, r.polaris, r.km, r.tmdMin, r.velMedia]));
+  const labelConfirm = { marcou: '\u2713 marcou', so_gps: '\u26a0 s\u00f3 GPS', sem_dados: '\u2014 sem dados' };
+  const linhas = [['Motoboy','In\u00edcio','Base','Polaris','KM','TMD (min)','Vel. M\u00e9dia (km/h)','Confirma\u00e7\u00e3o']];
+  _relKmDados.forEach(r => linhas.push([r.nome, r.inicio, r.base, r.polaris, r.km, r.tmdMin, r.velMedia, labelConfirm[r.confirmStatus] || '\u2014']));
   relExportarXLSX(linhas, 'quilometragem', 'Quilometragem');
 }
 function exportarRelKmPDF() {
   if (!_relKmDados.length) { toast('Nenhum dado para exportar'); return; }
   const fmtMin = m => { if (!m) return '\u2014'; const h=Math.floor(m/60), r=m%60; return h>0 ? h+'h'+String(r).padStart(2,'0')+'m' : r+'min'; };
-  const linhas = _relKmDados.map(r => '<tr><td>' + r.nome + '</td><td>' + r.inicio + '</td><td>' + r.base + '</td><td>' + r.polaris + '</td><td><strong>' + r.km + ' km</strong></td><td>' + fmtMin(r.tmdMin) + '</td><td>' + (r.velMedia>0?r.velMedia+' km/h':'\u2014') + '</td></tr>').join('');
-  relAbrirPDF('Relat\u00f3rio de Quilometragem', '<table><thead><tr><th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+  const labelConfirm = { marcou: '\u2713 marcou', so_gps: '\u26a0 s\u00f3 GPS', sem_dados: '\u2014 sem dados' };
+  const linhas = _relKmDados.map(r => '<tr><td>' + r.nome + '</td><td>' + r.inicio + '</td><td>' + r.base + '</td><td>' + r.polaris + '</td><td><strong>' + r.km + ' km</strong></td><td>' + fmtMin(r.tmdMin) + '</td><td>' + (r.velMedia>0?r.velMedia+' km/h':'\u2014') + '</td><td>' + (labelConfirm[r.confirmStatus] || '\u2014') + '</td></tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Quilometragem', '<table><thead><tr><th>Motoboy</th><th>In\u00edcio</th><th>Base</th><th>Polaris</th><th>KM</th><th>TMD</th><th>Vel. M\u00e9dia</th><th>Confirma\u00e7\u00e3o</th></tr></thead><tbody>' + linhas + '</tbody></table>');
 }
 // ── RELATÓRIO: INCONSISTÊNCIAS ───────────────────────────────
 let _relIncDados = [];
