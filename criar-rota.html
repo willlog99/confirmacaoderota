@@ -430,17 +430,33 @@
       return;
     }
 
-    el.innerHTML = encontrados.map(m => `
-      <div class="search-item" onclick='selecionarMotoboy(${JSON.stringify(m)})'>
+    el.innerHTML = encontrados.map((m, idx) => {
+      const telEscapado = (m.telefone || '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+      const nomeEscapado = (m.nome || '').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+      // NÃO usa onclick inline com JSON.stringify — quebra quando o nome tem aspas.
+      // Usa data-id e addEventListener abaixo.
+      return `
+      <div class="search-item" data-idx="${idx}">
         <div class="search-item-icon">🏍️</div>
         <div>
-          <div class="search-item-nome">${m.nome}</div>
-          <div class="search-item-tel">📱 ${m.telefone}</div>
+          <div class="search-item-nome">${nomeEscapado}</div>
+          <div class="search-item-tel">📱 ${telEscapado}</div>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
+
+    // Anexa listeners depois — evita bug clássico de aspas no nome quebrando onclick inline
+    el.querySelectorAll('.search-item').forEach((elItem, idx) => {
+      elItem.addEventListener('click', () => selecionarMotoboy(encontrados[idx]));
+    });
   }
 
   function selecionarMotoboy(m) {
+    if (!m || !m.nome) {
+      console.error('selecionarMotoboy recebeu motoboy inválido:', m);
+      return;
+    }
+    console.log('selecionarMotoboy:', m.nome, m.telefone, 'tipo=' + m.tipo);
     motoboySelected = m;
     document.getElementById('bloco-busca').style.display = 'none';
     document.getElementById('bloco-motoboy-sel').style.display = 'block';
@@ -812,6 +828,7 @@
 
   // NAVEGAÇÃO
   function irPara(n) {
+    console.log('irPara(' + n + '): motoboy=' + (motoboySelected && motoboySelected.nome), 'dias=' + diasSelecionados.length, 'tipo=' + motoboyTipo);
     // Etapa 1 → Etapa 2: valida o que falta e indica ao usuário com shake
     if (n === 3) {
       const faltam = [];
