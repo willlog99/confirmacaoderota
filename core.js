@@ -3917,6 +3917,7 @@ async function carregarPontosRota() {
     }
     if (!pontos.length) {
       lista.innerHTML = '<div class="empty" style="font-size:12px">Nenhum ponto cadastrado</div>';
+      initMapaPontosRota([]); // mapa vazio
       return;
     }
     const porRota = {};
@@ -3933,9 +3934,60 @@ async function carregarPontosRota() {
         ${linhas}
       </div>`;
     }).join('');
+    // Atualiza mapa com todos os pontos
+    initMapaPontosRota(pontos);
   } catch(e) {
     if (lista) lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
   }
+}
+
+// ===== MAPA DE PONTOS GPS NO PAINEL =====
+let prMapa = null;
+let prMapaLayer = null;
+let prMapaTodos = []; // cache dos pontos
+async function initMapaPontosRota(pontos) {
+  prMapaTodos = pontos || [];
+  const el = document.getElementById('pr-mapa');
+  if (!el) return;
+  // Se Leaflet não carregou ainda, tenta de novo
+  if (typeof L === 'undefined') { setTimeout(() => initMapaPontosRota(prMapaTodos), 300); return; }
+  if (!prMapa) {
+    prMapa = L.map('pr-mapa', { zoomControl: true }).setView([-23.55, -46.63], 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(prMapa);
+    prMapaLayer = L.layerGroup().addTo(prMapa);
+    prMapa.on('click', onMapaPrClick);
+  }
+  prMapaLayer.clearLayers();
+  if (!prMapaTodos.length) return;
+  // Adiciona markers
+  const bounds = [];
+  prMapaTodos.forEach(p => {
+    if (!p.lat || !p.lng) return;
+    const m = L.circleMarker([p.lat, p.lng], {
+      radius: 8, color: '#0F9B78', fillColor: '#0F9B78', fillOpacity: 0.8, weight: 2
+    }).addTo(prMapaLayer);
+    m.bindPopup(`<b>${escapeHtml(p.nome)}</b><br>Rota: ${escapeHtml(p.rota)}<br>${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}`);
+    bounds.push([p.lat, p.lng]);
+  });
+  if (bounds.length === 1) {
+    prMapa.setView(bounds[0], 15);
+  } else if (bounds.length > 1) {
+    prMapa.fitBounds(bounds, { padding: [30, 30], maxZoom: 16 });
+  }
+}
+function onMapaPrClick(e) {
+  // Preenche o campo de coordenadas do formulário se existir
+  const campo = document.getElementById('pr-coord');
+  if (campo) {
+    campo.value = e.latlng.lat.toFixed(7) + ',' + e.latlng.lng.toFixed(7);
+    // Efeito visual rápido
+    campo.style.transition = 'background .3s';
+    campo.style.background = '#FEF9EC';
+    setTimeout(() => { campo.style.background = ''; }, 600);
+  }
+}
+function escapeHtml(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
 }
 async function buscarCoordenadaPontoRota() {
   const endereco = document.getElementById('pr-endereco')?.value?.trim();

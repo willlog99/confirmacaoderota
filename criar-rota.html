@@ -2,8 +2,10 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width-scale=1.0, user-scalable=no"/>
   <title>Loglife — Criar Rota</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  <script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <style>
     :root{
       --az:#0F4C7A;--az2:#1E9FD9;--az3:#E8F4FB;
@@ -98,6 +100,31 @@
     .resumo-label{color:var(--mut);font-weight:700;text-transform:uppercase;font-size:9px;letter-spacing:.3px}
     .resumo-val{font-weight:700;color:var(--az);font-size:12px}
 
+    /* TIPO DE MOTOBOY */
+    .tipo-opts{display:flex;gap:6px;flex-wrap:wrap}
+    .tipo-opt{padding:9px 12px;border-radius:8px;border:1.5px solid var(--border);background:#fff;color:var(--mut);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;user-select:none;flex:1;text-align:center}
+    .tipo-opt:hover{border-color:var(--az2)}
+    .tipo-opt.sel{background:var(--az2);color:#fff;border-color:var(--az2)}
+    .tipo-opt.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+
+    /* MAPA PONTOS */
+    .mapa-wrap{position:relative;height:340px;border-radius:10px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:10px}
+    .mapa-wrap .leaflet-container{height:100%;width:100%;border-radius:9px}
+    .mapa-hint{position:absolute;top:10px;left:10px;right:10px;background:rgba(15,76,122,.92);color:#fff;font-size:11px;font-weight:700;padding:7px 11px;border-radius:8px;z-index:500;text-align:center;pointer-events:none;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+    .pontos-lista{display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto;border:1px solid var(--border2);border-radius:9px;padding:6px}
+    .ponto-row{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px;background:#fff;border:1px solid var(--border2)}
+    .ponto-row .num{width:22px;height:22px;border-radius:50%;background:var(--az2);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .ponto-row .info{flex:1;min-width:0}
+    .ponto-row .info .nome{font-size:12px;font-weight:700;color:var(--az);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .ponto-row .info .coord{font-size:10px;color:var(--mut);font-family:ui-monospace,monospace}
+    .ponto-row .raio{width:60px;height:28px;border:1px solid var(--border);border-radius:6px;padding:0 6px;font-size:11px;color:var(--az);text-align:center;font-family:ui-monospace,monospace}
+    .ponto-row .raio:focus{border-color:var(--az2);outline:none}
+    .ponto-row .rm{background:none;border:none;color:var(--rd);font-size:18px;cursor:pointer;padding:2px 6px;flex-shrink:0}
+    .endereco-input{display:flex;gap:6px;margin-bottom:10px}
+    .endereco-input input{flex:1;height:36px;border-radius:8px;border:1.5px solid var(--border);font-size:12px;padding:0 11px;color:var(--az);background:#fff;outline:none}
+    .endereco-input input:focus{border-color:var(--az2)}
+    .endereco-input button{padding:0 14px;height:36px;border-radius:8px;border:none;background:var(--az2);color:#fff;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0}
+
     .btn{width:100%;padding:11px;border-radius:9px;border:none;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:6px;transition:all .15s}
     .btn:disabled{opacity:.5;cursor:not-allowed}
     .btn-primary{background:var(--az2);color:#fff}
@@ -136,7 +163,7 @@
     </div>
     <div class="etapa" id="et3" onclick="irPara(3)">
       <div class="etapa-num">2</div>
-      <div class="etapa-label">Clientes</div>
+      <div class="etapa-label" id="et3-label">Clientes</div>
     </div>
     <div class="etapa" id="et4" onclick="irPara(4)">
       <div class="etapa-num">3</div>
@@ -185,7 +212,16 @@
         </div>
       </div>
 
-      <button class="btn btn-primary" onclick="irPara(3)">Próximo: Clientes →</button>
+      <div class="field">
+        <label>Tipo de motoboy</label>
+        <div class="tipo-opts" id="tipo-opts">
+          <div class="tipo-opt sel" id="tipo-opt-motoboy" onclick="selTipoMotoboy('motoboy')">🛵 Cliente (com pontos de entrega)</div>
+          <div class="tipo-opt" id="tipo-opt-rastreador" onclick="selTipoMotoboy('rastreador')">📡 Rastreador (só GPS)</div>
+        </div>
+        <div id="tipo-aviso" style="font-size:10px;color:#D97706;margin-top:5px;display:none">⚠ Este motoboy não está marcado como rastreador. A rota GPS só funcionará se o tipo for ajustado no painel.</div>
+      </div>
+
+      <button class="btn btn-primary" onclick="irPara(3)" id="btn-et1">Próximo →</button>
     </div>
 
     <div class="msg" id="msg1"></div>
@@ -217,9 +253,35 @@
     <button class="btn btn-primary" id="btn-et3" disabled onclick="irPara(4)">Próximo: Confirmar →</button>
   </div>
 
+  <!-- ETAPA 3B: PONTOS GPS (aparece só para motoboy rastreador) -->
+  <div class="card" id="card3gps">
+    <div class="card-title">2️⃣ Pontos GPS no mapa</div>
+    <div class="card-sub">Clique no mapa para adicionar pontos onde o motoboy deve passar. Defina o raio de detecção (em metros).</div>
+
+    <div class="endereco-input">
+      <input type="text" id="gps-endereco" placeholder="Buscar por endereço (opcional)..."/>
+      <button onclick="buscarEnderecoGPS()" type="button">🔍 Buscar</button>
+    </div>
+
+    <div class="mapa-wrap">
+      <div class="mapa-hint">📍 Clique no mapa para adicionar um ponto</div>
+      <div id="gps-mapa"></div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <label style="margin-bottom:6px">Pontos adicionados (<span id="gps-count">0</span>)</label>
+      <div class="pontos-lista" id="pontos-lista"></div>
+    </div>
+
+    <div class="msg" id="msg3gps"></div>
+
+    <button class="btn btn-secondary" onclick="irPara(1)">← Voltar</button>
+    <button class="btn btn-primary" id="btn-et3gps" disabled onclick="irPara(4)">Próximo: Confirmar →</button>
+  </div>
+
   <!-- ETAPA 4: CONFIRMAR -->
   <div class="card" id="card4">
-    <div class="card-title">4️⃣ Confirme e crie</div>
+    <div class="card-title" id="card4-title">3️⃣ Confirme e crie</div>
     <div class="resumo" id="resumo"></div>
     <div class="msg" id="msg4"></div>
     <button class="btn btn-secondary" onclick="irPara(3)">← Voltar</button>
@@ -325,6 +387,11 @@
   let clientesMostrarEndereco = {}; // id => true/false
   let clientesContraPedido = {}; // id => true/false
   let todosMotoboys = [];
+  let motoboyTipo = 'motoboy'; // 'motoboy' (cliente) | 'rastreador' (só GPS)
+  let pontosGPS = []; // {nome, lat, lng, raio_m, endereco}
+  let mapaGPS = null;
+  let mapaGPSLayer = null;
+  let mapaGPSMarkerTemp = null;
 
   // ETAPA 1 - BUSCA MOTORISTA
   async function buscarMotoboys() {
@@ -375,15 +442,141 @@
     document.getElementById('bloco-motoboy-sel').style.display = 'block';
     document.getElementById('sel-nome').textContent = m.nome;
     document.getElementById('sel-tel').textContent = '📱 ' + m.telefone;
+    // Detecta tipo: se motoboys_tipo diz 'rastreador', permite selecionar esse tipo
+    const ehRastreador = m.tipo === 'rastreador';
+    document.getElementById('tipo-opt-rastreador').classList.toggle('disabled', !ehRastreador);
+    document.getElementById('tipo-aviso').style.display = ehRastreador ? 'none' : (motoboyTipo === 'rastreador' ? 'block' : 'none');
+    // Se não é rastreador mas usuário tinha selecionado, volta para 'motoboy'
+    if (!ehRastreador && motoboyTipo === 'rastreador') selTipoMotoboy('motoboy');
   }
 
   function trocarMotoboy() {
     motoboySelected = null;
+    motoboyTipo = 'motoboy';
     document.getElementById('busca-moto').value = '';
     document.getElementById('busca-results').style.display = 'none';
     document.getElementById('btn-novo-moto').style.display = 'none';
     document.getElementById('bloco-busca').style.display = 'block';
     document.getElementById('bloco-motoboy-sel').style.display = 'none';
+    document.getElementById('tipo-opt-motoboy').classList.add('sel');
+    document.getElementById('tipo-opt-rastreador').classList.remove('sel');
+    document.getElementById('tipo-opt-rastreador').classList.add('disabled');
+    document.getElementById('tipo-aviso').style.display = 'none';
+  }
+
+  function selTipoMotoboy(tipo) {
+    if (tipo === 'rastreador') {
+      // Bloqueia se motoboy não é rastreador
+      if (motoboySelected && motoboySelected.tipo !== 'rastreador') {
+        document.getElementById('tipo-aviso').style.display = 'block';
+        return;
+      }
+      document.getElementById('tipo-aviso').style.display = 'none';
+    }
+    motoboyTipo = tipo;
+    document.getElementById('tipo-opt-motoboy').classList.toggle('sel', tipo === 'motoboy');
+    document.getElementById('tipo-opt-rastreador').classList.toggle('sel', tipo === 'rastreador');
+    // Troca label da etapa 2
+    document.getElementById('et3-label').textContent = tipo === 'rastreador' ? 'Pontos GPS' : 'Clientes';
+  }
+
+  // ===== MAPA GPS (etapa 2 rastreador) =====
+  function initMapaGPS() {
+    if (typeof L === 'undefined') { setTimeout(initMapaGPS, 200); return; }
+    if (mapaGPS) return;
+    const centro = [-23.55, -46.63]; // São Paulo default
+    mapaGPS = L.map('gps-mapa', { zoomControl: true }).setView(centro, 11);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(mapaGPS);
+    mapaGPSLayer = L.layerGroup().addTo(mapaGPS);
+    mapaGPS.on('click', onMapaClick);
+    // Se já houver pontos (recuperar de alguma fonte), re-renderiza
+    renderizarPontosGPSLista();
+  }
+
+  function onMapaClick(e) {
+    const { lat, lng } = e.latlng;
+    // Cria marker temporário com prompt para nome
+    const nome = prompt('Nome do ponto (ex: "Ponto 1 - Posto X"):', 'Ponto ' + (pontosGPS.length + 1));
+    if (!nome) return;
+    const raio = prompt('Raio em metros (200 a 5000):', '200');
+    const raioNum = parseInt(raio, 10);
+    if (!Number.isFinite(raioNum) || raioNum < 50) {
+      alert('Raio inválido — usando 200m');
+    }
+    const ponto = {
+      nome: nome.trim().slice(0, 80),
+      lat: lat,
+      lng: lng,
+      raio_m: Number.isFinite(raioNum) && raioNum >= 50 ? Math.min(raioNum, 5000) : 200,
+      endereco: ''
+    };
+    pontosGPS.push(ponto);
+    renderizarPontosGPSLista();
+    renderizarPontosGPSMapa();
+    showMsg('msg3gps', '', '');
+  }
+
+  function renderizarPontosGPSLista() {
+    document.getElementById('gps-count').textContent = pontosGPS.length;
+    const lista = document.getElementById('pontos-lista');
+    lista.innerHTML = pontosGPS.map((p, i) => `
+      <div class="ponto-row">
+        <div class="num">${i + 1}</div>
+        <div class="info">
+          <div class="nome">${escapeHtml(p.nome)}</div>
+          <div class="coord">${p.lat.toFixed(5)}, ${p.lng.toFixed(5)}</div>
+        </div>
+        <input type="number" class="raio" value="${p.raio_m}" min="50" max="5000" step="50" onchange="atualizarRaioGPS(${i}, this.value)" title="Raio (m)"/>
+        <button class="rm" onclick="removerPontoGPS(${i})" title="Remover">✕</button>
+      </div>
+    `).join('') || '<div style="padding:18px;color:#94A8B8;font-size:11px;text-align:center">Clique no mapa acima para adicionar pontos</div>';
+    document.getElementById('btn-et3gps').disabled = pontosGPS.length === 0;
+  }
+
+  function renderizarPontosGPSMapa() {
+    if (!mapaGPSLayer) return;
+    mapaGPSLayer.clearLayers();
+    pontosGPS.forEach((p, i) => {
+      const marker = L.marker([p.lat, p.lng]).addTo(mapaGPSLayer);
+      marker.bindPopup(`<b>${i + 1}. ${escapeHtml(p.nome)}</b><br>Raio: ${p.raio_m}m<br><button onclick="removerPontoGPS(${i})" style="margin-top:4px;padding:3px 8px;background:#DC2626;color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:11px">Remover</button>`);
+    });
+  }
+
+  function atualizarRaioGPS(idx, valor) {
+    const num = parseInt(valor, 10);
+    if (Number.isFinite(num) && num >= 50 && num <= 5000) pontosGPS[idx].raio_m = num;
+    else renderizarPontosGPSLista();
+  }
+
+  function removerPontoGPS(idx) {
+    pontosGPS.splice(idx, 1);
+    renderizarPontosGPSLista();
+    renderizarPontosGPSMapa();
+  }
+
+  async function buscarEnderecoGPS() {
+    const q = document.getElementById('gps-endereco').value.trim();
+    if (!q) return;
+    showMsg('msg3gps', 'Buscando endereço...', 'loading');
+    try {
+      const r = await fetch(API + '/geocodificar-endereco?q=' + encodeURIComponent(q));
+      const d = await r.json();
+      if (d.erro || !d.lat) {
+        showMsg('msg3gps', 'Endereço não encontrado', 'error');
+        return;
+      }
+      mapaGPS.setView([d.lat, d.lng], 16);
+      showMsg('msg3gps', `✓ Endereço encontrado — clique no mapa para adicionar`, 'success');
+    } catch(e) {
+      showMsg('msg3gps', 'Erro: ' + e.message, 'error');
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
   }
 
   function cadastrarNovoMotoboy() {
@@ -618,13 +811,21 @@
     if (n === 3 && !motoboySelected) { showMsg('msg1', 'Selecione um motorista', 'error'); return; }
     if (n === 3 && !document.getElementById('nome-rota').value.trim()) { showMsg('msg1', 'Digite o nome da rota', 'error'); return; }
     if (n === 3 && diasSelecionados.length === 0) { showMsg('msg1', 'Selecione pelo menos um dia de operação', 'error'); return; }
-    if (n === 4 && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
+    // Decide qual card da etapa 2 mostrar conforme tipo
+    const cardEtapa2 = motoboyTipo === 'rastreador' ? 'card3gps' : 'card3';
+    if (n === 3 && motoboyTipo !== 'rastreador' && clientesSelecionados.size === 0) { showMsg('msg3b', 'Selecione pelo menos um cliente', 'error'); return; }
+    if (n === 3 && motoboyTipo === 'rastreador' && !pontosGPS.length) { showMsg('msg3gps', 'Adicione pelo menos um ponto no mapa', 'error'); return; }
     if (n === 4) renderizarResumo();
 
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
-    document.getElementById('card' + n).classList.add('ativa');
+    if (n === 3) {
+      document.getElementById(cardEtapa2).classList.add('ativa');
+      if (motoboyTipo === 'rastreador' && !mapaGPS) setTimeout(initMapaGPS, 100);
+    } else {
+      document.getElementById('card' + n).classList.add('ativa');
+    }
 
-    // Atualizar etapas visuais (mapeamento: card1=etapa1, card3=etapa2, card4=etapa3)
+    // Atualizar etapas visuais (etapa 2 pode ser card3 ou card3gps)
     const mapaEtapas = { 1: 'et1', 3: 'et3', 4: 'et4' };
     const ordem = [1, 3, 4];
     const idxAtual = ordem.indexOf(n);
@@ -639,15 +840,24 @@
 
   function renderizarResumo() {
     const nomeRota = document.getElementById('nome-rota').value.trim().toUpperCase();
-    const n = clientesSelecionados.size;
-    const semDia = [...clientesSelecionados].filter(id => !(clientesDias[id] || []).length).length;
-    document.getElementById('resumo').innerHTML = `
+    let html = `
       <div class="resumo-row"><span class="resumo-label">Rota</span><span class="resumo-val">${nomeRota}</span></div>
       <div class="resumo-row"><span class="resumo-label">Motorista</span><span class="resumo-val">${motoboySelected.nome}</span></div>
       <div class="resumo-row"><span class="resumo-label">Telefone</span><span class="resumo-val">${motoboySelected.telefone}</span></div>
-      <div class="resumo-row"><span class="resumo-label">Clientes</span><span class="resumo-val">${n}</span></div>
-      ${semDia > 0 ? `<div class="resumo-row"><span class="resumo-label" style="color:#D97706">⚠ Sem dia ativo</span><span class="resumo-val" style="color:#D97706">${semDia} cliente${semDia>1?'s':''}</span></div>` : ''}
+      <div class="resumo-row"><span class="resumo-label">Tipo</span><span class="resumo-val">${motoboyTipo === 'rastreador' ? '📡 Rastreador (GPS)' : '🛵 Cliente (com entregas)'}</span></div>
     `;
+    if (motoboyTipo === 'rastreador') {
+      html += `<div class="resumo-row"><span class="resumo-label">Pontos GPS</span><span class="resumo-val">${pontosGPS.length}</span></div>`;
+      pontosGPS.forEach((p, i) => {
+        html += `<div class="resumo-row"><span class="resumo-label">${i + 1}. ${p.nome}</span><span class="resumo-val">${p.lat.toFixed(4)}, ${p.lng.toFixed(4)} · ${p.raio_m}m</span></div>`;
+      });
+    } else {
+      const n = clientesSelecionados.size;
+      const semDia = [...clientesSelecionados].filter(id => !(clientesDias[id] || []).length).length;
+      html += `<div class="resumo-row"><span class="resumo-label">Clientes</span><span class="resumo-val">${n}</span></div>`;
+      if (semDia > 0) html += `<div class="resumo-row"><span class="resumo-label" style="color:#D97706">⚠ Sem dia ativo</span><span class="resumo-val" style="color:#D97706">${semDia} cliente${semDia>1?'s':''}</span></div>`;
+    }
+    document.getElementById('resumo').innerHTML = html;
   }
 
   async function criarRota() {
@@ -659,41 +869,62 @@
     const mapaDiaLabel = { 'seg-sex': 'seg-sex', 'sab': 'sabado', 'dom': 'domingo' };
     const diaSemana = diasSelecionados.map(d => mapaDiaLabel[d]).filter(Boolean).join(',') || 'seg-sex';
 
-    const clientesData = clientesEncontrados.filter(c => clientesSelecionados.has(c.id)).map(c => ({
-      id_base: c.id,
-      numero_cliente: c.numero_cliente,
-      nome: c.nome,
-      horario: clientesContraPedido[c.id] ? '00:00' : c.horario,
-      dias_ativos: (clientesDias[c.id] || []).join(','), // pode ficar vazio — vinculado mas sem dia ativo
-      obs: '',
-      tipo: 'normal',
-      lat: c.lat || null,
-      lng: c.lng || null,
-      endereco: c.endereco || '',
-      mostrar_endereco: clientesMostrarEndereco[c.id] ? 1 : 0,
-      contra_pedido: clientesContraPedido[c.id] ? 1 : 0
-    }));
-
     const btn = document.getElementById('btn-criar');
     btn.disabled = true;
     showMsg('msg4', '<span class="spinner"></span>Criando rota...', 'loading');
 
     try {
-      const r = await fetch(API + '/criar-rota', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+      let endpoint, payload;
+      if (motoboyTipo === 'rastreador') {
+        // Rota GPS pura — sem clientes
+        endpoint = API + '/criar-rota-gps';
+        payload = {
+          rota: nomeRota,
+          dia_semana: diaSemana,
+          telefone_motoboy: motoboySelected.telefone,
+          nome_motoboy: motoboySelected.nome,
+          pontos: pontosGPS.map((p, i) => ({
+            nome: p.nome, lat: p.lat, lng: p.lng, raio_m: p.raio_m, ordem: i, endereco: p.endereco || ''
+          }))
+        };
+      } else {
+        // Rota cliente — comportamento atual
+        const clientesData = clientesEncontrados.filter(c => clientesSelecionados.has(c.id)).map(c => ({
+          id_base: c.id,
+          numero_cliente: c.numero_cliente,
+          nome: c.nome,
+          horario: clientesContraPedido[c.id] ? '00:00' : c.horario,
+          dias_ativos: (clientesDias[c.id] || []).join(','),
+          obs: '',
+          tipo: 'normal',
+          lat: c.lat || null,
+          lng: c.lng || null,
+          endereco: c.endereco || '',
+          mostrar_endereco: clientesMostrarEndereco[c.id] ? 1 : 0,
+          contra_pedido: clientesContraPedido[c.id] ? 1 : 0
+        }));
+        endpoint = API + '/criar-rota';
+        payload = {
           rota: nomeRota,
           dia_semana: diaSemana,
           telefone_motoboy: motoboySelected.telefone,
           nome_motoboy: motoboySelected.nome,
           clientes: clientesData
-        })
+        };
+      }
+
+      const r = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
       const d = await r.json();
       if (d.status !== 'ok') throw new Error(d.msg || 'Erro ao criar rota');
 
-      document.getElementById('sucesso-msg').innerHTML = `Rota <strong>${nomeRota}</strong> criada com <strong>${d.inseridos} clientes</strong>.<br/>Motorista: <strong>${motoboySelected.nome}</strong>`;
+      const detalhe = motoboyTipo === 'rastreador'
+        ? `com <strong>${d.inseridos} pontos GPS</strong>`
+        : `com <strong>${d.inseridos} clientes</strong>`;
+      document.getElementById('sucesso-msg').innerHTML = `Rota <strong>${nomeRota}</strong> criada ${detalhe}.<br/>Motorista: <strong>${motoboySelected.nome}</strong>`;
       document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
       document.getElementById('card-sucesso').classList.add('ativa');
     } catch(e) {
@@ -704,23 +935,33 @@
 
   function novaRota() {
     motoboySelected = null;
+    motoboyTipo = 'motoboy';
     diasSelecionados = [];
     clientesEncontrados = [];
     clientesSelecionados.clear();
     clientesDias = {};
+    pontosGPS = [];
+    if (mapaGPSLayer) mapaGPSLayer.clearLayers();
     todosMotoboys = [];
     document.getElementById('busca-moto').value = '';
     document.getElementById('codigos-input').value = '';
     document.getElementById('nome-rota').value = '';
     document.querySelectorAll('.dia-opt').forEach(d => d.classList.remove('sel'));
+    document.getElementById('tipo-opt-motoboy').classList.add('sel');
+    document.getElementById('tipo-opt-rastreador').classList.remove('sel');
+    document.getElementById('tipo-opt-rastreador').classList.add('disabled');
+    document.getElementById('tipo-aviso').style.display = 'none';
+    document.getElementById('et3-label').textContent = 'Clientes';
     document.getElementById('bloco-busca').style.display = 'block';
     document.getElementById('bloco-motoboy-sel').style.display = 'none';
     document.getElementById('busca-results').style.display = 'none';
     document.getElementById('btn-novo-moto').style.display = 'none';
     document.getElementById('clientes-area').style.display = 'none';
     document.getElementById('cli-lista').innerHTML = '';
-    ['msg1','msg2','msg3','msg3b','msg4'].forEach(id => showMsg(id,'',''));
+    if (typeof renderizarPontosGPSLista === 'function') renderizarPontosGPSLista();
+    ['msg1','msg2','msg3','msg3b','msg3gps','msg4'].forEach(id => showMsg(id,'',''));
     document.getElementById('btn-et3').disabled = true;
+    document.getElementById('btn-et3gps').disabled = true;
     document.getElementById('btn-criar').disabled = false;
     document.querySelectorAll('.card').forEach(c => c.classList.remove('ativa'));
     document.getElementById('card1').classList.add('ativa');

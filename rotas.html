@@ -99,12 +99,17 @@
 </div>
 
 <div class="container">
-  <div class="toolbar">
+  <div class="toolbar" style="flex-wrap:wrap">
     <select id="filtro-dias" onchange="filtrarRotasPorDia(this.value)" style="height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:13px;font-weight:600;color:#0F4C7A;background:#fff;cursor:pointer">
       <option value="">📅 Todos os dias</option>
       <option value="seg-sex">📆 Segunda a Sexta</option>
       <option value="sabado">📆 Sábado</option>
       <option value="domingo">📆 Domingo</option>
+    </select>
+    <select id="filtro-tipo" onchange="filtrarRotasPorTipo(this.value)" style="height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:13px;font-weight:600;color:#0F4C7A;background:#fff;cursor:pointer">
+      <option value="">📋 Todos os tipos</option>
+      <option value="cliente">🛵 Com clientes</option>
+      <option value="gps">📡 GPS (pontos no mapa)</option>
     </select>
     <button class="btn-atualizar" onclick="carregarRotas()">🔄 Atualizar</button>
   </div>
@@ -157,6 +162,7 @@
   let clienteParaHorario = null;
   let rotaDeClienteParaMover = null;
   let filtroSelecionado = ''; // Filtro de dias
+  let filtroTipoSelecionado = ''; // Filtro de tipo: '' | 'cliente' | 'gps'
 
   const diaLabels = { 'seg-sex': 'Seg-Sex', 'sabado': 'Sábado', 'domingo': 'Domingo', 'sabado': 'Sábado' };
   
@@ -170,6 +176,11 @@
 
   function filtrarRotasPorDia(dia) {
     filtroSelecionado = dia;
+    renderizarRotas();
+  }
+
+  function filtrarRotasPorTipo(tipo) {
+    filtroTipoSelecionado = tipo;
     renderizarRotas();
   }
 
@@ -194,26 +205,35 @@
   function renderizarRotas() {
     const el = document.getElementById('lista-rotas');
     if (!todasRotas.length) { el.innerHTML = '<div class="empty">Nenhuma rota cadastrada</div>'; return; }
-    
-    // Filtrar rotas se necessário
-    const rotasFiltradas = filtroSelecionado 
+
+    // Filtrar rotas por dia
+    let rotasFiltradas = filtroSelecionado
       ? todasRotas.filter(r => r.dia_semana === filtroSelecionado)
       : todasRotas;
-    
-    if (!rotasFiltradas.length) { 
-      el.innerHTML = '<div class="empty">Nenhuma rota encontrada para este filtro</div>'; 
-      return; 
+
+    // Filtrar rotas por tipo (cliente = tem clientes; gps = tem pontos GPS)
+    if (filtroTipoSelecionado === 'cliente') {
+      rotasFiltradas = rotasFiltradas.filter(r => !r.tem_pontos_gps);
+    } else if (filtroTipoSelecionado === 'gps') {
+      rotasFiltradas = rotasFiltradas.filter(r => r.tem_pontos_gps);
     }
-    
+
+    if (!rotasFiltradas.length) {
+      el.innerHTML = '<div class="empty">Nenhuma rota encontrada para este filtro</div>';
+      return;
+    }
+
     el.innerHTML = rotasFiltradas.map(r => {
       const i = todasRotas.findIndex(rota => rota.rota === r.rota);
       const rotaEscapada = r.rota.replace(/'/g,"\\'");
+      const tipoBadge = r.tem_pontos_gps ? '<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#E8F8F0;color:#0F9B78">📡 GPS</span>' : '<span style="font-size:11px;font-weight:700;padding:3px 9px;border-radius:99px;background:#E8F4FB;color:#0F7BB0">🛵 Clientes</span>';
       return '<div class="rota-card" id="rota-card-' + i + '" data-rota="' + r.rota.replace(/"/g, '&quot;') + '">'
         + '<div class="rota-header" onclick="toggleRota(' + i + ')">'
         + '<div class="rota-info">'
         + '<div class="rota-nome">' + r.rota + '</div>'
         + '<div class="rota-meta">'
         + '<span class="dia-badge">' + getDiaLabel(r.dia_semana) + '</span>'
+        + tipoBadge
         + (r.motoboy_aberto ? '<span>🏍️ ' + r.motoboy_aberto + '</span>' : '')
         + '<span class="' + (r.ativa ? 'status-andamento' : 'status-livre') + '">' + (r.ativa ? '🔒 Em uso' : 'Livre') + '</span>'
         + '</div></div>'
@@ -222,6 +242,7 @@
         + '<div class="rota-body" id="rota-body-' + i + '">'
         + '<div class="rota-actions">'
         + '<button class="btn-action btn-editar" onclick="editarOrdem(' + i + ')">↕ Reordenar</button>'
+        + (r.tem_pontos_gps ? '<button class="btn-action btn-editar" onclick="editarPontosGPS(\'' + rotaEscapada + '\')">📍 Pontos GPS</button>' : '')
         + '<button class="btn-action btn-trocar" onclick="trocarMotorista(\'' + rotaEscapada + '\')">⇄ Motorista</button>'
         + '<button class="btn-action btn-renomear" onclick="renomearRota(\'' + rotaEscapada + '\')">✎ Renomear</button>'
         + '<button class="btn-action btn-editar" onclick="alterarDiaRota(\'' + rotaEscapada + '\',\'' + r.dia_semana + '\')">📅 Dia</button>'
@@ -413,6 +434,11 @@
   }
 
   // AÇÕES DE ROTA
+  function editarPontosGPS(rota) {
+    // Redireciona para o painel na view de Geofence filtrada pela rota
+    window.location.href = 'painel.html?view=view-geofence-config&rota=' + encodeURIComponent(rota);
+  }
+
   async function trocarMotorista(rota) {
     // Buscar motorista atual da rota
     const rotaObj = todasRotas.find(r => r.rota === rota);
