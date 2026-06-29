@@ -1002,6 +1002,8 @@ function relMudarTipo(tipo) {
   if (tipo === 'checklist') {
     const c = document.getElementById('rel-chk-data');
     if (c && !c.value) c.value = hoje;
+    // Popula select de motoboys do card "Download de Checklists"
+    if (typeof iniciarImportacao === 'function') iniciarImportacao();
   }
 }
 // ── RELATÓRIO: QUILOMETRAGEM ─────────────────────────────────
