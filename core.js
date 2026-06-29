@@ -943,7 +943,7 @@ function relMudarTipo(tipo) {
     if (el) el.style.display = t === tipo ? 'block' : 'none';
     if (btn) btn.classList.toggle('rel-nav-ativo', t === tipo);
   });
-  const hoje = new Date().toISOString().split('T')[0];
+  const hoje = getDataLocalSP();
   if (tipo === 'km') {
     const d = document.getElementById('rel-km-data');
     if (d && !d.value) d.value = hoje;
@@ -1097,8 +1097,9 @@ function exportarRelIncExcel() {
 }
 function exportarRelIncPDF() {
   if (!_relIncDados.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = _relIncDados.map(i => '<tr><td>' + i.motoboy_nome + '</td><td>' + i.cliente_nome + '</td><td>' + (i.rota||'\u2014') + '</td><td>' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) + '</td><td>' + (i.motivo||'\u2014') + '</td><td><strong>' + i.distancia_m + 'm</strong></td></tr>').join('');
-  relAbrirPDF('Relat\u00f3rio de Inconsist\u00eancias', '<table><thead><tr><th>Motoboy</th><th>Cliente</th><th>Rota</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+  const fmtDist = m => (m >= 1000 ? (m/1000).toFixed(1) + 'km' : m + 'm');
+  const linhas = _relIncDados.map(i => '<tr><td>' + i.motoboy_nome + '</td><td>' + i.cliente_nome + '</td><td>' + (i.rota||'\u2014') + '</td><td>' + new Date(i.timestamp).toLocaleString('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) + '</td><td>' + (i.motivo||'\u2014') + '</td><td><strong>' + fmtDist(i.distancia_m) + '</strong></td><td>' + (i.endereco_cadastrado||'\u2014') + '</td></tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Inconsist\u00eancias', '<table><thead><tr><th>Motoboy</th><th>Cliente</th><th>Rota</th><th>Hor\u00e1rio</th><th>Motivo</th><th>Dist\u00e2ncia</th><th>Endere\u00e7o cadastrado</th></tr></thead><tbody>' + linhas + '</tbody></table>');
 }
 // ── RELATÓRIO: HORÁRIOS DE COLETA ────────────────────────────
 let _relHorDados = [];
@@ -1160,8 +1161,20 @@ function exportarRelHorExcel() {
 }
 function exportarRelHorPDF() {
   if (!_relHorDados.length) { toast('Nenhum dado para exportar'); return; }
-  const linhas = _relHorDados.map(c => '<tr><td>' + c.nome_cliente + '</td><td>' + (c.rota||'\u2014') + '</td><td>' + (c.horario_chegada||'\u2014') + '</td><td>' + (c.produtividade === 'produtiva' ? '\u2713 Produtiva' : '\u2717 Improdutiva') + '</td></tr>').join('');
-  relAbrirPDF('Relat\u00f3rio de Hor\u00e1rios de Coleta', '<table><thead><tr><th>Cliente</th><th>Rota</th><th>Chegada</th><th>Status</th></tr></thead><tbody>' + linhas + '</tbody></table>');
+  const fmtHora = ts => ts ? new Date(ts).toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }) : '\u2014';
+  const fmtDist = m => (m === null || m === undefined) ? '\u2014' : (m >= 1000 ? (m/1000).toFixed(1) + 'km' : m + 'm');
+  const coordCell = c => (c.coordenada_ok === null || c.coordenada_ok === undefined) ? '\u2014' : (c.coordenada_ok ? '\u2713 OK' : '\u26a0 N\u00e3o bate');
+  const linhas = _relHorDados.map(c => '<tr>' +
+    '<td>' + c.nome_cliente + '</td>' +
+    '<td>' + (c.rota||'\u2014') + '</td>' +
+    '<td>' + fmtHora(c.horario_chegada_gps) + '</td>' +
+    '<td>' + fmtHora(c.timestamp) + '</td>' +
+    '<td>' + fmtDist(c.distancia_chegada_m) + '</td>' +
+    '<td>' + fmtDist(c.distancia_finalizacao_m) + '</td>' +
+    '<td>' + coordCell(c) + '</td>' +
+    '<td>' + (c.produtividade === 'produtiva' ? '\u2713 Produtiva' : '\u2717 Improdutiva' + (c.motivo_improdutiva ? ' (' + c.motivo_improdutiva + ')' : '')) + '</td>' +
+    '</tr>').join('');
+  relAbrirPDF('Relat\u00f3rio de Hor\u00e1rios de Coleta', '<table><thead><tr><th>Cliente</th><th>Rota</th><th>Chegada GPS</th><th>Finaliza\u00e7\u00e3o</th><th>Dist. chegada</th><th>Dist. finaliza\u00e7\u00e3o</th><th>Coordenada</th><th>Status</th></tr></thead><tbody>' + linhas + '</tbody></table>');
 }
 // ── RELATÓRIO: CHECKLIST ─────────────────────────────────────
 let _relChkDados = [];
