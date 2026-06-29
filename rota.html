@@ -236,9 +236,15 @@
   // Verificar se precisa preencher checklist
   async function verificarChecklistPendente() {
     if (!tel) return;
+    // Respeita flag local (motoboy isento configurado no painel)
+    if (localStorage.getItem('motoboy_precisa_checklist') === '0') return;
     try {
       const r = await fetch(API + '/checklist-status?telefone=' + encodeURIComponent(tel));
       const d = await r.json();
+      if (d.precisa_checklist === false) {
+        localStorage.setItem('motoboy_precisa_checklist', '0');
+        return;
+      }
       if (d.precisa) {
         mostrarModalChecklist();
       }
