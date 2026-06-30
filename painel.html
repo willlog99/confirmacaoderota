@@ -1224,6 +1224,63 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
         </div>
 
+        <!-- ENCERRAMENTO AUTOMÁTICO (cron derruba motoboys no horário) -->
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title">⏰ Encerramento automático</div>
+          <p style="font-size:13px;color:#5A7A8F;margin-bottom:1rem;line-height:1.5">
+            Crie regras para derrubar automaticamente os motoboys no horário escolhido.
+            Marque exceções pra quem não deve cair naquele horário.
+          </p>
+
+          <div id="encerramento-lista" style="display:flex;flex-direction:column;gap:8px;margin-bottom:1rem"></div>
+
+          <button onclick="abrirModalNovaRegraEncerramento()"
+            style="width:100%;padding:11px;border-radius:10px;border:1.5px dashed #1E9FD9;background:#F0FAFF;color:#1E9FD9;font-weight:700;cursor:pointer;font-size:13px;font-family:inherit">
+            + Adicionar horário
+          </button>
+        </div>
+
+        <!-- MODAL: criar/editar regra de encerramento -->
+        <div id="modal-regra-encerramento" style="display:none;position:fixed;inset:0;background:rgba(15,76,122,.6);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+          <div style="background:#fff;border-radius:16px;max-width:520px;width:100%;max-height:90vh;overflow-y:auto;padding:1.5rem;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem">
+              <div style="font-size:15px;font-weight:800;color:#0F4C7A">⏰ Nova regra de encerramento</div>
+              <button onclick="fecharModalRegraEncerramento()" style="background:none;border:none;color:#94A8B8;font-size:20px;cursor:pointer;line-height:1">✕</button>
+            </div>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">Horário (hora SP)</label>
+              <input type="time" id="enc-hora" value="18:00"
+                style="width:100%;height:40px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:14px;color:#0F4C7A;outline:none;font-family:inherit"/>
+            </div>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">Válido em</label>
+              <div id="enc-dias" style="display:flex;gap:6px;flex-wrap:wrap"></div>
+            </div>
+
+            <div style="margin-bottom:14px">
+              <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">Exceções (não derrubar)</label>
+              <div id="enc-excecoes" style="max-height:200px;overflow-y:auto;border:1.5px solid #EBF1F5;border-radius:8px;padding:8px;background:#F8FBFD">
+                <div style="font-size:12px;color:#94A8B8;text-align:center;padding:8px">Carregando motoboys...</div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:18px">
+              <label style="font-size:11px;font-weight:700;color:#5A7A8F;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em">Nome (opcional)</label>
+              <input type="text" id="enc-label" placeholder="Ex: Almoço, Fim do expediente, Turno extra"
+                style="width:100%;height:38px;border-radius:8px;border:1.5px solid #D6E5EE;padding:0 12px;font-size:13px;color:#0F4C7A;outline:none;font-family:inherit"/>
+            </div>
+
+            <div style="display:flex;gap:8px">
+              <button onclick="fecharModalRegraEncerramento()"
+                style="flex:1;height:42px;border-radius:9px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+              <button onclick="salvarRegraEncerramento()"
+                style="flex:1;height:42px;border-radius:9px;border:none;background:#0F4C7A;color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Salvar regra</button>
+            </div>
+          </div>
+        </div>
+
         <!-- HORÁRIOS DE TRABALHO -->
         <div class="card" style="margin-top:1rem">
           <div class="card-title">🕐 Horários de trabalho</div>

@@ -152,6 +152,7 @@ function setView(id, el) {
     carregarGeofenceConfig();
     carregarHorariosTrabalho();
     if (typeof carregarPontosRota === 'function') carregarPontosRota();
+    if (typeof carregarConfigEncerramento === 'function') carregarConfigEncerramento();
     const ppData = document.getElementById('pp-data');
     if (ppData && !ppData.value) {
       const agora = new Date();
@@ -4246,4 +4247,146 @@ function dataEstaOk(inputElement) {
     const hoje = new Date();
     hoje.setHours(0, 0, 0, 0);
     return dataSelecionada <= hoje; // Retorna true se a data for hoje ou passada
+}
+
+// ── ENCERRAMENTO AUTOMÁTICO ────────────────────────────────
+// Admin cria regras (hora + dias + exceções). Cron do Worker
+// (a cada 1min) dispara logout-remoto pros motoboys com FCM
+// token naquele horário, pulando exceções.
+let _encerramentoRegras = [];
+let _encerramentoEditandoId = null;
+let _motoboysParaExcecao = [];
+
+async function carregarConfigEncerramento() {
+  const lista = document.getElementById('encerramento-lista');
+  if (!lista) return;
+  lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
+  try {
+    const r = await fetch(API + '/config-encerramento');
+    const d = await r.json();
+    _encerramentoRegras = d.regras || [];
+    renderEncerramento();
+  } catch (e) {
+    lista.innerHTML = '<div class="empty">Erro ao carregar</div>';
+  }
+}
+
+function renderEncerramento() {
+  const lista = document.getElementById('encerramento-lista');
+  if (!lista) return;
+  if (!_encerramentoRegras.length) {
+    lista.innerHTML = '<div style="background:#F8FBFD;border-radius:8px;padding:14px;text-align:center;color:#94A8B8;font-size:12px;border:1px dashed #D6E5EE">Nenhuma regra — todos os motoboys vão ficar ativos até clicar "Encerrar" manualmente.</div>';
+    return;
+  }
+  const diaLabel = { seg:'Seg', ter:'Ter', qua:'Qua', qui:'Qui', sex:'Sex', sab:'Sáb', dom:'Dom' };
+  lista.innerHTML = _encerramentoRegras.map(r => {
+    const dias = (r.dias_semana || '').split(',').map(d => diaLabel[d.trim()] || d).join(' · ');
+    const excCount = (r.excecoes || []).length;
+    const tagLabel = r.label ? `<span style="background:#EFF6FF;color:#1E40AF;font-size:10px;font-weight:700;padding:2px 8px;border-radius:99px">${escapeHtml(r.label)}</span>` : '';
+    return `<div style="background:#fff;border-radius:10px;padding:12px 14px;border:1.5px solid #EBF1F5;display:flex;align-items:center;gap:12px">
+      <div style="font-size:22px;font-weight:800;color:#0F4C7A;font-variant-numeric:tabular-nums;min-width:62px">${r.hora}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:2px">
+          <span style="font-size:12px;font-weight:600;color:#0F2940">${dias || '—'}</span>
+          ${tagLabel}
+        </div>
+        <div style="font-size:11px;color:#94A8B8">${excCount === 0 ? 'Aplica a todos' : excCount + ' exceção' + (excCount > 1 ? 's' : '')}</div>
+      </div>
+      <button onclick="excluirRegraEncerramento(${r.id})" style="background:#FEF2F2;border:1.5px solid #FECACA;color:#991B1B;border-radius:8px;padding:6px 10px;font-size:11px;font-weight:700;cursor:pointer">🗑 Excluir</button>
+    </div>`;
+  }).join('');
+}
+
+async function abrirModalNovaRegraEncerramento() {
+  _encerramentoEditandoId = null;
+  document.getElementById('enc-hora').value = '18:00';
+  document.getElementById('enc-label').value = '';
+
+  // Chips de dias (seg-sex pré-selecionados)
+  const dias = [
+    { id: 'seg', label: 'Seg' }, { id: 'ter', label: 'Ter' }, { id: 'qua', label: 'Qua' },
+    { id: 'qui', label: 'Qui' }, { id: 'sex', label: 'Sex' }, { id: 'sab', label: 'Sáb' },
+    { id: 'dom', label: 'Dom' }
+  ];
+  document.getElementById('enc-dias').innerHTML = dias.map(d =>
+    `<div class="enc-dia-chip ${['seg','ter','qua','qui','sex'].includes(d.id) ? 'sel' : ''}" data-dia="${d.id}"
+      onclick="this.classList.toggle('sel')"
+      style="padding:7px 14px;border-radius:99px;border:1.5px solid ${['seg','ter','qua','qui','sex'].includes(d.id) ? '#0F4C7A' : '#D6E5EE'};
+        background:${['seg','ter','qua','qui','sex'].includes(d.id) ? '#0F4C7A' : '#fff'};
+        color:${['seg','ter','qua','qui','sex'].includes(d.id) ? '#fff' : '#5A7A8F'};
+        font-size:12px;font-weight:700;cursor:pointer;user-select:none">${d.label}</div>`
+  ).join('');
+
+  // Carrega lista de motoboys via cache
+  const ex = document.getElementById('enc-excecoes');
+  ex.innerHTML = '<div style="font-size:12px;color:#94A8B8;text-align:center;padding:8px">Carregando motoboys...</div>';
+  try {
+    const r = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
+    const d = await r.json();
+    const nomesUnicos = new Map();
+    (d.motoboys || []).forEach(m => {
+      const key = (m.nome || '').toUpperCase();
+      if (key && !nomesUnicos.has(key)) nomesUnicos.set(key, m);
+    });
+    _motoboysParaExcecao = Array.from(nomesUnicos.values()).sort((a,b) => (a.nome||'').localeCompare(b.nome||''));
+    if (!_motoboysParaExcecao.length) {
+      ex.innerHTML = '<div style="font-size:12px;color:#94A8B8;text-align:center;padding:8px">Nenhum motoboy cadastrado</div>';
+    } else {
+      ex.innerHTML = _motoboysParaExcecao.map(m =>
+        `<label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12.5px;color:#0F2940">
+          <input type="checkbox" class="enc-exc-cb" data-tel="${escapeHtml((m.telefone||'').replace(/\D/g,''))}" data-nome="${escapeHtml(m.nome)}" style="accent-color:#0F4C7A"/>
+          <span style="flex:1">${escapeHtml(m.nome)}</span>
+        </label>`
+      ).join('');
+    }
+  } catch(e) {
+    ex.innerHTML = '<div style="font-size:12px;color:#EF4444;text-align:center;padding:8px">Erro ao carregar motoboys</div>';
+  }
+
+  document.getElementById('modal-regra-encerramento').style.display = 'flex';
+}
+
+function fecharModalRegraEncerramento() {
+  const m = document.getElementById('modal-regra-encerramento');
+  if (m) m.style.display = 'none';
+}
+
+async function salvarRegraEncerramento() {
+  const hora = document.getElementById('enc-hora').value;
+  const dias = [...document.querySelectorAll('.enc-dia-chip.sel')].map(c => c.dataset.dia);
+  const excecoes = [...document.querySelectorAll('.enc-exc-cb:checked')]
+    .map(cb => ({ telefone: cb.dataset.tel, nome: cb.dataset.nome }));
+  const label = document.getElementById('enc-label').value.trim();
+
+  if (!hora) { toast('Selecione um horário'); return; }
+  if (!dias.length) { toast('Selecione ao menos um dia da semana'); return; }
+  try {
+    const body = { hora, dias_semana: dias.join(','), label: label || '', excecoes };
+    const r = await fetch(API + '/config-encerramento', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (d.status === 'ok') {
+      toast('✓ Regra criada — cron vai derrubar os motoboys a partir das ' + hora);
+      fecharModalRegraEncerramento();
+      carregarConfigEncerramento();
+    } else {
+      toast('Erro: ' + (d.msg || 'desconhecido'));
+    }
+  } catch(e) {
+    toast('Erro de conexão');
+  }
+}
+
+async function excluirRegraEncerramento(id) {
+  if (!confirm('Excluir esta regra de encerramento?')) return;
+  try {
+    await fetch(API + '/config-encerramento?id=' + id, { method: 'DELETE' });
+    toast('✓ Regra removida');
+    carregarConfigEncerramento();
+  } catch(e) {
+    toast('Erro ao excluir');
+  }
 }
