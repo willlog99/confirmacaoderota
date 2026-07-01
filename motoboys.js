@@ -735,6 +735,25 @@ async function carregarMotoboysGerenciar() {
       const tipoBadge = tipo === 'rastreador'
         ? '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE">📡 Rastreador</span>'
         : '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#F0FDF4;color:#16A34A;border:1px solid #86EFAC">🛵 Motoboy</span>';
+
+      // ── Badge de status (afastado/ferias) ──
+      let statusBadge = '';
+      let botoesStatus = '';
+      const s = m.status_info;
+      if (s && (s.status === 'afastado' || s.status === 'ferias')) {
+        const isFerias = s.status === 'ferias';
+        const dataFim = (s.data_retorno || '').split('-').reverse().join('/');
+        const corBg = isFerias ? '#ECFDF5' : '#FEF2F2';
+        const corFg = isFerias ? '#047857' : '#B91C1C';
+        const corBorda = isFerias ? '#86EFAC' : '#FECACA';
+        const emoji = isFerias ? '🌴' : '🏥';
+        const label = isFerias ? 'Férias' : 'Afastado';
+        statusBadge = `<div style="display:inline-block;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;background:${corBg};color:${corFg};border:1px solid ${corBorda};margin-top:6px">${emoji} ${label} até ${dataFim}${s.motivo ? ' · ' + s.motivo : ''}</div>`;
+        botoesStatus = `<button class="btn" style="height:34px;font-size:12px;background:${isFerias ? '#ECFDF5' : '#FEF2F2'};color:${corFg};border:1px solid ${corBorda}" onclick="removerAfastamento('${m.telefone}','${(m.nome || '').replace(/'/g, "\\'")}')">✅ Reativar</button>`;
+      } else {
+        botoesStatus = `<button class="btn" style="height:34px;font-size:12px;background:#FEF2F2;color:#B91C1C;border:1px solid #FECACA" onclick="abrirModalAfastamento('${m.telefone}','${(m.nome || '').replace(/'/g, "\\'")}')">🏥 Afastar</button>`;
+      }
+
       return `
       <div class="list-item">
         <div class="list-item-row">
@@ -744,8 +763,10 @@ async function carregarMotoboysGerenciar() {
         <div style="font-size:12px;color:#5A7A8F;margin-top:3px">📱 ${m.telefone}</div>
         ${m.placa ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🏍️ Placa: <strong>${m.placa}</strong></div>` : ''}
         ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:3px">Sem rotas cadastradas</div>'}
+        ${statusBadge ? `<div style="margin-top:4px">${statusBadge}</div>` : ''}
         <div class="list-item-actions">
           <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}',${m.precisa_checklist !== false},${m.rastrear !== false})">✏️ Editar tipo</button>
+          ${botoesStatus}
           <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy('${m.telefone}')">🗑 Excluir</button>
         </div>
       </div>`;
@@ -754,6 +775,84 @@ async function carregarMotoboysGerenciar() {
     const msg = e.name === 'AbortError' ? '⏱ Timeout' : '❌ ' + e.message;
     el.innerHTML = '<div class="empty" style="color:#A32D2D">' + msg + ' <button onclick="carregarMotoboysGerenciar()" style="margin-left:8px;padding:4px 10px;border-radius:6px;border:1px solid #A32D2D;background:#fff;color:#A32D2D;cursor:pointer;font-size:12px">🔄 Tentar novamente</button></div>';
   }
+}
+
+function abrirModalAfastamento(telefone, nome) {
+  const anterior = document.getElementById('modal-afastamento');
+  if (anterior) anterior.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'modal-afastamento';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(15,23,42,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:1.5rem';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:1.75rem;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
+      <div style="font-size:16px;font-weight:700;color:#0F2940;margin-bottom:4px">🏥 Afastar motoboy</div>
+      <div style="font-size:13px;color:#64748B;margin-bottom:1.25rem">${nome}</div>
+
+      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Tipo</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:1.25rem">
+        <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid #0F4C7A;cursor:pointer;background:#EFF6FF">
+          <input type="radio" name="afast-tipo" value="afastado" checked style="accent-color:#0F4C7A"/>
+          <div><div style="font-size:14px;font-weight:700;color:#0F2940">🏥 Afastado</div><div style="font-size:11px;color:#64748B">Atestado, licença, etc.</div></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:12px;border-radius:10px;border:1.5px solid #E2E8F0;cursor:pointer;background:#fff">
+          <input type="radio" name="afast-tipo" value="ferias" style="accent-color:#0F4C7A"/>
+          <div><div style="font-size:14px;font-weight:700;color:#0F2940">🌴 Férias</div><div style="font-size:11px;color:#64748B">Período programado</div></div>
+        </label>
+      </div>
+
+      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Duração</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:1.25rem">
+        <input type="number" id="afast-dias" min="1" max="365" value="7" style="flex:1;padding:12px;border-radius:10px;border:1.5px solid #E2E8F0;font-size:15px;font-weight:600;color:#0F2940;text-align:center"/>
+        <span style="font-size:13px;color:#64748B">dias</span>
+      </div>
+      <div style="font-size:11px;color:#64748B;margin-top:-12px;margin-bottom:1.25rem">O app do motoboy fica bloqueado durante esse período. Libera automaticamente na data de retorno.</div>
+
+      <div style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Motivo (opcional)</div>
+      <textarea id="afast-motivo" maxlength="200" rows="2" placeholder="Ex: atestado médico, viagem em família..." style="width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid #E2E8F0;font-size:13px;color:#0F2940;resize:vertical;box-sizing:border-box;margin-bottom:1.25rem"></textarea>
+
+      <div style="display:flex;gap:8px">
+        <button onclick="document.getElementById('modal-afastamento').remove()" style="flex:1;padding:11px;border-radius:10px;border:1.5px solid #E2E8F0;background:#fff;color:#64748B;font-weight:600;font-size:13px;cursor:pointer">Cancelar</button>
+        <button onclick="salvarAfastamento('${telefone}')" style="flex:1;padding:11px;border-radius:10px;border:none;background:#B91C1C;color:#fff;font-weight:700;font-size:13px;cursor:pointer">Confirmar afastamento</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+async function salvarAfastamento(telefone) {
+  const status = document.querySelector('input[name="afast-tipo"]:checked')?.value;
+  const dias = parseInt(document.getElementById('afast-dias')?.value, 10);
+  const motivo = (document.getElementById('afast-motivo')?.value || '').trim();
+  if (!status || isNaN(dias) || dias < 1) { toast('Preencha os dias corretamente'); return; }
+  const criado_por = (typeof getAdminNome === 'function' && getAdminNome()) || 'admin';
+  try {
+    const r = await fetch(API + '/motoboys/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone, status, dias, motivo, criado_por })
+    });
+    const j = await r.json();
+    if (j.status !== 'ok') { toast('Erro: ' + (j.msg || 'falha ao afastar')); return; }
+    document.getElementById('modal-afastamento')?.remove();
+    if (typeof invalidarCache === 'function') invalidarCache('motoboys-agrupado');
+    const dataFim = (j.data_retorno || '').split('-').reverse().join('/');
+    toast(`✓ Motoboy afastado até ${dataFim}`);
+    carregarMotoboysGerenciar();
+  } catch(e) { toast('Erro ao salvar'); console.error(e); }
+}
+
+async function removerAfastamento(telefone, nome) {
+  if (!confirm(`Reativar ${nome}? O app voltará a funcionar normalmente no próximo login.`)) return;
+  try {
+    await fetch(API + '/motoboys/status', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ telefone })
+    });
+    if (typeof invalidarCache === 'function') invalidarCache('motoboys-agrupado');
+    toast('✓ Motoboy reativado');
+    carregarMotoboysGerenciar();
+  } catch(e) { toast('Erro ao reativar'); console.error(e); }
 }
 
 function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual, rastrearAtual) {
