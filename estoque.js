@@ -738,51 +738,8 @@ function ajustarSimples(tipo, delta) {
 }
 
 function renderEstoquePat() {
-  const total = patrimonios.length;
-  const disp  = patrimonios.filter(p => !p.motoboy).length;
-  const vinc  = total - disp;
-  const elT = document.getElementById('pat-total'); if (elT) elT.textContent = total;
-  const elD = document.getElementById('pat-disp');  if (elD) elD.textContent = disp;
-  const elU = document.getElementById('pat-uso');   if (elU) elU.textContent = vinc;
-  const el = document.getElementById('pat-categorias-lista'); if (!el) return;
-  el.innerHTML = LISTA_PADRAO_PAT.filter(t => t.codigo).map(tipo => {
-    const itens = patrimonios.filter(p => p.tipo === tipo.id);
-    const nD = itens.filter(p => !p.motoboy).length;
-    const nV = itens.filter(p =>  p.motoboy).length;
-    const bD = nD > 0 ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F8F0;color:#0F9B78">${nD} disp.</span>` : '';
-    const bV = nV > 0 ? `<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:#E8F4FB;color:#1E9FD9">${nV} vinc.</span>` : '';
-    const iList = itens.map(p => {
-      const ec = p.estado==='Novo'?'#0F9B78':p.estado==='Bom'?'#1E9FD9':'#DC2626';
-      const eb = p.estado==='Novo'?'#E8F8F0':p.estado==='Bom'?'#E8F4FB':'#FCEBEB';
-      return p.motoboy
-        ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #F0F4F8">
-            <div><span style="font-size:12px;font-weight:700;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
-            <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-top:3px">👤 ${p.motoboy}</div>
-            <div style="font-size:11px;color:#5A7A8F">Desde ${p.dataEntrega||'—'} · <span style="font-size:10px;padding:2px 6px;border-radius:20px;font-weight:700;background:${eb};color:${ec}">${p.estado}</span></div></div>
-            <div style="display:flex;gap:5px">
-              <button onclick="abrirModalSubst(${p.id})" style="padding:4px 8px;border-radius:6px;background:#FEF9EC;color:#92400E;border:1px solid #F2CC70;font-size:11px;font-weight:700;cursor:pointer">↔</button>
-              <button onclick="devolverPat(${p.id})" style="padding:4px 8px;border-radius:6px;background:#FCEBEB;color:#DC2626;border:1px solid #F09595;font-size:11px;font-weight:700;cursor:pointer">↩</button>
-            </div></div>`
-        : `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid #F0F4F8">
-            <div><span style="font-size:12px;font-weight:700;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
-            <div style="font-size:12px;font-weight:700;color:#0F9B78;margin-top:3px">✓ Disponível</div>
-            <span style="font-size:10px;padding:2px 6px;border-radius:20px;font-weight:700;background:${eb};color:${ec}">${p.estado}</span></div>
-            <div style="display:flex;gap:5px">
-              <button onclick="vincularPatEstoque(${p.id})" style="padding:4px 8px;border-radius:6px;background:#E8F8F0;color:#0F9B78;border:none;font-size:11px;font-weight:700;cursor:pointer">📤</button>
-              <button onclick="excluirPatEstoque(${p.id})" style="padding:4px 8px;border-radius:6px;background:#FCEBEB;color:#DC2626;border:1px solid #F09595;font-size:11px;font-weight:700;cursor:pointer">✕</button>
-            </div></div>`;
-    }).join('');
-    return `<div style="background:#fff;border-radius:12px;border:1.5px solid #EBF1F5;margin-bottom:8px;overflow:hidden">
-      <div onclick="toggleCat(this)" style="display:flex;align-items:center;justify-content:space-between;padding:12px;cursor:pointer">
-        <span style="font-size:13px;font-weight:700;color:#0F4C7A">${tipo.icon} ${tipo.nome}</span>
-        <div style="display:flex;gap:6px;align-items:center">${bD}${bV}<span class="cat-arrow" style="font-size:16px;color:#94A8B8">›</span></div>
-      </div>
-      <div style="display:none;border-top:1px solid #EBF1F5">
-        ${iList || '<div style="padding:12px;text-align:center;font-size:13px;color:#94A8B8">Nenhum item</div>'}
-        <div onclick="abrirModalPatCad('${tipo.id}')" style="display:flex;align-items:center;justify-content:center;padding:10px;cursor:pointer;color:#8B5CF6;font-size:12px;font-weight:700;background:#F8F6FF;border-top:1px solid #EBF1F5">➕ Cadastrar novo ${tipo.nome}</div>
-      </div></div>`;
-  }).join('');
-
+  renderPatKPIs();
+  renderPatTabela();
   const elS = document.getElementById('pat-simples-lista'); if (!elS) return;
   elS.innerHTML = LISTA_PADRAO_PAT.filter(t => !t.codigo).map(tipo => {
     const d = patrimoniosSimples[tipo.id] || { total: 0, vinculados: 0 };
@@ -796,6 +753,121 @@ function renderEstoquePat() {
         <button onclick="ajustarSimples('${tipo.id}',1)" style="width:28px;height:28px;border-radius:6px;border:1.5px solid #D6E5EE;background:#fff;font-size:16px;cursor:pointer">+</button>
       </div></div>`;
   }).join('');
+}
+
+// ====== NOVO LAYOUT: KPIs compactos ======
+function renderPatKPIs() {
+  const total = patrimonios.length;
+  const disp  = patrimonios.filter(p => !p.motoboy).length;
+  const uso   = total - disp;
+  const perd  = patrimonios.filter(p => p.estado==='Perdido' || p.estado==='Danificado').length;
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set('pat-kpi-total', total);
+  set('pat-kpi-uso', uso);
+  set('pat-kpi-disp', disp);
+  set('pat-kpi-perd', perd);
+}
+
+// ====== NOVO LAYOUT: Tabela compacta com filtros ======
+let patFiltroCache = { tipo: '', status: '', busca: '' };
+function patIcone(tipo) {
+  const map = { rastreador:'📡', bau:'📦', cooler_p:'🧊', cooler_m:'🧊', cooler_g:'🧊', cooler_gg:'🧊', capacete:'⛑️', colete:'🦺', camiseta:'👕', blusa:'🧥', cartao:'💳' };
+  return map[tipo] || '🔹';
+}
+function patEstadoCfg(estado) {
+  if (estado === 'Perdido') return { cor:'#DC2626', bg:'#FCEBEB' };
+  if (estado === 'Danificado') return { cor:'#92400E', bg:'#FEF9EC' };
+  if (estado === 'Em uso') return { cor:'#1E9FD9', bg:'#E8F4FB' };
+  if (estado === 'Novo') return { cor:'#0F9B78', bg:'#E8F8F0' };
+  return { cor:'#0F9B78', bg:'#E8F8F0' };
+}
+function renderPatTabela() {
+  const el = document.getElementById('pat-tabela-container'); if (!el) return;
+  const f = patFiltroCache;
+  const norm = s => (s||'').toString().toLowerCase();
+  const busca = norm(f.busca);
+  const statusMap = { disponivel: p => !p.motoboy, em_uso: p => !!p.motoboy, danificado: p => p.estado==='Danificado', perdido: p => p.estado==='Perdido' };
+  const lista = patrimonios.filter(p => {
+    if (f.tipo && p.tipo !== f.tipo) return false;
+    if (f.status && !(statusMap[f.status] && statusMap[f.status](p))) return false;
+    if (busca) {
+      const hay = norm(p.codigo) + ' ' + norm(p.motoboy) + ' ' + norm(p.dataEntrega);
+      if (!hay.includes(busca)) return false;
+    }
+    return true;
+  });
+  if (!lista.length) {
+    el.innerHTML = `<div style="padding:24px 12px;text-align:center;font-size:13px;color:#94A8B8">Nenhum item encontrado</div>`;
+    return;
+  }
+  // Cabeçalho
+  let html = `<div style="display:grid;grid-template-columns:1.2fr 1.1fr 1.1fr .8fr 1.6fr;gap:8px;padding:9px 12px;background:#F8FBFD;border-bottom:1px solid #EBF1F5;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.04em">
+    <div>Código</div><div>Tipo</div><div>Com quem</div><div>Estado</div><div style="text-align:right">Ações</div>
+  </div>`;
+  // Linhas
+  html += lista.map(p => {
+    const ecfg = patEstadoCfg(p.estado);
+    const displayEstado = p.motoboy ? 'Em uso' : p.estado;
+    const cfg = patEstadoCfg(displayEstado);
+    const acoes = p.motoboy
+      ? `<button onclick="abrirModalTransferir(${p.id})" title="Transferir" style="padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#1E9FD9;font-size:12px;font-weight:700;cursor:pointer">⤴</button>
+         <button onclick="abrirModalSubstituir(${p.id})" title="Substituir" style="padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#92400E;font-size:12px;font-weight:700;cursor:pointer">↔</button>
+         <button onclick="abrirModalDevolver(${p.id})" title="Devolver" style="padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#0F9B78;font-size:12px;font-weight:700;cursor:pointer">↩</button>`
+      : `<button onclick="abrirModalVincular(${p.id})" title="Vincular ao motoboy" style="padding:5px 8px;border-radius:7px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-size:12px;font-weight:700;cursor:pointer">📤</button>
+         <button onclick="abrirModalSubstituir(${p.id})" title="Substituir" style="padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#92400E;font-size:12px;font-weight:700;cursor:pointer">↔</button>
+         <button onclick="excluirPatEstoque(${p.id})" title="Excluir" style="padding:5px 8px;border-radius:7px;border:1.5px solid #F09595;background:#FCEBEB;color:#DC2626;font-size:12px;font-weight:700;cursor:pointer">✕</button>`;
+    return `<div style="display:grid;grid-template-columns:1.2fr 1.1fr 1.1fr .8fr 1.6fr;gap:8px;padding:9px 12px;border-bottom:1px solid #F0F4F8;align-items:center">
+      <div><span style="font-size:12px;font-weight:800;color:#8B5CF6;background:#F3F0FF;padding:3px 9px;border-radius:20px">${p.codigo}</span></div>
+      <div style="font-size:12px;font-weight:600;color:#0F4C7A">${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}${p.subtipo?' · '+p.subtipo:''}</div>
+      <div style="font-size:12px;color:${p.motoboy?'#0F4C7A':'#94A8B8'};font-weight:${p.motoboy?'700':'400'}">${p.motoboy? '👤 '+p.motoboy : '—'}</div>
+      <div><span style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px;background:${cfg.bg};color:${cfg.cor}">${displayEstado}</span></div>
+      <div style="display:flex;gap:5px;justify-content:flex-end">${acoes}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = html;
+}
+
+function tipoLabelPat(id) {
+  const t = LISTA_PADRAO_PAT.find(x => x.id === id);
+  return t ? t.nome : id;
+}
+
+function aplicarFiltroPat() {
+  patFiltroCache = {
+    tipo: document.getElementById('pat-filtro-tipo')?.value || '',
+    status: document.getElementById('pat-filtro-status')?.value || '',
+    busca: document.getElementById('pat-filtro-busca')?.value || ''
+  };
+  renderPatTabela();
+}
+function limparFiltroPat() {
+  ['pat-filtro-tipo','pat-filtro-status','pat-filtro-busca'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  aplicarFiltroPat();
+}
+
+// ====== CSV export ======
+function exportarPatCSV() {
+  const f = patFiltroCache;
+  const norm = s => (s||'').toString().toLowerCase();
+  const busca = norm(f.busca);
+  const statusMap = { disponivel: p => !p.motoboy, em_uso: p => !!p.motoboy, danificado: p => p.estado==='Danificado', perdido: p => p.estado==='Perdido' };
+  const dados = patrimonios.filter(p => {
+    if (f.tipo && p.tipo !== f.tipo) return false;
+    if (f.status && !(statusMap[f.status] && statusMap[f.status](p))) return false;
+    if (busca) { const hay = norm(p.codigo) + ' ' + norm(p.motoboy); if (!hay.includes(busca)) return false; }
+    return true;
+  });
+  const header = ['Codigo','Tipo','Subtipo','Estado','Motoboy','DataEntrega'];
+  const csv = [header.join(';')].concat(dados.map(p => [
+    p.codigo, p.tipo, p.subtipo||'', p.estado||'', p.motoboy||'', p.dataEntrega||''
+  ].map(v => '"' + String(v).replace(/"/g,'""') + '"').join(';'))).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'patrimonios_' + new Date().toISOString().split('T')[0] + '.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast('📥 CSV exportado: ' + dados.length + ' itens');
 }
 
 function renderResumoPat() {
@@ -1046,12 +1118,8 @@ function excluirPatEstoque(id) {
 }
 
 async function vincularPatEstoque(id) {
-  const p=patrimonios.find(x=>x.id===id); if(!p) return;
-  const nome=prompt('Vincular ao motoboy:\n(Digite o nome)');
-  if(!nome) return;
-  p.motoboy=nome.trim().toUpperCase(); p.dataEntrega=new Date().toLocaleDateString('pt-BR');
-  await syncPatServer(); renderEstoquePat(); renderEstoquePatEst();
-  toast('✓ Vinculado a '+p.motoboy);
+  // Redirecionado para o novo modal
+  abrirModalVincular(id);
 }
 
 async function devolverPat(id) {
@@ -1083,7 +1151,7 @@ function marcarNA(motoboy, tipoId) {
 }
 
 function mudarTabPat(tab, btn) {
-  ['geral','motoboy','pendencias','historico'].forEach(t => {
+  ['estoque','motoboy','relatorios'].forEach(t => {
     const el = document.getElementById('pat-tab-'+t);
     if(el) el.style.display = t===tab ? 'block' : 'none';
     const b = document.getElementById('pat-tab-btn-'+t);
@@ -1092,8 +1160,6 @@ function mudarTabPat(tab, btn) {
       b.style.color       = t===tab ? '#fff'    : '#5A7A8F';
     }
   });
-  if(tab==='pendencias') renderPendencias();
-  if(tab==='historico')  renderHistorico();
   if(tab==='motoboy') {
     const sel = document.getElementById('pat-sel-motoboy');
     if(sel && sel.options.length <= 1) {
@@ -1103,6 +1169,394 @@ function mudarTabPat(tab, btn) {
       }).catch(()=>{});
     }
   }
+  if(tab==='relatorios') mudarRelPat('onde');
+}
+
+let relPatAtual = 'onde';
+function mudarRelPat(rel, btn) {
+  relPatAtual = rel;
+  ['onde','pormotoboy','mov','alertas'].forEach(r => {
+    const b = document.getElementById('pat-rel-btn-'+r);
+    if(b) {
+      const active = r===rel;
+      b.style.background = active ? '#F3F0FF' : '#fff';
+      b.style.color      = active ? '#5B21B6' : '#5A7A8F';
+      b.style.borderColor= active ? '#8B5CF6' : '#D6E5EE';
+    }
+  });
+  const el = document.getElementById('pat-rel-conteudo'); if(!el) return;
+  if(rel==='onde')       renderRelOndeEsta();
+  if(rel==='pormotoboy') renderRelPorMotoboy();
+  if(rel==='mov')        renderRelMovimentacoes();
+  if(rel==='alertas')    renderRelAlertas();
+}
+
+// ============================================================
+// 4 RELATÓRIOS
+// ============================================================
+function renderRelOndeEsta() {
+  const el = document.getElementById('pat-rel-conteudo'); if (!el) return;
+  const grupos = {};
+  patrimonios.forEach(p => {
+    const chave = p.motoboy ? '👤 '+p.motoboy : '📦 Estoque';
+    if(!grupos[chave]) grupos[chave] = [];
+    grupos[chave].push(p);
+  });
+  const ordem = Object.keys(grupos).sort((a,b) => {
+    if(a==='📦 Estoque') return -1; if(b==='📦 Estoque') return 1;
+    return a.localeCompare(b);
+  });
+  if(!ordem.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#94A8B8">Nenhum item cadastrado.</div>'; return; }
+  el.innerHTML = ordem.map(chave => {
+    const itens = grupos[chave];
+    const rows = itens.map(p => {
+      const cfg = patEstadoCfg(p.motoboy?'Em uso':p.estado);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-top:1px solid #F0F4F8">
+        <div style="flex:1">
+          <span style="font-size:12px;font-weight:800;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
+          <span style="font-size:11px;color:#5A7A8F;margin-left:6px">${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}${p.subtipo?' · '+p.subtipo:''}</span>
+        </div>
+        <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${cfg.bg};color:${cfg.cor}">${p.motoboy?'Em uso':p.estado}</span>
+      </div>`;
+    }).join('');
+    return `<div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:8px;overflow:hidden">
+      <div style="padding:9px 12px;background:#F8FBFD;font-size:12px;font-weight:700;color:#0F4C7A">${chave} <span style="font-size:10px;color:#5A7A8F;font-weight:500">(${itens.length})</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+function renderRelPorMotoboy() {
+  const el = document.getElementById('pat-rel-conteudo'); if (!el) return;
+  const mbs = {};
+  patrimonios.filter(p => p.motoboy).forEach(p => { if(!mbs[p.motoboy]) mbs[p.motoboy]=[]; mbs[p.motoboy].push(p); });
+  const nomes = Object.keys(mbs).sort();
+  if(!nomes.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#94A8B8">Nenhum motoboy com item vinculado.</div>'; return; }
+  el.innerHTML = nomes.map(mb => {
+    const itens = mbs[mb];
+    const rows = itens.map(p => {
+      const cfg = patEstadoCfg(p.estado);
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;border-top:1px solid #F0F4F8">
+        <div style="flex:1">
+          <span style="font-size:12px;font-weight:800;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
+          <span style="font-size:11px;color:#5A7A8F;margin-left:6px">${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}</span>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${cfg.bg};color:${cfg.cor}">${p.estado}</div>
+          <div style="font-size:10px;color:#94A8B8;margin-top:2px">desde ${p.dataEntrega||'—'}</div>
+        </div>
+      </div>`;
+    }).join('');
+    return `<div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:8px;overflow:hidden">
+      <div style="padding:9px 12px;background:#F3F0FF;font-size:13px;font-weight:800;color:#5B21B6">👤 ${mb} <span style="font-size:11px;color:#5A7A8F;font-weight:500">(${itens.length} item${itens.length>1?'s':''})</span></div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+let cacheMovPat = null;
+async function renderRelMovimentacoes() {
+  const el = document.getElementById('pat-rel-conteudo'); if (!el) return;
+  el.innerHTML = '<div style="padding:20px;text-align:center;font-size:12px;color:#94A8B8">Carregando movimentações...</div>';
+  try {
+    const r = await fetch(API + '/patrimonios/movimentacoes?limite=500');
+    const d = await r.json();
+    cacheMovPat = d.movimentacoes || [];
+    if(!cacheMovPat.length) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#94A8B8">Nenhuma movimentação registrada ainda.</div>'; return; }
+    const tipoLabel = { vinculado:'📤 Vinculação', devolvido:'↩ Devolução', transferido:'⤴ Transferência', substituido:'↔ Substituição', descartado:'🗑 Descarte' };
+    const tipoBg    = { vinculado:'#E8F4FB', devolvido:'#E8F8F0', transferido:'#FEF3C7', substituido:'#FCEBEB', descartado:'#F3F4F6' };
+    const tipoCor   = { vinculado:'#1E9FD9', devolvido:'#0F9B78', transferido:'#92400E', substituido:'#DC2626', descartado:'#5A7A8F' };
+    el.innerHTML = cacheMovPat.map(m => {
+      const bg  = tipoBg[m.tipo]  || '#F3F4F6';
+      const cor = tipoCor[m.tipo] || '#5A7A8F';
+      const fluxo = m.tipo==='vinculado' ? `Estoque → <b>${m.motoboy_destino||'—'}</b>`
+                  : m.tipo==='devolvido' ? `<b>${m.motoboy_origem||'—'}</b> → Estoque`
+                  : m.tipo==='transferido' ? `<b>${m.motoboy_origem||'—'}</b> → <b>${m.motoboy_destino||'—'}</b>`
+                  : m.tipo==='substituido' ? `<b>${m.item_codigo}</b> sai de <b>${m.motoboy_origem||'Estoque'}</b>, entra <b>${m.item_substituto||'—'}</b>`
+                  : m.tipo;
+      return `<div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:6px;padding:10px 12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:12px;font-weight:800;color:#0F4C7A">${m.item_codigo||'—'} <span style="font-size:10px;color:#5A7A8F;font-weight:500">· ${patIcone(m.item_tipo)} ${tipoLabelPat(m.item_tipo||'')}</span></div>
+          <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;background:${bg};color:${cor}">${tipoLabel[m.tipo]||m.tipo}</span>
+        </div>
+        <div style="font-size:12px;color:#5A7A8F">${fluxo}</div>
+        <div style="font-size:10px;color:#94A8B8;margin-top:3px">${m.data||''} ${m.motivo?'· '+m.motivo:''} ${m.usuario?'· '+m.usuario:''}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#DC2626">❌ Erro ao carregar movimentações</div>';
+  }
+}
+
+function renderRelAlertas() {
+  const el = document.getElementById('pat-rel-conteudo'); if (!el) return;
+  const perdidos  = patrimonios.filter(p => p.estado === 'Perdido');
+  const danif     = patrimonios.filter(p => p.estado === 'Danificado');
+  // Parados há mais de 90 dias
+  const parseBR = s => { if(!s) return null; const p=s.split('/'); if(p.length!==3) return null; return new Date(p[2],p[1]-1,p[0]).getTime(); };
+  const agora = Date.now();
+  const limite = agora - 90*24*60*60*1000;
+  const parados = patrimonios.filter(p => p.motoboy && p.dataEntrega && parseBR(p.dataEntrega) && parseBR(p.dataEntrega) < limite);
+  const tot = perdidos.length + danif.length + parados.length;
+  if(!tot) { el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#0F9B78">✓ Nenhum alerta no momento.</div>'; return; }
+  const bloco = (titulo, icone, cor, bg, lista) => {
+    if(!lista.length) return '';
+    return `<div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:8px;overflow:hidden">
+      <div style="padding:9px 12px;background:${bg};font-size:13px;font-weight:800;color:${cor}">${icone} ${titulo} (${lista.length})</div>
+      ${lista.map(p => {
+        const cfg = patEstadoCfg(p.estado);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-top:1px solid #F0F4F8">
+          <div style="flex:1">
+            <span style="font-size:12px;font-weight:800;color:#8B5CF6;background:#F3F0FF;padding:2px 8px;border-radius:20px">${p.codigo}</span>
+            <span style="font-size:11px;color:#5A7A8F;margin-left:6px">${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}</span>
+            ${p.motoboy?`<span style="font-size:11px;color:#0F4C7A;font-weight:700;margin-left:6px">👤 ${p.motoboy}</span>`:''}
+            ${p.dataEntrega?`<span style="font-size:10px;color:#94A8B8;margin-left:6px">desde ${p.dataEntrega}</span>`:''}
+          </div>
+          <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;background:${cfg.bg};color:${cfg.cor}">${p.estado}</span>
+        </div>`;
+      }).join('')}
+    </div>`;
+  };
+  el.innerHTML =
+    bloco('Itens perdidos', '❌', '#DC2626', '#FCEBEB', perdidos) +
+    bloco('Itens danificados', '⚠️', '#92400E', '#FEF9EC', danif) +
+    bloco('Vinculados há mais de 90 dias', '⏰', '#5A7A8F', '#F3F4F6', parados);
+}
+
+// ============================================================
+// 4 MODAIS DE MOVIMENTAÇÃO
+// ============================================================
+let patMovAtual = null;
+
+function carregarSelectMotoboys(idSelect, excluir) {
+  const sel = document.getElementById(idSelect); if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione...</option>';
+  fetch(API + '/motoboys?todos=1&agrupado=1').then(r=>r.json()).then(d=>{
+    const nomes = [...new Set((d.motoboys||[]).map(m=>m.nome))].filter(n => n !== excluir);
+    nomes.sort().forEach(n => { const o=document.createElement('option'); o.value=n; o.textContent=n; sel.appendChild(o); });
+  }).catch(()=>{ toast('❌ Erro ao carregar motoboys'); });
+}
+
+function abrirModalVincular(id) {
+  const p = patrimonios.find(x => x.id===id); if(!p) return;
+  patMovAtual = { id, tipo:'vinculado', codigo:p.codigo, itemTipo:p.tipo, subtipo:p.subtipo, motoboyOrigem:null, itemSubstituto:null };
+  const infoEl = document.getElementById('pat-vinc-codigo');
+  if(infoEl) infoEl.innerHTML = `<b style="color:#5B21B6">${p.codigo}</b> · ${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}${p.subtipo?' · '+p.subtipo:''}`;
+  carregarSelectMotoboys('pat-vinc-motoboy', null);
+  const dataEl = document.getElementById('pat-vinc-data'); if(dataEl) dataEl.value = new Date().toISOString().split('T')[0];
+  const obsEl = document.getElementById('pat-vinc-obs'); if(obsEl) obsEl.value = '';
+  document.getElementById('modal-pat-vincular').style.display = 'flex';
+}
+
+async function confirmarVincular() {
+  const motoboy = document.getElementById('pat-vinc-motoboy')?.value;
+  if(!motoboy) { toast('⚠️ Selecione um motoboy'); return; }
+  if(!patMovAtual) return;
+  const data = document.getElementById('pat-vinc-data')?.value;
+  const obs  = document.getElementById('pat-vinc-obs')?.value?.trim();
+  const dataBR = data ? data.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
+  await registrarMovimentacao(patMovAtual.id, {
+    tipo: 'vinculado',
+    motoboy: motoboy.toUpperCase(),
+    dataEntrega: dataBR,
+    estado: 'Bom',
+    movimento: {
+      tipo: 'vinculado',
+      item_codigo: patMovAtual.codigo,
+      item_tipo: patMovAtual.itemTipo,
+      item_subtipo: patMovAtual.subtipo,
+      motoboy_origem: null,
+      motoboy_destino: motoboy.toUpperCase(),
+      item_substituto: null,
+      motivo: obs || 'Vinculação inicial',
+      usuario: 'admin'
+    }
+  });
+  fecharModalPatMov();
+  toast('✓ ' + patMovAtual.codigo + ' vinculado a ' + motoboy);
+}
+
+function abrirModalDevolver(id) {
+  const p = patrimonios.find(x => x.id===id); if(!p) return;
+  patMovAtual = { id, tipo:'devolvido', codigo:p.codigo, itemTipo:p.tipo, subtipo:p.subtipo, motoboyOrigem:p.motoboy };
+  const infoEl = document.getElementById('pat-dev-codigo');
+  if(infoEl) infoEl.innerHTML = `<b style="color:#92400E">${p.codigo}</b> · ${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)} <br><span style="font-size:11px">De: <b>${p.motoboy||'—'}</b> → Para: <b style="color:#0F9B78">Estoque</b></span>`;
+  document.getElementById('pat-dev-motivo').value = '';
+  document.getElementById('pat-dev-estado').value = 'bom';
+  document.getElementById('pat-dev-obs').value = '';
+  document.getElementById('modal-pat-devolver').style.display = 'flex';
+}
+
+async function confirmarDevolver() {
+  if(!patMovAtual) return;
+  if(!confirm('Confirmar devolução de ' + patMovAtual.codigo + ' ao estoque?')) return;
+  const motivo = document.getElementById('pat-dev-motivo')?.value || 'Devolução normal';
+  const estado = document.getElementById('pat-dev-estado')?.value || 'bom';
+  const obs    = document.getElementById('pat-dev-obs')?.value?.trim();
+  const estadoLabel = estado==='bom' ? 'Bom' : estado==='danificado' ? 'Danificado' : 'Perdido';
+  await registrarMovimentacao(patMovAtual.id, {
+    tipo: 'devolvido',
+    motoboy: null,
+    dataEntrega: null,
+    estado: estadoLabel,
+    movimento: {
+      tipo: 'devolvido',
+      item_codigo: patMovAtual.codigo,
+      item_tipo: patMovAtual.itemTipo,
+      item_subtipo: patMovAtual.subtipo,
+      motoboy_origem: patMovAtual.motoboyOrigem,
+      motoboy_destino: null,
+      item_substituto: null,
+      motivo: obs ? motivo + ' — ' + obs : motivo,
+      usuario: 'admin'
+    }
+  });
+  fecharModalPatMov();
+  toast('↩ ' + patMovAtual.codigo + ' devolvido ao estoque');
+}
+
+function abrirModalTransferir(id) {
+  const p = patrimonios.find(x => x.id===id); if(!p) return;
+  patMovAtual = { id, tipo:'transferido', codigo:p.codigo, itemTipo:p.tipo, subtipo:p.subtipo, motoboyOrigem:p.motoboy };
+  const infoEl = document.getElementById('pat-tr-codigo');
+  if(infoEl) infoEl.innerHTML = `<b style="color:#1E9FD9">${p.codigo}</b> · ${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}<br><span style="font-size:11px">De: <b>${p.motoboy||'—'}</b> → Para: <b style="color:#1E9FD9">novo motoboy</b></span>`;
+  carregarSelectMotoboys('pat-tr-destino', p.motoboy);
+  const dataEl = document.getElementById('pat-tr-data'); if(dataEl) dataEl.value = new Date().toISOString().split('T')[0];
+  const obsEl = document.getElementById('pat-tr-obs'); if(obsEl) obsEl.value = '';
+  document.getElementById('modal-pat-transferir').style.display = 'flex';
+}
+
+async function confirmarTransferir() {
+  if(!patMovAtual) return;
+  const destino = document.getElementById('pat-tr-destino')?.value;
+  if(!destino) { toast('⚠️ Selecione o motoboy destino'); return; }
+  if(destino.toUpperCase() === (patMovAtual.motoboyOrigem||'').toUpperCase()) { toast('⚠️ Destino igual à origem'); return; }
+  const data = document.getElementById('pat-tr-data')?.value;
+  const obs  = document.getElementById('pat-tr-obs')?.value?.trim();
+  const dataBR = data ? data.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
+  await registrarMovimentacao(patMovAtual.id, {
+    tipo: 'transferido',
+    motoboy: destino.toUpperCase(),
+    dataEntrega: dataBR,
+    estado: 'Bom',
+    movimento: {
+      tipo: 'transferido',
+      item_codigo: patMovAtual.codigo,
+      item_tipo: patMovAtual.itemTipo,
+      item_subtipo: patMovAtual.subtipo,
+      motoboy_origem: patMovAtual.motoboyOrigem,
+      motoboy_destino: destino.toUpperCase(),
+      item_substituto: null,
+      motivo: obs || 'Transferência',
+      usuario: 'admin'
+    }
+  });
+  fecharModalPatMov();
+  toast('⤴ ' + patMovAtual.codigo + ' transferido para ' + destino);
+}
+
+function abrirModalSubstituir(id) {
+  const p = patrimonios.find(x => x.id===id); if(!p) return;
+  patMovAtual = { id, tipo:'substituido', codigo:p.codigo, itemTipo:p.tipo, subtipo:p.subtipo, motoboyOrigem:p.motoboy };
+  const novos = patrimonios.filter(x => x.tipo===p.tipo && x.id!==p.id && !x.motoboy && x.estado!=='Perdido');
+  const sel = document.getElementById('pat-sub-novo');
+  if(sel) {
+    sel.innerHTML = novos.length
+      ? '<option value="">Selecione...</option>' + novos.map(n => `<option value="${n.id}">${n.codigo}${n.subtipo?' · '+n.subtipo:''} (${n.estado})</option>`).join('')
+      : '<option value="">Nenhum item disponível do mesmo tipo</option>';
+  }
+  const infoEl = document.getElementById('pat-sub-origem');
+  if(infoEl) infoEl.innerHTML = `<b style="color:#DC2626">${p.codigo}</b> · ${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}${p.subtipo?' · '+p.subtipo:''} <br><span style="font-size:11px">De: <b>${p.motoboy||'Estoque'}</b> · <span style="color:#DC2626">saí de circulação</span></span>`;
+  document.getElementById('pat-sub-motivo').value = 'Danificado';
+  document.getElementById('pat-sub-obs').value = '';
+  document.getElementById('modal-pat-substituir').style.display = 'flex';
+}
+
+async function confirmarSubstituir() {
+  if(!patMovAtual) return;
+  const novoId = document.getElementById('pat-sub-novo')?.value;
+  if(!novoId) { toast('⚠️ Selecione o item substituto'); return; }
+  const novo = patrimonios.find(x => x.id==novoId); if(!novo) { toast('❌ Item substituto não encontrado'); return; }
+  const motivo = document.getElementById('pat-sub-motivo')?.value || 'Substituição';
+  const obs    = document.getElementById('pat-sub-obs')?.value?.trim();
+  // 1) item velho sai de circulação
+  const velho = patrimonios.find(x => x.id===patMovAtual.id);
+  const velhoEstadoFinal = motivo==='Perda' ? 'Perdido' : motivo==='Manutenção' ? 'Danificado' : velho.estado;
+  await registrarMovimentacao(patMovAtual.id, {
+    tipo: 'substituido',
+    motoboy: null,
+    dataEntrega: null,
+    estado: velhoEstadoFinal,
+    movimento: {
+      tipo: 'substituido',
+      item_codigo: patMovAtual.codigo,
+      item_tipo: patMovAtual.itemTipo,
+      item_subtipo: patMovAtual.subtipo,
+      motoboy_origem: patMovAtual.motoboyOrigem,
+      motoboy_destino: null,
+      item_substituto: novo.codigo,
+      motivo: obs ? motivo + ' — ' + obs : motivo,
+      usuario: 'admin'
+    }
+  });
+  // 2) item novo entra no lugar (mesmo motoboy, data de hoje)
+  if(patMovAtual.motoboyOrigem) {
+    const dataBR = new Date().toLocaleDateString('pt-BR');
+    await registrarMovimentacao(novo.id, {
+      tipo: 'vinculado',
+      motoboy: patMovAtual.motoboyOrigem,
+      dataEntrega: dataBR,
+      estado: 'Bom',
+      movimento: {
+        tipo: 'vinculado',
+        item_codigo: novo.codigo,
+        item_tipo: novo.tipo,
+        item_subtipo: novo.subtipo,
+        motoboy_origem: null,
+        motoboy_destino: patMovAtual.motoboyOrigem,
+        item_substituto: null,
+        motivo: 'Substituição de ' + patMovAtual.codigo,
+        usuario: 'admin'
+      }
+    });
+  }
+  fecharModalPatMov();
+  toast('↔ ' + patMovAtual.codigo + ' substituído por ' + novo.codigo);
+}
+
+function fecharModalPatMov() {
+  ['modal-pat-vincular','modal-pat-devolver','modal-pat-transferir','modal-pat-substituir'].forEach(id => {
+    const el = document.getElementById(id); if(el) el.style.display = 'none';
+  });
+  patMovAtual = null;
+}
+
+// Helper unificado: PATCH + atualiza estado local
+async function registrarMovimentacao(patId, payload) {
+  const p = patrimonios.find(x => x.id===patId);
+  if(!p) return;
+  // 1) atualiza local
+  p.motoboy = payload.motoboy || null;
+  p.dataEntrega = payload.dataEntrega || null;
+  p.estado = payload.estado || p.estado;
+  // 2) PATCH no servidor (com movimento embutido)
+  try {
+    await fetch(API + '/patrimonios/' + patId, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        motoboy: payload.motoboy,
+        dataEntrega: payload.dataEntrega,
+        estado: payload.estado,
+        movimento: payload.movimento
+      })
+    });
+  } catch(e) {
+    // servidor offline: já atualizou local, syncPatServer() cuida depois
+  }
+  await syncPatServer();
+  renderEstoquePat();
+  renderEstoquePatEst();
 }
 
 async function iniciarPatrimonios() {

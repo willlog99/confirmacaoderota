@@ -1747,54 +1747,76 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <button onclick="abrirModalPatCad('')" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Cadastrar item</button>
         </div>
 
-        <!-- KPIs -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem">
-          <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-            <div style="font-size:22px;font-weight:800;color:#0F4C7A" id="pat-total">—</div>
-            <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Total itens</div>
+        <!-- KPIs compactos -->
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:.8rem" id="pat-kpis-grid">
+          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
+            <div style="font-size:18px;font-weight:800;color:#0F4C7A" id="pat-kpi-total">—</div>
+            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Total</div>
           </div>
-          <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-            <div style="font-size:22px;font-weight:800;color:#0F9B78" id="pat-disp">—</div>
-            <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Disponíveis</div>
+          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
+            <div style="font-size:18px;font-weight:800;color:#1E9FD9" id="pat-kpi-uso">—</div>
+            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Em uso</div>
           </div>
-          <div style="background:#fff;border-radius:12px;padding:.8rem;text-align:center;border:1px solid #EBF1F5;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-            <div style="font-size:22px;font-weight:800;color:#1E9FD9" id="pat-uso">—</div>
-            <div style="font-size:10px;color:#5A7A8F;font-weight:600;margin-top:3px;text-transform:uppercase;letter-spacing:.04em">Em uso</div>
+          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
+            <div style="font-size:18px;font-weight:800;color:#0F9B78" id="pat-kpi-disp">—</div>
+            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Disponíveis</div>
+          </div>
+          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
+            <div style="font-size:18px;font-weight:800;color:#DC2626" id="pat-kpi-perd">—</div>
+            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Perdidos</div>
           </div>
         </div>
 
-        <!-- Tabs -->
-        <div style="display:flex;gap:6px;margin-bottom:1rem;background:#fff;border-radius:12px;padding:6px;border:1px solid #EBF1F5">
-          <button id="pat-tab-btn-geral" onclick="mudarTabPat('geral',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📦 Geral</button>
-          <button id="pat-tab-btn-motoboy" onclick="mudarTabPat('motoboy',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👤 Por Motoboy</button>
-          <button id="pat-tab-btn-pendencias" onclick="mudarTabPat('pendencias',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">⏳ Pendências</button>
-          <button id="pat-tab-btn-historico" onclick="mudarTabPat('historico',this)" style="flex:1;padding:8px 4px;border-radius:8px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📋 Histórico</button>
+        <!-- Tabs (3 agora) -->
+        <div style="display:flex;gap:6px;margin-bottom:.8rem;background:#fff;border-radius:10px;padding:5px;border:1px solid #EBF1F5">
+          <button id="pat-tab-btn-estoque" onclick="mudarTabPat('estoque',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📦 Estoque</button>
+          <button id="pat-tab-btn-motoboy" onclick="mudarTabPat('motoboy',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👤 Por motoboy</button>
+          <button id="pat-tab-btn-relatorios" onclick="mudarTabPat('relatorios',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📊 Relatórios</button>
         </div>
 
-        <!-- Aba Geral -->
-        <div id="pat-tab-geral">
-          <!-- Com código -->
-          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
-            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
-              <span style="font-size:13px;font-weight:700;color:#0F4C7A">📡 Com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Rastreador · Baú · Cooler P · Cooler G)</span></span>
-              <span style="color:#94A8B8;font-size:16px">›</span>
-            </div>
-            <div style="display:none;border-top:1px solid #EBF1F5;padding:12px" id="pat-categorias-lista"></div>
+        <!-- Aba Estoque -->
+        <div id="pat-tab-estoque">
+          <!-- Barra de filtros -->
+          <div style="display:flex;gap:6px;margin-bottom:.6rem;align-items:center;flex-wrap:wrap">
+            <select id="pat-filtro-tipo" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto;min-width:0">
+              <option value="">Todos os tipos</option>
+              <option value="rastreador">Rastreador</option>
+              <option value="bau">Baú</option>
+              <option value="cooler_p">Cooler P</option>
+              <option value="cooler_m">Cooler M</option>
+              <option value="cooler_g">Cooler G</option>
+              <option value="cooler_gg">Cooler GG</option>
+              <option value="capacete">Capacete</option>
+              <option value="colete">Colete</option>
+              <option value="camiseta">Camiseta</option>
+              <option value="blusa">Blusa</option>
+            </select>
+            <select id="pat-filtro-status" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto">
+              <option value="">Todos status</option>
+              <option value="disponivel">Disponível</option>
+              <option value="em_uso">Em uso</option>
+              <option value="danificado">Danificado</option>
+              <option value="perdido">Perdido</option>
+            </select>
+            <input type="text" id="pat-filtro-busca" oninput="aplicarFiltroPat()" placeholder="Buscar código/motoboy..." style="flex:1;min-width:120px;border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 10px;font-size:11px;outline:none">
+            <button onclick="exportarPatCSV()" title="Exportar CSV" style="padding:6px 10px;border-radius:8px;border:1.5px solid #0F9B78;background:#ECFDF5;color:#0F9B78;font-size:11px;font-weight:700;cursor:pointer;flex:0 0 auto">📥 Excel</button>
+            <button onclick="limparFiltroPat()" title="Limpar filtros" style="padding:6px 8px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:600;cursor:pointer;flex:0 0 auto">✕</button>
           </div>
 
-          <!-- Sem código -->
-          <div style="background:#fff;border-radius:14px;border:1.5px solid #EBF1F5;margin-bottom:10px;overflow:hidden;box-shadow:0 2px 8px rgba(30,159,217,.06)">
-            <div onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:13px 14px;cursor:pointer">
-              <span style="font-size:13px;font-weight:700;color:#0F4C7A">📋 Sem código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(Colete · Camisetas · Blusa · Crachá · Bolsa)</span></span>
-              <span style="color:#94A8B8;font-size:16px">›</span>
+          <!-- Tabela compacta -->
+          <div id="pat-tabela-container" style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 6px rgba(30,159,217,.06)"></div>
+
+          <!-- Estoque simples (sem código) -->
+          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-top:10px;overflow:hidden;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+            <div onclick="document.getElementById('pat-simples-corpo').style.display=document.getElementById('pat-simples-corpo').style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer">
+              <span style="font-size:12px;font-weight:700;color:#0F4C7A">📋 Estoque simples <span style="font-size:10px;color:#5A7A8F;font-weight:500">(sem código — camiseta, colete, blusa…)</span></span>
+              <span style="color:#94A8B8;font-size:14px">›</span>
             </div>
-            <div style="display:none;border-top:1px solid #EBF1F5;padding:12px">
-              <!-- Itens com tamanho -->
-              <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Com tamanho</div>
+            <div id="pat-simples-corpo" style="display:none;border-top:1px solid #EBF1F5;padding:10px 12px">
+              <div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Com tamanho</div>
               <div id="pat-uniformes-lista"></div>
-              <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:9px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:12px;cursor:pointer;margin-top:8px">+ Entrada de uniforme</button>
-              <!-- Itens sem tamanho -->
-              <div style="font-size:11px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin:12px 0 8px">Sem tamanho</div>
+              <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:8px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:11px;cursor:pointer;margin-top:6px">+ Entrada de uniforme</button>
+              <div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Sem tamanho</div>
               <div id="pat-simples-lista2"></div>
             </div>
           </div>
@@ -1810,23 +1832,119 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div id="est-resumo-todos" style="margin-top:1rem"></div>
         </div>
 
-        <!-- Aba Pendências -->
-        <div id="pat-tab-pendencias" style="display:none">
-          <div id="pend-resumo" style="font-size:12px;color:#5A7A8F;margin-bottom:1rem"></div>
-          <div id="lista-pendencias"></div>
-        </div>
-
-        <!-- Aba Histórico -->
-        <div id="pat-tab-historico" style="display:none">
-          <div style="display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap">
-            <button class="hist-filtro" onclick="filtrarHistorico('todos',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">Todos</button>
-            <button class="hist-filtro" onclick="filtrarHistorico('entrega',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">✓ Entregas</button>
-            <button class="hist-filtro" onclick="filtrarHistorico('troca',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">⇄ Trocas</button>
-            <button class="hist-filtro" onclick="filtrarHistorico('descarte',this)" style="padding:5px 12px;border-radius:20px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">↩ Devoluções</button>
+        <!-- Aba Relatórios -->
+        <div id="pat-tab-relatorios" style="display:none">
+          <div style="display:flex;gap:5px;margin-bottom:.8rem;flex-wrap:wrap">
+            <button id="pat-rel-btn-onde" onclick="mudarRelPat('onde',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">📍 Onde está</button>
+            <button id="pat-rel-btn-pormotoboy" onclick="mudarRelPat('pormotoboy',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">👤 Por motoboy</button>
+            <button id="pat-rel-btn-mov" onclick="mudarRelPat('mov',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">🔄 Movimentações</button>
+            <button id="pat-rel-btn-alertas" onclick="mudarRelPat('alertas',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">⚠️ Alertas</button>
           </div>
-          <div id="lista-historico"></div>
+          <div id="pat-rel-conteudo"></div>
         </div>
 
+      </div>
+
+      <!-- Modal: Vincular item -->
+      <div id="modal-pat-vincular" style="display:none;position:fixed;inset:0;background:rgba(15,76,122,.55);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:1.2rem;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+            <div style="font-size:15px;font-weight:800;color:#0F4C7A">📤 Vincular item</div>
+            <button onclick="fecharModalPatMov()" style="background:none;border:none;font-size:22px;color:#94A8B8;cursor:pointer;padding:0 6px;line-height:1">×</button>
+          </div>
+          <div id="pat-vinc-codigo" style="font-size:13px;color:#5A7A8F;margin-bottom:.9rem;background:#F3F0FF;padding:8px 10px;border-radius:8px"></div>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Motoboy</label>
+          <select id="pat-vinc-motoboy" style="width:100%;border-radius:10px;border:1.5px solid #8B5CF6;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A;background:#F3F0FF;font-weight:600;margin:4px 0 12px"></select>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Data entrega</label>
+          <input type="date" id="pat-vinc-data" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;margin:4px 0 12px">
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Observação (opcional)</label>
+          <input type="text" id="pat-vinc-obs" placeholder="Ex: Troca programada..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;margin:4px 0 14px">
+          <div style="display:flex;gap:8px">
+            <button onclick="fecharModalPatMov()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+            <button onclick="confirmarVincular()" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Vincular</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: Devolver item -->
+      <div id="modal-pat-devolver" style="display:none;position:fixed;inset:0;background:rgba(15,76,122,.55);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:1.2rem;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+            <div style="font-size:15px;font-weight:800;color:#0F4C7A">↩ Devolver ao estoque</div>
+            <button onclick="fecharModalPatMov()" style="background:none;border:none;font-size:22px;color:#94A8B8;cursor:pointer;padding:0 6px;line-height:1">×</button>
+          </div>
+          <div id="pat-dev-codigo" style="font-size:13px;color:#5A7A8F;margin-bottom:.9rem;background:#FEF3C7;padding:8px 10px;border-radius:8px"></div>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Motivo (opcional)</label>
+          <select id="pat-dev-motivo" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A;background:#fff;font-weight:600;margin:4px 0 12px">
+            <option value="">— Selecione —</option>
+            <option value="Devolução normal">Devolução normal</option>
+            <option value="Danificado">Item danificado</option>
+            <option value="Perda">Item perdido</option>
+            <option value="Desligamento">Desligamento do motoboy</option>
+            <option value="Troca programada">Troca programada</option>
+            <option value="Manutenção">Em manutenção</option>
+          </select>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Estado do item ao devolver</label>
+          <select id="pat-dev-estado" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A;background:#fff;font-weight:600;margin:4px 0 12px">
+            <option value="bom">Bom estado</option>
+            <option value="danificado">Danificado</option>
+            <option value="perdido">Perdido</option>
+          </select>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Observação (opcional)</label>
+          <input type="text" id="pat-dev-obs" placeholder="Detalhes..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;margin:4px 0 14px">
+          <div style="display:flex;gap:8px">
+            <button onclick="fecharModalPatMov()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+            <button onclick="confirmarDevolver()" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#0F9B78,#047857);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Devolver</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: Transferir item -->
+      <div id="modal-pat-transferir" style="display:none;position:fixed;inset:0;background:rgba(15,76,122,.55);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#fff;border-radius:16px;max-width:440px;width:100%;padding:1.2rem;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+            <div style="font-size:15px;font-weight:800;color:#0F4C7A">⤴ Transferir item</div>
+            <button onclick="fecharModalPatMov()" style="background:none;border:none;font-size:22px;color:#94A8B8;cursor:pointer;padding:0 6px;line-height:1">×</button>
+          </div>
+          <div id="pat-tr-codigo" style="font-size:13px;color:#5A7A8F;margin-bottom:.9rem;background:#FEF3C7;padding:8px 10px;border-radius:8px"></div>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Motoboy destino</label>
+          <select id="pat-tr-destino" style="width:100%;border-radius:10px;border:1.5px solid #1E9FD9;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A;background:#E0F2FE;font-weight:600;margin:4px 0 12px"></select>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Data</label>
+          <input type="date" id="pat-tr-data" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;margin:4px 0 12px">
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Observação (opcional)</label>
+          <input type="text" id="pat-tr-obs" placeholder="Ex: Cobertura temporária..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;margin:4px 0 14px">
+          <div style="display:flex;gap:8px">
+            <button onclick="fecharModalPatMov()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+            <button onclick="confirmarTransferir()" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Transferir</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal: Substituir item -->
+      <div id="modal-pat-substituir" style="display:none;position:fixed;inset:0;background:rgba(15,76,122,.55);z-index:9999;align-items:center;justify-content:center;padding:1rem">
+        <div style="background:#fff;border-radius:16px;max-width:500px;width:100%;padding:1.2rem;box-shadow:0 12px 40px rgba(0,0,0,.25)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.9rem">
+            <div style="font-size:15px;font-weight:800;color:#0F4C7A">↔ Substituir item</div>
+            <button onclick="fecharModalPatMov()" style="background:none;border:none;font-size:22px;color:#94A8B8;cursor:pointer;padding:0 6px;line-height:1">×</button>
+          </div>
+          <div id="pat-sub-origem" style="font-size:13px;color:#5A7A8F;margin-bottom:.9rem;background:#FEE2E2;padding:8px 10px;border-radius:8px"></div>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Item substituto (mesmo tipo, disponível)</label>
+          <select id="pat-sub-novo" style="width:100%;border-radius:10px;border:1.5px solid #DC2626;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A;background:#FEE2E2;font-weight:600;margin:4px 0 12px"></select>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Motivo</label>
+          <select id="pat-sub-motivo" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;color:#0F4C7A;background:#fff;font-weight:600;margin:4px 0 12px">
+            <option value="Danificado">Item danificado</option>
+            <option value="Perda">Item perdido</option>
+            <option value="Manutenção">Em manutenção</option>
+            <option value="Upgrade">Upgrade / melhoria</option>
+            <option value="Desgaste">Desgaste natural</option>
+          </select>
+          <label style="font-size:11px;font-weight:700;color:#5A7A8F;text-transform:uppercase">Observação (opcional)</label>
+          <input type="text" id="pat-sub-obs" placeholder="Detalhes da substituição..." style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:13px;outline:none;margin:4px 0 14px">
+          <div style="display:flex;gap:8px">
+            <button onclick="fecharModalPatMov()" style="flex:1;padding:10px;border-radius:10px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Cancelar</button>
+            <button onclick="confirmarSubstituir()" style="flex:1;padding:10px;border-radius:10px;border:none;background:linear-gradient(135deg,#DC2626,#991B1B);color:#fff;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">Substituir</button>
+          </div>
+        </div>
       </div>
 
       <div class="view" id="view-importacao">
