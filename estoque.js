@@ -942,13 +942,125 @@ async function confirmarPatCad() {
   const tipo   = document.getElementById('pat-cad-tipo')?.value;
   const codigo = document.getElementById('pat-cad-codigo')?.value.trim().toUpperCase();
   const msgEl  = document.getElementById('msg-pat-cad');
-  if (!codigo) { if(msgEl){msgEl.textContent = '⚠️ Informe o código'; msgEl.style.color = '#DC2626';} return; }
-  if (patrimonios.find(p => p.codigo === codigo)) { if(msgEl){msgEl.textContent = '⚠️ Código já cadastrado'; msgEl.style.color = '#DC2626';} return; }
-  patrimonios.push({ id: Date.now(), tipo, codigo, subtipo: tipo==='cartao'?subtipoPat2:null, estado: estadoPat, motoboy: null, dataEntrega: null });
-  await syncPatServer();
+  if (!tipo) { if(msgEl){msgEl.textContent='⚠️ Selecione o tipo'; msgEl.style.color='#DC2626';} return; }
+  if (!codigo) { if(msgEl){msgEl.textContent='⚠️ Informe o código'; msgEl.style.color='#DC2626';} return; }
+  if (patrimonios.find(p => p.codigo === codigo)) { if(msgEl){msgEl.textContent='⚠️ Código já cadastrado localmente'; msgEl.style.color='#DC2626';} return; }
+
+  const novo = { id: Date.now(), tipo, codigo, subtipo: tipo==='cartao'?subtipoPat2:null, estado: estadoPat, motoboy: null, dataEntrega: null };
+  patrimonios.push(novo);
+  // Envia DIRETO para o backend (syncPatServer antigo enviava formato errado)
+  try {
+    const r = await fetch(API + '/patrimonios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ patrimonio: novo })
+    });
+    const j = await r.json().catch(() => ({ status:'erro' }));
+    if (j.status !== 'ok' || j.erros?.length) {
+      if(msgEl){msgEl.textContent = '⚠️ Backend recusou: ' + (j.erros?.[0]?.motivo || j.msg || 'erro'); msgEl.style.color='#DC2626';}
+      patrimonios = patrimonios.filter(p => p.id !== novo.id);
+      return;
+    }
+  } catch(e) {
+    if(msgEl){msgEl.textContent='⚠️ Erro de conexão (salvo só local): '+e.message; msgEl.style.color='#B45309';}
+    // Mantém no localStorage para sincronizar depois
+  }
+  salvarPatLocal();
   renderEstoquePat(); renderEstoquePatEst();
   fecharModal('modal-pat-cad');
   toast('✓ ' + codigo + ' cadastrado!');
+}
+
+// ── Cadastro em massa de patrimônios (textarea, 1 código por linha) ──
+function abrirPatCadMassa() {
+  document.getElementById('modal-pat-cad').style.display = 'none';
+  // Pré-seleciona o mesmo tipo que estava no modal unitário (se houver)
+  const tipoAnterior = document.getElementById('pat-cad-tipo')?.value;
+  if (tipoAnterior) {
+    const sel = document.getElementById('pat-cad-massa-tipo');
+    if (sel) sel.value = tipoAnterior;
+    mudarTipoPatCadMassa(tipoAnterior);
+  }
+  const msg = document.getElementById('msg-pat-cad-massa');
+  if (msg) { msg.textContent = ''; }
+  const resumo = document.getElementById('pat-cad-massa-resumo');
+  if (resumo) { resumo.textContent = ''; }
+  document.getElementById('modal-pat-cad-massa').style.display = 'flex';
+  setTimeout(() => document.getElementById('pat-cad-massa-codigos')?.focus(), 100);
+}
+
+function mudarTipoPatCadMassa(tipo) {
+  const wrap = document.getElementById('pat-cad-massa-subtipo-wrap');
+  if (wrap) wrap.style.display = tipo === 'cartao' ? 'block' : 'none';
+}
+
+async function confirmarPatCadMassa() {
+  const tipo   = document.getElementById('pat-cad-massa-tipo')?.value;
+  const estado = document.getElementById('pat-cad-massa-estado')?.value || 'Novo';
+  const subtipo = document.getElementById('pat-cad-massa-subtipo')?.value || null;
+  const texto  = document.getElementById('pat-cad-massa-codigos')?.value || '';
+  const msgEl  = document.getElementById('msg-pat-cad-massa');
+  const resumoEl = document.getElementById('pat-cad-massa-resumo');
+
+  if (!tipo) { if(msgEl){msgEl.textContent='⚠️ Selecione o tipo'; msgEl.style.color='#DC2626';} return; }
+  // Quebra por linha, remove vazios, normaliza pra UPPERCASE, remove duplicatas da própria lista
+  const codigos = [...new Set(texto.split('\n').map(s => s.trim().toUpperCase()).filter(Boolean))];
+  if (!codigos.length) { if(msgEl){msgEl.textContent='⚠️ Informe ao menos 1 código'; msgEl.style.color='#DC2626';} return; }
+  // Filtra códigos já existentes (local)
+  const jaExiste = codigos.filter(c => patrimonios.find(p => p.codigo === c));
+  const novos = codigos.filter(c => !patrimonios.find(p => p.codigo === c));
+  if (!novos.length) {
+    if(msgEl){msgEl.textContent=`⚠️ Todos os ${codigos.length} códigos já estão cadastrados`; msgEl.style.color='#DC2626';}
+    return;
+  }
+
+  if(msgEl){msgEl.textContent = `Enviando ${novos.length} códigos...`; msgEl.style.color='#5A7A8F';}
+
+  const lote = novos.map(codigo => ({
+    id: Date.now() + Math.floor(Math.random() * 100000),
+    tipo,
+    codigo,
+    subtipo: tipo === 'cartao' ? subtipo : null,
+    estado,
+    motoboy: null,
+    dataEntrega: null
+  }));
+
+  // Adiciona localmente primeiro (otimista)
+  lote.forEach(p => patrimonios.push(p));
+
+  try {
+    const r = await fetch(API + '/patrimonios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ lote })
+    });
+    const j = await r.json().catch(() => ({ status:'erro' }));
+    if (j.status !== 'ok') {
+      if(msgEl){msgEl.textContent='⚠️ Erro do backend: '+(j.msg||'desconhecido'); msgEl.style.color='#DC2626';}
+      // Reverte inserção local
+      const idsLote = new Set(lote.map(p => p.id));
+      patrimonios = patrimonios.filter(p => !idsLote.has(p.id));
+      return;
+    }
+    // Se backend reportou alguns como duplicados/ignorados, remove do local
+    if (j.ignorados > 0 && j.erros?.length) {
+      const codigosIgnorados = new Set(j.erros.map(e => e.codigo));
+      patrimonios = patrimonios.filter(p => !codigosIgnorados.has(p.codigo));
+    }
+    salvarPatLocal();
+    renderEstoquePat(); renderEstoquePatEst();
+    // Limpa textarea
+    const ta = document.getElementById('pat-cad-massa-codigos');
+    if (ta) ta.value = '';
+    const duplicatasTxt = jaExiste.length ? ` · ${jaExiste.length} já existiam` : '';
+    if(msgEl){msgEl.textContent = `✓ ${j.inseridos} cadastrados${duplicatasTxt}`; msgEl.style.color='#0F9B78';}
+    if (resumoEl) resumoEl.textContent = `${j.inseridos} inseridos · ${j.ignorados || 0} ignorados${duplicatasTxt}`;
+    toast(`✓ ${j.inseridos} patrimônios cadastrados em massa!`);
+  } catch(e) {
+    if(msgEl){msgEl.textContent='⚠️ Erro de conexão (salvos só local): '+e.message; msgEl.style.color='#B45309';}
+    salvarPatLocal();
+  }
 }
 
 function abrirPatAdd(motoboy, tipoId) {
