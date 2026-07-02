@@ -788,7 +788,6 @@ function renderPatTabela() {
   const busca = norm(f.busca);
   const statusMap = { disponivel: p => !p.motoboy, em_uso: p => !!p.motoboy, danificado: p => p.estado==='Danificado', perdido: p => p.estado==='Perdido' };
   const lista = patrimonios.filter(p => {
-    if (f.tipo && p.tipo !== f.tipo) return false;
     if (f.status && !(statusMap[f.status] && statusMap[f.status](p))) return false;
     if (busca) {
       const hay = norm(p.codigo) + ' ' + norm(p.motoboy) + ' ' + norm(p.dataEntrega);
@@ -796,19 +795,20 @@ function renderPatTabela() {
     }
     return true;
   });
-  if (!lista.length) {
-    el.innerHTML = `<div style="padding:24px 12px;text-align:center;font-size:13px;color:#94A8B8">Nenhum item encontrado</div>`;
-    return;
-  }
-  // Cabeçalho
-  let html = `<div style="display:grid;grid-template-columns:1.2fr 1.1fr 1.1fr .8fr 1.6fr;gap:8px;padding:9px 12px;background:#F8FBFD;border-bottom:1px solid #EBF1F5;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.04em">
+  // Cabeçalho das colunas
+  const cabecalho = `<div style="display:grid;grid-template-columns:1.2fr 1.1fr 1.1fr .8fr 1.6fr;gap:8px;padding:9px 12px;background:#F8FBFD;border-bottom:1px solid #EBF1F5;font-size:10px;font-weight:700;color:#5A7A8F;text-transform:uppercase;letter-spacing:.04em">
     <div>Código</div><div>Tipo</div><div>Com quem</div><div>Estado</div><div style="text-align:right">Ações</div>
   </div>`;
-  // Linhas
-  html += lista.map(p => {
-    const ecfg = patEstadoCfg(p.estado);
+  // Definição das sub-seções na ordem solicitada
+  const subsecoes = [
+    { id: 'rastreador', label: 'Rastreador', icon: '📡', filtro: p => p.tipo === 'rastreador', cadId: 'rastreador', cadLabel: 'Rastreador' },
+    { id: 'cooler',     label: 'Cooler',     icon: '🧊', filtro: p => p.tipo === 'cooler_p' || p.tipo === 'cooler_g', cadId: '', cadLabel: 'Cooler' },
+    { id: 'bau',        label: 'Baú',        icon: '🔒', filtro: p => p.tipo === 'bau', cadId: 'bau', cadLabel: 'Baú' }
+  ];
+  // Render de uma linha da tabela (sem o cabeçalho — ele é compartilhado pela sub-seção)
+  const renderLinha = p => {
+    const cfg = patEstadoCfg(p.motoboy ? 'Em uso' : p.estado);
     const displayEstado = p.motoboy ? 'Em uso' : p.estado;
-    const cfg = patEstadoCfg(displayEstado);
     const acoes = p.motoboy
       ? `<button onclick="abrirModalTransferir(${p.id})" title="Transferir" style="padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#1E9FD9;font-size:12px;font-weight:700;cursor:pointer">⤴</button>
          <button onclick="abrirModalSubstituir(${p.id})" title="Substituir" style="padding:5px 8px;border-radius:7px;border:1.5px solid #D6E5EE;background:#fff;color:#92400E;font-size:12px;font-weight:700;cursor:pointer">↔</button>
@@ -823,7 +823,36 @@ function renderPatTabela() {
       <div><span style="font-size:10px;font-weight:700;padding:3px 7px;border-radius:20px;background:${cfg.bg};color:${cfg.cor}">${displayEstado}</span></div>
       <div style="display:flex;gap:5px;justify-content:flex-end">${acoes}</div>
     </div>`;
-  }).join('');
+  };
+  // Monta cada sub-seção
+  let html = '';
+  for (const sub of subsecoes) {
+    const itens = lista.filter(sub.filtro);
+    const total = itens.length;
+    const emUso = itens.filter(p => !!p.motoboy).length;
+    const disponivel = total - emUso;
+    const subHtml = itens.map(renderLinha).join('');
+    // Botão + Cadastrar — Cooler usa string vazia (modal mostra os 2 tamanhos)
+    const cadClick = `abrirModalPatCad('${sub.cadId}')`;
+    const subInfo = sub.id === 'cooler'
+      ? ` · <span style="color:#0F9B78">${disponivel} disp.</span> · <span style="color:#1E9FD9">${emUso} em uso</span>`
+      : ` · <span style="color:#0F9B78">${disponivel} disp.</span> · <span style="color:#1E9FD9">${emUso} em uso</span>`;
+    html += `<div style="margin-bottom:6px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 10px;background:#fff;border:1px solid #EBF1F5;border-radius:8px 8px 0 0;border-bottom:none">
+        <div style="font-size:11px;font-weight:800;color:#0F4C7A;text-transform:uppercase;letter-spacing:.04em">
+          ${sub.icon} ${sub.label} <span style="color:#94A8B8;font-weight:600">(${total})${subInfo}</span>
+        </div>
+        <button onclick="${cadClick}" style="padding:4px 9px;border-radius:7px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:10px;font-weight:700;cursor:pointer">+ ${sub.cadLabel}</button>
+      </div>`;
+    if (itens.length === 0) {
+      html += `<div style="padding:14px 12px;background:#fff;border:1px solid #EBF1F5;border-top:none;border-radius:0 0 8px 8px;text-align:center;font-size:11px;color:#94A8B8">Nenhum ${sub.label.toLowerCase()} cadastrado</div>`;
+    } else {
+      html += `<div style="background:#fff;border:1px solid #EBF1F5;border-top:none;border-radius:0 0 8px 8px;overflow:hidden">
+        ${cabecalho}${subHtml}
+      </div>`;
+    }
+    html += `</div>`;
+  }
   el.innerHTML = html;
 }
 
@@ -834,14 +863,13 @@ function tipoLabelPat(id) {
 
 function aplicarFiltroPat() {
   patFiltroCache = {
-    tipo: document.getElementById('pat-filtro-tipo')?.value || '',
     status: document.getElementById('pat-filtro-status')?.value || '',
     busca: document.getElementById('pat-filtro-busca')?.value || ''
   };
   renderPatTabela();
 }
 function limparFiltroPat() {
-  ['pat-filtro-tipo','pat-filtro-status','pat-filtro-busca'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['pat-filtro-status','pat-filtro-busca'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   aplicarFiltroPat();
 }
 

@@ -1788,38 +1788,16 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </div>
           </div>
 
-          <!-- ENTRADA DIRETA: Coolers (sempre visível) -->
-          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:.6rem;padding:12px;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-            <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;align-items:center;gap:6px">🧊 Entrada direta de Cooler</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-              <button onclick="abrirModalPatCad('cooler_p')" style="padding:14px 8px;border-radius:10px;border:2px solid #1E9FD9;background:linear-gradient(135deg,#E0F2FE,#BAE6FD);color:#0F4C7A;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
-                <span style="font-size:18px">🧊</span>Cooler P<span style="font-size:10px;color:#0F7BB0;font-weight:600">+ Cadastrar</span>
-              </button>
-              <button onclick="abrirModalPatCad('cooler_g')" style="padding:14px 8px;border-radius:10px;border:2px solid #0F9B78;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);color:#064E3B;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
-                <span style="font-size:18px">🧊</span>Cooler G<span style="font-size:10px;color:#047857;font-weight:600">+ Cadastrar</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Tabela de patrimônios com código (recolhido por padrão) -->
+          <!-- Tabela de patrimônios com código (aberto por padrão) -->
           <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:.6rem;overflow:hidden">
             <div onclick="document.getElementById('pat-tabela-corpo').style.display=document.getElementById('pat-tabela-corpo').style.display==='block'?'none':'block';this.querySelector('.pat-toggle-arrow').textContent=document.getElementById('pat-tabela-corpo').style.display==='block'?'˅':'›'"
               style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer;user-select:none">
-              <span style="font-size:12px;font-weight:700;color:#0F4C7A">🔒 Itens com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(rastreador, baú, coolers…)</span></span>
-              <span class="pat-toggle-arrow" style="color:#94A8B8;font-size:16px;font-weight:700">›</span>
+              <span style="font-size:12px;font-weight:700;color:#0F4C7A">🔒 Itens com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(rastreador, coolers, baú…)</span></span>
+              <span class="pat-toggle-arrow" style="color:#94A8B8;font-size:16px;font-weight:700">˅</span>
             </div>
-            <div id="pat-tabela-corpo" style="display:none;border-top:1px solid #EBF1F5;padding:10px">
+            <div id="pat-tabela-corpo" style="display:block;border-top:1px solid #EBF1F5;padding:10px">
               <!-- Barra de filtros -->
               <div style="display:flex;gap:6px;margin-bottom:.6rem;align-items:center;flex-wrap:wrap">
-                <select id="pat-filtro-tipo" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto;min-width:0">
-                  <option value="">Todos os tipos</option>
-                  <option value="rastreador">Rastreador</option>
-                  <option value="bau">Baú</option>
-                  <option value="cooler_p">Cooler P</option>
-                  <option value="cooler_g">Cooler G</option>
-                  <option value="capacete">Capacete</option>
-                  <option value="colete">Colete</option>
-                </select>
                 <select id="pat-filtro-status" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto">
                   <option value="">Todos status</option>
                   <option value="disponivel">Disponível</option>
