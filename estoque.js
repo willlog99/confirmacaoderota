@@ -269,7 +269,7 @@ function abrirModalCamisetaMB(motoboy) {
   patAddMotoboy = motoboy;
   camisetasParaAdicionar = [];
   const dataEl = document.getElementById('cam-mb-data');
-  if(dataEl) dataEl.value = new Date().toISOString().split('T')[0];
+  if(dataEl) dataEl.value = getDataLocalSP();
   atualizarTamanhosCam();
   renderListaCamisetasModal();
   const m = document.getElementById('modal-camiseta-mb');
@@ -576,7 +576,7 @@ function abrirModalEntregarPend(motoboy,tipo,idx){
   const qtdEl=document.getElementById('pend-modal-qtd');
   if(tituloEl)tituloEl.textContent='✓ Entregar '+(tipoInfo?.nome||'Camiseta');
   if(infoEl)infoEl.textContent='Para: '+motoboy;
-  if(dataEl)dataEl.value=new Date().toISOString().split('T')[0];
+  if(dataEl)dataEl.value=getDataLocalSP();
   if(msgEl)msgEl.textContent='';
   if(patEl)patEl.style.display=temCod?'block':'none';
   if(qtdEl)qtdEl.style.display=!temCod?'block':'none';
@@ -864,7 +864,7 @@ function exportarPatCSV() {
   const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = 'patrimonios_' + new Date().toISOString().split('T')[0] + '.csv';
+  a.href = url; a.download = 'patrimonios_' + getDataLocalSP() + '.csv';
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 1000);
   toast('📥 CSV exportado: ' + dados.length + ' itens');
@@ -1073,7 +1073,7 @@ function abrirPatAdd(motoboy, tipoId) {
   if(!modalEl) return;
   if(tituloEl) tituloEl.textContent = '➕ Adicionar Item — ' + motoboy;
   if(tipoEl)   tipoEl.value = tipoId;
-  if(dataEl)   dataEl.value = new Date().toISOString().split('T')[0];
+  if(dataEl)   dataEl.value = getDataLocalSP();
   if(msgEl)    msgEl.textContent = '';
   mudarTipoPatAdd(tipoId);
   modalEl.style.display = 'flex';
@@ -1455,7 +1455,7 @@ function abrirModalVincular(id) {
   const infoEl = document.getElementById('pat-vinc-codigo');
   if(infoEl) infoEl.innerHTML = `<b style="color:#5B21B6">${p.codigo}</b> · ${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}${p.subtipo?' · '+p.subtipo:''}`;
   carregarSelectMotoboys('pat-vinc-motoboy', null);
-  const dataEl = document.getElementById('pat-vinc-data'); if(dataEl) dataEl.value = new Date().toISOString().split('T')[0];
+  const dataEl = document.getElementById('pat-vinc-data'); if(dataEl) dataEl.value = getDataLocalSP();
   const obsEl = document.getElementById('pat-vinc-obs'); if(obsEl) obsEl.value = '';
   document.getElementById('modal-pat-vincular').style.display = 'flex';
 }
@@ -1533,7 +1533,7 @@ function abrirModalTransferir(id) {
   const infoEl = document.getElementById('pat-tr-codigo');
   if(infoEl) infoEl.innerHTML = `<b style="color:#1E9FD9">${p.codigo}</b> · ${patIcone(p.tipo)} ${tipoLabelPat(p.tipo)}<br><span style="font-size:11px">De: <b>${p.motoboy||'—'}</b> → Para: <b style="color:#1E9FD9">novo motoboy</b></span>`;
   carregarSelectMotoboys('pat-tr-destino', p.motoboy);
-  const dataEl = document.getElementById('pat-tr-data'); if(dataEl) dataEl.value = new Date().toISOString().split('T')[0];
+  const dataEl = document.getElementById('pat-tr-data'); if(dataEl) dataEl.value = getDataLocalSP();
   const obsEl = document.getElementById('pat-tr-obs'); if(obsEl) obsEl.value = '';
   document.getElementById('modal-pat-transferir').style.display = 'flex';
 }
@@ -1696,7 +1696,7 @@ async function iniciarPatrimonios() {
   }
 
   const dataEl = document.getElementById('chk-download-data');
-  if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
+  if(dataEl && !dataEl.value) dataEl.value = getDataLocalSP();
   renderEstoquePat();
   renderUniformesPat();
   renderEstoqueSimplesEst();

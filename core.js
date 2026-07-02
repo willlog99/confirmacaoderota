@@ -48,6 +48,10 @@ function _fmtHoraSP(ts){if(!ts)return '\u2014';return new Date(ts).toLocaleTimeS
 function getDataLocalSP() {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
 }
+// Converte um Date para string YYYY-MM-DD no fuso de SP (evita bug de D+1 do toISOString)
+function fmtDataISPSP(d) {
+  return d.toLocaleDateString('en-CA', { timeZone: 'America/Sao_Paulo' });
+}
 // ── FUNÇÕES ──
 function abrirMenu() {
   document.getElementById('menu-overlay').classList.add('open');
@@ -144,7 +148,7 @@ function setView(id, el) {
   if (id === 'painel-usuarios') carregarUsuariosPainel();
   if (id === 'ocorrencias') {
     const input = document.getElementById('oc-filtro-data');
-    if (input && !input.value) input.value = new Date().toISOString().split('T')[0];
+    if (input && !input.value) input.value = getDataLocalSP();
     carregarOcorrencias();
   }
   if (id === 'dispositivos') carregarDispositivos();
@@ -167,7 +171,7 @@ function setView(id, el) {
   if (id === 'replay-rota') {
     popularSelectMotoboysReplay();
     const dataInp = document.getElementById('replay-data');
-    if (dataInp && !dataInp.value) dataInp.value = new Date().toISOString().split('T')[0];
+    if (dataInp && !dataInp.value) dataInp.value = getDataLocalSP();
   }
 }
 function showMsg(id, text, type) {
@@ -302,17 +306,17 @@ async function carregarMetricas() {
   const inicioInp  = document.getElementById('km-metricas-inicio')?.value;
   const fimInp     = document.getElementById('km-metricas-fim')?.value;
   const hoje = new Date();
-  let dataInicio, dataFim = hoje.toISOString().split('T')[0];
+  let dataInicio, dataFim = fmtDataISPSP(hoje);
   if (inicioInp && fimInp) {
     dataInicio = inicioInp; dataFim = fimInp;
   } else if (periodoSel === 'hoje') {
     dataInicio = dataFim;
   } else if (periodoSel === 'semana') {
     const d = new Date(hoje); d.setDate(d.getDate() - 7);
-    dataInicio = d.toISOString().split('T')[0];
+    dataInicio = fmtDataISPSP(d);
   } else {
     const d = new Date(hoje); d.setDate(d.getDate() - 30);
-    dataInicio = d.toISOString().split('T')[0];
+    dataInicio = fmtDataISPSP(d);
   }
   const label = dataInicio === dataFim ? dataInicio : dataInicio + ' → ' + dataFim;
   const el = document.getElementById('km-metricas-label');
@@ -331,7 +335,7 @@ async function carregarMetricas() {
     const datas = [];
     const cur = new Date(dataInicio);
     const fim = new Date(dataFim);
-    while (cur <= fim) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate()+1); }
+    while (cur <= fim) { datas.push(fmtDataISPSP(cur)); cur.setDate(cur.getDate()+1); }
     const metricas = await Promise.all(rastreadores.map(async m => {
       let kmTotal = 0, diasComDados = 0, tempoTotalMin = 0;
       for (const data of datas) {
@@ -924,7 +928,7 @@ async function criarOcorrenciaGestor() {
   } catch(e) { toast('Erro ao registrar'); }
 }
 async function gerarPdfDia() {
-  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+  const data = document.getElementById('oc-filtro-data')?.value || getDataLocalSP();
   try {
     const r = await fetch(API + '/ocorrencia?data=' + data);
     const d = await r.json();
@@ -1292,7 +1296,7 @@ function relExportarXLSX(linhas, nomeArquivo, nomeAba) {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(linhas);
     XLSX.utils.book_append_sheet(wb, ws, nomeAba || 'Dados');
-    XLSX.writeFile(wb, nomeArquivo + '-' + new Date().toISOString().split('T')[0] + '.xlsx');
+    XLSX.writeFile(wb, nomeArquivo + '-' + getDataLocalSP() + '.xlsx');
   };
   if (typeof XLSX !== 'undefined') { gerar(); } else {
     const script = document.createElement('script');
@@ -1322,7 +1326,7 @@ async function carregarOcorrencias() {
   const lista = document.getElementById('oc-lista');
   if (!lista) return;
   lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
-  const data = document.getElementById('oc-filtro-data')?.value || new Date().toISOString().split('T')[0];
+  const data = document.getElementById('oc-filtro-data')?.value || getDataLocalSP();
   const tipo = document.getElementById('oc-filtro-tipo')?.value || '';
   const status = document.getElementById('oc-filtro-status')?.value || '';
   try {
@@ -2937,7 +2941,7 @@ async function iniciarImportacao() {
     } catch(e) {}
   }
   const dataEl = document.getElementById('chk-download-data');
-  if(dataEl && !dataEl.value) dataEl.value = new Date().toISOString().split('T')[0];
+  if(dataEl && !dataEl.value) dataEl.value = getDataLocalSP();
 }
 // ── KM RODADO + HORÁRIOS ─────────────────────────────────────
 async function carregarKMDia() {
@@ -2990,7 +2994,7 @@ async function carregarKmCompleto() {
     const hoje = new Date();
     filtroEl.value = getDataLocalSP();
   }
-  const data = (filtroEl && filtroEl.value) ? filtroEl.value : new Date().toISOString().split('T')[0];
+  const data = (filtroEl && filtroEl.value) ? filtroEl.value : getDataLocalSP();
   const partes = data.split('-');
   if (elLabel) elLabel.textContent = partes[2] + '/' + partes[1] + '/' + partes[0];
   if (lista) lista.innerHTML = '<div style="padding:2rem;text-align:center;color:#94A8B8;font-size:13px">Carregando...</div>';
@@ -3200,7 +3204,7 @@ async function carregarKmPeriodo() {
     let cur = new Date(inicio + 'T00:00:00');
     const fim2 = new Date(fim + 'T00:00:00');
     while (cur <= fim2) {
-      datas.push(cur.toISOString().split('T')[0]);
+      datas.push(fmtDataISPSP(cur));
       cur.setDate(cur.getDate() + 1);
     }
     // Buscar KM por motoboy somando todos os dias
@@ -3243,7 +3247,7 @@ async function carregarKmMotoboy() {
     const datas = [];
     let cur = new Date(inicio + 'T00:00:00');
     const fim2 = new Date(fim + 'T00:00:00');
-    while (cur <= fim2) { datas.push(cur.toISOString().split('T')[0]); cur.setDate(cur.getDate() + 1); }
+    while (cur <= fim2) { datas.push(fmtDataISPSP(cur)); cur.setDate(cur.getDate() + 1); }
     const promises = datas.map(async data => {
       try {
         const r = await fetch(API + '/km-rodado?nome=' + encodeURIComponent(nome) + '&data=' + data);
