@@ -397,24 +397,29 @@ async function carregarResumoDia() {
   lista.innerHTML = '<div class="empty"><span class="spinner"></span> Carregando...</div>';
   try {
     // Agora 'hoje' contém a string '2026-06-27' (exemplo) sempre correta
-    const [rMb, rConf, rGeo, rKm] = await Promise.all([
+    const [rMb, rConf, rGeo, rKm, rChk] = await Promise.all([
       fetchCacheado(API + '/motoboys?todos=1&agrupado=1'),
       fetchCacheado(API + '/historico-confirmacoes?data_inicio=' + hoje + '&data_fim=' + hoje),
       fetch(API + '/geofence-evento?data=' + hoje),
-      fetch(API + '/localizacao?dia=' + hoje)
+      fetch(API + '/localizacao?dia=' + hoje),
+      fetch(API + '/checklist?data=' + encodeURIComponent(new Date().toLocaleDateString('pt-BR')))
     ]);
     // ... restante do seu código segue igual
     const dMb   = await rMb.json();
     const dConf = await rConf.json();
     const dGeo  = await rGeo.json();
     const dKm   = await rKm.json();
+    const dChk  = await rChk.json();
     const motoboys     = (dMb.motoboys || []).filter(m => m.rastrear !== 0 && m.rastrear !== false);
     const confirmacoes = dConf.confirmacoes || [];
     const eventos      = dGeo.eventos || [];
     const historico    = dKm.historico || [];
-    // Só mostra quem confirmou presença hoje
-    const confirmaramHoje = new Set(confirmacoes.filter(c => c.resposta === 'sim').map(c => c.biocondutor || c.nome));
-    const motoboysFiltrados = motoboys.filter(m => confirmaramHoje.has(m.nome));
+    const checklists   = dChk.checklists || [];
+    // Mostra quem confirmou presença HOJE OU fez checklist HOJE (defense in depth)
+    const ativosHojeNomes = new Set();
+    confirmacoes.filter(c => c.resposta === 'sim').forEach(c => ativosHojeNomes.add(c.biocondutor || c.nome));
+    checklists.forEach(c => ativosHojeNomes.add(c.biocondutor));
+    const motoboysFiltrados = motoboys.filter(m => ativosHojeNomes.has(m.nome));
     const kmPorNome = {};
     historico.forEach(p => { if (!kmPorNome[p.nome]) kmPorNome[p.nome]=[]; kmPorNome[p.nome].push(p); });
     function calcKm(pts) {

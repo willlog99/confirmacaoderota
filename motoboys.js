@@ -228,8 +228,8 @@ async function renderizarPainel(data) {
       if (filtroDia !== 'todos' && r.dia_semana !== filtroDia) return;
       // Só rotas ativas (em andamento)
       if (!r.ativa) return;
-      // Só motoboys que fizeram checklist
-      if (r.motoboy_aberto && window._checklistFeitos && !window._checklistFeitos.has(r.motoboy_aberto)) return;
+      // Motoboy precisa ter feito checklist (se _checklistFeitos já foi populado)
+      if (r.motoboy_aberto && window._checklistFeitos && window._checklistFeitos.size > 0 && !window._checklistFeitos.has(r.motoboy_aberto)) return;
       const cls = clientesPorRota[r.rota] || [];
       cls.forEach(c => {
         if (c.status === 'entregue') return; // já deu baixa — some
@@ -311,7 +311,6 @@ function recalcularAtrasos(data) {
 
   rotas.forEach(r => {
     if (!r.ativa) return;
-    if (r.motoboy_aberto && window._checklistFeitos && !window._checklistFeitos.has(r.motoboy_aberto)) return;
     const cls = clientesPorRota[r.rota] || [];
     cls.forEach(c => {
       if (c.status === 'entregue') return;
@@ -359,16 +358,21 @@ async function carregarChecklist(confirmacoes) {
     document.getElementById('checklist-badge').textContent = preencheram.size;
 
     const chkEl = document.getElementById('painel-checklist');
-    if (!confirmaramSim.length) {
-      chkEl.innerHTML = '<div class="empty">Aguardando confirmações...</div>';
+    // Combina: quem confirmou presença hoje + quem fez checklist (mesmo sem confirmar)
+    const nomesExibir = new Set();
+    confirmaramSim.forEach(c => nomesExibir.add(c.biocondutor));
+    checklists.forEach(c => nomesExibir.add(c.biocondutor));
+    if (!nomesExibir.size) {
+      chkEl.innerHTML = '<div class="empty">Aguardando checklist...</div>';
     } else {
-      chkEl.innerHTML = confirmaramSim.map(c => {
-        const preencheu = preencheram.has(c.biocondutor);
+      chkEl.innerHTML = Array.from(nomesExibir).map(nome => {
+        const preencheu = preencheram.has(nome);
+        const confirmou = confirmaramSim.some(c => c.biocondutor === nome);
         return `<div class="conf-row" style="background:${preencheu ? '#F0FAF7' : '#FEF9EC'};border-color:${preencheu ? '#85DDBA' : '#F2CC70'}">
           <div class="conf-ico" style="background:${preencheu ? '#0F9B78' : '#F59E0B'};color:#fff">${preencheu ? '✓' : '⏳'}</div>
           <div class="conf-info">
-            <div class="conf-uni">${c.biocondutor}</div>
-            <div style="font-size:11px;color:#5A7A8F;margin-top:2px">${preencheu ? '✓ Checklist preenchido' : '⏳ Aguardando checklist'}</div>
+            <div class="conf-uni">${nome}</div>
+            <div style="font-size:11px;color:#5A7A8F;margin-top:2px">${preencheu ? '✓ Checklist preenchido' : '⏳ Aguardando checklist'}${!confirmou && preencheu ? ' · ⚠ sem confirmação' : ''}</div>
           </div>
         </div>`;
       }).join('');
