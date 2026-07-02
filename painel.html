@@ -1744,26 +1744,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="view" id="view-patrimonios">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
           <div style="font-size:16px;font-weight:800;color:#0F4C7A">🔒 Patrimônios</div>
-          <button onclick="abrirModalPatCad('')" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Cadastrar item</button>
-        </div>
-
-        <!-- KPIs compactos -->
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:.8rem" id="pat-kpis-grid">
-          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
-            <div style="font-size:18px;font-weight:800;color:#0F4C7A" id="pat-kpi-total">—</div>
-            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Total</div>
-          </div>
-          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
-            <div style="font-size:18px;font-weight:800;color:#1E9FD9" id="pat-kpi-uso">—</div>
-            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Em uso</div>
-          </div>
-          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
-            <div style="font-size:18px;font-weight:800;color:#0F9B78" id="pat-kpi-disp">—</div>
-            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Disponíveis</div>
-          </div>
-          <div style="background:#fff;border-radius:10px;padding:.55rem .4rem;text-align:center;border:1px solid #EBF1F5">
-            <div style="font-size:18px;font-weight:800;color:#DC2626" id="pat-kpi-perd">—</div>
-            <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Perdidos</div>
+          <div style="display:flex;gap:6px">
+            <button onclick="abrirModalPatCad('')" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-size:12px;font-weight:700;cursor:pointer">+ Cadastrar item</button>
+            <button onclick="abrirPatCadMassa()" style="padding:7px 14px;border-radius:8px;border:none;background:linear-gradient(135deg,#1E9FD9,#0F4C7A);color:#fff;font-size:12px;font-weight:700;cursor:pointer">📋 Em massa</button>
           </div>
         </div>
 
@@ -1771,53 +1754,100 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div style="display:flex;gap:6px;margin-bottom:.8rem;background:#fff;border-radius:10px;padding:5px;border:1px solid #EBF1F5">
           <button id="pat-tab-btn-estoque" onclick="mudarTabPat('estoque',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:#0F4C7A;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📦 Estoque</button>
           <button id="pat-tab-btn-motoboy" onclick="mudarTabPat('motoboy',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">👤 Por motoboy</button>
-          <button id="pat-tab-btn-relatorios" onclick="mudarTabPat('relatorios',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">📊 Relatórios</button>
+          <button id="pat-tab-btn-relatorios" onclick="mudarTabPat('relatorios',this)" style="flex:1;padding:7px 4px;border-radius:7px;border:none;background:transparent;color:#5A7A8F;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🔄 Movimentações</button>
         </div>
 
         <!-- Aba Estoque -->
         <div id="pat-tab-estoque">
-          <!-- Barra de filtros -->
-          <div style="display:flex;gap:6px;margin-bottom:.6rem;align-items:center;flex-wrap:wrap">
-            <select id="pat-filtro-tipo" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto;min-width:0">
-              <option value="">Todos os tipos</option>
-              <option value="rastreador">Rastreador</option>
-              <option value="bau">Baú</option>
-              <option value="cooler_p">Cooler P</option>
-              <option value="cooler_m">Cooler M</option>
-              <option value="cooler_g">Cooler G</option>
-              <option value="cooler_gg">Cooler GG</option>
-              <option value="capacete">Capacete</option>
-              <option value="colete">Colete</option>
-              <option value="camiseta">Camiseta</option>
-              <option value="blusa">Blusa</option>
-            </select>
-            <select id="pat-filtro-status" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto">
-              <option value="">Todos status</option>
-              <option value="disponivel">Disponível</option>
-              <option value="em_uso">Em uso</option>
-              <option value="danificado">Danificado</option>
-              <option value="perdido">Perdido</option>
-            </select>
-            <input type="text" id="pat-filtro-busca" oninput="aplicarFiltroPat()" placeholder="Buscar código/motoboy..." style="flex:1;min-width:120px;border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 10px;font-size:11px;outline:none">
-            <button onclick="exportarPatCSV()" title="Exportar CSV" style="padding:6px 10px;border-radius:8px;border:1.5px solid #0F9B78;background:#ECFDF5;color:#0F9B78;font-size:11px;font-weight:700;cursor:pointer;flex:0 0 auto">📥 Excel</button>
-            <button onclick="limparFiltroPat()" title="Limpar filtros" style="padding:6px 8px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:600;cursor:pointer;flex:0 0 auto">✕</button>
+          <!-- KPIs compactos (recolhido por padrão) -->
+          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:.6rem;overflow:hidden">
+            <div onclick="document.getElementById('pat-kpis-corpo').style.display=document.getElementById('pat-kpis-corpo').style.display==='block'?'none':'block';this.querySelector('.pat-toggle-arrow').textContent=document.getElementById('pat-kpis-corpo').style.display==='block'?'˅':'›'"
+              style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer;user-select:none">
+              <span style="font-size:12px;font-weight:700;color:#0F4C7A">📊 Resumo <span style="font-size:10px;color:#5A7A8F;font-weight:500">(4 indicadores)</span></span>
+              <span class="pat-toggle-arrow" style="color:#94A8B8;font-size:16px;font-weight:700">›</span>
+            </div>
+            <div id="pat-kpis-corpo" style="display:none;border-top:1px solid #EBF1F5;padding:10px">
+              <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px" id="pat-kpis-grid">
+                <div style="background:#F8FBFD;border-radius:8px;padding:.5rem .4rem;text-align:center;border:1px solid #EBF1F5">
+                  <div style="font-size:18px;font-weight:800;color:#0F4C7A" id="pat-kpi-total">—</div>
+                  <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Total</div>
+                </div>
+                <div style="background:#F8FBFD;border-radius:8px;padding:.5rem .4rem;text-align:center;border:1px solid #EBF1F5">
+                  <div style="font-size:18px;font-weight:800;color:#1E9FD9" id="pat-kpi-uso">—</div>
+                  <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Em uso</div>
+                </div>
+                <div style="background:#F8FBFD;border-radius:8px;padding:.5rem .4rem;text-align:center;border:1px solid #EBF1F5">
+                  <div style="font-size:18px;font-weight:800;color:#0F9B78" id="pat-kpi-disp">—</div>
+                  <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Disponíveis</div>
+                </div>
+                <div style="background:#F8FBFD;border-radius:8px;padding:.5rem .4rem;text-align:center;border:1px solid #EBF1F5">
+                  <div style="font-size:18px;font-weight:800;color:#DC2626" id="pat-kpi-perd">—</div>
+                  <div style="font-size:9px;color:#5A7A8F;font-weight:600;margin-top:2px;text-transform:uppercase">Perdidos</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <!-- Tabela compacta -->
-          <div id="pat-tabela-container" style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden;box-shadow:0 2px 6px rgba(30,159,217,.06)"></div>
+          <!-- ENTRADA DIRETA: Coolers (sempre visível) -->
+          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:.6rem;padding:12px;box-shadow:0 2px 6px rgba(30,159,217,.06)">
+            <div style="font-size:12px;font-weight:700;color:#0F4C7A;margin-bottom:8px;display:flex;align-items:center;gap:6px">🧊 Entrada direta de Cooler</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <button onclick="abrirModalPatCad('cooler_p')" style="padding:14px 8px;border-radius:10px;border:2px solid #1E9FD9;background:linear-gradient(135deg,#E0F2FE,#BAE6FD);color:#0F4C7A;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <span style="font-size:18px">🧊</span>Cooler P<span style="font-size:10px;color:#0F7BB0;font-weight:600">+ Cadastrar</span>
+              </button>
+              <button onclick="abrirModalPatCad('cooler_g')" style="padding:14px 8px;border-radius:10px;border:2px solid #0F9B78;background:linear-gradient(135deg,#D1FAE5,#A7F3D0);color:#064E3B;font-size:13px;font-weight:800;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px">
+                <span style="font-size:18px">🧊</span>Cooler G<span style="font-size:10px;color:#047857;font-weight:600">+ Cadastrar</span>
+              </button>
+            </div>
+          </div>
 
-          <!-- Estoque simples (sem código) -->
-          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-top:10px;overflow:hidden;box-shadow:0 2px 6px rgba(30,159,217,.06)">
-            <div onclick="document.getElementById('pat-simples-corpo').style.display=document.getElementById('pat-simples-corpo').style.display==='block'?'none':'block'" style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer">
-              <span style="font-size:12px;font-weight:700;color:#0F4C7A">📋 Estoque simples <span style="font-size:10px;color:#5A7A8F;font-weight:500">(sem código — camiseta, colete, blusa…)</span></span>
-              <span style="color:#94A8B8;font-size:14px">›</span>
+          <!-- Tabela de patrimônios com código (recolhido por padrão) -->
+          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;margin-bottom:.6rem;overflow:hidden">
+            <div onclick="document.getElementById('pat-tabela-corpo').style.display=document.getElementById('pat-tabela-corpo').style.display==='block'?'none':'block';this.querySelector('.pat-toggle-arrow').textContent=document.getElementById('pat-tabela-corpo').style.display==='block'?'˅':'›'"
+              style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer;user-select:none">
+              <span style="font-size:12px;font-weight:700;color:#0F4C7A">🔒 Itens com código <span style="font-size:10px;color:#5A7A8F;font-weight:500">(rastreador, baú, coolers…)</span></span>
+              <span class="pat-toggle-arrow" style="color:#94A8B8;font-size:16px;font-weight:700">›</span>
+            </div>
+            <div id="pat-tabela-corpo" style="display:none;border-top:1px solid #EBF1F5;padding:10px">
+              <!-- Barra de filtros -->
+              <div style="display:flex;gap:6px;margin-bottom:.6rem;align-items:center;flex-wrap:wrap">
+                <select id="pat-filtro-tipo" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto;min-width:0">
+                  <option value="">Todos os tipos</option>
+                  <option value="rastreador">Rastreador</option>
+                  <option value="bau">Baú</option>
+                  <option value="cooler_p">Cooler P</option>
+                  <option value="cooler_g">Cooler G</option>
+                  <option value="capacete">Capacete</option>
+                  <option value="colete">Colete</option>
+                </select>
+                <select id="pat-filtro-status" onchange="aplicarFiltroPat()" style="border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 8px;font-size:11px;outline:none;background:#fff;font-weight:600;color:#0F4C7A;flex:0 0 auto">
+                  <option value="">Todos status</option>
+                  <option value="disponivel">Disponível</option>
+                  <option value="em_uso">Em uso</option>
+                  <option value="danificado">Danificado</option>
+                  <option value="perdido">Perdido</option>
+                </select>
+                <input type="text" id="pat-filtro-busca" oninput="aplicarFiltroPat()" placeholder="Buscar código/motoboy..." style="flex:1;min-width:120px;border-radius:8px;border:1.5px solid #D6E5EE;padding:6px 10px;font-size:11px;outline:none">
+                <button onclick="exportarPatCSV()" title="Exportar CSV" style="padding:6px 10px;border-radius:8px;border:1.5px solid #0F9B78;background:#ECFDF5;color:#0F9B78;font-size:11px;font-weight:700;cursor:pointer;flex:0 0 auto">📥 Excel</button>
+                <button onclick="limparFiltroPat()" title="Limpar filtros" style="padding:6px 8px;border-radius:8px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:600;cursor:pointer;flex:0 0 auto">✕</button>
+              </div>
+              <div id="pat-tabela-container" style="background:#F8FBFD;border-radius:8px;border:1px solid #EBF1F5;overflow:hidden"></div>
+            </div>
+          </div>
+
+          <!-- Estoque simples (sem código) (recolhido por padrão) -->
+          <div style="background:#fff;border-radius:10px;border:1px solid #EBF1F5;overflow:hidden">
+            <div onclick="document.getElementById('pat-simples-corpo').style.display=document.getElementById('pat-simples-corpo').style.display==='block'?'none':'block';this.querySelector('.pat-toggle-arrow').textContent=document.getElementById('pat-simples-corpo').style.display==='block'?'˅':'›'"
+              style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;cursor:pointer;user-select:none">
+              <span style="font-size:12px;font-weight:700;color:#0F4C7A">📋 Estoque simples <span style="font-size:10px;color:#5A7A8F;font-weight:500">(camiseta, colete, blusa…)</span></span>
+              <span class="pat-toggle-arrow" style="color:#94A8B8;font-size:16px;font-weight:700">›</span>
             </div>
             <div id="pat-simples-corpo" style="display:none;border-top:1px solid #EBF1F5;padding:10px 12px">
               <div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">Com tamanho</div>
               <div id="pat-uniformes-lista"></div>
               <button onclick="abrirModalEntradaUnifEst()" style="width:100%;padding:8px;border-radius:8px;border:none;background:linear-gradient(135deg,#8B5CF6,#5B21B6);color:#fff;font-weight:700;font-size:11px;cursor:pointer;margin-top:6px">+ Entrada de uniforme</button>
               <div style="font-size:10px;font-weight:700;color:#94A8B8;text-transform:uppercase;letter-spacing:.06em;margin:10px 0 6px">Sem tamanho</div>
-              <div id="pat-simples-lista2"></div>
+              <div id="pat-simples-lista"></div>
             </div>
           </div>
         </div>
@@ -1832,13 +1862,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <div id="est-resumo-todos" style="margin-top:1rem"></div>
         </div>
 
-        <!-- Aba Relatórios -->
+        <!-- Aba Movimentações (era "Relatórios" — agora só com o que importa) -->
         <div id="pat-tab-relatorios" style="display:none">
           <div style="display:flex;gap:5px;margin-bottom:.8rem;flex-wrap:wrap">
-            <button id="pat-rel-btn-onde" onclick="mudarRelPat('onde',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">📍 Onde está</button>
-            <button id="pat-rel-btn-pormotoboy" onclick="mudarRelPat('pormotoboy',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">👤 Por motoboy</button>
-            <button id="pat-rel-btn-mov" onclick="mudarRelPat('mov',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">🔄 Movimentações</button>
+            <button id="pat-rel-btn-mov" onclick="mudarRelPat('mov',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #8B5CF6;background:#F3F0FF;color:#5B21B6;font-size:11px;font-weight:700;cursor:pointer">🔄 Movimentações</button>
             <button id="pat-rel-btn-alertas" onclick="mudarRelPat('alertas',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">⚠️ Alertas</button>
+            <button id="pat-rel-btn-pormotoboy" onclick="mudarRelPat('pormotoboy',this)" style="padding:6px 10px;border-radius:18px;border:1.5px solid #D6E5EE;background:#fff;color:#5A7A8F;font-size:11px;font-weight:700;cursor:pointer">👤 Por motoboy</button>
           </div>
           <div id="pat-rel-conteudo"></div>
         </div>
@@ -2256,7 +2285,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <span id="pat-cad-titulo">➕ Cadastrar Item</span>
       <button onclick="document.getElementById('modal-pat-cad').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;color:#5A7A8F">✕</button>
     </div>
-    <input type="hidden" id="pat-cad-tipo"/>
+    <div style="margin-bottom:1rem">
+      <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Tipo do patrimônio</label>
+      <select id="pat-cad-tipo" onchange="mudarTipoPatCad()" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A;background:#fff;font-weight:600">
+        <option value="">Selecione...</option>
+        <option value="rastreador">📡 Rastreador</option>
+        <option value="bau">📦 Baú</option>
+        <option value="cooler_p">🧊 Cooler P</option>
+        <option value="cooler_g">🧊 Cooler G</option>
+        <option value="capacete">⛑️ Capacete</option>
+        <option value="colete">🦺 Colete</option>
+        <option value="camiseta">👕 Camiseta</option>
+        <option value="blusa">🧥 Blusa</option>
+        <option value="cartao">💳 Cartão</option>
+      </select>
+    </div>
     <div style="margin-bottom:1rem">
       <label style="font-size:11px;font-weight:700;color:#0F4C7A;text-transform:uppercase;display:block;margin-bottom:5px">Código identificador</label>
       <input type="text" id="pat-cad-codigo" placeholder="Ex: BAU-004" style="width:100%;border-radius:10px;border:1.5px solid #D6E5EE;padding:10px 12px;font-size:14px;outline:none;color:#0F4C7A"/>
@@ -2304,6 +2347,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <option value="rastreador">📡 Rastreador</option>
         <option value="colete">🦺 Colete</option>
         <option value="capacete">⛑️ Capacete</option>
+        <option value="cooler_p">🧊 Cooler P</option>
+        <option value="cooler_g">🧊 Cooler G</option>
         <option value="suporte">📲 Suporte</option>
       </select>
     </div>

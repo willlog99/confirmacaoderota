@@ -913,7 +913,8 @@ function abrirModalPatCad(tipo) {
   if(tituloEl) tituloEl.textContent = '➕ Cadastrar ' + (t ? t.icon + ' ' + t.nome : 'Item');
   if(tipoEl)   tipoEl.value = tipo || '';
   if(codigoEl) codigoEl.value = '';
-  if(subEl)    subEl.style.display = tipo === 'cartao' ? 'block' : 'none';
+  // Mostra/oculta bloco de subtipo do Cartão
+  if (subEl) subEl.style.display = tipo === 'cartao' ? 'block' : 'none';
   estadoPat = 'Novo'; subtipoPat2 = 'Definitivo';
   document.querySelectorAll('.estado-btn-pat').forEach((b, i) => {
     b.style.borderColor = i===0 ? '#0F9B78' : '#D6E5EE';
@@ -930,6 +931,13 @@ function selEstadoPat(btn, estado) {
   const b = { Novo:'#E8F8F0', Bom:'#E8F4FB', Danificado:'#FCEBEB' };
   document.querySelectorAll('.estado-btn-pat').forEach(x => { x.style.borderColor='#D6E5EE'; x.style.background='#fff'; x.style.color='#5A7A8F'; });
   btn.style.borderColor = c[estado]; btn.style.background = b[estado]; btn.style.color = c[estado];
+}
+
+function mudarTipoPatCad() {
+  // Mostrar/ocultar bloco de subtipo do Cartão
+  const tipo = document.getElementById('pat-cad-tipo')?.value;
+  const subEl = document.getElementById('pat-cad-subtipo-wrap');
+  if (subEl) subEl.style.display = tipo === 'cartao' ? 'block' : 'none';
 }
 
 function selSubtipoPat(btn, sub) {
@@ -1281,13 +1289,13 @@ function mudarTabPat(tab, btn) {
       }).catch(()=>{});
     }
   }
-  if(tab==='relatorios') mudarRelPat('onde');
+  if(tab==='relatorios') mudarRelPat('mov');
 }
 
-let relPatAtual = 'onde';
+let relPatAtual = 'mov';
 function mudarRelPat(rel, btn) {
   relPatAtual = rel;
-  ['onde','pormotoboy','mov','alertas'].forEach(r => {
+  ['pormotoboy','mov','alertas'].forEach(r => {
     const b = document.getElementById('pat-rel-btn-'+r);
     if(b) {
       const active = r===rel;
@@ -1297,7 +1305,6 @@ function mudarRelPat(rel, btn) {
     }
   });
   const el = document.getElementById('pat-rel-conteudo'); if(!el) return;
-  if(rel==='onde')       renderRelOndeEsta();
   if(rel==='pormotoboy') renderRelPorMotoboy();
   if(rel==='mov')        renderRelMovimentacoes();
   if(rel==='alertas')    renderRelAlertas();
