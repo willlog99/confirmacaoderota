@@ -1210,8 +1210,18 @@ async function carregarRelHorarios() {
       if (diff <= 0) return '';
       return ' <span style="font-size:10px;color:#94A8B8">(+' + diff + 'min)</span>';
     }
+    function fmtDuracao(ms) {
+      if (!ms || ms <= 0) return '<span class="rel-sub">—</span>';
+      const segs = Math.round(ms / 1000);
+      const h = Math.floor(segs / 3600);
+      const m = Math.floor((segs % 3600) / 60);
+      const s = segs % 60;
+      if (h > 0) return h + 'h' + String(m).padStart(2,'0') + 'min';
+      if (m > 0) return m + 'min' + (s > 0 ? String(s).padStart(2,'0') + 's' : '');
+      return s + 's';
+    }
     lista.innerHTML = '<table class="rel-table"><thead><tr>' +
-      '<th>Cliente</th><th>Rota</th><th>Chegada GPS</th><th>Finalização</th><th>Coordenada</th><th>Status</th>' +
+      '<th>Cliente</th><th>Rota</th><th>Chegada GPS</th><th>Saída GPS</th><th>Tempo</th><th>Finalização</th><th>Coordenada</th><th>Status</th>' +
       '</tr></thead><tbody>' +
       _relHorDados.map(c => {
         const temChegadaGps = !!c.horario_chegada_gps;
@@ -1222,6 +1232,8 @@ async function carregarRelHorarios() {
           '<td class="rel-nome">' + c.nome_cliente + '</td>' +
           '<td class="rel-sub">' + (c.rota||'\u2014') + '</td>' +
           '<td class="rel-hora">' + (temChegadaGps ? fmtHora(c.horario_chegada_gps) : '<span class="rel-sub">sem GPS</span>') + '</td>' +
+          '<td class="rel-hora">' + (c.horario_saida_gps ? fmtHora(c.horario_saida_gps) : '<span class="rel-sub">\u2014</span>') + '</td>' +
+          '<td class="rel-hora">' + fmtDuracao(c.tempo_permanencia_ms) + '</td>' +
           '<td class="rel-hora">' + fmtHora(c.timestamp) + fmtDiffMin(c.horario_chegada_gps, c.timestamp) + '</td>' +
           '<td>' + coordBadge + '</td>' +
           '<td>' + (c.produtividade === 'produtiva' ? '<span class="rel-badge rel-b-ok">\u2713 Produtiva</span>' : '<span class="rel-badge rel-b-err">\u2717 Improdutiva</span>') + '</td>' +
