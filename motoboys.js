@@ -220,8 +220,10 @@ async function renderizarPainel(data) {
 
     // Calcular atrasos — só rotas ativas com checklist feito
     const agora = new Date();
-    const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
-    const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
+    const segsAgora = (() => {
+      const [hh, mm, ss] = agora.toLocaleTimeString('en-GB', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).split(':');
+      return Number(hh) * 3600 + Number(mm) * 60 + Number(ss);
+    })();
     const todosAtrasos = [];
     rotas.forEach(r => {
       // Só dia filtrado
@@ -254,8 +256,10 @@ async function renderizarPainel(data) {
 
       function renderAtrasos() {
         const agora2 = new Date();
-        const agoraSP2 = new Date(agora2.getTime() - 3 * 60 * 60 * 1000);
-        const segsAgora2 = agoraSP2.getUTCHours() * 3600 + agoraSP2.getUTCMinutes() * 60 + agoraSP2.getUTCSeconds();
+        const segsAgora2 = (() => {
+          const [hh, mm, ss] = agora2.toLocaleTimeString('en-GB', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).split(':');
+          return Number(hh) * 3600 + Number(mm) * 60 + Number(ss);
+        })();
 
         atrasoEl.innerHTML = (window._atrasosDados || []).map(a => {
           const [h, m] = (a.horario || '00:00').split(':').map(Number);
@@ -305,8 +309,10 @@ function recalcularAtrasos(data) {
   const rotas = filtroDia === 'todos' ? todasRotas : todasRotas.filter(r => r.dia_semana === filtroDia);
 
   const agora = new Date();
-  const agoraSP = new Date(agora.getTime() - 3 * 60 * 60 * 1000);
-  const segsAgora = agoraSP.getUTCHours() * 3600 + agoraSP.getUTCMinutes() * 60 + agoraSP.getUTCSeconds();
+  const segsAgora = (() => {
+    const [hh, mm, ss] = agora.toLocaleTimeString('en-GB', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).split(':');
+    return Number(hh) * 3600 + Number(mm) * 60 + Number(ss);
+  })();
   const todosAtrasos = [];
 
   rotas.forEach(r => {
