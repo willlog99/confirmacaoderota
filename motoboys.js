@@ -775,7 +775,7 @@ async function carregarMotoboysGerenciar() {
         ${m.rotas && m.rotas.length ? `<div style="font-size:12px;color:#5A7A8F;margin-top:3px">🛣️ ${m.rotas.join(', ')}</div>` : '<div style="font-size:12px;color:#94A8B8;margin-top:3px">Sem rotas cadastradas</div>'}
         ${statusBadge ? `<div style="margin-top:4px">${statusBadge}</div>` : ''}
         <div class="list-item-actions">
-          <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}',${m.precisa_checklist !== false},${m.rastrear !== false})">✏️ Editar tipo</button>
+          <button class="btn" style="height:34px;font-size:12px;background:#EFF6FF;color:#1D4ED8;border:1px solid #BFDBFE" onclick="editarTipoMotoboy('${m.telefone}','${m.nome}','${tipo}',${m.precisa_checklist !== false},${m.rastrear !== false},${m.checklist_fora_base === true})">✏️ Editar tipo</button>
           ${botoesStatus}
           <button class="btn btn-danger" style="height:34px;font-size:12px" onclick="excluirMotoboy('${m.telefone}')">🗑 Excluir</button>
         </div>
@@ -865,12 +865,13 @@ async function removerAfastamento(telefone, nome) {
   } catch(e) { toast('Erro ao reativar'); console.error(e); }
 }
 
-function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual, rastrearAtual) {
+function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual, rastrearAtual, checklistForaBaseAtual) {
   const anterior = document.getElementById('modal-editar-tipo');
   if (anterior) anterior.remove();
 
   const checklist = precisaChecklistAtual !== false;
   const rastrear = rastrearAtual !== false;
+  const checklistForaBase = checklistForaBaseAtual === true;
 
   const modal = document.createElement('div');
   modal.id = 'modal-editar-tipo';
@@ -908,6 +909,13 @@ function editarTipoMotoboy(telefone, nome, tipoAtual, precisaChecklistAtual, ras
             <div style="font-size:11px;color:#64748B">Obrigatório antes de iniciar a rota</div>
           </div>
         </label>
+        <label style="display:flex;align-items:center;gap:12px;padding:12px;border-radius:10px;border:1.5px solid #EBF1F5;cursor:pointer">
+          <input type="checkbox" id="cb-checklist-fora-base" ${checklistForaBase ? 'checked' : ''} style="width:18px;height:18px;accent-color:#0F4C7A;cursor:pointer"/>
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#0F2940">📍 Permitir checklist fora da base</div>
+            <div style="font-size:11px;color:#64748B">Se desmarcado, motoboy precisa estar dentro de 200m da base para fazer o checklist</div>
+          </div>
+        </label>
       </div>
 
       <div style="display:flex;gap:8px">
@@ -922,12 +930,13 @@ async function salvarTipoMotoboy(telefone) {
   const tipo = document.querySelector('input[name="tipo-edit"]:checked')?.value;
   const precisa_checklist = document.getElementById('cb-checklist')?.checked !== false;
   const rastrear = document.getElementById('cb-rastrear')?.checked !== false;
+  const checklist_fora_base = document.getElementById('cb-checklist-fora-base')?.checked === true;
   if (!tipo) return;
   try {
     await fetch(API + '/motoboys/tipo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ telefone, tipo, precisa_checklist, rastrear })
+      body: JSON.stringify({ telefone, tipo, precisa_checklist, rastrear, checklist_fora_base })
     });
     document.getElementById('modal-editar-tipo')?.remove();
     if (typeof invalidarCache === 'function') invalidarCache('motoboys-agrupado');
