@@ -588,11 +588,44 @@
         showMsg('msg3gps', 'Endereço não encontrado', 'error');
         return;
       }
-      mapaGPS.setView([d.lat, d.lng], 16);
-      showMsg('msg3gps', `✓ Endereço encontrado — clique no mapa para adicionar`, 'success');
+      // Se a precisão é ROOFTOP (endereço exato, com número), adiciona o
+      // ponto automaticamente — sem precisar clicar no mapa. Pega o número
+      // e o nome da rua do formatted_address pra sugerir nome curto.
+      if (d.precisao === 'ROOFTOP') {
+        const nomeCurto = extrairNomeCurto(d.endereco_formatado) || ('Ponto ' + (pontosGPS.length + 1));
+        const ponto = {
+          nome: nomeCurto,
+          lat: d.lat,
+          lng: d.lng,
+          raio_m: 200,
+          endereco: d.endereco_formatado || ''
+        };
+        pontosGPS.push(ponto);
+        mapaGPS.setView([d.lat, d.lng], 16);
+        renderizarPontosGPSLista();
+        renderizarPontosGPSMapa();
+        showMsg('msg3gps', `✓ Ponto "${nomeCurto}" adicionado automaticamente`, 'success');
+      } else {
+        // Aproximado (GEOMETRIC_CENTER etc) — só centraliza o mapa, deixa
+        // o admin clicar pra escolher o ponto exato
+        mapaGPS.setView([d.lat, d.lng], 16);
+        showMsg('msg3gps', `✓ Endereço aproximado — clique no mapa para adicionar o ponto`, 'success');
+      }
     } catch(e) {
       showMsg('msg3gps', 'Erro: ' + e.message, 'error');
     }
+  }
+
+  /**
+   Extrai um nome curto do formatted_address do Google.
+   Ex: "R. das Flôres, 123 - Vila Santa Ines, São Paulo - SP, 01000-000, Brazil"
+   → "R. das Flôres, 123"
+   */
+  function extrairNomeCurto(enderecoCompleto) {
+    if (!enderecoCompleto || enderecoCompleto === '') return null;
+    // Pega só a primeira parte (antes do primeiro " - " ou vírgula de bairro)
+    const primeiraParte = enderecoCompleto.split(' - ')[0].trim();
+    return primeiraParte.slice(0, 80);
   }
 
   function escapeHtml(s) {
