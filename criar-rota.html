@@ -582,7 +582,7 @@
     if (!q) return;
     showMsg('msg3gps', 'Buscando endereço...', 'loading');
     try {
-      const r = await fetch(API + '/geocodificar-endereco?q=' + encodeURIComponent(q));
+      const r = await fetch(API + '/geocodificar-endereco?endereco=' + encodeURIComponent(q));
       const d = await r.json();
       if (d.erro || !d.lat) {
         showMsg('msg3gps', 'Endereço não encontrado', 'error');
