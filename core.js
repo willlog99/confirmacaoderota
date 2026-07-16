@@ -4005,7 +4005,23 @@ async function carregarPontosRota() {
     ]);
     const dRotas = await rRotas.json();
     const dPontos = await rPontos.json();
-    const rotas = (dRotas.rotas || []).map(r => r.rota).sort();
+    // Filtra só rotas que têm pelo menos 1 motoboy tipo='rastreador' vinculado
+    // (feature "Pontos da rota" é exclusiva de motoboys GPS — ver
+    // memory project-loglife-mapa-telas). A view não faz sentido pra
+    // rotas só de clientes, e o /rotas-disponiveis retorna todas as 24.
+    const todasRotas = (dRotas.rotas || []).map(r => r.rota);
+    let rotas = todasRotas;
+    try {
+      const mRes = await fetchCacheado(API + '/motoboys?todos=1&agrupado=1');
+      const mData = await mRes.json();
+      const rastreadores = new Set(
+        (mData.motoboys || [])
+          .filter(m => m.tipo === 'rastreador' && m.rota)
+          .flatMap(m => Array.isArray(m.rota) ? m.rota : [m.rota])
+      );
+      rotas = todasRotas.filter(r => rastreadores.has(r));
+    } catch (e) { /* fallback: mostra todas as rotas em vez de travar a view */ }
+    rotas.sort();
     const pontos = dPontos.pontos || [];
     if (sel) {
       sel.innerHTML = '<option value="">Selecione...</option>';
