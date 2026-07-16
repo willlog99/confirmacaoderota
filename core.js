@@ -4009,6 +4009,9 @@ async function carregarPontosRota() {
     // (feature "Pontos da rota" é exclusiva de motoboys GPS — ver
     // memory project-loglife-mapa-telas). A view não faz sentido pra
     // rotas só de clientes, e o /rotas-disponiveis retorna todas as 24.
+    // CUIDADO: o campo é m.rotas (plural, array) no /motoboys?agrupado=1,
+    // não m.rota (singular, undefined). Achei o bug em 2026-07-16 quando
+    // o dropdown ficou vazio — WELINGTON tem rotas=["SAO PAULO 03","ROTA TESTE"].
     const todasRotas = (dRotas.rotas || []).map(r => r.rota);
     let rotas = todasRotas;
     try {
@@ -4016,8 +4019,8 @@ async function carregarPontosRota() {
       const mData = await mRes.json();
       const rastreadores = new Set(
         (mData.motoboys || [])
-          .filter(m => m.tipo === 'rastreador' && m.rota)
-          .flatMap(m => Array.isArray(m.rota) ? m.rota : [m.rota])
+          .filter(m => m.tipo === 'rastreador' && Array.isArray(m.rotas) && m.rotas.length)
+          .flatMap(m => m.rotas)
       );
       rotas = todasRotas.filter(r => rastreadores.has(r));
     } catch (e) { /* fallback: mostra todas as rotas em vez de travar a view */ }
